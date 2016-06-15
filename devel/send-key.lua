@@ -6,8 +6,9 @@ devel/send-key
 Send a key to the current screen or a parent
 
 Usage:
-:`devel/send-key KEY_NAME`:     Send KEY_NAME
-:`devel/send-key KEY_NAME X`:   Send KEY_NAME to the screen `X` screens above
+
+:devel/send-key KEY_NAME:   Send KEY_NAME
+:devel/send-key KEY_NAME X: Send KEY_NAME to the screen ``X`` screens above
                                 the current screen
 
 ]====]
