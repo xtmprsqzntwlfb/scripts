@@ -1,5 +1,5 @@
 -- Shows the warning about missing configuration file.
---[[=begin
+--[====[
 
 gui/prerelease-warning
 ======================
@@ -9,7 +9,7 @@ With no arguments passed, the warning is shown unless the "do not show again"
 option has been selected. With the ``force`` argument, the warning is always
 shown.
 
-=end]]
+]====]
 
 local gui = require 'gui'
 local dlg = require 'gui.dialogs'

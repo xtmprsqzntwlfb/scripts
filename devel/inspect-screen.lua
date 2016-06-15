@@ -1,11 +1,11 @@
 -- Read from the screen and display info about the tiles
---[[=begin
+--[====[
 
 devel/inspect-screen
 ====================
 Read the tiles from the screen and display info about them.
 
-=end]]
+]====]
 
 local utils = require 'utils'
 local gui = require 'gui'

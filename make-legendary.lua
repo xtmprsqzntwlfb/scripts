@@ -1,6 +1,6 @@
 -- Make a skill or skills of a unit Legendary +5
 -- by vjek
---[[=begin
+local help = [====[
 
 make-legendary
 ==============
@@ -9,7 +9,7 @@ skills.  View groups with ``make-legendary classes``, or all skills with
 ``make-legendary list``.  Use ``make-legendary MINING`` when you need something
 dug up, or ``make-legendary all`` when only perfection will do.
 
-=end]]
+]====]
 
 -- this function will return the number of elements, starting at zero.
 -- useful for counting things where #foo doesn't work
@@ -133,8 +133,7 @@ if opt then
     end
     skillname = opt
 else
-    print ("No skillname supplied.\nUse argument 'list' to see a list, 'classes' to show skill classes, or use 'all' if you want it all!")
-    print ("Example:  To make a legendary miner, use make_legendary MINING")
+    print(help)
     return
 end
 

@@ -2,24 +2,16 @@
 -- original author: tejón
 -- rewritten by expwnent
 -- see repeat.lua for how to run this every so often automatically
---[[=begin
+local help = [====[
 
 fix/feeding-timers
 ==================
-Reset the GiveWater and GiveFood timers of all units as appropriate.
+Reset the GiveWater and GiveFood timers of all living citizens.
 
-=end]]
+]====]
 local args = {...}
 if args[1] ~= nil then
- print("fix/feeding-timers usage")
- print(" fix/feeding-timers")
- print("  reset the feeding timers of all units as appropriate")
- print(" fix/feeding-timers help")
- print("  print this help message")
- print(" repeat -time [n] [years/months/ticks/days/etc] -command fix/feeding-timers")
- print("  run this script every n time units")
- print(" repeat -cancel fix/feeding-timers")
- print("  stop automatically running this script")
+ print(help)
  return
 end
 

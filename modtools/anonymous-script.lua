@@ -1,6 +1,6 @@
 -- invoke simple lua scripts from strings
 --author expwnent
---[[=begin
+--[====[
 
 modtools/anonymous-script
 =========================
@@ -12,7 +12,7 @@ own script file.  Example::
     anonymous-script "print(args[1])" arg1 arg2
     # prints "arg1"
 
-=end]]
+]====]
 local args = {...}
 
 --automatically collect arguments to make the anonymous script more succinct

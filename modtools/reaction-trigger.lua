@@ -2,15 +2,46 @@
 -- author expwnent
 -- replaces autoSyndrome
 --@ module = true
---[[=begin
+local usage = [====[
 
 modtools/reaction-trigger
 =========================
 Triggers dfhack commands when custom reactions complete, regardless of whether
-it produced anything, once per completion.  Use the ``-help`` command
-for more information.
+it produced anything, once per completion.  Arguments::
 
-=end]]
+    -clear
+        unregister all reaction hooks
+    -reactionName name
+        specify the name of the reaction
+    -syndrome name
+        specify the name of the syndrome to be applied to the targets
+    -allowNonworkerTargets
+        allow other units in the same building to be targetted by
+        either the script or the syndrome
+    -allowMultipleTargets
+        allow multiple targets to the script or syndrome
+        if absent:
+            if running a script, only one target will be used
+            if applying a syndrome, then only one target will be infected
+    -resetPolicy policy
+        the policy in the case that the syndrome is already present
+        policy
+            NewInstance (default)
+            DoNothing
+            ResetDuration
+            AddDuration
+    -command [ commandStrs ]
+        specify the command to be run on the target(s)
+        special args
+            \\WORKER_ID
+            \\TARGET_ID
+            \\BUILDING_ID
+            \\LOCATION
+            \\REACTION_NAME
+            \\anything -> \anything
+            anything -> anything
+
+]====]
 local eventful = require 'plugins.eventful'
 local syndromeUtil = require 'syndrome-util'
 local utils = require 'utils'
@@ -173,41 +204,7 @@ end
 local args = utils.processArgs({...}, validArgs)
 
 if args.help then
- print([[scripts/modtools/reaction-trigger.lua
-arguments:
-    -help
-        print this help message
-    -clear
-        unregister all reaction hooks
-    -reactionName name
-        specify the name of the reaction
-    -syndrome name
-        specify the name of the syndrome to be applied to the targets
-    -allowNonworkerTargets
-        allow other units in the same building to be targetted by either the script or the syndrome
-    -allowMultipleTargets
-        allow multiple targets to the script or syndrome
-        if absent:
-         if running a script, only one target will be used
-         if applying a syndrome, then only one target will be infected
-    -resetPolicy policy
-        set the reset policy in the case that the syndrome is already present
-        policy
-            NewInstance (default)
-            DoNothing
-            ResetDuration
-            AddDuration
-    -command [ commandStrs ]
-        specify the command to be run on the target(s)
-        special args
-            \\WORKER_ID
-            \\TARGET_ID
-            \\BUILDING_ID
-            \\LOCATION
-            \\REACTION_NAME
-            \\anything -> \anything
-            anything -> anything
-]])
+ print(usage)
  return
 end
 

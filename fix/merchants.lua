@@ -1,5 +1,5 @@
 -- Allow humans to make trade agreements
---[[=begin
+--[====[
 
 fix/merchants
 =============
@@ -7,7 +7,7 @@ Adds the Guild Representative position to all Human civilizations,
 allowing them to make trade agreements.  This was the default behaviour in
 ``0.28.181.40d`` and earlier.
 
-=end]]
+]====]
 
 
 function add_guild_rep(ent)

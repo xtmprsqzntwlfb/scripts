@@ -1,12 +1,12 @@
 -- Interface powered, user friendly, unit editor
 
---[[=begin
+--[====[
 
 gui/gm-unit
 ===========
 An editor for various unit attributes.
 
-=end]]
+]====]
 local gui = require 'gui'
 local dialog = require 'gui.dialogs'
 local widgets =require 'gui.widgets'

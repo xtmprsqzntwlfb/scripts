@@ -1,6 +1,6 @@
 -- gui/family-affairs
 -- derived from v1.2 @ http://www.bay12forums.com/smf/index.php?topic=147779
-local help = [[=begin
+local helpstr = [====[
 
 gui/family-affairs
 ==================
@@ -26,9 +26,7 @@ The target/s must be alive, sane, and in fortress mode.
         then arranges for the two units to marry, bypassing
         almost all checks.  Use with caution.
 
-=end]]
-
-helpstr = help:gsub('=begin', ''):gsub('=end', '')
+]====]
 
 local dlg = require ('gui.dialogs')
 

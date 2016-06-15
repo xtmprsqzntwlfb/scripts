@@ -1,28 +1,13 @@
 -- spawns flows at locations
 --author expwnent
---[[=begin
+local usage = [====[
 
 modtools/spawn-flow
 ===================
 Creates flows at the specified location.
 
-=end]]
-local utils = require 'utils'
+Arguments::
 
-validArgs = validArgs or utils.invert({
- 'help',
- 'material',
- 'flowType',
- 'location',
- 'flowSize',
-})
-local args = utils.processArgs({...}, validArgs)
-
-if args.help then
- print([[scripts/modtools/spawn-flow.lua
-arguments:
-    -help
-        print this help message
     -material mat
         specify the material of the flow, if applicable
         examples:
@@ -49,7 +34,21 @@ arguments:
             SeaFoam
     -flowSize size
         specify how big the flow is
-]])
+
+]====]
+local utils = require 'utils'
+
+validArgs = validArgs or utils.invert({
+ 'help',
+ 'material',
+ 'flowType',
+ 'location',
+ 'flowSize',
+})
+local args = utils.processArgs({...}, validArgs)
+
+if args.help then
+ print(usage)
  return
 end
 

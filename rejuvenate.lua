@@ -1,13 +1,13 @@
 -- make the selected dwarf 20 years old
 -- by vjek
---[[=begin
+--[====[
 
 rejuvenate
 ==========
 Set the age of the selected dwarf to 20 years.  Useful if valuable citizens are
 getting old, or there are too many babies around...
 
-=end]]
+]====]
 
 function rejuvenate()
     local current_year,newbirthyear

@@ -1,5 +1,5 @@
 -- Clone a uniform template in the military screen
---[[=begin
+--[====[
 
 gui/clone-uniform
 =================
@@ -9,7 +9,7 @@ page of the military screen with the cursor in the leftmost list.
 When invoked, the script duplicates the currently selected uniform template,
 and selects the newly created copy.
 
-=end]]
+]====]
 local utils = require 'utils'
 local gui = require 'gui'
 

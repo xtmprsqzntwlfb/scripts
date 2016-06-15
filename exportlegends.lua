@@ -1,5 +1,5 @@
 -- Export everything from legends mode
---[[=begin
+--[====[
 
 exportlegends
 =============
@@ -18,7 +18,7 @@ Options:
 :maps:   Exports all seventeen detailed maps
 :all:    Equivalent to calling all of the above, in that order
 
-=end]]
+]====]
 
 gui = require 'gui'
 local args = {...}

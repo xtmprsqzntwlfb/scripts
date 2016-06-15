@@ -1,5 +1,5 @@
 -- Rewrite individual choice weapons to specific types
---[[=begin
+--[====[
 
 gui/choose-weapons
 ==================
@@ -14,7 +14,7 @@ only that entry, and does it even if it is not 'individual choice'.
 Rationale: individual choice seems to be unreliable when there is a weapon shortage,
 and may lead to inappropriate weapons being selected.
 
-=end]]
+]====]
 local utils = require 'utils'
 local dlg = require 'gui.dialogs'
 

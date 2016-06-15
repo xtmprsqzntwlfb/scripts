@@ -1,5 +1,5 @@
 -- Interface front-end for liquids plugin.
---[[=begin
+--[====[
 
 gui/liquids
 ===========
@@ -30,7 +30,7 @@ rivers power water wheels even when full and technically not flowing.
 
 After setting up the desired operations using the described keys, use :kbd:`Enter` to apply them.
 
-=end]]
+]====]
 local utils = require 'utils'
 local gui = require 'gui'
 local guidm = require 'gui.dwarfmode'

@@ -1,13 +1,34 @@
 -- Forces an event (caravan, migrants, etc)
 -- author Putnam
 -- edited by expwnent
---[[=begin
+local help = [====[
 
 modtools/force
 ==============
 This tool triggers events like megabeasts, caravans, and migrants.
 
-=end]]
+Usage::
+
+    -eventType event
+        specify the type of the event to trigger
+        examples:
+            MegaBeast
+            Migrants
+            Caravan
+            Diplomat
+            WildlifeCurious
+            WildlifeMischievous
+            WildlifeFlier
+            NightCreature
+    -civ entity
+        specify the civ of the event, if applicable
+        examples:
+            player
+            MOUNTAIN
+            EVIL
+            28
+
+]====]
 local utils = require 'utils'
 
 local function findCiv(arg)
@@ -29,29 +50,7 @@ validArgs = validArgs or utils.invert({
 
 local args = utils.processArgs({...}, validArgs)
 if next(args) == nil or args.help then
- print([[force usage
-arguments:
-    -help
-        print this help message
-    -eventType event
-        specify the type of the event to trigger
-        examples:
-            MegaBeast
-            Migrants
-            Caravan
-            Diplomat
-            WildlifeCurious
-            WildlifeMischievous
-            WildlifeFlier
-            NightCreature
-    -civ entity
-        specify the civ of the event, if applicable
-        examples:
-            player
-            MOUNTAIN
-            EVIL
-            28
-]])
+ print(help)
  print('force: -eventType [Megabeast, Migrants, Caravan, Diplomat, WildlifeCurious, WildlifeMischievous, WildlifeFlier, NightCreature] -civ [player,ENTITY_ID]')
  return
 end

@@ -1,6 +1,6 @@
 -- Run an autolabor command for skill-affected labors.
 
---[[=begin
+local help = [====[
 
 autolabor-artisans
 ==================
@@ -10,7 +10,7 @@ influences output quality.  Examples::
     autolabor-artisans 0 2 3
     autolabor-artisans disable
 
-=end]]
+]====]
 local artisan_labors = {
     "CARPENTER",
     "DETAIL",
@@ -51,11 +51,7 @@ end
 
 function run()
     if #args == 0 or args[1] == "help" then
-        print('Applies an autolabor command to all labors with quality-based output.')
-        print('')
-        print('Examples:')
-        print('  autolabor-artisans 0 2 3')
-        print('  autolabor-artisans disable')
+        print(help)
         return false
     end
 

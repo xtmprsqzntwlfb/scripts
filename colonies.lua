@@ -1,7 +1,7 @@
 -- List, create, or change wild colonies (eg honey bees)
 -- By PeridexisErrant and Warmist
 
-local help = [[=begin
+local help = [====[
 
 colonies
 ========
@@ -18,7 +18,7 @@ However both accept an optional flag to use a different vermin
 type, for example ``colonies place ANT`` creates an ant colony
 and ``colonies convert TERMITE`` ends your beekeeping industry.
 
-=end]]
+]====]
 
 function findVermin(target_verm)
     for k,v in pairs(df.global.world.raws.creatures.all) do

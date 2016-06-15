@@ -1,5 +1,5 @@
 -- List or manage map features & enable magma furnaces
-local help = [[=begin
+local help = [====[
 
 feature
 =======
@@ -17,7 +17,7 @@ Options:
 :show X:        Marks the selected map feature as discovered.
 :hide X:        Marks the selected map feature as undiscovered.
 
-=end]]
+]====]
 
 local map_features = df.global.world.features.map_features
 
@@ -71,5 +71,5 @@ elseif args[1] == 'show' then
 elseif args[1] == 'hide' then
     toggle_feature(args[2], false)
 else
-    print((help:gsub('=[a-z]+', '')))
+    print(help)
 end

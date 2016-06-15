@@ -1,6 +1,6 @@
 -- Interface powered item editor.
 
---[[=begin
+--[====[
 
 gui/gm-editor
 =============
@@ -18,7 +18,7 @@ in-game help. There are three ways to open this editor:
 
 .. image:: /docs/images/gm-editor.png
 
-=end]]
+]====]
 local gui = require 'gui'
 local dialog = require 'gui.dialogs'
 local widgets =require 'gui.widgets'

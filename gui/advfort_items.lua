@@ -1,11 +1,11 @@
 --Does something with items in adventure mode jobs
---[[=begin
+--[====[
 
 gui/advfort_items
 =================
 Does something with items in adventure mode jobs.
 
-=end]]
+]====]
 local _ENV = mkmodule('hack.scripts.gui.advfort_items')
 
 local gui=require('gui')
@@ -100,25 +100,6 @@ function jobitemEditor:can_remove()
     local slot=self:get_slot()
     return #slot.items>0
 end
-function jobitemEditor:get_item_filters( job_item )
-    local true_flags={}
-    for k,v in pairs(job_item.flags1) do
-        if v then
-            table.insert(true_flags,k)
-        end
-    end
-    for k,v in pairs(job_item.flags2) do
-        if v then
-            table.insert(true_flags,k)
-        end
-    end
-    for k,v in pairs(job_item.flags3) do
-        if v then
-            table.insert(true_flags,k)
-        end
-    end
-    return table.concat(true_flags,"\n")
-end
 function jobitemEditor:add_item()
     local cur_slot=self:get_slot()
     local choices={}
@@ -129,7 +110,7 @@ function jobitemEditor:add_item()
         end
     end
     gscript.start(function ()
-        local _,_2,choice=gscript.showListPrompt("which item?", "Select item\nItem filters:\n"..self:get_item_filters(cur_slot.job_item), COLOR_WHITE, choices)
+        local _,_2,choice=gscript.showListPrompt("which item?", "Select item", COLOR_WHITE, choices)
         if choice ~= nil and choice.item~=nil then
             self:add_item_to_slot(cur_slot,choice.item)
         end

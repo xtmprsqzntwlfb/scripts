@@ -1,5 +1,5 @@
 -- Interface front-end for power-meter plugin.
---[[=begin
+--[====[
 
 gui/power-meter
 ===============
@@ -14,7 +14,7 @@ The script follows the general look and feel of the regular pressure
 plate build configuration page, but configures parameters relevant to
 the modded power meter building.
 
-=end]]
+]====]
 local utils = require 'utils'
 local gui = require 'gui'
 local guidm = require 'gui.dwarfmode'

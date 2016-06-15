@@ -1,12 +1,27 @@
 -- triggers scripts when a syndrome is applied
 --author expwnent
---[[=begin
+local usage = [====[
 
 modtools/syndrome-trigger
 =========================
 Triggers dfhack commands when syndromes are applied to units.
 
-=end]]
+Arguments::
+
+    -clear
+        clear all triggers
+    -syndrome name
+        specify the name of a syndrome
+    -command [ commandStrs ]
+        specify the command to be executed after infection
+        args
+            \\SYNDROME_ID
+            \\UNIT_ID
+            \\LOCATION
+            \\anything -> \anything
+            anything -> anything
+
+]====]
 local eventful = require 'plugins.eventful'
 local utils = require 'utils'
 
@@ -71,23 +86,7 @@ validArgs = validArgs or utils.invert({
 local args = utils.processArgs({...}, validArgs)
 
 if args.help then
- print([[scripts/modtools/syndrome-trigger.lua
-arguments
-    -help
-        print this help message
-    -clear
-        clear all triggers
-    -syndrome name
-        specify the name of a syndrome
-    -command [ commandStrs ]
-        specify the command to be executed after infection
-        args
-            \\SYNDROME_ID
-            \\UNIT_ID
-            \\LOCATION
-            \\anything -> \anything
-            anything -> anything
-]])
+ print(usage)
  return
 end
 

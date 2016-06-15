@@ -1,14 +1,30 @@
 -- trigger commands before/after reactions produce items
 -- author expwnent
 --@ module = true
---[[=begin
+local usage = [====[
 
 modtools/reaction-product-trigger
 =================================
 This triggers dfhack commands when reaction products are produced, once per
-product.
+product.  Usage::
 
-=end]]
+    -clear
+        unregister all reaction hooks
+    -reactionName name
+        specify the name of the reaction
+    -command [ commandStrs ]
+        specify the command to be run on the target(s)
+        special args
+            \\WORKER_ID
+            \\REACTION
+            \\BUILDING_ID
+            \\LOCATION
+            \\INPUT_ITEMS
+            \\OUTPUT_ITEMS
+            \\anything -> \anything
+            anything -> anything
+
+]====]
 local eventful = require 'plugins.eventful'
 local utils = require 'utils'
 
@@ -92,26 +108,7 @@ local args = {...} or {}
 args = utils.processArgs(args, validArgs)
 
 if args.help then
- print([[scripts/modtools/reaction-product-trigger.lua
-arguments:
-    -help
-        print this help message
-    -clear
-        unregister all reaction hooks
-    -reactionName name
-        specify the name of the reaction
-    -command [ commandStrs ]
-        specify the command to be run on the target(s)
-        special args
-            \\WORKER_ID
-            \\REACTION
-            \\BUILDING_ID
-            \\LOCATION
-            \\INPUT_ITEMS
-            \\OUTPUT_ITEMS
-            \\anything -> \anything
-            anything -> anything
-]])
+ print(usage)
  return
 end
 

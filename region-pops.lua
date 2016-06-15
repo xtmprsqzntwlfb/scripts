@@ -1,5 +1,5 @@
 -- Show or edit regional plant and animal populations
---[[=begin
+local help = [====[
 
 region-pops
 ===========
@@ -22,7 +22,7 @@ Usage:
 :region-pops incr-all <pattern> <factor>:
         Same as above, but match using a pattern acceptable to list.
 
-=end]]
+]====]
 
 local utils = require 'utils'
 
@@ -179,21 +179,5 @@ elseif args[1] == 'incr' or args[1] == 'incr-all' then
 
     print('Updated '..count..' populations.')
 else
-    print([[
-Usage:
-  region-pops list [pattern]
-    Lists encountered populations of the region, possibly restricted by pattern.
-  region-pops list-all [pattern]
-    Lists all populations of the region.
-  region-pops boost <TOKEN> <factor>
-    Multiply all populations of TOKEN by factor.
-    If the factor is greater than one, increases the
-    population, otherwise decreases it.
-  region-pops boost-all <pattern> <factor>
-    Same as above, but match using a pattern acceptable to list.
-  region-pops incr <TOKEN> <factor>
-    Augment (or diminish) all populations of TOKEN by factor (additive).
-  region-pops incr-all <pattern> <factor>
-    Same as above, but match using a pattern acceptable to list.
-]])
+    print(help)
 end

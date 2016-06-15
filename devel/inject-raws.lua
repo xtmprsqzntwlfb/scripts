@@ -1,5 +1,5 @@
 -- Inject new raw definitions into the world
---[[=begin
+--[====[
 
 devel/inject-raws
 =================
@@ -22,7 +22,7 @@ Usage example::
 
     devel/inject-raws trapcomp ITEM_TRAPCOMP_STEAM_PISTON workshop STEAM_ENGINE MAGMA_STEAM_ENGINE reaction STOKE_BOILER
 
-=end]]
+]====]
 
 local utils = require 'utils'
 

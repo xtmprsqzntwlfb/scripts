@@ -1,9 +1,9 @@
 -- basic check for release readiness
---[[=begin
+--[====[
 devel/check-release
 ===================
 Basic checks for release readiness
-=end]]
+]====]
 
 ok = true
 function err(s)

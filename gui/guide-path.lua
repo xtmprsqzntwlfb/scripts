@@ -1,5 +1,5 @@
 -- Show/change the path used by Guide Cart orders
---[[=begin
+--[====[
 
 gui/guide-path
 ==============
@@ -11,7 +11,7 @@ the cursor over a Guide order.
 The script displays the cached path that will be used by the order; the game
 computes it when the order is executed for the first time.
 
-=end]]
+]====]
 local utils = require 'utils'
 local gui = require 'gui'
 local guidm = require 'gui.dwarfmode'

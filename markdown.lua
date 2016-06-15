@@ -1,68 +1,60 @@
 -- Save a text screen in markdown (eg for reddit)
 -- This is a derivatiwe work based upon scripts/forum-dwarves.lua by Caldfir and expwnent
 -- Adapted for markdown by Mchl https://github.com/Mchl
---[[=begin
+local helpstr = [====[
 
 markdown
 ========
 Save a copy of a text screen in markdown (for reddit among others).
-Use ``markdown help`` for more details.
+See `forum-dwarves` for BBCode export (for eg. the Bay12 Forums).
 
-=end]]
+This script will attempt to read the current df-screen, and if it is a
+text-viewscreen (such as the dwarf 'thoughts' screen or an item / creature
+'description') or an announcement list screen (such as announcements and
+combat reports) then append a marked-down version of this text to the
+target file (for easy pasting on reddit for example).
+Previous entries in the file are not overwritten, so you
+may use the``markdown`` command multiple times to create a single
+document containing the text from multiple screens (eg: text screens
+from several dwarves, or text screens from multiple artifacts/items,
+or some combination).
+
+Usage:  ``markdown [/n] [filename]``
+
+:/n:    overwrites contents of output file
+:filename:
+        if provided, save to :file:`md_{filename}.md` instead
+        of the default :file:`md_export.md`
+
+The screens which have been tested and known to function properly with
+this script are:
+
+#. dwarf/unit 'thoughts' screen
+#. item/art 'description' screen
+#. individual 'historical item/figure' screens
+#. manual
+#. announements screen
+#. combat reports screen
+#. latest news (when meeting with liaison)
+
+There may be other screens to which the script applies.  It should be
+safe to attempt running the script with any screen active, with an
+error message to inform you when the selected screen is not appropriate
+for this script.
+
+.. note::
+    The text will be encoded in CP437, which is likely to be incompatible
+    with the system default.  This causes incorrect display of special
+    characters (eg. :guilabel:`é õ ç` = ``é õ ç``).  You can fix this by
+    opening the file in an editor such as Notepad++ and selecting the
+    correct encoding before using the text.
+
+]====]
 
 local args = {...}
 
 if args[1] == 'help' then
-    print([[
-description:
-    This script will attempt to read the current df-screen, and if it is a
-    text-viewscreen (such as the dwarf 'thoughts' screen or an item / creature
-    'description') or an announcement list screen (such as announcements and
-    combat reports) then append a marked-down version of this text to the
-    target file (for easy pasting on reddit for example).
-    Previous entries in the file are not overwritten, so you
-    may use the 'markdown' command multiple times to create a single
-    document containing the text from multiple screens (eg: text screens
-    from several dwarves, or text screens from multiple artifacts/items,
-    or some combination).
-
-usage:
-    markdown [/n] [filename]
-
-    /n - overwrites contents of output file
-    filename - if provided, the data will be saved in md_filename.md instead
-               of default md_export.md
-
-known screens:
-    The screens which have been tested and known to function properly with
-    this script are:
-        1: dwarf/unit 'thoughts' screen
-        2: item/art 'description' screen
-        3: individual 'historical item/figure' screens
-        4: manual
-        4: announements screen
-        5: combat reports screen
-        6: latest news (when meeting with liaison)
-    There may be other screens to which the script applies.  It should be
-    safe to attempt running the script with any screen active, with an
-    error message to inform you when the selected screen is not appropriate
-    for this script.
-
-target file:
-    The default target file's name is 'md_export.md'.  A remider to this effect
-    will be displayed if the script is successful.
-
-character encoding:
-    The text will likely be using system-default encoding, and as such
-    will likely NOT display special characters (eg:é,õ,ç) correctly.  To
-    fix this, you need to modify the character set that you are reading
-    the document with.  'Notepad++' is a freely available program which
-    can do this using the following steps:
-        1: open the document in Notepad++
-        2: in the menu-bar, select
-            Encoding->Character Sets->Western European->OEM-US
-        3: copy the text normally to wherever you want to use it
-]])
+    print(helpstr)
     return
 end
 
@@ -85,9 +77,6 @@ end
 local utils = require 'utils'
 local gui = require 'gui'
 local dialog = require 'gui.dialogs'
-
-
-
 
 local scrn = dfhack.gui.getCurViewscreen()
 local flerb = dfhack.gui.getFocusString(scrn)

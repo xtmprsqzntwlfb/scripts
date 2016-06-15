@@ -1,6 +1,6 @@
 -- Adjust all preferences of all dwarves in play
 -- by vjek
---[[=begin
+--[====[
 
 pref-adjust
 ===========
@@ -15,7 +15,7 @@ and ``pref-adjust`` inserts an 'ideal' set which is easy to satisfy::
     berries, plump helmets, strawberry wine, fisher berry wine, prickle
     berry wine, and dwarven wine.
 
-=end]]
+]====]
 
 -- ---------------------------------------------------------------------------
 function brainwash_unit(unit)

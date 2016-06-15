@@ -1,11 +1,11 @@
 -- Clear script environment
---[[=begin
+--[====[
 
 devel/clear-script-env
 ======================
 Clears the environment of the specified lua script(s).
 
-=end]]
+]====]
 args = {...}
 if #args < 1 then qerror("script name(s) required") end
 for _, name in pairs(args) do

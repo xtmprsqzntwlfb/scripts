@@ -1,5 +1,5 @@
 -- Issue orders to companions in Adventure mode
---[[=begin
+--[====[
 
 gui/companion-order
 ===================
@@ -17,7 +17,7 @@ case. Must be in look or talk mode to issue command on tile.
 * follow - rejoin the party after "wait"
 * leave - remove from party (can be rejoined by talking)
 
-=end]]
+]====]
 
 local gui = require 'gui'
 local dlg = require 'gui.dialogs'

@@ -1,14 +1,28 @@
 -- Create gods from the command-line
 --based on moddableGods by Putnam
 --edited by expwnent
---[[=begin
+local usage = [====[
 
 modtools/moddable-gods
 ======================
 This is a standardized version of Putnam's moddableGods script. It allows you
 to create gods on the command-line.
 
-=end]]
+Arguments::
+
+    -name godName
+        sets the name of the god to godName
+        if there's already a god of that name, the script halts
+    -spheres [ sphereList ]
+        define a space-separated list of spheres of influence of the god
+    -depictedAs str
+        often depicted as a str
+    -domain str
+        set the domain of the god
+    -description str
+        set the description of the god
+
+]====]
 local utils = require 'utils'
 
 validArgs = validArgs or utils.invert({
@@ -24,22 +38,7 @@ validArgs = validArgs or utils.invert({
 local args = utils.processArgs({...})
 
 if args.help then
- print([[scripts/modtools/moddable-gods.lua
-arguments:
-    -help
-        print this help message
-    -name godName
-        sets the name of the god to godName
-        if there's already a god of that name, the script halts
-    -spheres [ sphereList ]
-        define a space-separated list of spheres of influence of the god
-    -depictedAs str
-        often depicted as a str
-    -domain str
-        set the domain of the god
-    -description str
-        set the description of the god
-]])
+ print(usage)
  return
 end
 

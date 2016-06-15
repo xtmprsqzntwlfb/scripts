@@ -1,13 +1,27 @@
 -- Shows the sexual orientation of units
---[[=begin
+local help = [====[
 
 gaydar
 ======
 Shows the sexual orientation of units, useful for social engineering or checking
-the viability of livestock breeding programs.  Use ``gaydar -help`` for information
-on available filters for orientation, citizenship, species, etc.
+the viability of livestock breeding programs.
 
-=end]]
+Targets:
+
+:-all:          shows orientation of every creature
+:-citizens:     shows only orientation of citizens in fort mode
+:-named:        shows orientation of all named units on map
+:(no target):   shows orientation of the unit under the cursor
+
+Orientation filters:
+
+:-notStraight:  only creatures who are not strictly straight
+:-gayOnly:      only creatures who are strictly gay
+:-biOnly:       only creatures who can get into romances with both sexes
+:-straightOnly: only creatures who are strictly straight
+:-asexualOnly:  only creatures who are strictly asexual
+
+]====]
 local utils = require('utils')
 
 validArgs = utils.invert({
@@ -26,35 +40,8 @@ validArgs = utils.invert({
 local args = utils.processArgs({...}, validArgs)
 
 if args.help then
- print(
-[[gaydar.lua
-arguments:
-    -help
-        print this help message
-unit filters:
-    -all
-        shows orientation of every creature
-    -citizens
-        shows only orientation of citizens in fort mode
-    -named
-        shows orientation of all named units on map
-orientation filters:
-    -notStraight
-        shows only creatures who are not strictly straight
-    -gayOnly
-        shows only creatures who are strictly gay
-    -biOnly
-        shows only creatures who can get into romances with
-        both sexes
-    -straightOnly
-        shows only creatures who are strictly straight.
-    -asexualOnly
-        shows only creatures who are strictly asexual.
-
-    No argument will show the orientation of the unit
-    under the cursor.
-]])
- return
+    print(help)
+    return
 end
 
 function dfprint(s)

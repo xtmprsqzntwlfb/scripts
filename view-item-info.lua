@@ -2,7 +2,7 @@
 -- Shows information on material properties, weapon or armour stats, and more.
 -- By PeridexisErrant, adapted from nb_item_info by Raidau
 --@ enable = true
-local help = [[=begin
+local help = [====[
 
 view-item-info
 ==============
@@ -15,7 +15,7 @@ of items.  Individual descriptions can be added or overridden by a similar
 script :file:`raw/scripts/more-item-descriptions.lua`.  Both work as sparse lists,
 so missing items simply go undescribed if not defined in the fallback.
 
-=end]]
+]====]
 
 function isInList(list, item, helper)
     if not helper then

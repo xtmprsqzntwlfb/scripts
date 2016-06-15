@@ -1,14 +1,14 @@
 -- Elevate all the mental attributes of a unit
 -- by vjek
---[[=begin
+local help = [====[
 
 elevate-mental
 ==============
-Set all mental attributes of the selected dwarf to 2600, which is very high.
-Numbers between 0 and 5000 can be passed as an argument:  ``elevate-mental 100``
-for example would make the dwarf very stupid indeed.
+Set all mental attributes of the selected dwarf to the maximum possible, or
+any number numbers between 0 and 5000 passed as an argument:
+``elevate-mental 100`` for example would make the dwarf very stupid indeed.
 
-=end]]
+]====]
 
 function ElevateMentalAttributes(value)
     unit=dfhack.gui.getSelectedUnit()
@@ -43,7 +43,8 @@ if opt ~= nil then
         ElevateMentalAttributes(opt)
     end
     if opt <0 or opt >5000 then
-        print("Invalid Range or argument.  This script accepts either no argument, in which case it will increase the attribute to the max_value for the unit, or an argument between 0 and 5000, which will set all attributes to that value.")
+        print(help)
+        print('\n\nInvalid number!')
     end
 end
 

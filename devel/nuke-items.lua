@@ -1,12 +1,12 @@
 -- Delete ALL items not held by units, buildings or jobs
---[[=begin
+--[====[
 
 devel/nuke-items
 ================
 Deletes ALL items not held by units, buildings or jobs.
 Intended solely for lag investigation.
 
-=end]]
+]====]
 
 local count = 0
 

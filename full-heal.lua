@@ -2,13 +2,26 @@
 --author Kurik Amudnil, Urist DaVinci
 --edited by expwnent
 
---[[=begin
+local help = [====[
 
 full-heal
 =========
-Attempts to fully heal the selected unit.  ``full-heal -r`` attempts to resurrect the unit.
+Attempts to fully heal the selected unit from anything, optionally
+including death.  Usage:
 
-=end]]
+:full-heal:
+    Completely heal the currently selected unit.
+:full-heal -unit [unitId]:
+    Apply command to the unit with the given ID, instead of selected unit.
+:full-heal -r [-keep_corpse]:
+    Heal the unit, raising from the dead if needed.
+    Add ``-keep_corpse`` to avoid removing their corpse.
+
+For example, ``full-heal -r -keep_corpse -unit ID_NUM`` will fully heal
+unit ID_NUM.  If this unit was dead, it will be resurrected without deleting
+the corpse - creepy!
+
+]====]
 
 local utils=require('utils')
 
@@ -22,20 +35,8 @@ validArgs = validArgs or utils.invert({
 local args = utils.processArgs({...}, validArgs)
 
 if args.help then
-    print('full-heal: heal a unit completely from anything, optionally including death.')
-    print(' full-heal -unit [unitId]')
-    print('  heal the unit with the given id')
-    print(' full-heal -r -unit [unitId]')
-    print('  heal the unit with the given id and bring them back from death if they are dead')
-    print(' full-heal -r -keep_corpse -unit [unitId]')
-    print('  heal the unit with the given id and bring them back from death if they are dead, without removing their corpse')
-    print(' full-heal')
-    print('  heal the currently selected unit')
-    print(' full-heal -r')
-    print('  heal the currently selected unit and bring them back from death if they are dead')
-    print(' full-heal -help')
-    print('  print this help message')
-  return
+    print(help)
+    return
 end
 
 if(args.unit) then

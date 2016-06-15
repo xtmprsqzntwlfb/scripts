@@ -1,12 +1,40 @@
 -- Add or remove syndromes from units
 --author expwnent
---[[=begin
+local usage = [====[
 
 modtools/add-syndrome
 =====================
 This allows adding and removing syndromes from units.
 
-=end]]
+Arguments::
+
+    -syndrome name
+        the name of the syndrome to operate on
+        examples:
+            "gila monster bite"
+    -resetPolicy policy
+        specify a policy of what to do if the unit already has an
+        instance of the syndrome.  examples:
+            NewInstance
+                default behavior: create a new instance of the syndrome
+            DoNothing
+            ResetDuration
+            AddDuration
+    -erase
+        instead of adding an instance of the syndrome, erase one
+    -eraseAll
+        erase every instance of the syndrome
+    -eraseClass SYN_CLASS
+        erase every instance of every syndrome with the given SYN_CLASS
+    -target id
+        the unit id of the target unit
+        examples:
+            0
+            28
+    -skipImmunities
+        add the syndrome to the target even if it is immune to the syndrome
+
+]====]
 local syndromeUtil = require 'syndrome-util'
 local utils = require 'utils'
 
@@ -25,36 +53,7 @@ validArgs = validArgs or utils.invert({
 local args = utils.processArgs({...}, validArgs)
 
 if args.help then
- print([[scripts/modtools/add-syndrome usage:
-arguments:
-    -help
-        print this help message
-    -syndrome name
-        the name of the syndrome to operate on
-        examples:
-            "gila monster bite"
-    -resetPolicy policy
-        specify a policy of what to do if the unit already has an instance of the syndrome
-        examples:
-            NewInstance
-                default behavior: create a new instance of the syndrome
-            DoNothing
-            ResetDuration
-            AddDuration
-    -erase
-        instead of adding an instance of the syndrome, erase one
-    -eraseAll
-        erase every instance of the syndrome
-    -eraseClass SYN_CLASS
-        erase every instance of every syndrome with the given SYN_CLASS
-    -target id
-        the unit id of the target unit
-        examples:
-            0
-            28
-    -skipImmunities
-        add the syndrome to the target regardless of whether it is immune to the syndrome
-]])
+ print(usage)
  return
 end
 

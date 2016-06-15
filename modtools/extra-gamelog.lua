@@ -1,12 +1,12 @@
 -- Regularly writes extra info to gamelog.txt
-local help = [[=begin
+local help = [====[
 
 modtools/extra-gamelog
 ======================
 This script writes extra information to the gamelog.
 This is useful for tools like :forums:`Soundsense <106497>`.
 
-=end]]
+]====]
 
 msg = dfhack.gui.writeToGamelog
 

@@ -1,5 +1,12 @@
 -- Creates a unit.  Beta; use at own risk.
--- Originally created by warmist, edited by Putnam for the dragon ball mod to be used in reactions, modified by Dirst for use in The Earth Strikes Back mod, incorporating fixes discovered by Boltgun then Mifiki wrote the bit where it switches to arena mode briefly to do some of the messy work, then Expwnent combined that with the old script to make it function for histfigs
+
+-- Originally created by warmist
+-- edited by Putnam for the dragon ball mod to be used in reactions
+-- modified by Dirst for use in The Earth Strikes Back mod
+-- incorporating fixes discovered by Boltgun
+-- then Mifiki wrote the bit where it switches to arena mode briefly to do some of the messy work
+-- then Expwnent combined that with the old script to make it function for histfigs
+
 -- version 0.51
 -- This is a beta version. Use at your own risk.
 
@@ -14,13 +21,53 @@
       set invasion_id, etc
     announcement for fake natural birth if appropriate
 ]]
---[[=begin
+
+local usage = [====[
 
 modtools/create-unit
 ====================
-Creates a unit.  Use ``modtools/create-unit -help`` for more info.
+Creates a unit.  Usage::
 
-=end]]
+    -race raceName
+        specify the race of the unit to be created
+        examples:
+            DWARF
+            HUMAN
+    -caste casteName
+        specify the caste of the unit to be created
+        examples:
+            MALE
+            FEMALE
+    -domesticate
+        if the unit can't learn or can't speak, make it a friendly animal
+    -civId id
+        Make the created unit a member of the specified civ
+        (or none if id = -1).  If id is \\LOCAL, make it a member of the
+        civ associated with the fort; otherwise id must be an integer
+    -groupId id
+        Make the created unit a member of the specified group
+        (or none if id = -1).  If id is \\LOCAL, make it a member of the
+        group associated with the fort; otherwise id must be an integer
+    -name entityRawName
+        set the unit's name to be a random name appropriate for the
+        given entity.  examples:
+            MOUNTAIN
+    -nick nickname
+        set the unit's nickname directly
+    -location [ x y z ]
+        create the unit at the specified coordinates
+    -age howOld
+        set the birth date of the unitby current age
+    -flagSet [ flag1 flag2 ... ]
+        set the specified unit flags in the new unit to true
+        flags may be selected from df.unit_flags1, df.unit_flags2,
+        or df.unit_flags3
+    -flagClear [ flag1 flag2 ... ]
+        set the specified unit flags in the new unit to false
+        flags may be selected from df.unit_flags1, df.unit_flags2,
+        or df.unit_flags3
+
+]====]
 
 --[[
 if dfhack.gui.getCurViewscreen()._type ~= df.viewscreen_dwarfmodest or df.global.ui.main.mode ~= df.ui_sidebar_mode.LookAround then
@@ -376,48 +423,7 @@ end
 
 local args = utils.processArgs({...}, validArgs)
 if args.help then
-  print(
-[[scripts/modtools/create-unit.lua
-arguments:
-    -help
-        print this help message
-    -race raceName
-        specify the race of the unit to be created
-        examples:
-            DWARF
-            HUMAN
-    -caste casteName
-        specify the caste of the unit to be created
-        examples:
-            MALE
-            FEMALE
-    -domesticate
-        if the unit can't learn or can't speak, then make it a friendly animal
-    -civId id
-        make the created unit a member of the specified civ (or none if id = -1)
-        if id is \\LOCAL, then make it a member of the civ associated with the current fort
-        otherwise id must be an integer
-    -groupId id
-        make the created unit a member of the specified group (or none if id = -1)
-        if id is \\LOCAL, then make it a member of the group associated with the current fort
-        otherwise id must be an integer
-    -name entityRawName
-        set the unit's name to be a random name appropriate for the given entity
-        examples:
-            MOUNTAIN
-    -nick nickname
-        set the unit's nickname directly
-    -location [ x y z ]
-        create the unit at the specified coordinates
-    -age howOld
-        set the birth date of the unit to the specified number of years ago
-    -flagSet [ flag1 flag2 ... ]
-        set the specified unit flags in the new unit to true
-        flags may be selected from df.unit_flags1, df.unit_flags2, or df.unit_flags3
-    -flagClear [ flag1 flag2 ... ]
-        set the specified unit flags in the new unit to false
-        flags may be selected from df.unit_flags1, df.unit_flags2, or df.unit_flags3
-]])
+  print(usage)
   return
 end
 

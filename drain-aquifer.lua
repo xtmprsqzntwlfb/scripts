@@ -1,11 +1,11 @@
 -- Remove all aquifers from the map
---[[=begin
+--[====[
 
 drain-aquifer
 =============
-Remove all 'aquifer' tag from the map blocks. Irreversible.
+Remove all 'aquifer' tags from the map blocks. Irreversible.
 
-=end]]
+]====]
 
 local function drain()
     local layers = {}

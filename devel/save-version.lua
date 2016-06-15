@@ -1,12 +1,12 @@
 -- Display DF version information about the current save
 --@module = true
---[[=begin
+--[====[
 
 devel/save-version
 ==================
 Display DF version information about the current save
 
-=end]]
+]====]
 
 local function dummy() return nil end
 

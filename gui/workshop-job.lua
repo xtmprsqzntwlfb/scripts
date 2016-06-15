@@ -1,5 +1,5 @@
 -- Show and modify properties of jobs in a workshop.
---[[=begin
+--[====[
 
 gui/workshop-job
 ================
@@ -47,7 +47,7 @@ material is matched against the barrel itself. Then, if you select, say, iron,
 and then try to change the input item type, now it won't let you select *plant*;
 you have to unset the material first.
 
-=end]]
+]====]
 local utils = require 'utils'
 local gui = require 'gui'
 local guidm = require 'gui.dwarfmode'

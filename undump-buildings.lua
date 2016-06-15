@@ -1,11 +1,11 @@
 -- Undesignates building base materials for dumping.
---[[=begin
+--[====[
 
 undump-buildings
 ================
 Undesignates building base materials for dumping.
 
-=end]]
+]====]
 
 function undump_buildings()
     local buildings = df.global.world.buildings.all

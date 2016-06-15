@@ -1,6 +1,6 @@
 -- Verify item occupancy and block item list integrity.
 
---[[=begin
+--[====[
 
 fix/item-occupancy
 ==================
@@ -11,7 +11,7 @@ caused by `autodump` bugs or other hacking mishaps. Checks that:
 #. A tile has items in block item list <=> it has ``occupancy.item``
 #. The block item lists are sorted
 
-=end]]
+]====]
 local utils = require 'utils'
 
 function check_block_items(fix)

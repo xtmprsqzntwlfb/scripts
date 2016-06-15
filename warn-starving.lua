@@ -1,7 +1,7 @@
 -- Pause and warn if a unit is starving
 -- By Meneth32, PeridexisErrant, Lethosor
 --@ module = true
---[[=begin
+--[====[
 
 warn-starving
 =============
@@ -11,7 +11,7 @@ be paused and a warning shown and logged to the console.  Use with the
 
 Use ``warn-starving all`` to display a list of all problematic units.
 
-=end]]
+]====]
 
 starvingUnits = starvingUnits or {}
 dehydratedUnits = dehydratedUnits or {}

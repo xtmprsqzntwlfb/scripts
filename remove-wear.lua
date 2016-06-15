@@ -1,26 +1,23 @@
--- Resets all items in your fort to 0 wear
+-- Reset items in your fort to 0 wear
 -- original author: Laggy, edited by expwnent
---[[=begin
+local help = [====[
 
 remove-wear
 ===========
-Sets the wear on all items in your fort to zero.
+Sets the wear on items in your fort to zero.  Usage:
 
-=end]]
+:remove-wear all:
+    Removes wear from all items in your fort.
+:remove-wear ID1 ID2 ...:
+    Removes wear from items with the given ID numbers.
+
+]====]
 
 local args = {...}
 
 if args[1] == 'help' then
- print([[remove-wear - this script removes wear from all items, or from individual ones
-
-remove-wear all
- remove wear from all items
-remove-wear n1 n2 n3 ...
- remove wear from items with the given ids. order does not matter
-repeat -time 2 months -command remove-wear all
- remove wear from all items every 2 months. see repeat.lua for details
-]])
- do return end
+    print(help)
+    return
 elseif args[1] == 'all' then
  local count = 0;
  for _,item in ipairs(df.global.world.items.all) do

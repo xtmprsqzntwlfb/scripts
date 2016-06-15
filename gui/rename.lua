@@ -1,5 +1,5 @@
 -- Rename various objects via gui.
---[[=begin
+--[====[
 
 gui/rename
 ==========
@@ -29,7 +29,7 @@ The ``building`` or ``unit`` options are automatically assumed when in relevant 
 The example config binds building/unit rename to :kbd:`Ctrl`:kbd:`Shift`:kbd:`N`, and
 unit profession change to :kbd:`Ctrl`:kbd:`Shift`:kbd:`T`.
 
-=end]]
+]====]
 local gui = require 'gui'
 local dlg = require 'gui.dialogs'
 local plugin = require 'plugins.rename'

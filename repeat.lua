@@ -1,32 +1,40 @@
 -- repeatedly call a lua script
 -- eg "repeat -time 1 months -command cleanowned"; to disable "repeat -cancel cleanowned"
--- repeat -help for details
 -- author expwnent
 -- vaguely based on a script by Putnam
---[[=begin
+local usage = [====[
 
 repeat
 ======
-Repeatedly calls a lua script at the specified interval.
-
-This allows neat background changes to the function of the game, especially when
-invoked from an init file.  For detailed usage instructions, use ``repeat -help``.
+Repeatedly calls a lua script at the specified interval.  This allows
+neat background changes to the function of the game, especially when
+invoked from an init file.
 
 Usage examples::
 
-    repeat -name jim -time delay -timeUnits units -printResult true -command [ printArgs 3 1 2 ]
+    repeat -name jim -time delay -timeUnits units -command [ printArgs 3 1 2 ]
     repeat -time 1 -timeUnits months -command [ multicmd cleanowned scattered x; clean all ] -name clean
 
 The first example is abstract; the second will regularly remove all contaminants
 and worn items from the game.
 
-``-name`` sets the name for the purposes of cancelling and making sure you don't schedule the
-same repeating event twice.  If not specified, it's set to the first argument after ``-command``.
-``-time delay -timeUnits units``; delay is some positive integer, and units is some valid time
-unit for ``dfhack.timeout(delay,timeUnits,function)``.  ``-command [ ... ]`` specifies the
-command to be run.
+Arguments:
 
-=end]]
+``-name``
+    sets the name for the purposes of cancelling and making sure you
+    don't schedule the same repeating event twice.  If not specified,
+    it's set to the first argument after ``-command``.
+``-time DELAY -timeUnits UNITS``
+    DELAY is some positive integer, and UNITS is some valid time
+    unit for ``dfhack.timeout`` (default "ticks").  Units can be
+    in simulation-time "frames" (raw FPS) or "ticks" (only while
+    unpaused), while "days", "months", and "years" are by in-world time.
+``-command [ ... ]``
+    ``...`` specifies the command to be run
+``-cancel NAME``
+    cancels the repetition with the name NAME
+
+]====]
 
 local repeatUtil = require 'repeat-util'
 local utils = require 'utils'
@@ -43,20 +51,7 @@ validArgs = validArgs or utils.invert({
 local args = utils.processArgs({...}, validArgs)
 
 if args.help then
- print([[repeat.lua
- repeat -help
-  print this help message
- repeat -cancel bob
-  cancels the repetition with the name bob
- repeat -name jim -time delay -timeUnits units -printResult true -command [ printArgs 3 1 2 ]
-  -name sets the name for the purposes of cancelling and making sure you don't schedule the same repeating event twice
-    if not specified, it's set to the first argument after -command
-  -time delay -timeUnits units
-   delay is some positive integer
-   units is some valid time unit for dfhack.timeout(delay,timeUnits,function)
-  -command [ ... ]
-   specify the command to be run
- ]])
+ print(usage)
  return
 end
 

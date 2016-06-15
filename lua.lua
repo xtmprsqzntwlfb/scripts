@@ -1,5 +1,5 @@
 -- Execute lua commands interactively or from files.
---[[=begin
+--[====[
 
 lua
 ===
@@ -22,7 +22,7 @@ There are the following ways to invoke this command:
 
    Parses and executes the lua statement like the interactive interpreter would.
 
-=end]]
+]====]
 
 local args={...}
 local cmd = args[1]

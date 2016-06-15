@@ -2,13 +2,28 @@
 --author expwnent
 --based on Putnam's projectileExpansion
 --TODO: trigger based on contaminants
---[[=begin
+local usage = [====[
 
 modtools/projectile-trigger
 ===========================
-This triggers dfhack commands when projectiles hit their targets.
+This triggers dfhack commands when projectiles hit their targets.  Usage::
 
-=end]]
+    -clear
+        unregister all triggers
+    -material
+        specify a material for projectiles that will trigger the command
+        examples:
+            INORGANIC:IRON
+            CREATURE_MAT:DWARF:BRAIN
+            PLANT_MAT:MUSHROOM_HELMET_PLUMP:DRINK
+    -command [ commandList ]
+        \\LOCATION
+        \\PROJECTILE_ID
+        \\FIRER_ID
+        \\anything -> \anything
+        anything -> anything
+
+]====]
 local eventful = require 'plugins.eventful'
 local utils = require 'utils'
 
@@ -62,25 +77,7 @@ validArgs = validArgs or utils.invert({
 local args = utils.processArgs({...}, validArgs)
 
 if args.help then
- print([[scripts/modtools/projectile-trigger.lua
-arguments
-    -help
-        print this help message
-    -clear
-        unregister all triggers
-    -material
-        specify a material for projectiles that will trigger the command
-        examples:
-            INORGANIC:IRON
-            CREATURE_MAT:DWARF:BRAIN
-            PLANT_MAT:MUSHROOM_HELMET_PLUMP:DRINK
-    -command [ commandList ]
-        \\LOCATION
-        \\PROJECTILE_ID
-        \\FIRER_ID
-        \\anything -> \anything
-        anything -> anything
-]])
+ print(usage)
  return
 end
 

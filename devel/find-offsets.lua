@@ -1,5 +1,5 @@
 -- Find some offsets for linux.
---[[=begin
+--[====[
 
 devel/find-offsets
 ==================
@@ -29,7 +29,7 @@ Arguments:
 * ``nofeed`` to block automated fake input searches
 * ``nozoom`` to disable neighboring object heuristics
 
-=end]]
+]====]
 
 local utils = require 'utils'
 local ms = require 'memscan'

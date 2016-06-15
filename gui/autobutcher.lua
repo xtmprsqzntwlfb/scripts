@@ -1,11 +1,12 @@
 -- A GUI front-end for the autobutcher plugin.
---[[=begin
+--[====[
 
 gui/autobutcher
 ===============
-An in-game interface for `autobutcher`.
+An in-game interface for `autobutcher`.  This script must be called
+from either the overall status screen or the animal list screen.
 
-=end]]
+]====]
 local gui = require 'gui'
 local utils = require 'utils'
 local widgets = require 'gui.widgets'

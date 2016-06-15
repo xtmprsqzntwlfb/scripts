@@ -1,6 +1,6 @@
 -- Adjust all attributes of all dwarves to an ideal
 -- by vjek
---[[=begin
+--[====[
 
 armoks-blessing
 ===============
@@ -12,7 +12,7 @@ easy-to-satisfy preferences.
 Without arguments, all attributes, age & personalities are adjusted.
 Arguments allow for skills to be adjusted as well.
 
-=end]]
+]====]
 function rejuvenate(unit)
     if unit==nil then
         print ("No unit available!  Aborting with extreme prejudice.")

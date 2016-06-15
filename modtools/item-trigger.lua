@@ -1,8 +1,7 @@
 -- trigger commands based on attacks with certain items
 --author expwnent
 --based on itemsyndrome by Putnam
---triggers scripts when a unit attacks another with a weapon type, a weapon of a particular material, or a weapon contaminated with a particular material, or when a unit equips/unequips a particular item type, an item of a particular material, or an item contaminated with a particular material
---[[=begin
+local usage = [====[
 
 modtools/item-trigger
 =====================
@@ -10,7 +9,55 @@ This powerful tool triggers DFHack commands when a unit equips, unequips, or
 attacks another unit with specified item types, specified item materials, or
 specified item contaminants.
 
-=end]]
+Arguments::
+
+    -clear
+        clear all registered triggers
+    -checkAttackEvery n
+        check the attack event at least every n ticks
+    -checkInventoryEvery n
+        check inventory event at least every n ticks
+    -itemType type
+        trigger the command for items of this type
+        examples:
+            ITEM_WEAPON_PICK
+            RING
+    -onStrike
+        trigger the command on appropriate weapon strikes
+    -onEquip
+        trigger the command when someone equips an appropriate item
+    -onUnequip
+        trigger the command when someone unequips an appropriate item
+    -material mat
+        trigger the commmand on items with the given material
+        examples
+            INORGANIC:IRON
+            CREATURE_MAT:DWARF:BRAIN
+            PLANT_MAT:MUSHROOM_HELMET_PLUMP:DRINK
+    -contaminant mat
+        trigger the command on items with a given material contaminant
+        examples
+            INORGANIC:IRON
+            CREATURE_MAT:DWARF:BRAIN
+            PLANT_MAT:MUSHROOM_HELMET_PLUMP:DRINK
+    -command [ commandStrs ]
+        specify the command to be executed
+        commandStrs
+            \\ATTACKER_ID
+            \\DEFENDER_ID
+            \\ITEM_MATERIAL
+            \\ITEM_MATERIAL_TYPE
+            \\ITEM_ID
+            \\ITEM_TYPE
+            \\CONTAMINANT_MATERIAL
+            \\CONTAMINANT_MATERIAL_TYPE
+            \\CONTAMINANT_MATERIAL_INDEX
+            \\MODE
+            \\UNIT_ID
+            \\anything -> \anything
+            anything -> anything
+
+]====]
 local eventful = require 'plugins.eventful'
 local utils = require 'utils'
 
@@ -172,56 +219,7 @@ validArgs = validArgs or utils.invert({
 local args = utils.processArgs({...}, validArgs)
 
 if args.help then
- print([[scripts/modtools/item-trigger.lua usage
-arguments:
-    -help
-        print this help message
-    -clear
-        clear all registered triggers
-    -checkAttackEvery n
-        check the attack event at least every n ticks
-    -checkInventoryEvery n
-        check inventory event at least every n ticks
-    -itemType type
-        trigger the command for items of this type
-        examples:
-            ITEM_WEAPON_PICK
-            RING
-    -onStrike
-        trigger the command when someone strikes someone with an appropriate weapon
-    -onEquip
-        trigger the command when someone equips an appropriate item
-    -onUnequip
-        trigger the command when someone unequips an appropriate item
-    -material mat
-        trigger the commmand on items with the given material
-        examples
-            INORGANIC:IRON
-            CREATURE_MAT:DWARF:BRAIN
-            PLANT_MAT:MUSHROOM_HELMET_PLUMP:DRINK
-    -contaminant mat
-        trigger the command on items with a given material contaminant
-        examples
-            INORGANIC:IRON
-            CREATURE_MAT:DWARF:BRAIN
-            PLANT_MAT:MUSHROOM_HELMET_PLUMP:DRINK
-    -command [ commandStrs ]
-        specify the command to be executed
-        commandStrs
-            \\ATTACKER_ID
-            \\DEFENDER_ID
-            \\ITEM_MATERIAL
-            \\ITEM_MATERIAL_TYPE
-            \\ITEM_ID
-            \\ITEM_TYPE
-            \\CONTAMINANT_MATERIAL
-            \\CONTAMINANT_MATERIAL_TYPE
-            \\CONTAMINANT_MATERIAL_INDEX
-            \\MODE
-            \\UNIT_ID
-            \\anything -> \anything
-            anything -> anything
-]])
+ print(usage)
  return
 end
 

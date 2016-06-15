@@ -1,7 +1,7 @@
 --Allow stressed dwarves to emigrate from the fortress
 -- For 34.11 by IndigoFenix; update and cleanup by PeridexisErrant
 -- old version:  http://dffd.bay12games.com/file.php?id=8404
---[[=begin
+--[====[
 
 emigration
 ==========
@@ -15,7 +15,7 @@ A happy dwarf (ie with negative stress) will never emigrate.
 
 Usage:  ``emigration enable|disable``
 
-=end]]
+]====]
 
 local args = {...}
 if args[1] == "enable" then

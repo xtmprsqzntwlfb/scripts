@@ -1,5 +1,5 @@
 -- lave/load stockpile settings with a GUI
---[[=begin
+local helpstr = [====[
 
 gui/stockpiles
 ==============
@@ -16,7 +16,7 @@ Usage:
 Don't forget to ``enable stockpiles`` and create the ``stocksettings`` directory in
 the DF folder before trying to use the GUI.
 
-=end]]
+]====]
 local stock = require 'plugins.stockpiles'
 
 function check_enabled()
@@ -50,11 +50,7 @@ validArgs = validArgs or utils.invert({
 args = utils.processArgs({...}, validArgs)
 
 function usage()
-    print("")
-    print("Stockpile Settings. Arguments: ")
-    print("-save        to save the current stockpile")
-    print("-load        to load settings into the current stockpile")
-    print("-dir <path>  set the default directory to save settings into")
+    print(helpstr)
     if dfhack.isMapLoaded() then
         print("             Current directory is: " .. stock.get_path())
     end

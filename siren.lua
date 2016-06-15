@@ -1,5 +1,5 @@
 -- Wakes up the sleeping, ends breaks and parties
---[[=begin
+--[====[
 
 siren
 =====
@@ -9,7 +9,7 @@ noise, tiredness and lack of protection. Also, the units with interrupted
 breaks will go on break again a lot sooner. The script is intended for
 emergencies, e.g. when a siege appears, and all your military is partying.
 
-=end]]
+]====]
 
 local utils = require 'utils'
 

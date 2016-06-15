@@ -1,13 +1,14 @@
 -- Elevate all the physical attributes of a unit
 -- by vjek
---[[=begin
+--[====[
 
 elevate-physical
 ================
-As for elevate-mental, but for physical traits.  High is good for soldiers,
-while having an ineffective hammerer can be useful too...
+Set all physical attributes of the selected dwarf to the maximum possible, or
+any number numbers between 0 and 5000 passed as an argument.  Higher is
+usually better, but an ineffective hammerer can be useful too...
 
-=end]]
+]====]
 
 function ElevatePhysicalAttributes(value)
     unit=dfhack.gui.getSelectedUnit()
@@ -42,7 +43,8 @@ if opt ~= nil then
         ElevatePhysicalAttributes(opt)
     end
     if opt <0 or opt >5000 then
-        print("Invalid Range or argument.  This script accepts either no argument, in which case it will increase the attribute to the max_value for the unit, or an argument between 0 and 5000, which will set all attributes to that value.")
+        print(help)
+        print('\n\nInvalid number!')
     end
 end
 

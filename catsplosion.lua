@@ -1,5 +1,5 @@
 -- Make cats just /multiply/.
---[[=begin
+--[====[
 
 catsplosion
 ===========
@@ -14,7 +14,7 @@ Usage:
 
 Animals will give birth within two in-game hours (100 ticks or fewer).
 
-=end]]
+]====]
 
 world = df.global.world
 

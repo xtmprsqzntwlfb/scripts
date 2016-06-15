@@ -1,28 +1,19 @@
 -- create unit at pointer or given location
 -- wraps modtools/create-unit.lua
---[[=begin
+local usage = [====[
 
 spawnunit
 =========
-``spawnunit RACE CASTE`` creates a unit of the given race and caste at the cursor, by
-wrapping `modtools/create-unit`.  Run ``spawnunit help`` for more options.
+Provides a simpler interface to `modtools/create-unit`, for creating units.
 
-=end]]
+Usage:  ``spawnunit [-command] RACE CASTE [NAME] [x y z] [...]``
 
-usage = [[Usage:
-- spawnunit RACE CASTE
-- spawnunit RACE CASTE NAME
-- spawnunit RACE CASTE NAME x y z
-- spawnunit RACE CASTE [NAME] [additional arguments]
-    Create a unit
-- spawnunit -help
-    Display this help message
-- spawnunit -command ARGUMENTS
-    Display the command used to invoke modtools/create-unit
+The ``-command`` flag prints the generated `modtools/create-unit` command
+instead of running it.  ``RACE`` and ``CASTE`` specify the race and caste
+of the unit to be created.  The name and coordinates of the unit are optional.
+Any further arguments are simply passed on to `modtools/create-unit`.
 
-additional arguments are passed to modtools/create-unit -
-see "modtools/create-unit -help" for more information.
-]]
+]====]
 
 function extend(tbl, tbl2)
     for _, v in pairs(tbl2) do

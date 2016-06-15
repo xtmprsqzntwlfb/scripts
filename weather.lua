@@ -1,12 +1,12 @@
 -- Print the weather map or change weather.
-local helpstr = [[=begin
+local helpstr = [====[
 
 weather
 =======
 Prints a map of the local weather, or with arguments ``clear``,
 ``rain``, and ``snow`` changes the weather.
 
-=end]]
+]====]
 
 local args = {...}
 local cmd
@@ -16,7 +16,7 @@ if args[1] then
 end
 if cmd == "h" or cmd == "?" then
     print("The current weather is "..df.weather_type[dfhack.world.ReadCurrentWeather()])
-    print((helpstr:gsub('=[a-z]+', '')))
+    print(helpstr)
 elseif cmd == "c" then
     dfhack.world.SetCurrentWeather(df.weather_type.None)
     print("The weather has cleared.")

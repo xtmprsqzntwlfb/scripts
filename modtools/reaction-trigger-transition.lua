@@ -1,18 +1,16 @@
 -- help transition from autoSyndrome
 -- author expwnent
---[[=begin
+--[====[
 
 modtools/reaction-trigger-transition
 ====================================
-Scans raw files and creates a file to help modders transition from
-autoSyndrome to reaction-trigger.
-
 Prints useful things to the console and a file to help modders
-transition from autoSyndrome to reaction-trigger.  This script
-is basically an apology for breaking backward compatibiility,
-and will be removed eventually.
+transition from ``autoSyndrome`` to `modtools/reaction-trigger`.
 
-=end]]
+This script is basically an apology for breaking backward
+compatibility in June 2014, and will be removed eventually.
+
+]====]
 local function maybeQuote(str)
  if str == '' or string.find(str,' ') then
   return ('"' .. str .. '"')

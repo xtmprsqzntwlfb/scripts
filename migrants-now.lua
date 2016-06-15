@@ -1,12 +1,12 @@
 -- Force a migrant wave (only after hardcoded waves)
---[[=begin
+--[====[
 
 migrants-now
 ============
 Forces an immediate migrant wave.  Only works after migrants have
 arrived naturally.  Equivalent to `modtools/force` ``-eventType migrants``
 
-=end]]
+]====]
 df.global.timed_events:insert('#',{
     new = true,
     type = df.timed_event_type.Migrants,

@@ -1,5 +1,5 @@
 -- Front-end for the siege engine plugin.
---[[=begin
+--[====[
 
 gui/siege-engine
 ================
@@ -36,7 +36,7 @@ view to the state prior to starting the script.
 :kbd:`Shift`:kbd:`Esc` retains the current viewport, and also
 exits from the :kbd:`q` mode to main menu.
 
-=end]]
+]====]
 local utils = require 'utils'
 local gui = require 'gui'
 local guidm = require 'gui.dwarfmode'

@@ -4,13 +4,15 @@
 -- edited by expwnent
 
 --@module = true
---[[=begin
+--[====[
 
 gui/create-item
 ===============
 A graphical interface for creating items.
 
-=end]]
+See also: `createitem`, `modtools/create-item`, :issue:`735`
+
+]====]
 local function getGenderString(gender)
  local genderStr
  if gender==0 then

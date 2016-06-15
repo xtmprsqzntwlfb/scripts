@@ -1,6 +1,6 @@
 -- triggers scripts based on unit interactions
 --author expwnent
---[[=begin
+local help = [====[
 
 modtools/interaction-trigger
 ============================
@@ -9,7 +9,35 @@ scanning the announcements for the correct attack verb, so the attack verb
 must be specified in the interaction. It includes an option to suppress this
 announcement after it finds it.
 
-=end]]
+Usage::
+
+    -clear
+        unregisters all triggers
+    -onAttackStr str
+        trigger the command when the attack verb is "str". both onAttackStr and onDefendStr MUST be specified
+    -onDefendStr str
+        trigger the command when the defend verb is "str". both onAttackStr and onDefendStr MUST be specified
+    -suppressAttack
+        delete the attack announcement from the combat logs
+    -suppressDefend
+        delete the defend announcement from the combat logs
+    -command [ commandStrs ]
+        specify the command to be executed
+        commandStrs
+            \\ATTACK_VERB
+            \\DEFEND_VERB
+            \\ATTACKER_ID
+            \\DEFENDER_ID
+            \\ATTACK_REPORT
+            \\DEFEND_REPORT
+            \\anything -> \anything
+            anything -> anything
+
+You must specify both an attack string and a defend string to guarantee
+correct performance. Either will trigger the script when it happens, but
+it will not be triggered twice in a row if both happen.
+
+]====]
 local eventful = require 'plugins.eventful'
 local utils = require 'utils'
 
@@ -117,33 +145,7 @@ validArgs = validArgs or utils.invert({
 local args = utils.processArgs({...}, validArgs)
 
 if args.help then
- print([[scripts/modtools/interaction-trigger.lua
-arguments:
-    -help
-        print this help message
-    -clear
-        unregisters all triggers
-    -onAttackStr str
-        trigger the command when the attack verb is "str". both onAttackStr and onDefendStr MUST be specified
-    -onDefendStr str
-        trigger the command when the defend verb is "str". both onAttackStr and onDefendStr MUST be specified
-    -suppressAttack
-        delete the attack announcement from the combat logs
-    -suppressDefend
-        delete the defend announcement from the combat logs
-    -command [ commandStrs ]
-        specify the command to be executed
-        commandStrs
-            \\ATTACK_VERB
-            \\DEFEND_VERB
-            \\ATTACKER_ID
-            \\DEFENDER_ID
-            \\ATTACK_REPORT
-            \\DEFEND_REPORT
-            \\anything -> \anything
-            anything -> anything
-You must specify both an attack string and a defend string to guarantee correct performance. Either will trigger the script when it happens, but it will not be triggered twice in a row if both happen.
-]])
+ print(help)
  return
 end
 

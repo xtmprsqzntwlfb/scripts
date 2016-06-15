@@ -1,5 +1,5 @@
 -- Removes water from buckets (for lye-making).
---[[=begin
+--[====[
 
 fix/dry-buckets
 ===============
@@ -7,7 +7,7 @@ Removes water from all buckets in your fortress, allowing them
 to be used for making lye.  Skips buckets in buildings (eg a well),
 being carried, or currently used by a job.
 
-=end]]
+]====]
 
 local emptied = 0
 local water_type = dfhack.matinfo.find('WATER').type
