@@ -1,4 +1,4 @@
--- Merge stacks of plants and plant growths in the selected container or stockpile
+-- Merge plant stacks in the selected container or stockpile
 --[[=begin
 
 combine-plants
@@ -16,7 +16,7 @@ if args.max then max = tonumber(args.max) end
 
 local stockpile = nil
 if args.stockpile then stockpile = df.building.find(tonumber(args.stockpile)) end
-    
+
 local container = nil
 if args.container then container = df.item.find(tonumber(args.container)) end
 

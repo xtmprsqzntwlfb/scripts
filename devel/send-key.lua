@@ -1,3 +1,4 @@
+-- send a key to the current screen
 args = {...}
 key = df.interface_key[args[1]]
 if not key then qerror('Unrecognized key') end

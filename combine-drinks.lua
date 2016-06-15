@@ -1,4 +1,4 @@
--- Merge stacks of drinks in the selected stockpile
+-- Merge drink stacks in the selected stockpile
 --[[=begin
 
 combine-drinks

@@ -1,4 +1,4 @@
--- Activate with a cursor on screen and you will go there rapidly, attack something first to send them there.
+-- Launch unit to cursor location
 -- Based on propel.lua by Roses, molested by Rumrusher and I until this happened, sorry.
 --[[=begin
 
@@ -34,7 +34,7 @@ function launch(unitSource,unitTarget)
   resulty = curpos.y - unitSource.pos.y
   resultz = curpos.z - unitSource.pos.z
 
-    
+
   newlist = df.proj_list_link:new()
   lastlist.next=newlist
   newlist.prev=lastlist
@@ -86,5 +86,5 @@ if df.global.world.units.active[0].job.hunt_target==nil then
 else
   unitSource = df.global.world.units.active[0].job.hunt_target --kudos Rumrusher for including this, allowing you to fling others around!
 end
- 
+
 launch(unitSource,unitTarget)
