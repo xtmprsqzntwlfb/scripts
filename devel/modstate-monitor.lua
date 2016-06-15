@@ -1,6 +1,6 @@
 -- Displays changes in the key modifier state
 --@ enable = true
---[[=begin
+--[====[
 
 devel/modstate-monitor
 ======================
@@ -9,7 +9,7 @@ Display changes in key modifier state, ie Ctrl/Alt/Shift.
 :enable|start:  Begin monitoring
 :disable|stop:  End monitoring
 
-=end]]
+]====]
 
 VERSION = '0.1'
 

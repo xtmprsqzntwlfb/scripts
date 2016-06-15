@@ -1,5 +1,5 @@
 -- Adjusts dwarves' skills when embarking
---[[=begin
+--[====[
 
 embark-skills
 =============
@@ -14,7 +14,7 @@ Note that already-used skill points are not taken into account or reset.
 :legendary:     Sets all skills of the selected dwarf to "Legendary".
 :legendary all: Sets all skills of all dwarves to "Legendary".
 
-=end]]
+]====]
 
 VERSION = '0.1'
 

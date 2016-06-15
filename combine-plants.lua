@@ -1,11 +1,11 @@
 -- Merge plant stacks in the selected container or stockpile
---[[=begin
+--[====[
 
 combine-plants
 ==============
 Merge stacks of plants or plant growths in the selected container or stockpile.
 
-=end]]
+]====]
 local utils = require 'utils'
 
 validArgs = validArgs or utils.invert({ 'max', 'stockpile', 'container' })

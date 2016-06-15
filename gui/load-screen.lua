@@ -1,6 +1,6 @@
 -- A replacement for the "load game" screen
 --@ enable = true
---[[=begin
+--[====[
 
 gui/load-screen
 ===============
@@ -8,7 +8,7 @@ A replacement for the "continue game" screen.
 
 Usage: ``gui/load-screen enable|disable``
 
-=end]]
+]====]
 
 VERSION = '0.8.4'
 

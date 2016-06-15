@@ -4,7 +4,7 @@
 -- updated with print all and clear all functions on the 11th of April 2015
 -- Praise Armok!
 
---[[=begin
+--[====[
 
 prefchange
 ==========
@@ -30,7 +30,7 @@ Valid options:
 Feel free to adjust the values as you see fit, change the has steel to
 platinum, change the axp axes to great axes, whatnot.
 
-=end]]
+]====]
 -- ---------------------------------------------------------------------------
 function axeplate(unit)
     local unit = dfhack.gui.getSelectedUnit()

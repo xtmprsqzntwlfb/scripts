@@ -1,11 +1,11 @@
 -- Merge drink stacks in the selected stockpile
---[[=begin
+--[====[
 
 combine-drinks
 ==============
 Merge stacks of drinks in the selected stockpile.
 
-=end]]
+]====]
 local utils = require 'utils'
 
 validArgs = validArgs or utils.invert({ 'max', 'stockpile' })

@@ -1,6 +1,6 @@
 -- Displays the mouse (grid) coordinates when the mouse is clicked
 --@ enable = true
---[[=begin
+--[====[
 
 devel/click-monitor
 ===================
@@ -9,7 +9,7 @@ Useful for plugin/script development.
 
 Usage: ``devel/click-monitor start|stop``
 
-=end]]
+]====]
 
 VERSION = '0.2'
 

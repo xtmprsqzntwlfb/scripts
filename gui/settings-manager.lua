@@ -1,5 +1,5 @@
 -- An in-game init file editor
---[[=begin
+--[====[
 
 gui/settings-manager
 ====================
@@ -10,7 +10,7 @@ Recommended for use as a keybinding::
     keybinding add Alt-S@title settings-manager
     keybinding add Alt-S@dwarfmode/Default settings-manager
 
-=end]]
+]====]
 
 VERSION = '0.6.0'
 
