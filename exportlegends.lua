@@ -192,7 +192,7 @@ function export_more_legends_xml()
                             file:write("\t\t\t\t<dungeon_type>"..buildingV.dungeon_type.."</dungeon_type>\n")
                         end
                         for inhabitabntK,inhabitabntV in pairs(buildingV.inhabitants) do
-                            file:write("\t\t\t\t<inhabitant>"..inhabitabntV.anon_2.."</inhabitant>\n")
+                            file:write("\t\t\t\t<inhabitant>"..inhabitabntV.histfig_id.."</inhabitant>\n")
                         end
                         file:write("\t\t\t</structure>\n")
                     end
@@ -230,7 +230,7 @@ function export_more_legends_xml()
             end
             for improvementK,impovementV in pairs(artifactV.item.improvements) do
                 if impovementV:getType() == df.improvement_type.WRITING then
-                    for writingk,writingV in pairs(impovementV["itemimprovement_writingst.anon_1"]) do
+                    for writingk,writingV in pairs(impovementV.contents) do
                         file:write("\t\t<writing>"..writingV.."</writing>\n")
                     end
                 elseif impovementV:getType() == df.improvement_type.PAGES then
@@ -410,7 +410,7 @@ function export_more_legends_xml()
             elseif refV:getType() == df.general_ref_type.SITE then file:write("\t\t\t<id>"..refV.site_id.."</id>\n") -- site
             elseif refV:getType() == df.general_ref_type.SUBREGION then file:write("\t\t\t<id>"..refV.region_id.."</id>\n") -- region
             elseif refV:getType() == df.general_ref_type.HISTORICAL_FIGURE then file:write("\t\t\t<id>"..refV.hist_figure_id.."</id>\n") -- hist figure
-            elseif refV:getType() == df.general_ref_type.WRITTEN_CONTENT then file:write("\t\t\t<id>"..refV.anon_1.."</id>\n")
+            elseif refV:getType() == df.general_ref_type.WRITTEN_CONTENT then file:write("\t\t\t<id>"..refV.written_content_id.."</id>\n")
             elseif refV:getType() == df.general_ref_type.POETIC_FORM then file:write("\t\t\t<id>"..refV.poetic_form_id.."</id>\n") -- poetic form
             elseif refV:getType() == df.general_ref_type.MUSICAL_FORM then file:write("\t\t\t<id>"..refV.musical_form_id.."</id>\n") -- musical form
             elseif refV:getType() == df.general_ref_type.DANCE_FORM then file:write("\t\t\t<id>"..refV.dance_form_id.."</id>\n") -- dance form
