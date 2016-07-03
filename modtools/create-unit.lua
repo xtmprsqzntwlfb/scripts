@@ -1,13 +1,9 @@
 -- Creates a unit.  Beta; use at own risk.
 
 -- Originally created by warmist
--- edited by Putnam for the dragon ball mod to be used in reactions
--- modified by Dirst for use in The Earth Strikes Back mod
--- incorporating fixes discovered by Boltgun
--- then Mifiki wrote the bit where it switches to arena mode briefly to do some of the messy work
--- then Expwnent combined that with the old script to make it function for histfigs
+-- Significant contributions over time by Boltgun, Dirst, Expwnent, lethosor, mifki and Putnam.
 
--- version 0.51
+-- version 0.55
 -- This is a beta version. Use at your own risk.
 
 -- Modifications from 0.5: civ -1 creates are NOT historical figures, mitigated screen-movement bug in createUnit()
@@ -20,6 +16,8 @@
     some sort of invasion helper script
       set invasion_id, etc
     announcement for fake natural birth if appropriate
+    option to attach to an existing wild animal population
+    option to attach to a map feature
 ]]
 
 local usage = [====[
@@ -117,11 +115,11 @@ function createUnit(race_id, caste_id)
   df.global.ui.main.mode = oldMode
 
   local id = df.global.unit_next_id-1
- 
+
   df.global.window_x = view_x
   df.global.window_y = view_y
   df.global.window_z = view_z
- 
+
   return id
 end
 
@@ -326,11 +324,15 @@ function wild(uid)
   -- y = df.global.world.world_data.active_site[0].pos.y
   -- region = df.global.map.map_blocks[df.global.map.x_count_block*x+y]
   if not(caste.flags.CAN_SPEAK and caste.flags.CAN_LEARN) then
-    u.animal.population.region_x = 1
-    u.animal.population.region_y = 1
+    u.animal.population.region_x = df.global.world.world_data.active_site[0].pos.x
+    u.animal.population.region_y = df.global.world.world_data.active_site[0].pos.y
     u.animal.population.unk_28 = -1
-    u.animal.population.population_idx = 1
-    u.animal.population.depth = 0
+    u.animal.population.population_idx = -1  -- Eventually want to make a real population
+    u.animal.population.depth = -1  -- Eventually this should be a parameter
+    u.animal.leave_countdown = 99999  -- Eventually this should be a parameter
+    u.flags2.roaming_wilderness_population_source = true
+    u.flags2.roaming_wilderness_population_source_not_a_map_feature = true
+    -- region = df.global.world.map.map_blocks[df.global.world.map.x_count_block*x+y]
   end
 end
 
@@ -494,19 +496,33 @@ if args.domesticate then
   wild(unitId)
 end
 
+--these flags are an educated guess of how to get the game to compute sizes correctly: use -flagSet and -flagClear arguments to override or supplement
+local u = df.unit.find(unitId)
+u.flags2.calculated_nerves = false
+u.flags2.calculated_bodyparts = false
+u.flags3.body_part_relsize_computed = false
+u.flags3.size_modifier_computed = false
+u.flags3.compute_health = true
+u.flags3.weight_computed = false
+
+--TODO: if the unit is a child or baby it will still behave like an adult
 if age or age == 0 then
+  if age == 0 then
+    u.relations.birth_time = df.global.cur_year_tick
+  end
   local u = df.unit.find(unitId)
   local oldYearDelta = u.relations.old_year - u.relations.birth_year
   u.relations.birth_year = df.global.cur_year - age
-  u.relations.old_year = u.relations.birth_year + oldYearDelta
-  --these flags are an educated guess of how to get the game to compute sizes correctly: use -flagSet and -flagClear arguments to override or supplement
-  u.flags2.calculated_nerves = false
-  u.flags2.calculated_bodyparts = false
-  u.flags3.body_part_relsize_computed = false
-  u.flags3.size_modifier_computed = false
-  u.flags3.compute_health = true
-  u.flags3.weight_computed = false
-  --TODO: if the unit is a child or baby it will still behave like an adult
+  if u.relations.old_year ~= -1 then
+    u.relations.old_year = u.relations.birth_year + oldYearDelta
+  end
+  if u.flags1.important_historical_figure == true and u.flags2.important_historical_figure == true then
+    local hf = df.global.world.history.figures[u.hist_figure_id]
+    hf.born_year = u.relations.birth_year
+    hf.born_seconds = u.relations.birth_time
+    hf.old_year = u.relations.old_year
+    hf.old_seconds = u.relations.old_time
+  end
 end
 
 if args.flagSet or args.flagClear then
@@ -574,8 +590,3 @@ if args.location then
   local teleport = dfhack.script_environment('teleport')
   teleport.teleport(u, pos)
 end
-
---[[if group_id then
-  local u = df.unit.find(unitId)
-  u.group_id = group_id
-end--]]
