@@ -16,7 +16,7 @@ if args.max then max = tonumber(args.max) end
 
 local stockpile = nil
 if args.stockpile then stockpile = df.building.find(tonumber(args.stockpile)) end
-    
+
 local container = nil
 if args.container then container = df.item.find(tonumber(args.container)) end
 
@@ -44,7 +44,7 @@ function getPlants(items, plants, index)
                         end
                     end
                 end
-            end            
+            end
         end
         items = nextBatch
     until #items == 0
@@ -75,7 +75,7 @@ else
         print("found " .. plantCount .. " plants")
 
         local removedPlants = { }
-        
+
         for i=0,(plantCount-2) do
             local currentPlant = plants[i]
             local itemsNeeded = max - currentPlant.stack_size
