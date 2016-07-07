@@ -16,9 +16,15 @@ in-game help. There are three ways to open this editor:
 * using gui/gm-editor dialog - shows an in game dialog to input lua command. Works
   the same as version above.
 
+* using ``gui/gm-editor toggle`` - will hide (if shown) and show (if hidden) editor at
+  the same position you left it
+
 .. image:: /docs/images/gm-editor.png
 
 ]====]
+--a variable the stores persistant screen
+persist_screen=persist_screen or nil --does nothing, here just to remind everyone
+
 local gui = require 'gui'
 local dialog = require 'gui.dialogs'
 local widgets =require 'gui.widgets'
@@ -365,6 +371,9 @@ function GmEditorUi:set(key,input)
     self:updateTarget(true)
 end
 function GmEditorUi:onInput(keys)
+    if keys.LEAVESCREEN_ALL  then
+        self:dismiss()
+    end
     if keys.LEAVESCREEN  then
         if self.subviews.filter_input.active then
             self:enable_input(false)
@@ -489,6 +498,7 @@ function show_editor(trg)
         qerror('Target not found')
     end
     local screen = GmEditorUi{target=trg}
+    persist_screen=screen
     screen:show()
 end
 eval_env = {}
@@ -527,6 +537,14 @@ if #args~=0 then
         dialog.showInputPrompt("Gm Editor", "Object to edit:", COLOR_GRAY, "",thunk)
     elseif args[1]=="free" then
         show_editor(df.reinterpret_cast(df[args[2]],args[3]))
+    elseif args[1]=="toggle" then
+        if persist_screen then
+            if persist_screen:isActive() then
+                persist_screen:dismiss()
+            else
+                persist_screen:show()
+            end
+        end
     else
         show_editor(eval(args[1]))
     end
