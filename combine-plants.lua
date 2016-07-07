@@ -20,28 +20,34 @@ if args.stockpile then stockpile = df.building.find(tonumber(args.stockpile)) en
 local container = nil
 if args.container then container = df.item.find(tonumber(args.container)) end
 
-local function itemsCompatible(item0, item1)
+function itemsCompatible(item0, item1)
     return item0:getType() == item1:getType()
         and item0.mat_type == item1.mat_type
         and item0.mat_index == item1.mat_index
 end
 
-local function getPlants(items, plants, index)
-    for i,p in ipairs(items) do
-        -- Skip items currently tasked
-        if #p.specific_refs == 0 then
-            if p:getType() == 53 or p:getType() == 55 or p:getType() == 70 then
-                plants[index] = p
-                index = index + 1
+function getPlants(items, plants, index)
+    repeat 
+        local nextBatch = {}
+        for _,v in pairs(items) do
+            -- Skip items currently tasked
+            if #v.specific_refs == 0 then
+                if v:getType() == 53 or v:getType() == 55 or v:getType() == 70 then
+                    plants[index] = v
+                    index = index + 1
 
-            else
-                local containedItems = dfhack.items.getContainedItems(p)
-                if #containedItems > 0 then
-                    index = getPlants(containedItems, plants, index)
+                else
+                    local containedItems = dfhack.items.getContainedItems(v)
+                    if #containedItems > 0 then
+                        for _,w in pairs(containedItems) do
+                            table.insert(nextBatch, w)
+                        end
+                    end
                 end
             end
         end
-    end
+        items = nextBatch
+    until #items == 0
 
     return index
 end
@@ -66,6 +72,7 @@ else
     else
         local plants = { }
         local plantCount = getPlants(rootItems, plants, 0)
+        print("found " .. plantCount .. " plants")
 
         local removedPlants = { }
 
@@ -74,7 +81,9 @@ else
             local itemsNeeded = max - currentPlant.stack_size
 
             if removedPlants[currentPlant.id] == nil and itemsNeeded > 0 then
-                for j=(i+1),(plantCount-1) do
+                local j = i+1
+                local last = plantCount
+                repeat 
                     local sourcePlant = plants[j]
 
                     if removedPlants[sourcePlant.id] == nil and itemsCompatible(currentPlant, sourcePlant) then
@@ -88,16 +97,22 @@ else
                         else
                             sourcePlant.stack_size = sourcePlant.stack_size - amountToMove
                         end
+--                    else print("failed") 
                     end
-                end
+
+                    j = j + 1
+                until j == plantCount or itemsNeeded == 0
             end
         end
 
+        local removedCount = 0
         for id,removed in pairs(removedPlants) do
             if removed then
+                removedCount = removedCount + 1
                 local removedPlant = df.item.find(id)
                 dfhack.items.remove(removedPlant)
             end
         end
+        print("removed " .. removedCount .. " plants")
     end
 end
