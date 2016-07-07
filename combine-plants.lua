@@ -27,7 +27,7 @@ function itemsCompatible(item0, item1)
 end
 
 function getPlants(items, plants, index)
-    repeat 
+    repeat
         local nextBatch = {}
         for _,v in pairs(items) do
             -- Skip items currently tasked
@@ -83,7 +83,7 @@ else
             if removedPlants[currentPlant.id] == nil and itemsNeeded > 0 then
                 local j = i+1
                 local last = plantCount
-                repeat 
+                repeat
                     local sourcePlant = plants[j]
 
                     if removedPlants[sourcePlant.id] == nil and itemsCompatible(currentPlant, sourcePlant) then
@@ -97,7 +97,7 @@ else
                         else
                             sourcePlant.stack_size = sourcePlant.stack_size - amountToMove
                         end
---                    else print("failed") 
+--                    else print("failed")
                     end
 
                     j = j + 1
