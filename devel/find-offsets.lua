@@ -408,6 +408,20 @@ local function find_cursor()
         return true
     end
 
+    -- New in 0.43.05 x64
+    idx, addr = data.int32_t:find_one{
+        -30000, -30000, -30000, 0, 0,
+        -30000, -30000, -30000, -30000, -30000, -30000,
+        df.game_mode.NONE, df.game_type.NONE
+    }
+    if idx then
+        ms.found_offset('cursor', addr)
+        ms.found_offset('selection_rect', addr + 0x14)
+        ms.found_offset('gamemode', addr + 0x2C)
+        ms.found_offset('gametype', addr + 0x30)
+        return true
+    end
+
     dfhack.printerr('Could not find cursor.')
     return false
 end
