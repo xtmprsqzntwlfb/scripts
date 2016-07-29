@@ -7,7 +7,7 @@ teleport
 ========
 Teleports a unit to given coordinates.  Examples:
 
-:teleport -showunitid:  prints unitid beneath cursor
+:teleport -showunitid:  prints ID of unit beneath cursor
 :teleport -showpos:     prints coordinates beneath cursor
 :teleport -unit 1234 -x 56 -y 115 -z 26:
                         teleports unit 1234 to 56,115,26
