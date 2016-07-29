@@ -853,7 +853,7 @@ function color_editor:onRenderBody(painter)
             local min_color_id = ({self.ui_colors.r_min, self.ui_colors.g_min, self.ui_colors.b_min})[i]
             painter:pen({fg = self.ui_colors.white})
                    :seek(bar_min_x + 1, y)
-                   :string(('%s <%i>'):format(self.component_names[i], rgb_value))
+                   :string(('%s <%i>'):format(self.component_names[i], math.floor(rgb_value)))
                    :seek(bar_min_x + 5, y + 2)
                    :string(('%s,%s: Decrease    %s: Reset    %s,%s: Increase'):format(
                         dfhack.screen.getKeyDisplay(df.interface_key[controls.decrease_fast]),
