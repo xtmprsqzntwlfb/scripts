@@ -470,13 +470,13 @@ local function find_gview()
         return
     end
 
-    local idx, addr = data.uint32_t:find_one{0, vs_vtable}
+    local idx, addr = data.uint64_t:find_one{0, vs_vtable}
     if idx then
         ms.found_offset('gview', addr)
         return
     end
 
-    idx, addr = data.uint32_t:find_one{100, vs_vtable}
+    idx, addr = data.uint64_t:find_one{100, vs_vtable}
     if idx then
         ms.found_offset('gview', addr)
         return
@@ -506,8 +506,8 @@ local function lookup_colors()
 end
 
 local function is_valid_enabler(e)
-    if not ms.is_valid_vector(e.textures.raws, 4)
-    or not ms.is_valid_vector(e.text_system, 4)
+    if not ms.is_valid_vector(e.textures.raws, 8)
+    or not ms.is_valid_vector(e.text_system, 8)
     then
         dfhack.printerr('Vector layout check failed.')
         return false
@@ -597,11 +597,11 @@ end
 --
 
 local function is_valid_world(world)
-    if not ms.is_valid_vector(world.units.all, 4)
-    or not ms.is_valid_vector(world.units.active, 4)
-    or not ms.is_valid_vector(world.units.bad, 4)
-    or not ms.is_valid_vector(world.history.figures, 4)
-    or not ms.is_valid_vector(world.features.map_features, 4)
+    if not ms.is_valid_vector(world.units.all, 8)
+    or not ms.is_valid_vector(world.units.active, 8)
+    or not ms.is_valid_vector(world.units.bad, 8)
+    or not ms.is_valid_vector(world.history.figures, 8)
+    or not ms.is_valid_vector(world.features.map_features, 8)
     then
         dfhack.printerr('Vector layout check failed.')
         return false
@@ -656,7 +656,7 @@ end
 
 local function is_valid_ui(ui)
     if not ms.is_valid_vector(ui.economic_stone, 1)
-    or not ms.is_valid_vector(ui.dipscripts, 4)
+    or not ms.is_valid_vector(ui.dipscripts, 8)
     then
         dfhack.printerr('Vector layout check failed.')
         return false
@@ -848,14 +848,14 @@ end
 
 local function find_init()
     local zone
-    if os_type == 'windows' then
+    --[[if os_type == 'windows' then
         zone = zoomed_searcher('ui_build_selector', 0x3000)
     elseif os_type == 'linux' or os_type == 'darwin' then
         zone = zoomed_searcher('d_init', -0x2000)
-    end
+    end]]
     zone = zone or searcher
 
-    local idx, addr = zone.area.int32_t:find_one{250, 150, 15, 0}
+    local idx, addr = zone.area.int64_t:find_one{250, 150, 15, 0}
     if idx then
         validate_offset('init', is_valid_init, addr, df.init, 'input', 'hold_time')
         return
@@ -1636,7 +1636,7 @@ of at least 10 vacant natural floor tiles.]],
     end
 
     if not addr then
-        local addr = zone:find_menu_cursor([[
+        addr = zone:find_menu_cursor([[
 Searching for process_jobs. Please do as instructed below:]],
             'int8_t',
             { 1, 0 },

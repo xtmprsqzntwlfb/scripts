@@ -110,7 +110,7 @@ function export_more_legends_xml()
     local year_str = string.format('%0'..math.max(5, string.len(''..df.global.cur_year))..'d', df.global.cur_year)
     local date_str = year_str..string.format('-%02d-%02d', month, day)
 
-    local filename = df.global.world.cur_savegame.save_dir.."-"..date_str.."-legends_plus.xml"
+    local filename = df.global.world.save_dir.."-"..date_str.."-legends_plus.xml"
     local file = io.open(filename, 'w')
     if not file then qerror("could not open file: " .. filename) end
 
