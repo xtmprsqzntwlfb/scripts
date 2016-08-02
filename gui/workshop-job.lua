@@ -3,8 +3,7 @@
 
 gui/workshop-job
 ================
-Bind to a key (the example config uses :kbd:`Alt`:kbd:`a`), and activate with a job selected in
-a workshop in the :kbd:`q` mode.
+Run with a job selected in a workshop in the :kbd:`q` mode.
 
 .. image:: /docs/images/workshop-job.png
 

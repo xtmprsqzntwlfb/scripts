@@ -3,10 +3,8 @@
 
 gui/power-meter
 ===============
-An in-game interface for `power-meter`.
-
-Bind it to a key (default :kbd:`Ctrl`:kbd:`Shift`:kbd:`M`) and activate
-after selecting Pressure Plate in the build menu.
+Activate an in-game interface for `power-meter` after selecting 
+:guilabel:`Pressure Plate` in the build menu.
 
 .. image:: /docs/images/power-meter.png
 

@@ -3,8 +3,7 @@
 
 gui/choose-weapons
 ==================
-Bind to a key (the example config uses :kbd:`Ctrl`:kbd:`W`), and activate in the Equip->View/Customize
-page of the military screen.
+Activate in the :guilabel:`Equip->View/Customize` page of the military screen.
 
 Depending on the cursor location, it rewrites all 'individual choice weapon' entries
 in the selected squad or position to use a specific weapon type matching the assigned

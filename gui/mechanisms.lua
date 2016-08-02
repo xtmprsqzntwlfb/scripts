@@ -3,13 +3,10 @@
 
 gui/mechanisms
 ==============
-To use, bind to a key (the example config uses :kbd:`Ctrl`:kbd:`M`)
-and activate in :kbd:`q` mode.
-
-.. image:: /docs/images/mechanisms.png
-
 Lists mechanisms connected to the building, and their links. Navigating
 the list centers the view on the relevant linked buildings.
+
+.. image:: /docs/images/mechanisms.png
 
 To exit, press :kbd:`Esc` or :kbd:`Enter`; :kbd:`Esc` recenters on
 the original building, while :kbd:`Enter` leaves focus on the current

@@ -26,9 +26,6 @@ via a simple dialog in the game ui.
 
 The ``building`` or ``unit`` options are automatically assumed when in relevant UI state.
 
-The example config binds building/unit rename to :kbd:`Ctrl`:kbd:`Shift`:kbd:`N`, and
-unit profession change to :kbd:`Ctrl`:kbd:`Shift`:kbd:`T`.
-
 ]====]
 local gui = require 'gui'
 local dlg = require 'gui.dialogs'

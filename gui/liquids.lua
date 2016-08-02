@@ -3,12 +3,10 @@
 
 gui/liquids
 ===========
-To use, bind to a key (the example config uses Alt-L) and activate in the :kbd:`k` mode.
-
-.. image:: /docs/images/liquids.png
-
 This script is a gui front-end to `liquids` and works similarly,
 allowing you to add or remove water & magma, and create obsidian walls & floors.
+
+.. image:: /docs/images/liquids.png
 
 .. warning::
 
