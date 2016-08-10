@@ -33,7 +33,7 @@ local utils = require 'utils'
 
 local function findCiv(arg)
  local entities = df.global.world.entities.all
- if tonumber(arg) then return arg end
+ if tonumber(arg) then return df.historical_entity.find(tonumber(arg)) end
  if arg then
   for eid,entity in ipairs(entities) do
    if entity.entity_raw.code == arg then return entity end
@@ -78,7 +78,7 @@ if args.eventType == 'Migrants' then
 end
 
 local timedEvent = df.timed_event:new()
-timedEvent['type'] = df.timed_event_type[args.eventType]
+timedEvent.type = df.timed_event_type[args.eventType]
 timedEvent.season = df.global.cur_season
 timedEvent.season_ticks = df.global.cur_season_tick
 if args.civ then
