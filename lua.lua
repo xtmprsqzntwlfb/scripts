@@ -53,11 +53,11 @@ if cmd=="--file" or cmd=="-f" then
     end
     dfhack.safecall(f,table.unpack(args,3))
 elseif cmd=="--save" or cmd=="-s" then
-    if df.global.cur_savegame.save_dir=="" then
+    if df.global.world.save_dir=="" then
         qerror("Savefile not loaded")
     end
     local fname=args[2] or "dfhack.lua"
-    fname=string.format("data/save/%s/%s",df.global.cur_savegame.save_dir,fname)
+    fname=string.format("data/save/%s/%s",df.global.world.save_dir,fname)
     local f,err=loadfile (fname)
     if f==nil then
         qerror(err)

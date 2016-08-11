@@ -94,6 +94,9 @@ versions = {
 
     [1551] = "0.43.01",
     [1552] = "0.43.02",
+    [1553] = "0.43.03",
+    [1555] = "0.43.04",
+    [1556] = "0.43.05",
 }
 
 min_version = math.huge
@@ -104,7 +107,11 @@ for k in pairs(versions) do
     max_version = math.max(max_version, k)
 end
 
-if class_has_field(df.world.T_cur_savegame, 'save_version') then
+if class_has_field(df.world, 'save_version') then
+    function get_save_version()
+        return df.global.world.save_version
+    end
+elseif df.world.T_cur_savegame and class_has_field(df.world.T_cur_savegame, 'save_version') then
     function get_save_version()
         return df.global.world.cur_savegame.save_version
     end
@@ -128,7 +135,7 @@ function describe(version)
     if version == 0 then
         return 'no world loaded'
     elseif versions[version] then
-        return versions[version]
+        return versions[version] .. (' (%i)'):format(version)
     elseif version < min_version then
         return 'unknown old version before ' .. describe(min_version) .. ': ' .. tostring(version)
     elseif version > max_version then
@@ -141,7 +148,7 @@ end
 function dump(desc, func)
     local ret = tonumber(func())
     if ret then
-        print(desc .. ': ' .. describe(ret))
+        print(('%-25s %s'):format(desc .. ':', describe(ret)))
     else
         dfhack.printerr('could not find ' .. desc .. ' (DFHack version too old)')
     end
