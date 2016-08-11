@@ -319,14 +319,14 @@ end},
 --]=]
 {name="wait",f=function (unit_list)
     for k,v in pairs(unit_list) do
-        v.group_leader_id=-1
+        v.relationship_ids.GroupLeader=-1
     end
     return true
 end},
 {name="follow",f=function (unit_list)
     local adv=df.global.world.units.active[0]
     for k,v in pairs(unit_list) do
-        v.group_leader_id=adv.id
+        v.relationship_ids.GroupLeader=adv.id
     end
     return true
 end},
@@ -335,10 +335,10 @@ end},
     local t_nem=dfhack.units.getNemesis(adv)
     for k,v in pairs(unit_list) do
 
-        v.group_leader_id=-1
+        v.relationship_ids.GroupLeader=-1
         local u_nem=dfhack.units.getNemesis(v)
         if u_nem then
-            u_nem.group_leader_id=-1
+            u_nem.relationship_ids.GroupLeader=-1
         end
         if t_nem and u_nem then
             for k,v in pairs(t_nem.companions) do
