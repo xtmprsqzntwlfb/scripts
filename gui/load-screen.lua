@@ -469,7 +469,6 @@ function state_change_handler(evt)
     if evt ~= SC_VIEWSCREEN_CHANGED then return end
     table.remove(focus_stack, 1)
     table.insert(focus_stack, dfhack.gui.getCurFocus())
-    cur_focus = dfhack.gui.getCurFocus()
     if enabled and focus_stack[1] == 'title' and focus_stack[2] == 'loadgame' then
         mkscreen()
     end
@@ -482,8 +481,12 @@ function init()
 end
 
 function mkscreen()
-    scr = load_screen()
-    scr:show()
+    local parent = dfhack.gui.getCurViewscreen()
+    -- Create this screen only above a viewscreen_loadgamest that isn't loading a game
+    if df.viewscreen_loadgamest:is_instance(parent) and parent.loading == 0 then
+        scr = load_screen()
+        scr:show()
+    end
 end
 
 if initialized == nil then
