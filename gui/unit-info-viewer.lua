@@ -357,7 +357,7 @@ local DEATH_TYPES = {
   ' killed by a falling object',    -- FALLING_OBJECT
 }
 
---GHOST_TYPES[unit.relations.ghost_info.type].."  This spirit has not been properly memorialized or buried."
+--GHOST_TYPES[unit.ghost_info.type].."  This spirit has not been properly memorialized or buried."
 local GHOST_TYPES = {
  [0]="A murderous ghost.",
   "A sadistic ghost.",
@@ -392,7 +392,7 @@ function Identity:init(args)
    self.hf_id = self.ident.histfig_id
   end
  else
-  self.birth_date = Time{year = self.unit.relations.birth_year, ticks = self.unit.relations.birth_time}
+  self.birth_date = Time{year = self.unit.birth_year, ticks = self.unit.birth_time}
   self.race_id = u.race
   self.caste_id = u.caste
   if u.hist_figure_id > -1 then
@@ -742,9 +742,9 @@ function UnitInfoViewer:chunk_BodySize()
  self:insert_chunk(blurb,pens.LIGHTBLUE)
 end
 function UnitInfoViewer:chunk_Ghostly()
- local blurb = GHOST_TYPES[self.ident.unit.relations.ghost_info.type].."  This spirit has not been properly memorialized or buried."
+ local blurb = GHOST_TYPES[self.ident.unit.ghost_info.type].."  This spirit has not been properly memorialized or buried."
  self:insert_chunk(blurb,pens.LIGHTMAGENTA)
- -- Arose in relations.curse_year curse_time
+ -- Arose in curse_year curse_time
 end
 function UnitInfoViewer:chunk_Dead()
  local i = self.ident

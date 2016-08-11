@@ -35,7 +35,7 @@ function desireToStay(unit,method,civ_id)
 end
 
 function desert(u,method,civ)
-    u.relations.following = nil
+    u.following = nil
     local line = dfhack.TranslateName(dfhack.units.getVisibleName(u)) .. " has "
     if method == 'merchant' then
         line = line.."joined the merchants"

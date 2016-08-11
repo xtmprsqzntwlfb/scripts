@@ -107,7 +107,7 @@ function RoomList:init(info)
 
     if unit then
         self.own_rooms = listRooms(unit)
-        self.spouse = df.unit.find(unit.relations.spouse_id)
+        self.spouse = df.unit.find(unit.spouse_id)
         if self.spouse then
             self.spouse_rooms = listRooms(self.spouse, unit)
         end

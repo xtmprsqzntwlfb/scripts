@@ -70,16 +70,16 @@ for id in pairs(creatures) do
     local females = females[id] or {}
     total = total + #females
     for _, female in pairs(females) do
-        if female.relations.pregnancy_timer ~= 0 then
-            female.relations.pregnancy_timer = math.random(1, 100)
+        if female.pregnancy_timer ~= 0 then
+            female.pregnancy_timer = math.random(1, 100)
             total_changed = total_changed + 1
-        elseif not female.relations.pregnancy_genes then
+        elseif not female.pregnancy_genes then
             local preg = df.unit_genes:new()
             preg.appearance:assign(female.appearance.genes.appearance)
             preg.colors:assign(female.appearance.genes.colors)
-            female.relations.pregnancy_genes = preg
-            female.relations.pregnancy_timer = math.random(1, 100)
-            female.relations.pregnancy_caste = 1
+            female.pregnancy_genes = preg
+            female.pregnancy_timer = math.random(1, 100)
+            female.pregnancy_caste = 1
             total_created = total_created + 1
         end
     end

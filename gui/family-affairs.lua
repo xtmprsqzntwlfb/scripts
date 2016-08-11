@@ -58,31 +58,31 @@ end
 function GetMarriageSummary (source)
     local familystate = ""
 
-    if source.relations.spouse_id ~= -1 then
-        if dfhack.units.isSane(df.unit.find(source.relations.spouse_id)) then
-            familystate = dfhack.TranslateName(source.name).." has a spouse ("..dfhack.TranslateName(df.unit.find(source.relations.spouse_id).name)..")"
+    if source.spouse_id ~= -1 then
+        if dfhack.units.isSane(df.unit.find(source.spouse_id)) then
+            familystate = dfhack.TranslateName(source.name).." has a spouse ("..dfhack.TranslateName(df.unit.find(source.spouse_id).name)..")"
         end
-        if dfhack.units.isSane(df.unit.find(source.relations.spouse_id)) == false then
+        if dfhack.units.isSane(df.unit.find(source.spouse_id)) == false then
             familystate = dfhack.TranslateName(source.name).."'s spouse is dead or not sane, would you like to choose a new one?"
         end
     end
 
-    if source.relations.spouse_id == -1 and  source.relations.lover_id ~= -1 then
-        if dfhack.units.isSane(df.unit.find(source.relations.lover_id)) then
-            familystate = dfhack.TranslateName(source.name).." already has a lover ("..dfhack.TranslateName(df.unit.find(source.relations.spouse_id).name)..")"
+    if source.spouse_id == -1 and  source.lover_id ~= -1 then
+        if dfhack.units.isSane(df.unit.find(source.lover_id)) then
+            familystate = dfhack.TranslateName(source.name).." already has a lover ("..dfhack.TranslateName(df.unit.find(source.spouse_id).name)..")"
         end
-        if dfhack.units.isSane(df.unit.find(source.relations.lover_id)) == false then
+        if dfhack.units.isSane(df.unit.find(source.lover_id)) == false then
             familystate = dfhack.TranslateName(source.name).."'s lover is dead or not sane, would you like that love forgotten?"
         end
     end
 
-    if source.relations.spouse_id == -1 and  source.relations.lover_id == -1 then
+    if source.spouse_id == -1 and  source.lover_id == -1 then
         familystate = dfhack.TranslateName(source.name).." is not involved in romantic relationships with anyone"
     end
 
-    if source.relations.pregnancy_timer > 0 then
+    if source.pregnancy_timer > 0 then
         familystate = familystate.."\nShe is pregnant."
-        local father = df.historical_figure.find(source.relations.pregnancy_spouse)
+        local father = df.historical_figure.find(source.pregnancy_spouse)
         if father then
             familystate = familystate.." The father is "..dfhack.TranslateName(father.name).."."
         end
@@ -92,7 +92,7 @@ function GetMarriageSummary (source)
 end
 
 function GetSpouseData (source)
-    local spouse = df.unit.find(source.relations.spouse_id)
+    local spouse = df.unit.find(source.spouse_id)
     local spouse_hf
     if spouse then
         spouse_hf = df.historical_figure.find (spouse.hist_figure_id)
@@ -101,7 +101,7 @@ function GetSpouseData (source)
 end
 
 function GetLoverData (source)
-    local lover = df.unit.find(source.relations.spouse_id)
+    local lover = df.unit.find(source.spouse_id)
     local lover_hf
     if lover then
         lover_hf = df.historical_figure.find (lover.hist_figure_id)
@@ -124,19 +124,19 @@ function Divorce (source)
     local spouse,spouse_hf = GetSpouseData (source)
     local lover,lover_hf = GetLoverData (source)
 
-    source.relations.spouse_id = -1
-    source.relations.lover_id = -1
+    source.spouse_id = -1
+    source.lover_id = -1
 
     if source_hf then
         EraseHFLinksLoverSpouse (source_hf)
     end
     if spouse then
-        spouse.relations.spouse_id = -1
-        spouse.relations.lover_id = -1
+        spouse.spouse_id = -1
+        spouse.lover_id = -1
     end
     if lover then
-        spouse.relations.spouse_id = -1
-        spouse.relations.lover_id = -1
+        spouse.spouse_id = -1
+        spouse.lover_id = -1
     end
     if spouse_hf then
         EraseHFLinksLoverSpouse (spouse_hf)
@@ -156,8 +156,8 @@ end
 function Marriage (source,target)
     local source_hf = df.historical_figure.find(source.hist_figure_id)
     local target_hf = df.historical_figure.find(target.hist_figure_id)
-    source.relations.spouse_id = target.id
-    target.relations.spouse_id = source.id
+    source.spouse_id = target.id
+    target.spouse_id = source.id
 
     local new_link = df.histfig_hf_link_spousest:new() -- adding hf link to source
     new_link.target_hf = target_hf.id
@@ -178,7 +178,7 @@ function ChooseNewSpouse (source)
     if not dfhack.units.isAdult(source) then
         ErrorPopup("target is too young") return
     end
-    if not (source.relations.spouse_id == -1 and source.relations.lover_id == -1) then
+    if not (source.spouse_id == -1 and source.lover_id == -1) then
         ErrorPopup("target already has a spouse or a lover")
         qerror("source already has a spouse or a lover")
         return
@@ -191,8 +191,8 @@ function ChooseNewSpouse (source)
         if dfhack.units.isCitizen(v)
             and v.race == source.race
             and v.sex ~= source.sex
-            and v.relations.spouse_id == -1
-            and v.relations.lover_id == -1
+            and v.spouse_id == -1
+            and v.lover_id == -1
             and dfhack.units.isAdult(v)
             then
                 table.insert(choicelist,dfhack.TranslateName(v.name)..', '..dfhack.units.getProfessionName(v))
@@ -224,7 +224,7 @@ function MainDialog (source)
     local on_select = {}
 
     local adult = dfhack.units.isAdult(source)
-    local single = source.relations.spouse_id == -1 and source.relations.lover_id == -1
+    local single = source.spouse_id == -1 and source.lover_id == -1
     local ready_for_marriage = single and adult
 
     if adult then

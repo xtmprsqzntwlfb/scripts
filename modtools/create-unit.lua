@@ -168,14 +168,14 @@ function createFigure(trgunit,he,he_group)
   df.global.hist_figure_next_id=df.global.hist_figure_next_id+1
   hf.appeared_year = df.global.cur_year
 
-  hf.born_year = trgunit.relations.birth_year
-  hf.born_seconds = trgunit.relations.birth_time
-  hf.curse_year = trgunit.relations.curse_year
-  hf.curse_seconds = trgunit.relations.curse_time
-  hf.birth_year_bias = trgunit.relations.birth_year_bias
-  hf.birth_time_bias = trgunit.relations.birth_time_bias
-  hf.old_year = trgunit.relations.old_year
-  hf.old_seconds = trgunit.relations.old_time
+  hf.born_year = trgunit.birth_year
+  hf.born_seconds = trgunit.birth_time
+  hf.curse_year = trgunit.curse_year
+  hf.curse_seconds = trgunit.curse_time
+  hf.birth_year_bias = trgunit.birth_year_bias
+  hf.birth_time_bias = trgunit.birth_time_bias
+  hf.old_year = trgunit.old_year
+  hf.old_seconds = trgunit.old_time
   hf.died_year = -1
   hf.died_seconds = -1
   hf.name:assign(trgunit.name)
@@ -218,8 +218,8 @@ function createFigure(trgunit,he,he_group)
   --add entity event
   local hf_event_id=df.global.hist_event_next_id
   df.global.hist_event_next_id=df.global.hist_event_next_id+1
-  df.global.world.history.events:insert("#",{new=df.history_event_add_hf_entity_linkst,year=trgunit.relations.birth_year,
-  seconds=trgunit.relations.birth_time,id=hf_event_id,civ=hf.civ_id,histfig=hf.id,link_type=0})
+  df.global.world.history.events:insert("#",{new=df.history_event_add_hf_entity_linkst,year=trgunit.birth_year,
+  seconds=trgunit.birth_time,id=hf_event_id,civ=hf.civ_id,histfig=hf.id,link_type=0})
   return hf
 end
 
@@ -508,20 +508,20 @@ u.flags3.weight_computed = false
 --TODO: if the unit is a child or baby it will still behave like an adult
 if age or age == 0 then
   if age == 0 then
-    u.relations.birth_time = df.global.cur_year_tick
+    u.birth_time = df.global.cur_year_tick
   end
   local u = df.unit.find(unitId)
-  local oldYearDelta = u.relations.old_year - u.relations.birth_year
-  u.relations.birth_year = df.global.cur_year - age
-  if u.relations.old_year ~= -1 then
-    u.relations.old_year = u.relations.birth_year + oldYearDelta
+  local oldYearDelta = u.old_year - u.birth_year
+  u.birth_year = df.global.cur_year - age
+  if u.old_year ~= -1 then
+    u.old_year = u.birth_year + oldYearDelta
   end
   if u.flags1.important_historical_figure == true and u.flags2.important_historical_figure == true then
     local hf = df.global.world.history.figures[u.hist_figure_id]
-    hf.born_year = u.relations.birth_year
-    hf.born_seconds = u.relations.birth_time
-    hf.old_year = u.relations.old_year
-    hf.old_seconds = u.relations.old_time
+    hf.born_year = u.birth_year
+    hf.born_seconds = u.birth_time
+    hf.old_year = u.old_year
+    hf.old_seconds = u.old_time
   end
 end
 

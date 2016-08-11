@@ -17,11 +17,11 @@ function rejuvenate()
 
     current_year=df.global.cur_year
     newbirthyear=current_year - 20
-    if unit.relations.birth_year < newbirthyear then
-        unit.relations.birth_year=newbirthyear
+    if unit.birth_year < newbirthyear then
+        unit.birth_year=newbirthyear
     end
-    if unit.relations.old_year < current_year+100 then
-        unit.relations.old_year=current_year+100
+    if unit.old_year < current_year+100 then
+        unit.old_year=current_year+100
     end
     print (dfhack.TranslateName(dfhack.units.getVisibleName(unit)).." is now 20 years old and will live at least 100 years")
 
