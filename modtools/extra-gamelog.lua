@@ -44,7 +44,7 @@ function log_on_load(op)
     local function fullname(item)
         return dfhack.TranslateName(item.name)..' ('..dfhack.TranslateName(item.name ,true)..')'
     end
-    msg('Loaded '..df.global.world.save_dir..', '..fullname(df.global.world.world_data)..
+    msg('Loaded '..df.global.world.cur_savegame.save_dir..', '..fullname(df.global.world.world_data)..
         ' at coordinates ('..site.pos.x..','..site.pos.y..')')
     msg('Loaded the fortress '..fullname(site)..
         (fort_ent and ', colonized by the group '..fullname(fort_ent) or '')..
