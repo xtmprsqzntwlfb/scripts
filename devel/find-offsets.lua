@@ -422,6 +422,24 @@ local function find_cursor()
         return true
     end
 
+    -- New in 0.43.05 x64 Linux
+    if os_type == 'linux' then
+        idx, addr = data.int32_t:find_one{
+            df.game_type.NONE, 0, 0, 0,
+            df.game_mode.NONE, 0, 0, 0,
+            -30000, -30000, -30000, -30000,
+            -30000, -30000, 0, 0,
+            -30000, -30000, -30000
+        }
+        if idx then
+            ms.found_offset('cursor', addr + 0x40)
+            ms.found_offset('selection_rect', addr + 0x20)
+            ms.found_offset('gamemode', addr + 0x10)
+            ms.found_offset('gametype', addr)
+            return true
+        end
+    end
+
     dfhack.printerr('Could not find cursor.')
     return false
 end
