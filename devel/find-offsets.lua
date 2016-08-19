@@ -1791,7 +1791,8 @@ local function find_standing_orders(gname, seq, depends)
     if type(seq) ~= 'table' then seq = {seq} end
     for k, v in pairs(depends) do
         if not dfhack.internal.getAddress(k) then
-            qerror(('Cannot locate %s: %s not found'):format(gname, k))
+            dfhack.printerr(('Cannot locate %s: %s not found'):format(gname, k))
+            return
         end
         df.global[k] = v
     end
