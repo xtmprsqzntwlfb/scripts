@@ -935,6 +935,9 @@ local function find_current_weather()
     }
 
     local idx, addr = zone.area.int8_t:find_one(wbytes)
+    if not idx then
+        idx, addr = data.int8_t:find_one(wbytes)
+    end
     if idx then
         ms.found_offset('current_weather', addr)
         return
@@ -1453,7 +1456,7 @@ local function find_cur_year()
     elseif os_type == 'darwin' then
         zone = zoomed_searcher('cursor', -32)
     elseif os_type == 'linux' then
-        zone = zoomed_searcher('ui_building_assign_type', -512)
+        zone = zoomed_searcher('current_weather', -512)
     end
     if not zone then
         dfhack.printerr('Cannot search for cur_year - prerequisites missing.')
