@@ -3,8 +3,8 @@
 
 gui/guide-path
 ==============
-Bind to a key (the example config uses :kbd:`Alt`:kbd:`P`), and activate in the Hauling menu with
-the cursor over a Guide order.
+Activate in the :guilabel:`Hauling` menu with the cursor over 
+a :guilabel:`Guide` order.
 
 .. image:: /docs/images/guide-path.png
 

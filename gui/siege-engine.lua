@@ -3,10 +3,8 @@
 
 gui/siege-engine
 ================
-An in-game interface for `siege-engine`.
-
-Bind it to a key (the example config uses :kbd:`Alt`:kbd:`a`) and
-activate after selecting a siege engine in :kbd:`q` mode.
+Activate an in-game interface for `siege-engine`, after selecting 
+a siege engine in :kbd:`q` mode.
 
 .. image:: /docs/images/siege-engine.png
 

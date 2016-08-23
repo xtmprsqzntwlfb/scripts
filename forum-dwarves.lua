@@ -28,7 +28,7 @@ safe to attempt running the script with any screen active, with an
 error message to inform you when the selected screen is not appropriate
 for this script.
 
-The target file's name is 'forumdwarves.txt'.  A remider to this effect
+The target file's name is 'forumdwarves.txt'.  A reminder to this effect
 will be displayed if the script is successful.
 
 .. note::

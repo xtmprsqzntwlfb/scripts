@@ -3,12 +3,7 @@
 
 gui/settings-manager
 ====================
-An in-game settings manager (init.txt/d_init.txt)
-
-Recommended for use as a keybinding::
-
-    keybinding add Alt-S@title settings-manager
-    keybinding add Alt-S@dwarfmode/Default settings-manager
+An in-game manager for settings defined in ``init.txt`` and ``d_init.txt``.
 
 ]====]
 
