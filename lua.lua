@@ -24,27 +24,11 @@ There are the following ways to invoke this command:
 
 ]====]
 
-local args={...}
+local utils = require 'utils'
+local args = {...}
 local cmd = args[1]
 
-env = env or {}
-setmetatable(env, {__index = function(self, k)
-    if k == 'scr' or k == 'screen' then
-        return dfhack.gui.getCurViewscreen()
-    elseif k == 'bld' or k == 'building' then
-        return dfhack.gui.getSelectedBuilding()
-    elseif k == 'item' then
-        return dfhack.gui.getSelectedItem()
-    elseif k == 'job' then
-        return dfhack.gui.getSelectedJob()
-    elseif k == 'wsjob' or k == 'workshop_job' then
-        return dfhack.gui.getSelectedWorkshopJob()
-    elseif k == 'unit' then
-        return dfhack.gui.getSelectedUnit()
-    else
-        return _G[k]
-    end
-end})
+env = env or utils.df_shortcut_env()
 
 if cmd=="--file" or cmd=="-f" then
     local f,err=loadfile (args[2])
@@ -71,8 +55,8 @@ elseif cmd~=nil then
         cmd = 'return '..string.sub(cmd, 2)
     end
 
-    local f,err=load(cmd,'=(lua command)', 't')
-    if f==nil then
+    local f, err = load(cmd, '=(lua command)', 't', env)
+    if f == nil then
         qerror(err)
     end
 

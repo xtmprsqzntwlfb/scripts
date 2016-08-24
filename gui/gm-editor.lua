@@ -27,9 +27,10 @@ persist_screen=persist_screen or nil --does nothing, here just to remind everyon
 
 local gui = require 'gui'
 local dialog = require 'gui.dialogs'
-local widgets =require 'gui.widgets'
+local widgets = require 'gui.widgets'
 local guiScript = require 'gui.script'
-local args={...}
+local utils = require 'utils'
+local args = {...}
 
 find_funcs = find_funcs or (function()
     local t = {}
@@ -501,29 +502,7 @@ function show_editor(trg)
     persist_screen=screen
     screen:show()
 end
-eval_env = {}
-setmetatable(eval_env, {__index = function(_, k)
-    if k == 'scr' or k == 'screen' then
-        return dfhack.gui.getCurViewscreen()
-    elseif k == 'bld' or k == 'building' then
-        return dfhack.gui.getSelectedBuilding()
-    elseif k == 'item' then
-        return dfhack.gui.getSelectedItem()
-    elseif k == 'job' then
-        return dfhack.gui.getSelectedJob()
-    elseif k == 'wsjob' or k == 'workshop_job' then
-        return dfhack.gui.getSelectedWorkshopJob()
-    elseif k == 'unit' then
-        return dfhack.gui.getSelectedUnit()
-    else
-        for g in pairs(df.global) do
-            if g == k then
-                return df.global[k]
-            end
-        end
-        return _G[k]
-    end
-end})
+eval_env = utils.df_shortcut_env()
 function eval(s)
     local f, err = load("return " .. s, "expression", "t", eval_env)
     if err then qerror(err) end
