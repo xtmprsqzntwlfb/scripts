@@ -1,8 +1,16 @@
 -- Sets the quantity of the selected manager job
---[[
-Sample usage:
-    keybinding add Alt-Q@jobmanagement manager-quantity
-]]
+--[====[
+
+gui/manager-quantity
+====================
+
+Sets the quantity of the selected manager job
+
+Sample usage::
+
+    keybinding add Alt-Q@jobmanagement gui/manager-quantity
+
+]====]
 
 local dialog = require 'gui.dialogs'
 local args = {...}
@@ -16,6 +24,7 @@ if dfhack.gui.getCurFocus() == 'jobmanagement' then
     local orders = df.global.world.manager_orders
     function set_quantity(value)
         if tonumber(value) then
+            value = tonumber(value)
             local i = scr.sel_idx
             local old_total = orders[i].amount_total
             orders[i].amount_total = math.max(1, value)
