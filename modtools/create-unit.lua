@@ -318,6 +318,7 @@ function domesticate(uid, group_id)
 end
 
 function wild(uid)
+  if dfhack.world.isArena() then return end
   local u = df.unit.find(uid)
   local caste=df.creature_raw.find(u.race).caste[u.caste]
   -- x = df.global.world.world_data.active_site[0].pos.x
