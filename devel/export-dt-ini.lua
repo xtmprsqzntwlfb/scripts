@@ -44,6 +44,7 @@ local function address(name,base,field,...)
         if addr and select('#',...) > 0 then
             _,addr = df.sizeof(ms.field_ref(base,field,...))
         end
+        addr = addr - rdelta
     elseif base._kind == 'class-type' then
         -- field_offset crashes with classes due to vtable problems,
         -- so we have to create a real temporary object here.
