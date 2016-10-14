@@ -922,7 +922,7 @@ local function find_current_weather()
     elseif os_type == 'darwin' then
         zone = zoomed_searcher('cursor', -64)
     elseif os_type == 'linux' then
-        zone = zoomed_searcher('ui_building_assign_type', -512)
+        -- zone = zoomed_searcher('ui_building_assign_type', -512)
     end
     zone = zone or searcher
 
