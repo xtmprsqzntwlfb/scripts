@@ -3,7 +3,7 @@
 
 gui/siege-engine
 ================
-Activate an in-game interface for `siege-engine`, after selecting 
+Activate an in-game interface for `siege-engine`, after selecting
 a siege engine in :kbd:`q` mode.
 
 .. image:: /docs/images/siege-engine.png

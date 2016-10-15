@@ -17,7 +17,7 @@ already_banned = {}
 kitchen = df.ui.kitchen
 
 # Store our list of banned items in the dictionary/hash table, along with their index number
-# -- index number storage was added from the original script so as to assist in addressing 
+# -- index number storage was added from the original script so as to assist in addressing
 #  the specific kitchen array entry directly later in the script, rather than search through it again.
 kitchen.item_types.length.times { |i|
     already_banned[[kitchen.mat_types[i], kitchen.mat_indices[i], kitchen.item_types[i], kitchen.item_subtypes[i]]] = [ kitchen.exc_types[i] & 1, i ]
@@ -29,7 +29,7 @@ kitchen.item_types.length.times { |i|
 #  fruit items
 # -- item names was added to the front of the arguments list, as the
 #  original script ran silently, and during debugging it was found to be
-#  more useful to print the banned item names than picking through the 
+#  more useful to print the banned item names than picking through the
 #  kitchen menu in game
 ban_cooking = lambda { |print_name, mat_type, mat_index, type, subtype|
     key = [mat_type, mat_index, type, subtype]
@@ -39,8 +39,8 @@ ban_cooking = lambda { |print_name, mat_type, mat_index, type, subtype|
         index = already_banned[key][1]
         # Check that the banned flag is set.
         return if already_banned[key][0] == 1
-        # Added a check here to ensure that the exc_types array entry had something at the index entry 
-        # as the original script didn't check for :EDIBLE_COOKED before banning certain plants, so that 
+        # Added a check here to ensure that the exc_types array entry had something at the index entry
+        # as the original script didn't check for :EDIBLE_COOKED before banning certain plants, so that
         # lead to mismatched array lengths, and a crash possibly due to memory corruption.
         if kitchen.exc_types[index]
             # Or's the value of the exc_type to turn the first bit of the byte on.
@@ -127,7 +127,7 @@ $script_args.each do |arg|
         end
 
     # Ban seeds, and the plant parts that produce the seeds from being cooked
-    # -- Doesn't ban seeds that can't be farmed (trees), as well as those that can't be brewed, 
+    # -- Doesn't ban seeds that can't be farmed (trees), as well as those that can't be brewed,
     #    as gaining seeds from dwarves eating the food raw is too time consuming.
     when 'seeds'
         df.world.raws.plants.all.each_with_index do |p, i|
@@ -195,8 +195,8 @@ $script_args.each do |arg|
                         ban_cooking[p.name + ' ' + m.id, j + DFHack::MaterialInfo::PLANT_BASE, i, :PLANT, -1]
                     end
                 end
-                # No plant growths are targeted for milling, as I can't find a flag that would indicate that a growth 
-                # was used for milling.  Thus, I can only assume that only the STRUCTURAL plant object can be used 
+                # No plant growths are targeted for milling, as I can't find a flag that would indicate that a growth
+                # was used for milling.  Thus, I can only assume that only the STRUCTURAL plant object can be used
                 # in the milling process.
             end
         end
@@ -247,7 +247,7 @@ $script_args.each do |arg|
 
     # The below function outputs a pipe seperated list of the banned cooking ingredients
     # The list isn't intended to be readable from the console, as I used it for validating
-    # the methods I was using to select, and ban cooking items.  Mostly this was for the 
+    # the methods I was using to select, and ban cooking items.  Mostly this was for the
     # tree fruit items, as the item subtype number wasn't immediately obvious to be used
     # as a reference pointer to the growths array.
     when 'show'
@@ -284,7 +284,7 @@ $script_args.each do |arg|
             type_list[[p.material_defs.type_seed, p.material_defs.idx_seed]]['subtype'] = -1
             p.growths.each_with_index do |g, r|
                 m = df.decode_mat(g).material
-                # Search only growths that are cookable (:EDIBLE_COOKED), and listed as :LEAF_MAT, 
+                # Search only growths that are cookable (:EDIBLE_COOKED), and listed as :LEAF_MAT,
                 # as that appears to be the tag required to allow cooking as a solid/non-liquid item in the kitchen
                 if m.flags[:EDIBLE_COOKED] and m.flags[:LEAF_MAT]
                     # Sift through the materials array to find the matching entry for our growths array entry

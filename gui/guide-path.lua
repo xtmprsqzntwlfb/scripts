@@ -3,7 +3,7 @@
 
 gui/guide-path
 ==============
-Activate in the :guilabel:`Hauling` menu with the cursor over 
+Activate in the :guilabel:`Hauling` menu with the cursor over
 a :guilabel:`Guide` order.
 
 .. image:: /docs/images/guide-path.png

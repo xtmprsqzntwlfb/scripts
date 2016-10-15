@@ -3,7 +3,7 @@
 
 gui/power-meter
 ===============
-Activate an in-game interface for `power-meter` after selecting 
+Activate an in-game interface for `power-meter` after selecting
 :guilabel:`Pressure Plate` in the build menu.
 
 .. image:: /docs/images/power-meter.png
