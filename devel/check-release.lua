@@ -40,8 +40,8 @@ end
 if not dfhack.gitXmlMatch() then
     err('library/xml submodule commit does not match tracked commit\n' ..
         ('Expected %s, got %s'):format(
-            dfhack.getGitXmlCommit():sub(1, 7),
-            dfhack.getGitXmlExpectedCommit():sub(1, 7)
+            dfhack.getGitXmlExpectedCommit():sub(1, 7),
+            dfhack.getGitXmlCommit():sub(1, 7)
         ))
     print('Try running `git submodule update` in the DFHack source tree.')
 end
