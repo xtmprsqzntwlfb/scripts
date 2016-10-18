@@ -40,7 +40,7 @@ if args.help then
 end
 
 if(args.unit) then
-    unit = df.unit.find(args.unit)
+    unit = df.unit.find(tonumber(args.unit))
 else
     unit = dfhack.gui.getSelectedUnit()
 end

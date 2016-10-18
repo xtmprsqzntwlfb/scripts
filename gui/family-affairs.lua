@@ -257,13 +257,13 @@ if not dfhack.world.isFortressMode() then
 end
 
 if args[1] == "divorce" and tonumber(args[2]) then
-    local unit = df.unit.find(args[2])
+    local unit = df.unit.find(tonumber(args[2]))
     if unit then Divorce (unit) return end
 end
 
 if tonumber(args[1]) and tonumber(args[2]) then
-    local unit1 = df.unit.find(args[1])
-    local unit2 = df.unit.find(args[2])
+    local unit1 = df.unit.find(tonumber(args[1]))
+    local unit2 = df.unit.find(tonumber(args[2]))
     if unit1 and unit2 then
         Divorce (unit1)
         Divorce (unit2)

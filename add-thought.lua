@@ -14,12 +14,12 @@ local utils=require('utils')
 
 function addEmotionToUnit(unit,thought,emotion,severity,strength,subthought)
     local emotions=unit.status.current_soul.personality.emotions
-    if not (type(emotion)=='number') then
-        emotion=df.emotion_type[emotion]
+    if not (tonumber(emotion)) then
+        emotion=df.emotion_type[tonumber(emotion)]
     end
     local properThought=nil
-    if not (type(thought)=='number') then
-        properThought=df.unit_thought_type[thought]
+    if not (tonumber(thought)) then
+        properThought=df.unit_thought_type[tonumber(thought)]
         if not properThought then
             for k,syn in ipairs(df.global.world.raws.syndromes.all) do
                 if syn.syn_name==thought then
@@ -72,7 +72,7 @@ end
 
 local args = utils.processArgs({...}, validArgs)
 
-local unit = args.unit and df.unit.find(args.unit) or dfhack.gui.getSelectedUnit(true)
+local unit = args.unit and df.unit.find(tonumber(args.unit)) or dfhack.gui.getSelectedUnit(true)
 
 if not unit then qerror('A unit must be specified or selected.') end
 if args.gui then
