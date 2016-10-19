@@ -180,7 +180,7 @@ function export_more_legends_xml()
                         file:write("\t\t\t<structure>\n")
                         file:write("\t\t\t\t<id>"..buildingV.id.."</id>\n")
                         file:write("\t\t\t\t<type>"..df_enums.abstract_building_type[buildingV:getType()]:lower().."</type>\n")
-                        if (df_enums.abstract_building_type[buildingV:getType()]:lower() ~= "underworld_spire" or table.containskey(buildingV,"name")) then
+                        if table.containskey(buildingV,"name") then
                             file:write("\t\t\t\t<name>"..dfhack.df2utf(dfhack.TranslateName(buildingV.name, 1)).."</name>\n")
                             file:write("\t\t\t\t<name2>"..dfhack.df2utf(dfhack.TranslateName(buildingV.name)).."</name2>\n")
                         end
