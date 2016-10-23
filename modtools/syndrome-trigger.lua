@@ -80,7 +80,8 @@ validArgs = validArgs or utils.invert({
  'clear',
  'help',
  'command',
- 'syndrome'
+ 'syndrome',
+ 'synclass'
 })
 
 local args = utils.processArgs({...}, validArgs)
@@ -98,24 +99,40 @@ if not args.command then
  return
 end
 
-if not args.syndrome then
+if not args.syndrome
+and not args.synclass then
  error 'Select a syndrome.'
+end
+
+function processSyndrome(syndrome)
+ onInfection[syndrome] = onInfection[syndrome] or {}
+ table.insert(onInfection[syndrome], args)
 end
 
 local syndrome
 for _,syn in ipairs(df.global.world.raws.syndromes.all) do
- if syn.syn_name == args.syndrome then
-  if syndrome then
-   error ('Multiple syndromes with same name: ' .. syn.syn_name)
+ if args.syndrome then
+  if syn.syn_name == args.syndrome then
+   if syndrome then
+    error ('Multiple syndromes with same name: ' .. syn.syn_name)
+   end
+   syndrome = syn.id
+   processSyndrome(syn.id)
   end
-  syndrome = syn.id
+ elseif args.synclass then
+  for _,synclass in ipairs(syn.syn_class) do
+   if synclass.value == args.synclass then
+    syndrome = syn.id
+	processSyndrome(syn.id)
+   end
+  end
  end
 end
 
 if not syndrome then
- error ('Could not find syndrome named ' .. args.syndrome)
+ if args.syndrome then
+  error ('Invalid syndrome name: '..args.syndrome..'')
+ elseif args.synclass then
+  error ('Invalid syndrome class: '..args.synclass..'')
+ end
 end
-
-onInfection[syndrome] = onInfection[syndrome] or {}
-table.insert(onInfection[syndrome], args)
-
