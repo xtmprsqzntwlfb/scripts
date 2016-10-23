@@ -123,7 +123,7 @@ for _,syn in ipairs(df.global.world.raws.syndromes.all) do
   for _,synclass in ipairs(syn.syn_class) do
    if synclass.value == args.synclass then
     syndrome = syn.id
-	processSyndrome(syn.id)
+    processSyndrome(syn.id)
    end
   end
  end
