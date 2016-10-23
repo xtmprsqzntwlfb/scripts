@@ -248,7 +248,7 @@ args = utils.processArgs({...}, validArgs)
 eventful=require('plugins.eventful')
 
 if not args.startup then
- local unit=args.unit and df.unit.find(args.unit) or dfhack.gui.getSelectedUnit(true)
+ local unit=tonumber(args.unit) and df.unit.find(tonumber(args.unit)) or dfhack.gui.getSelectedUnit(true)
  if unit then
   hackWish(unit)
  else
