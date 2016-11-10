@@ -134,7 +134,7 @@ local function validate_offset(name,validator,addr,tname,...)
     ms.found_offset(name,obj)
 end
 
-local function zoomed_searcher(startn, end_or_sz)
+local function zoomed_searcher(startn, end_or_sz, bidirectional)
     if force_scan.nozoom then
         return nil
     end
@@ -153,6 +153,9 @@ local function zoomed_searcher(startn, end_or_sz)
         if not ev then
             return nil
         end
+    end
+    if bidirectional then
+        sv = sv - (ev - sv)
     end
     sv = sv - (sv % 4)
     ev = ev + 3
@@ -1516,7 +1519,7 @@ local function find_cur_year_tick()
     if os_type == 'windows' then
         zone = zoomed_searcher('ui_unit_view_mode', 0x200)
     else
-        zone = zoomed_searcher('cur_year', 128)
+        zone = zoomed_searcher('cur_year', 128, true)
     end
     if not zone then
         dfhack.printerr('Cannot search for cur_year_tick - prerequisites missing.')
@@ -1748,7 +1751,7 @@ end
 local function find_pause_state()
     local zone, addr
     if os_type == 'linux' or os_type == 'darwin' then
-        zone = zoomed_searcher('ui_look_cursor', 32)
+        zone = zoomed_searcher('ui_look_cursor', 32, true)
     elseif os_type == 'windows' then
         zone = zoomed_searcher('ui_workshop_job_cursor', 80)
     end
