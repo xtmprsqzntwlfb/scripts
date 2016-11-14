@@ -474,9 +474,8 @@ descriptions = {
                 "makes it unsuitable for a dwarf, but those who can wield it find",
                 "its increased size and weight contribute to its effectiveness."},
     ITEM_WEAPON_AXE_TRAINING = {
-                "As a battleaxe made from wood, this practise weapon is useful for",
-                "training recruits.  Thanks to good craftsdwarfship, it can also",
-                "be used to cut down trees."},
+                "As a battle axe made from wood, this practice weapon is useful for",
+                "training recruits."},
     ITEM_WEAPON_BLOWGUN = {
                 "A very simple ranged weapon: blow into one end of the long narrow",
                 "tube, and project a pellet or dart into the body of one's prey.",
