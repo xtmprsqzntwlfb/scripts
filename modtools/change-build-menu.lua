@@ -424,9 +424,7 @@ Global Functions:
 end
 
 if not dfhack.isWorldLoaded() then
-    dfhack.color(RED)
-    print("change-build-menu: No World Loaded!\n")
-    dfhack.color(-1)
+    dfhack.printerr("change-build-menu: No World Loaded!")
     usage()
     return
 end
