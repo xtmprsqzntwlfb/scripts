@@ -2,7 +2,7 @@
 
 --[[
 Consider this public domain (CC0).
-	- Milo Christiansen
+    - Milo Christiansen
 ]]
 
 local usage = [=[
@@ -29,24 +29,24 @@ Example:
 local utils = require 'utils'
 
 validArgs = validArgs or utils.invert({
-	'help',
-	'id',
-	'cmd',
+    'help',
+    'id',
+    'cmd',
 })
 
 local args = utils.processArgs({...}, validArgs)
 
 if not args.id or not args.cmd or args.help then
-	dfhack.print(usage)
-	return
+    dfhack.print(usage)
+    return
 end
 
 local entsrc = df.historical_entity.find(df.global.ui.civ_id)
 if entsrc == nil then
-	dfhack.printerr("Could not find current entity. No world loaded?")
-	return
+    dfhack.printerr("Could not find current entity. No world loaded?")
+    return
 end
 
 if entsrc.entity_raw.code == args.id then
-	dfhack.run_command(table.unpack(args.cmd))
+    dfhack.run_command(table.unpack(args.cmd))
 end
