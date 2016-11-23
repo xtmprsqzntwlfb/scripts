@@ -1,0 +1,30 @@
+sudo: false
+language: generic
+addons:
+  apt:
+    packages:
+      - lua5.2
+before_install:
+- pip install --user sphinx
+- mkdir -p $HOME/dfhack
+- wget https://github.com/DFHack/dfhack/archive/develop.tar.gz -O $HOME/dfhack.tar.gz
+- tar xzf $HOME/dfhack.tar.gz -C $HOME/dfhack --strip-components 1
+- wget https://github.com/DFHack/df-structures/archive/master.tar.gz -O $HOME/dfhack/library/xml/xml.tar.gz
+- tar xzf $HOME/dfhack/library/xml/xml.tar.gz -C $HOME/dfhack/library/xml --strip-components 1
+- wget https://github.com/DFHack/stonesense/archive/master.tar.gz -O $HOME/dfhack/plugins/stonesense/stonesense.tar.gz
+- tar xzf $HOME/dfhack/plugins/stonesense/stonesense.tar.gz -C $HOME/dfhack/plugins/stonesense --strip-components 1
+- rmdir $HOME/dfhack/scripts
+- ln -s "$(pwd)" $HOME/dfhack/scripts
+script:
+- sphinx-build -qW -j3 $HOME/dfhack $HOME/dfhack/docs/html
+- python $HOME/dfhack/travis/lint.py
+- python $HOME/dfhack/travis/script-docs.py
+- python $HOME/dfhack/travis/script-syntax.py --ext=lua --cmd="luac5.2 -p"
+- python $HOME/dfhack/travis/script-syntax.py --ext=rb --cmd="ruby -c"
+notifications:
+  email: false
+  irc:
+    channels:
+      - "chat.freenode.net#dfhack"
+    on_success: change
+    on_failure: always
