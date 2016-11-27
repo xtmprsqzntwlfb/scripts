@@ -1,5 +1,5 @@
 -- Swap color palettes with the changes of the seasons.
--- 
+--
 -- Based on my script for the Rubble addon "Libs/Colors/Swap Palette", modified at
 -- Meph's request to support automatic seasonal switching.
 
@@ -27,6 +27,51 @@ misrepresented as being the original software.
 
 --@ module = true
 --@ enable = true
+
+help = [====[
+
+season-palette
+==============
+
+Swap color palettes when the seasons change.
+
+For this script to work you need to add *at least* one color palette file to
+your save raw directory.
+
+Palette file names:
+    "colors.txt": The world "default" (worldgen and replacement) palette.
+    "colors_spring.txt": The palette displayed during spring.
+    "colors_summer.txt": The palette displayed during summer.
+    "colors_autumn.txt": The palette displayed during autumn.
+    "colors_winter.txt": The palette displayed during winter.
+
+If you do not provide a world default palette, palette switching will be
+disabled for the current world. The seasonal palettes are optional, the default
+palette is not! The default palette will be used to replace any missing
+seasonal palettes and during worldgen.
+
+When the world is unloaded or this script is disabled, the system default color
+palette ("/data/init/colors.txt") will be loaded. The system default palette
+will always be used in the main menu, but your custom palettes should be used
+everywhere else.
+
+Usage:
+
+    ``season-palette start|enable`` or ``enable season-palette``:
+        Begin swapping seasonal color palettes.
+
+    ``season-palette stop|disable`` or ``disable season-palette``:
+        Stop swapping seasonal color palettes and load the default color
+        palette.
+
+If loaded as a module this script will export a single Lua function:
+
+    ``LoadPalette(path)``:
+        Load a color palette from the text file at "path". This file must be in
+        the same format as "/data/init/colors.txt". If there is an error any
+        changes will be reverted and this function will return false (returns
+        true normally).
+]====]
 
 local mappingsA = {
     ["BLACK"] = 0,
@@ -61,7 +106,7 @@ end
 function LoadPalette(path)
     -- Strip off the DF path (if it is included) so the log message is shorter.
     print("Attempting to load color palette file: \""..trimPrefix(dfhack.getDFPath(), path).."\"")
-    
+
     local file, err = io.open(path, "rb")
     if file == nil then
         -- Use a less verbose error message to keep the console cleaner.
@@ -69,10 +114,10 @@ function LoadPalette(path)
         print("  Could not open file.")
         return false
     end
-    
+
     local contents = file:read("*a")
     file:close()
-    
+
     -- Keep track of the old colors so we can revert to them if we have trouble parsing the new color file.
     local revcolors = {}
     for a = 0, 15, 1 do
@@ -81,7 +126,7 @@ function LoadPalette(path)
             revcolors[a][b] = df.global.enabler.ccolor[a][b]
         end
     end
-    
+
     -- If only I could use the Rubble raw parser here... Oh well, I suppose regular expressions will do almost as well.
     for a, b, v in string.gmatch(contents, "%[([A-Z]+)_([RGB]):([0-9]+)%]") do
         local ka, kb, v = mappingsA[a], mappingsB[b], tonumber(v)
@@ -95,7 +140,7 @@ function LoadPalette(path)
             print("  Color file parse error (all changes reverted).")
             return false
         end
-        
+
         if v == 0 then
             df.global.enabler.ccolor[ka][kb] = 0
         else
@@ -113,47 +158,7 @@ end
 if moduleMode then return end
 
 function usage()
-    print [==[
-Swap color palettes when the seasons change.
-
-For this script to work you need to add *at least* one color palette file to
-your save raw directory.
-
-Palette file names:
-    "colors.txt": The world "default" (worldgen and replacement) palette.
-    "colors_spring.txt": The palette displayed during spring.
-    "colors_summer.txt": The palette displayed during summer.
-    "colors_autumn.txt": The palette displayed during autumn.
-    "colors_winter.txt": The palette displayed during winter.
-
-If you do not provide a world default palette, palette switching will be
-disabled for the current world. The seasonal palettes are optional, the default
-palette is not! The default palette will be used to replace any missing
-seasonal palettes and during worldgen.
-
-When the world is unloaded or this script is disabled, the system default color
-palette ("/data/init/colors.txt") will be loaded. The system default palette
-will always be used in the main menu, but your custom palettes should be used
-everywhere else.
-
-Usage:
-    season-palette start|enable
-    enable season-palette
-        Begin swapping seasonal color palettes.
-    
-    season-palette stop|disable
-    disable season-palette
-        Stop swapping seasonal color palettes and load the default color
-        palette.
-    
-    If loaded as a module this script will export a single Lua function:
-    
-    LoadPalette(path)
-        Load a color palette from the text file at "path". This file must be in
-        the same format as "/data/init/colors.txt". If there is an error any
-        changes will be reverted and this function will return false (returns
-        true normally).
-]==]
+    print(help)
 end
 
 args = {...}
@@ -190,10 +195,10 @@ local function seasonSwapLoop()
         LoadPalette(dfhack.getDFPath().."/data/init/colors.txt")
         return
     end
-    
+
     if lastSeason == nil or lastSeason ~= df.global.cur_season then
         lastSeason = df.global.cur_season
-        
+
         -- Try to load the seasonal palette, if that fails fall back on the world default palette.
         if not LoadPalette(dfhack.getSavePath().."/raw/colors"..seasons[lastSeason]..".txt") then
             if seasons[lastSeason] == "" or not LoadPalette(dfhack.getSavePath().."/raw/colors.txt") then
@@ -202,7 +207,7 @@ local function seasonSwapLoop()
             end
         end
     end
-    
+
     dfhack.timeout(50, 'ticks', seasonSwapLoop)
 end
 
