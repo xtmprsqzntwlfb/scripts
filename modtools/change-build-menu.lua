@@ -366,7 +366,7 @@ Command Usage:
     
     change-build-menu revert <ID> <CATEGORY>
         Revert an earlier remove or add operation. It is NOT safe to "remove"
-        and "add"ed building or vice versa, use this option to reverse any
+        an "add"ed building or vice versa, use this option to reverse any
         changes you no longer want/need.
     
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
