@@ -5,7 +5,7 @@ addons:
     packages:
       - lua5.2
 before_install:
-- pip install --user sphinx
+- pip install --user sphinx==1.4
 - mkdir -p $HOME/dfhack
 - wget https://github.com/DFHack/dfhack/archive/develop.tar.gz -O $HOME/dfhack.tar.gz
 - tar xzf $HOME/dfhack.tar.gz -C $HOME/dfhack --strip-components 1
