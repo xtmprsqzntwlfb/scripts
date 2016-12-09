@@ -128,8 +128,8 @@ Then you can call the functions documented here like so:
     -- Example: Remove the carpenters workshop.
     buildmenu.ChangeBuilding("CARPENTERS", "WORKSHOPS", false)
 
-	-- Make it impossible to build walls (not recommended!).
-	local typ, styp = df.building_type.Construction, df.construction_type.Wall
+    -- Make it impossible to build walls (not recommended!).
+    local typ, styp = df.building_type.Construction, df.construction_type.Wall
     buildmenu.ChangeBuildingAdv(typ, styp, -1, "CONSTRUCTIONS", false)
 
 Note that to allow any of your changes to take effect you need to start the
