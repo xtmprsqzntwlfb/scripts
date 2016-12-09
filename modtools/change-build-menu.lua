@@ -1,5 +1,5 @@
 -- Edit the build mode sidebar menus.
--- 
+--
 -- Based on my script for the Rubble addon "Libs/Change Build List".
 
 --[[
@@ -26,6 +26,151 @@ misrepresented as being the original software.
 
 --@ module = true
 --@ enable = true
+
+local usage = [====[
+modtools/change-build-menu
+==========================
+
+Change the build sidebar menus.
+
+This script provides a flexible and comprehensive system for adding and removing
+items from the build sidebar menus. You can add or remove workshops/furnaces by
+text ID, or you can add/remove ANY building via a numeric building ID triplet.
+
+Changes made with this script do not survive a save/load. You will need to redo
+your changes each time the world loads.
+
+Just to be clear: You CANNOT use this script AT ALL if there is no world
+loaded!
+
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+Usage:
+
+modtools/change-build-menu start|enable
+enable modtools/change-build-menu
+    Start the ticker. This needs to be done before any changes will take
+    effect. Note that you can make changes before or after starting the
+    ticker, both options should work equally well.
+
+modtools/change-build-menu stop|disable
+disable modtools/change-build-menu
+    Stop the ticker. Does not clear stored changes. The ticker will
+    automatically stop when the current world is unloaded.
+
+modtools/change-build-menu add <ID> <CATEGORY> [<KEY>]
+    Add the workshop or furnace with the ID <ID> to <CATEGORY>.
+    <KEY> is an optional DF hotkey ID.
+
+    <CATEGORY> may be one of:
+        MAIN_PAGE
+        SIEGE_ENGINES
+        TRAPS
+        WORKSHOPS
+        FURNACES
+        CONSTRUCTIONS
+        MACHINES
+        CONSTRUCTIONS_TRACK
+
+    Valid <ID> values for hardcoded buildings are as follows:
+        CARPENTERS
+        FARMERS
+        MASONS
+        CRAFTSDWARFS
+        JEWELERS
+        METALSMITHSFORGE
+        MAGMAFORGE
+        BOWYERS
+        MECHANICS
+        SIEGE
+        BUTCHERS
+        LEATHERWORKS
+        TANNERS
+        CLOTHIERS
+        FISHERY
+        STILL
+        LOOM
+        QUERN
+        KENNELS
+        ASHERY
+        KITCHEN
+        DYERS
+        TOOL
+        MILLSTONE
+        WOOD_FURNACE
+        SMELTER
+        GLASS_FURNACE
+        MAGMA_SMELTER
+        MAGMA_GLASS_FURNACE
+        MAGMA_KILN
+        KILN
+
+modtools/change-build-menu remove <ID> <CATEGORY>
+    Remove the workshop or furnace with the ID <ID> from <CATEGORY>.
+
+    <CATEGORY> and <ID> may have the same values as for the "add" option.
+
+modtools/change-build-menu revert <ID> <CATEGORY>
+    Revert an earlier remove or add operation. It is NOT safe to "remove"
+    an "add"ed building or vice versa, use this option to reverse any
+    changes you no longer want/need.
+
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+Module Usage:
+
+To use this script as a module put the following somewhere in your own script:
+
+    local buildmenu = reqscript "change-build-menu"
+
+Then you can call the functions documented here like so:
+
+    -- Example: Remove the carpenters workshop.
+    buildmenu.ChangeBuilding("CARPENTERS", "WORKSHOPS", false)
+
+	-- Make it impossible to build walls (not recommended!).
+	local typ, styp = df.building_type.Construction, df.construction_type.Wall
+    buildmenu.ChangeBuildingAdv(typ, styp, -1, "CONSTRUCTIONS", false)
+
+Note that to allow any of your changes to take effect you need to start the
+ticker. See the "Command Usage" section.
+
+Global Functions:
+
+function GetWShopID(btype, bsubtype, bcustom)
+    GetWShopID returns a workshop's or furnace's string ID based on its
+    numeric ID triplet. This string ID *should* match what is expected
+    by eventful for hardcoded buildings.
+
+function GetWShopType(id)
+    GetWShopIDs returns a workshop or furnace's ID numbers as a table.
+    The passed in ID should be the building's string identifier, it makes
+    no difference if it is a custom building or a hardcoded one.
+    The return table is structured like so: `{type, subtype, custom}`
+
+function IsEntityPermitted(id)
+    IsEntityPermitted returns true if DF would normally allow you to build
+    a workshop or furnace. Use this if you want to change a building, but
+    only if it is permitted in the current entity. You do not need to
+    specify an entity, the current fortress race is used.
+
+ChangeBuilding(id, category, [add, [key]])
+ChangeBuildingAdv(typ, subtyp, custom, category, [add, [key]])
+    These two functions apply changes to the build sidebar menus. If "add"
+    is true then the building is added to the specified category, else it
+    is removed. When adding you may specify "key", a string DF hotkey ID.
+
+    The first version of this function takes a workshop or furnace ID as a
+    string, the second takes a numeric ID triplet (which can specify any
+    building, not just workshops or furnaces).
+
+function RevertBuildingChanges(id, category)
+function RevertBuildingChangesAdv(typ, subtyp, custom, category)
+    These two functions revert changes made by "ChangeBuilding" and
+    "ChangeBuildingAdv". Like those two functions there are two versions,
+    a simple one that takes a string ID and one that takes a numeric ID
+    triplet.
+]====]
 
 -- From here until I say otherwise the APIs are generic building manipulation functions from "Libs/Buildings"
 
@@ -117,7 +262,7 @@ function GetWShopType(id)
                     typ = df.building_type.Workshop
                     styp = df.workshop_type.Custom
                 end
-                
+
                 return {
                     type = typ,
                     subtype = styp,
@@ -133,13 +278,13 @@ end
 
 --[[
     -- Examples:
-    
+
     -- Remove the carpenters workshop.
     ChangeBuilding("CARPENTERS", "WORKSHOPS", false)
-    
+
     -- Make it impossible to build walls (not recommended!).
     ChangeBuildingAdv(df.building_type.Construction, df.construction_type.Wall, -1, "CONSTRUCTIONS", false)
-    
+
     -- Add the mechanic's workshops to the machines category.
     ChangeBuilding("MECHANICS", "MACHINES", true, "CUSTOM_E")
 ]]
@@ -173,18 +318,18 @@ stuffToChange = stuffToChange or {}
 -- Use this if you want to change a building, but only if it is permitted in the current entity.
 function IsEntityPermitted(id)
     local wshop = GetWShopType(id)
-    
+
     -- It's hard coded, so yes, of course it's permitted, why did you even ask?
     if wshop.custom == -1 then
         return true
     end
-    
+
     local entsrc = df.historical_entity.find(df.global.ui.civ_id)
     if entsrc == nil then
         return false
     end
     local entity = entsrc.entity_raw
-    
+
     for _, bid in ipairs(entity.workshops.permitted_building_id) do
         if wshop.custom == bid then
             return true
@@ -198,7 +343,7 @@ function RevertBuildingChanges(id, category)
     if wshop == nil then
         qerror("RevertBuildingChanges: Invalid workshop ID: "..id)
     end
-    
+
     RevertBuildingChangesAdv(wshop.type, wshop.subtype, wshop.custom, category)
 end
 
@@ -212,7 +357,7 @@ function RevertBuildingChangesAdv(typ, subtyp, custom, category)
             qerror("ChangeBuilding: Invalid category ID: "..category)
         end
     end
-    
+
     for i = #stuffToChange, 1, -1 do
         local change = stuffToChange[i]
         if change.category == cat then
@@ -233,19 +378,19 @@ function ChangeBuilding(id, category, add, key)
             qerror("ChangeBuilding: Invalid category ID: "..category)
         end
     end
-    
+
     local wshop = GetWShopType(id)
     if wshop == nil then
         qerror("ChangeBuilding: Invalid workshop ID: "..id)
     end
-    
+
     if tonumber(key) == nil then
         key = df.interface_key[key]
     end
     if key == nil then
         key = 0
     end
-    
+
     ChangeBuildingAdv(wshop.type, wshop.subtype, wshop.custom, category, add, key)
 end
 
@@ -259,14 +404,14 @@ function ChangeBuildingAdv(typ, subtyp, custom, category, add, key)
             qerror("ChangeBuilding: Invalid category ID: "..category)
         end
     end
-    
+
     if tonumber(key) == nil then
         key = df.interface_key[key]
     end
     if key == nil then
         key = 0
     end
-    
+
     table.insert(stuffToChange, {
         category = cat,
         add = add,
@@ -280,152 +425,12 @@ function ChangeBuildingAdv(typ, subtyp, custom, category, add, key)
 end
 
 -- Return early if module mode. Note that the ticker will not start in module mode!
--- To start the ticker you need to enable the script first ("enable change-build-menu").
+-- To start the ticker you need to enable the script first ("enable modtools/change-build-menu").
 if moduleMode then return end
-
-function usage()
-    dfhack.print [==[
-Change the build sidebar menus.
-
-This script provides a flexible and comprehensive system for adding and removing
-items from the build sidebar menus. You can add or remove workshops/furnaces by
-text ID, or you can add/remove ANY building via a numeric building ID triplet.
-
-Changes made with this script do not survive a save/load. You will need to redo
-your changes each time the world loads.
-
-Just to be clear: You CANNOT use this script AT ALL if there is no world
-loaded!
-
-* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-
-Command Usage:
-
-    change-build-menu start|enable
-    enable change-build-menu
-        Start the ticker. This needs to be done before any changes will take
-        effect. Note that you can make changes before or after starting the
-        ticker, both options should work equally well.
-    
-    change-build-menu stop|disable
-    disable change-build-menu
-        Stop the ticker. Does not clear stored changes. The ticker will
-        automatically stop when the current world is unloaded.
-    
-    change-build-menu add <ID> <CATEGORY> [<KEY>]
-        Add the workshop or furnace with the ID <ID> to <CATEGORY>.
-        <KEY> is an optional DF hotkey ID.
-        
-        <CATEGORY> may be one of:
-            MAIN_PAGE
-            SIEGE_ENGINES
-            TRAPS
-            WORKSHOPS
-            FURNACES
-            CONSTRUCTIONS
-            MACHINES
-            CONSTRUCTIONS_TRACK
-    
-        Valid <ID> values for hardcoded buildings are as follows:
-            CARPENTERS
-            FARMERS
-            MASONS
-            CRAFTSDWARFS
-            JEWELERS
-            METALSMITHSFORGE
-            MAGMAFORGE
-            BOWYERS
-            MECHANICS
-            SIEGE
-            BUTCHERS
-            LEATHERWORKS
-            TANNERS
-            CLOTHIERS
-            FISHERY
-            STILL
-            LOOM
-            QUERN
-            KENNELS
-            ASHERY
-            KITCHEN
-            DYERS
-            TOOL
-            MILLSTONE
-            WOOD_FURNACE
-            SMELTER
-            GLASS_FURNACE
-            MAGMA_SMELTER
-            MAGMA_GLASS_FURNACE
-            MAGMA_KILN
-            KILN
-    
-    change-build-menu remove <ID> <CATEGORY>
-        Remove the workshop or furnace with the ID <ID> from <CATEGORY>.
-        
-        <CATEGORY> and <ID> may have the same values as for the "add" option.
-    
-    change-build-menu revert <ID> <CATEGORY>
-        Revert an earlier remove or add operation. It is NOT safe to "remove"
-        an "add"ed building or vice versa, use this option to reverse any
-        changes you no longer want/need.
-    
-* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-
-Module Usage:
-
-    To use this script as a module put the following somewhere in your own script:
-    
-        local buildmenu = reqscript "change-build-menu"
-    
-    Then you can call the functions documented here like so:
-    
-        -- Example: Remove the carpenters workshop.
-        buildmenu.ChangeBuilding("CARPENTERS", "WORKSHOPS", false)
-    
-    Note that to allow any of your changes to take effect you need to start the
-    ticker. See the "Command Usage" section.
-    
-Global Functions:
-    
-    function GetWShopID(btype, bsubtype, bcustom)
-        GetWShopID returns a workshop or furnace's string ID based on it's
-        numeric ID triplet. This string ID *should* match what is expected
-        by eventful for hardcoded buildings.
-    
-    function GetWShopType(id)
-        GetWShopIDs returns a workshop or furnace's ID numbers as a table.
-        The passed in ID should be the building's string identifier, it makes
-        no difference if it is a custom building or a hardcoded one.
-        The return table is structured like so: `{type, subtype, custom}`
-    
-    function IsEntityPermitted(id)
-        IsEntityPermitted returns true if DF would normally allow you to build
-        a workshop or furnace. Use this if you want to change a building, but
-        only if it is permitted in the current entity. You do not need to
-        specify an entity, the current fortress race is used.
-    
-    ChangeBuilding(id, category, [add, [key]])
-    ChangeBuildingAdv(typ, subtyp, custom, category, [add, [key]])
-        These two functions apply changes to the build sidebar menus. If "add"
-        is true then the building is added to the specified category, else it
-        is removed. When adding you may specify "key", a string DF hotkey ID.
-        
-        The first version of this function takes a workshop or furnace ID as a
-        string, the second takes a numeric ID triplet (which can specify any
-        building, not just workshops or furnaces).
-    
-    function RevertBuildingChanges(id, category)
-    function RevertBuildingChangesAdv(typ, subtyp, custom, category)
-        These two functions revert changes made by "ChangeBuilding" and
-        "ChangeBuildingAdv". Like those two functions there are two versions,
-        a simple one that takes a string ID and one that takes a numeric ID
-        triplet.
-]==]
-end
 
 if not dfhack.isWorldLoaded() then
     dfhack.printerr("change-build-menu: No World Loaded!")
-    usage()
+    dfhack.print(usage)
     return
 end
 
@@ -452,11 +457,11 @@ if #args >= 1 then
         RevertBuildingChanges(args[2], args[3])
         return
     else
-        usage()
+        dfhack.print(usage)
         return
     end
 else
-    usage()
+    dfhack.print(usage)
     return
 end
 
@@ -469,9 +474,9 @@ local function checkSidebar()
     if tickerOn then
         dfhack.timeout(1, "frames", checkSidebar)
     end
-    
+
     local sidebar = df.global.ui_sidebar_menus.building
-    
+
     if not sidebarIsBuild and df.global.ui.main.mode ~= df.ui_sidebar_mode.Build then
         -- Not in build mode.
         return
@@ -487,16 +492,16 @@ local function checkSidebar()
     -- Either we just entered build mode or the category has changed.
     sidebarIsBuild = true
     sidebarLastCat = sidebar.category_id
-    
+
     -- Changes made here do not persist, they need to be made every time the side bar is shown.
     -- Will just deleting stuff cause a memory leak? (probably, but how can it be avoided?)
-    
+
     local stufftoremove = {}
     local stufftoadd = {}
     for i, btn in ipairs(sidebar.choices_all) do
         if getmetatable(btn) == "interface_button_construction_building_selectorst" then
             for _, change in ipairs(stuffToChange) do
-                if not change.add and sidebar.category_id == change.category and 
+                if not change.add and sidebar.category_id == change.category and
                 btn.building_type == change.id.type and btn.building_subtype == change.id.subtype and
                 btn.custom_type == change.id.custom then
                     table.insert(stufftoremove, i)
@@ -509,7 +514,7 @@ local function checkSidebar()
             table.insert(stufftoadd, change)
         end
     end
-    
+
     -- Do the actual adding and removing.
     -- We need to iterate the list backwards to keep from invalidating the stored indexes.
     for x = #stufftoremove, 1, -1 do
@@ -524,7 +529,7 @@ local function checkSidebar()
         button.building_type = change.id.type
         button.building_subtype = change.id.subtype
         button.custom_type = change.id.custom
-        
+
         local last = #sidebar.choices_visible
         sidebar.choices_visible:insert(last, button)
         sidebar.choices_all:insert(last, button)
@@ -541,14 +546,14 @@ dfhack.onStateChange.ChangeBuildList = function(event)
         -- Set ticker flags...
         tickerOn = true
         tickerStart = false
-        
+
         -- Then start the ticker itself.
         checkSidebar()
     end
     if event == SC_WORLD_UNLOADED and tickerOn then
         -- This will kill the ticker next frame.
         tickerOn = false
-        
+
         -- The Rubble version doesn't need to worry about this stuff, but we do here...
         sidebarLastCat = -1
         sidebarIsBuild = false
