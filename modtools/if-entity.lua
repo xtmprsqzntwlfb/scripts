@@ -17,9 +17,9 @@ been loaded yet.
 
 Usage:
 
--id
+- ``id``:
     Specify the entity ID to match
--cmd [ commandStrs ]
+- ``cmd [ commandStrs ]``:
     Specify the command to be run if the current entity matches the entity
     given via -id
 
