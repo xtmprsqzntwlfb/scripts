@@ -4,17 +4,16 @@
 
 launch
 ======
-Activate with a cursor on screen and you will go there rapidly, attack
+Activate with a cursor on screen and you will go there rapidly. Attack
 something first to send them there.
 
 ]====]
 function launch(unitSource,unitTarget)
   local curpos
-  if df.global.ui_advmode.menu==1 then
-    curpos=df.global.cursor
+  if df.global.ui_advmode.menu == df.ui_advmode_menu.Look then
+    curpos = df.global.cursor
   else
-    print ("No cursor located!  You would have slammed into the ground and exploded.") --seriously, kasplut!
-    return
+    qerror("No [l] cursor located!  You would have slammed into the ground and exploded.") --seriously, kasplut!
   end
 
 
@@ -78,6 +77,10 @@ function launch(unitSource,unitTarget)
   end
   unitSource.flags1.projectile=true
   unitSource.flags1.on_ground=false
+end
+
+if not (dfhack.isMapLoaded() and dfhack.world.isAdventureMode()) then
+  qerror("This script can only be used in adventure mode.")
 end
 
 unitTarget = curpos
