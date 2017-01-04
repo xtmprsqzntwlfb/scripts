@@ -90,23 +90,29 @@ function createUnit(race_id, caste_id)
 
   local gui = require 'gui'
 
-  df.global.world.arena_spawn.race:resize(0)
-  df.global.world.arena_spawn.race:insert(0,race_id) --df.global.ui.race_id)
+  if not dfhack.world.isArena() then
+    -- This is already populated in arena mode, so don't clear it then (#994)
+    df.global.world.arena_spawn.race:resize(0)
+    df.global.world.arena_spawn.race:insert(0,race_id)
 
-  df.global.world.arena_spawn.caste:resize(0)
-  df.global.world.arena_spawn.caste:insert(0,caste_id)
+    df.global.world.arena_spawn.caste:resize(0)
+    df.global.world.arena_spawn.caste:insert(0,caste_id)
 
-  df.global.world.arena_spawn.creature_cnt:resize(0)
-  df.global.world.arena_spawn.creature_cnt:insert(0,0)
-
-  --df.global.world.arena_spawn.equipment.skills:insert(0,99)
-  --df.global.world.arena_spawn.equipment.skill_levels:insert(0,0)
+    df.global.world.arena_spawn.creature_cnt:resize(0)
+    df.global.world.arena_spawn.creature_cnt:insert(0,0)
+  end
 
   local old_gametype = df.global.gametype
   df.global.gametype = df.game_type.DWARF_ARENA
+  gui.simulateInput(dwarfmodeScreen, 'D_LOOK_ARENA_CREATURE')
 
-  gui.simulateInput(dfhack.gui.getCurViewscreen(), 'D_LOOK_ARENA_CREATURE')
-  gui.simulateInput(dfhack.gui.getCurViewscreen(), 'SELECT')
+  local spawnScreen = dfhack.gui.getCurViewscreen()
+  if dfhack.world.isArena() then
+    -- Just modify the current screen in arena mode (#994)
+    spawnScreen.race:insert(0, race_id)
+    spawnScreen.caste:insert(0, caste_id)
+  end
+  gui.simulateInput(spawnScreen, 'SELECT')
 
   df.global.gametype = old_gametype
 
