@@ -152,6 +152,7 @@ function LoadPalette(path)
             df.global.enabler.ccolor[ka][kb] = v
         end
     end
+    df.global.gps.force_full_display_count = 1
     return true
 end
 
@@ -162,7 +163,7 @@ function usage()
 end
 
 args = {...}
-if dfhack_flags and dfhack_flags.enable then
+if dfhack_flags.enable then
     table.insert(args, dfhack_flags.enable_state and 'enable' or 'disable')
 end
 
