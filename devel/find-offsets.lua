@@ -1,4 +1,4 @@
--- Find some offsets for linux.
+-- Find some global addresses
 --[====[
 
 devel/find-offsets
