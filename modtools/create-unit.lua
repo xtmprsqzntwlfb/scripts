@@ -387,27 +387,23 @@ function nameUnit(id, entityRawName, civ_id)
   name.parts_of_speech[0] = language_word_table.parts[0][lastName1]
   name.words[1] = language_word_table.words[0][lastName2]
   name.parts_of_speech[1] = language_word_table.parts[0][lastName2]
-  name.first_name = df.language_word.find(language_word_table.words[0][firstName]).forms[language_word_table.parts[0][firstName]]
+  local language = nil
+  for _, lang in pairs(df.global.world.raws.language.translations) do
+    if lang.name == entity_raw.translation then
+      language = lang
+    end
+  end
+  if language then
+    name.first_name = language.words[firstName].value
+  else
+    name.first_name = df.language_word.find(language_word_table.words[0][firstName]).forms[language_word_table.parts[0][firstName]]
+  end
   name.has_name = true
   name.language = translationIndex
-  name = unit.name
-  name.words[0] = language_word_table.words[0][lastName1]
-  name.parts_of_speech[0] = language_word_table.parts[0][lastName1]
-  name.words[1] = language_word_table.words[0][lastName2]
-  name.parts_of_speech[1] = language_word_table.parts[0][lastName2]
-  name.first_name = df.language_word.find(language_word_table.words[0][firstName]).forms[language_word_table.parts[0][firstName]]
-  name.has_name = true
-  name.language = translationIndex
+  unit.name:assign(name)
   if unit.hist_figure_id ~= -1 then
     local histfig = df.historical_figure.find(unit.hist_figure_id)
-    name = histfig.name
-    name.words[0] = language_word_table.words[0][lastName1]
-    name.parts_of_speech[0] = language_word_table.parts[0][lastName1]
-    name.words[1] = language_word_table.words[0][lastName2]
-    name.parts_of_speech[1] = language_word_table.parts[0][lastName2]
-    name.first_name = df.language_word.find(language_word_table.words[0][firstName]).forms[language_word_table.parts[0][firstName]]
-    name.has_name = true
-    name.language = translationIndex
+    histfig.name:assign(name)
   end
 end
 
