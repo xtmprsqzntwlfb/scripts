@@ -112,7 +112,7 @@ function processTrigger(command)
 end
 
 function getitemType(item)
- if item:getSubtype() ~= -1 then
+ if item:getSubtype() ~= -1 and dfhack.items.getSubtypeDef(item:getType(),item:getSubtype()) then
   itemType = dfhack.items.getSubtypeDef(item:getType(),item:getSubtype()).id
  else
   itemType = df.item_type[item:getType()]
@@ -163,7 +163,9 @@ function equipHandler(unit, item, isEquip)
  table.mode = mode
  table.item = df.item.find(item)
  table.unit = df.unit.find(unit)
- handler(table)
+ if table.item and table.unit then -- they must both be not nil or errors will occur after this point with instant reactions.
+  handler(table)
+ end
 end
 
 eventful.onInventoryChange.equipmentTrigger = function(unit, item, item_old, item_new)
