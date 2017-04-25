@@ -1,13 +1,9 @@
 -- Creates a unit.  Beta; use at own risk.
-
 -- Originally created by warmist
 -- Significant contributions over time by Boltgun, Dirst, Expwnent, lethosor, mifki and Putnam.
-
 -- version 0.55
 -- This is a beta version. Use at your own risk.
-
 -- Modifications from 0.5: civ -1 creates are NOT historical figures, mitigated screen-movement bug in createUnit()
-
 --[[
   TODO
     children and babies: set child/baby job
