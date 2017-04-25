@@ -108,11 +108,11 @@ function createUnit(race_id, caste_id, location)
   gui.simulateInput(dwarfmodeScreen, 'D_LOOK_ARENA_CREATURE')
 
 -- move cursor to location instead of moving unit later, corrects issue of missing mapdata when moving the created unit.
-	if location then
-		df.global.cursor.x = tonumber(location[1])
-		df.global.cursor.y = tonumber(location[2])
-		df.global.cursor.z = tonumber(location[3])
-	end
+  if location then
+    df.global.cursor.x = tonumber(location[1])
+    df.global.cursor.y = tonumber(location[2])
+    df.global.cursor.z = tonumber(location[3])
+  end
 
   local spawnScreen = dfhack.gui.getCurViewscreen()
   if dfhack.world.isArena() then
