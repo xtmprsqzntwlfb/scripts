@@ -1,9 +1,13 @@
 -- Creates a unit.  Beta; use at own risk.
+
 -- Originally created by warmist
 -- Significant contributions over time by Boltgun, Dirst, Expwnent, lethosor, mifki and Putnam.
+
 -- version 0.55
 -- This is a beta version. Use at your own risk.
+
 -- Modifications from 0.5: civ -1 creates are NOT historical figures, mitigated screen-movement bug in createUnit()
+
 --[[
   TODO
     children and babies: set child/baby job
@@ -277,7 +281,7 @@ function createNemesis(trgunit,civ_id,group_id)
 end
 
 --createNemesis(u, u.civ_id,group)
-function createUnitInCiv(race_id, caste_id, location, civ_id, group_id)
+function createUnitInCiv(race_id, caste_id, civ_id, group_id, location)
   local uid = createUnit(race_id, caste_id, location)
   local unit = df.unit.find(uid)
   if ( civ_id ) then
@@ -287,11 +291,11 @@ function createUnitInCiv(race_id, caste_id, location, civ_id, group_id)
 end
 
 function createUnitInFortCiv(race_id, caste_id, location)
-  return createUnitInCiv(race_id, caste_id, location, df.global.ui.civ_id)
+  return createUnitInCiv(race_id, caste_id, df.global.ui.civ_id, 0, location)
 end
 
 function createUnitInFortCivAndGroup(race_id, caste_id, location)
-  return createUnitInCiv(race_id, caste_id, location, df.global.ui.civ_id, df.global.ui.group_id)
+  return createUnitInCiv(race_id, caste_id, df.global.ui.civ_id, df.global.ui.group_id, location)
 end
 
 function domesticate(uid, group_id)
@@ -498,7 +502,7 @@ local unitId
 if civ_id == -1 then
     unitId = createUnit(raceIndex, casteIndex, args.location)
   else
-    unitId = createUnitInCiv(raceIndex, casteIndex, args.location, civ_id, group_id)
+    unitId = createUnitInCiv(raceIndex, casteIndex, civ_id, group_id, args.location)
 end
 
 if civ_id then -- moved it here made more sense... why isn't this done inside of nemesis, above?
@@ -579,6 +583,7 @@ if args.name then
 else
   local unit = df.unit.find(unitId)
   unit.name.has_name = false
+  unit.name.first_name = "" -- remove the first name altogether. gets rid of units having number names.
   if unit.status.current_soul then
     unit.status.current_soul.name.has_name = false
   end
@@ -593,7 +598,7 @@ if args.nick and type(args.nick) == 'string' then
 end
 
 
---[[ depracated by amostubal.  no longeer necessary as we move the cursor in the creation of the unit.  no longer needs to utilize teleport...
+--[[ depracated by amostubal.  no longer necessary as we move the cursor in the creation of the unit.  no longer needs to utilize teleport...
 if args.location then
   local u = df.unit.find(unitId)
   local pos = df.coord:new()
