@@ -25,6 +25,7 @@ local usage = [====[
 modtools/create-unit
 ====================
 Creates a unit.  Usage::
+
     -race raceName
         specify the race of the unit to be created
         examples:
@@ -207,11 +208,13 @@ function createFigure(trgunit,he,he_group)
   -- set values that seem related to state and do event
   --change_state(hf, dfg.ui.site_id, region_pos)
 
+
   --lets skip skills for now
   --local skills = df.historical_figure_info.T_skills:new() -- skills snap shot
   -- ...
   -- note that innate skills are automaticaly set by DF
   hf.info.skills = {new=true}
+
 
   he.histfig_ids:insert('#', hf.id)
   he.hist_figures:insert('#', hf)
@@ -348,6 +351,7 @@ function wild(uid)
     -- region = df.global.world.map.map_blocks[df.global.world.map.x_count_block*x+y]
   end
 end
+
 
 function nameUnit(id, entityRawName, civ_id)
   --pick a random appropriate name
