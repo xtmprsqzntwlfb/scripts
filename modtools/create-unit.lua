@@ -601,16 +601,3 @@ if args.nick and type(args.nick) == 'string' then
   dfhack.units.setNickname(df.unit.find(unitId), args.nick)
 end
 
-
---[[ depracated by amostubal.  no longer necessary as we move the cursor in the creation of the unit.  no longer needs to utilize teleport...
-if args.location then
-  local u = df.unit.find(unitId)
-  local pos = df.coord:new()
-  pos.x = tonumber(args.location[1])
-  pos.y = tonumber(args.location[2])
-  pos.z = tonumber(args.location[3])
-  local teleport = dfhack.script_environment('teleport')
-  teleport.teleport(u, pos)
-end
---]]
-
