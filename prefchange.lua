@@ -348,7 +348,7 @@ end
 local opt = ...
 local profilename
 
-if opt then
+if opt and opt ~= "help" then
     if opt=="show" then
         printpref_all_dwarves()
         return
