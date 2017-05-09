@@ -400,8 +400,8 @@ if opt and opt ~= "help" then
 else
     print ("Sets preferences for mooding to include a weapon type, equipment type, and material.")
     print ("Valid options:")
-    print ("show        -- show preferences of all units")
-    print ("c        -- clear preferences of selected unit")
+    print ("show       -- show preferences of all units")
+    print ("c          -- clear preferences of selected unit")
     print ("all        -- clear preferences of all units")
     print ("axp        -- likes axes, breastplates, and steel")
     print ("has        -- likes hammers, mail shirts, and steel")
