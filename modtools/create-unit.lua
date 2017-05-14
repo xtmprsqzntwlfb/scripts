@@ -587,7 +587,6 @@ if args.name then
 else
   local unit = df.unit.find(unitId)
   unit.name.has_name = false
-  unit.name.first_name = "" -- remove the first name altogether. gets rid of units having number names.
   if unit.status.current_soul then
     unit.status.current_soul.name.has_name = false
   end
