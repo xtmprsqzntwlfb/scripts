@@ -212,6 +212,9 @@ function bedroom_list:onRenderBody(p)
     end
 
     p:newline(40)
+    p:key_string('D_NOBLES', has_manager() and 'Replace manager' or 'Assign manager')
+
+    p:newline(40)
     p:key_string('UNITJOB_MANAGER', 'Open manager')
 end
 
@@ -232,6 +235,11 @@ function bedroom_list:onInput(keys)
     elseif keys.UNITJOB_MANAGER then
         dfhack.screen.show(df.viewscreen_jobmanagementst:new())
         self.dirty = true
+    elseif keys.D_NOBLES then
+        dfhack.gui.getViewscreenByType(df.viewscreen_dwarfmodest, 0):feed_key(df.interface_key.D_NOBLES)
+        local scr = dfhack.gui.getViewscreenByType(df.viewscreen_layer_noblelistst)
+        -- move to manager
+        scr.layer_objects[0].cursor = 4
     end
 end
 
