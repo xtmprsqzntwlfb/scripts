@@ -923,7 +923,7 @@ local function find_current_weather()
     if os_type == 'windows' then
         zone = zoomed_searcher('crime_next_id', 512)
     elseif os_type == 'darwin' then
-        zone = zoomed_searcher('cursor', -64)
+        zone = zoomed_searcher('cursor', 128, true)
     elseif os_type == 'linux' then
         zone = zoomed_searcher('ui_selected_unit', 512)
     end
