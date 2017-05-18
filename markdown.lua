@@ -19,9 +19,9 @@ document containing the text from multiple screens (eg: text screens
 from several dwarves, or text screens from multiple artifacts/items,
 or some combination).
 
-Usage:  ``markdown [/n] [filename]``
+Usage:  ``markdown [-n] [filename]``
 
-:/n:    overwrites contents of output file
+:-n:    overwrites contents of output file
 :filename:
         if provided, save to :file:`md_{filename}.md` instead
         of the default :file:`md_export.md`
@@ -54,7 +54,7 @@ end
 local writemode = 'a'
 
 -- check if we want to append to an existing file (default) or overwrite previous contents
-if args[1] == '/n' then
+if args[1] == '-n' or args[1] == '/n' then
     writemode = 'w'
     table.remove(args, 1)
 end
