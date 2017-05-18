@@ -402,6 +402,7 @@ end
 
 function load_screen_options:refresh()
     self.frame_title = "Load game: " .. self.save.folder_name
+    self.frame_width = math.min(df.global.gps.dimx, math.max(40, #self.frame_title + 4))
 end
 
 function load_screen_options:dialog(title, text, input, callback)
