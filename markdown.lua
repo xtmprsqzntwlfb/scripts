@@ -42,13 +42,6 @@ safe to attempt running the script with any screen active, with an
 error message to inform you when the selected screen is not appropriate
 for this script.
 
-.. note::
-    The text will be encoded in CP437, which is likely to be incompatible
-    with the system default.  This causes incorrect display of special
-    characters (eg. :guilabel:`é õ ç` = ``é õ ç``).  You can fix this by
-    opening the file in an editor such as Notepad++ and selecting the
-    correct encoding before using the text.
-
 ]====]
 
 local args = {...}
@@ -175,12 +168,12 @@ if flerb == 'textviewer' then
     if lines ~= nil then
 
         local log = getFileHandle()
-        log:write('### ' .. scrn.title .. '\n')
+        log:write('### ' .. dfhack.df2utf(scrn.title) .. '\n')
 
-        print('Exporting ' .. scrn.title .. '\n')
+        print('Exporting ' .. dfhack.df2console(scrn.title) .. '\n')
 
         for n,x in ipairs(lines) do
-            log:write(reformat(x.value).." ")
+            log:write(reformat(dfhack.df2utf(x.value)).." ")
 -- debug output
 --            print(x.value)
         end
