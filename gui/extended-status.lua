@@ -147,12 +147,15 @@ function bedroom_list:refresh()
         {'Units without bedrooms', 'uwithout'}
     }
     self.data.raw = {}
-    for _, d in pairs(self.data) do d.list = {} end
+    for _, d in ipairs(self.data) do
+        d.list = {}
+        self.data.raw[d[2]] = 0
+    end
     local function add(key, item)
         for _, d in pairs(self.data) do
             if d[2] == key then
                 table.insert(d.list, item)
-                self.data.raw[key] = (self.data.raw[key] or 0) + 1
+                self.data.raw[key] = self.data.raw[key] + 1
             end
         end
     end
