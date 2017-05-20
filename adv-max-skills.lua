@@ -12,5 +12,12 @@ if dfhack.gui.getCurFocus() ~= 'setupadventure' then
 end
 
 adv = dfhack.gui.getCurViewscreen().adventurer
-for k, v in pairs(adv.skills) do adv.skills[k] = 20 end
-for k, v in pairs(adv.attributes) do adv.attributes[k] = 6 end
+for k in pairs(adv.skills) do
+    adv.skills[k] = df.skill_rating.Legendary5
+end
+for k in pairs(adv.physical_levels) do
+    adv.physical_levels[k] = df.adventurer_attribute_level.Superior
+end
+for k in pairs(adv.mental_levels) do
+    adv.mental_levels[k] = df.adventurer_attribute_level.Superior
+end
