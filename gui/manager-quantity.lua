@@ -27,8 +27,8 @@ if df.viewscreen_jobmanagementst:is_instance(scr) then
             value = tonumber(value)
             local i = scr.sel_idx
             local old_total = orders[i].amount_total
-            orders[i].amount_total = math.max(1, value)
-            orders[i].amount_left = math.max(1, orders[i].amount_left + (value - old_total))
+            orders[i].amount_total = math.max(0, value)
+            orders[i].amount_left = math.max(0, orders[i].amount_left + (value - old_total))
         else
             show_error(value .. " is not a number!")
         end
