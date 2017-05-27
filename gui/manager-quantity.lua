@@ -19,8 +19,8 @@ function show_error(text)
     dialog.showMessage("Error", text, COLOR_LIGHTRED)
 end
 
-if dfhack.gui.getCurFocus() == 'jobmanagement' then
-    local scr = dfhack.gui.getCurViewscreen()
+local scr = dfhack.gui.getCurViewscreen()
+if df.viewscreen_jobmanagementst:is_instance(scr) then
     local orders = df.global.world.manager_orders
     function set_quantity(value)
         if tonumber(value) then
