@@ -186,6 +186,7 @@ function SiegeEngine:renderTargetView(target_min, target_max)
     local view = self:getViewport()
     local map = self.df_layout.map
     local map_dc = gui.Painter.new(map)
+    map_dc:map(true)
 
     plugin.paintAimScreen(
         self.building, view:getPos(),
