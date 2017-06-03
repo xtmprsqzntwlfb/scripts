@@ -72,7 +72,7 @@ local function paintMapTile(dc, vp, cursor, pos, ...)
     if not same_xyz(cursor, pos) then
         local stile = vp:tileToScreen(pos)
         if stile.z == 0 then
-            dc:seek(stile.x,stile.y):char(...)
+            dc:map(true):seek(stile.x,stile.y):char(...):map(false)
         end
     end
 end
