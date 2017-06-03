@@ -186,6 +186,7 @@ function SiegeEngine:renderTargetView(target_min, target_max)
     local view = self:getViewport()
     local map = self.df_layout.map
     local map_dc = gui.Painter.new(map)
+    map_dc:map(true)
 
     plugin.paintAimScreen(
         self.building, view:getPos(),
@@ -239,14 +240,14 @@ function SiegeEngine:onRenderBody_main(dc)
         dc:string("None (default)")
     end
 
-    dc:newline(3):key('CUSTOM_R'):string(": Rectangle")
+    dc:newline(3):key_string('CUSTOM_R', "Rectangle")
     if last_target_min then
-        dc:string(", "):key('CUSTOM_P'):string(": Paste")
+        dc:string(", "):key_string('CUSTOM_P', "Paste")
     end
     dc:newline(3)
     if target_min then
-        dc:key('CUSTOM_X'):string(": Clear, ")
-        dc:key('CUSTOM_Z'):string(": Zoom")
+        dc:key_string('CUSTOM_X', "Clear, ")
+        dc:key_string('CUSTOM_Z', "Zoom")
     end
 
     dc:newline():newline(1)
@@ -254,7 +255,7 @@ function SiegeEngine:onRenderBody_main(dc)
         dc:string("Uses ballista arrows")
     else
         local item = plugin.getAmmoItem(self.building)
-        dc:key('CUSTOM_U'):string(": Use ")
+        dc:key_string('CUSTOM_U', "Use ")
         if item_choice_idx[item] then
             dc:string(item_choices[item_choice_idx[item]].caption)
         else
@@ -263,12 +264,12 @@ function SiegeEngine:onRenderBody_main(dc)
     end
 
     dc:newline():newline(1)
-    dc:key('CUSTOM_T'):string(": Take from stockpile"):newline(3)
+    dc:key_string('CUSTOM_T', "Take from stockpile"):newline(3)
     local links = plugin.getStockpileLinks(self.building)
     local bottom = dc.height - 5
     if links then
-        dc:key('CUSTOM_D'):string(": Delete, ")
-        dc:key('CUSTOM_O'):string(": Zoom"):newline()
+        dc:key_string('CUSTOM_D', "Delete, ")
+        dc:key_string('CUSTOM_O', "Zoom"):newline()
         self:renderStockpiles(dc, links, bottom-2-dc:cursorY())
         dc:newline():newline()
     end
@@ -404,7 +405,7 @@ function SiegeEngine:onRenderBody_aim(dc)
 
     local target_min, target_max = plugin.getTargetArea(self.building)
     if target_min then
-        dc:newline(1):key('CUSTOM_Z'):string(": Zoom to current target")
+        dc:newline(1):key_string('CUSTOM_Z', "Zoom to current target")
     end
 
     if first then
@@ -449,9 +450,9 @@ function SiegeEngine:onRenderBody_pile(dc)
 
         if plugin.isLinkedToPile(self.building, sel) then
             dc:string("Already taking from here"):newline():newline(2)
-            dc:key('CUSTOM_D'):string(": Delete link")
+            dc:key_string('CUSTOM_D', "Delete link")
         else
-            dc:key('SELECT'):string(": Take from this pile")
+            dc:key_string('SELECT', "Take from this pile")
         end
     elseif sel then
         dc:string(utils.getBuildingName(sel), COLOR_DARKGREY)
@@ -497,8 +498,9 @@ function SiegeEngine:onRenderBody(dc)
     self.mode.render(dc)
 
     dc:seek(1, math.max(dc:cursorY(), 21)):pen(COLOR_WHITE)
-    dc:key('LEAVESCREEN'):string(": Back, ")
-    dc:key('CUSTOM_C'):string(": Recenter")
+    dc:key_string('LEAVESCREEN', "Back, ")
+    dc:key_string('CUSTOM_C', "Recenter"):newline(1)
+    dc:key_string('LEAVESCREEN_ALL', "Exit to map")
 end
 
 function SiegeEngine:onInput(keys)

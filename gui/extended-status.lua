@@ -147,12 +147,15 @@ function bedroom_list:refresh()
         {'Units without bedrooms', 'uwithout'}
     }
     self.data.raw = {}
-    for _, d in pairs(self.data) do d.list = {} end
+    for _, d in ipairs(self.data) do
+        d.list = {}
+        self.data.raw[d[2]] = 0
+    end
     local function add(key, item)
         for _, d in pairs(self.data) do
             if d[2] == key then
                 table.insert(d.list, item)
-                self.data.raw[key] = (self.data.raw[key] or 0) + 1
+                self.data.raw[key] = self.data.raw[key] + 1
             end
         end
     end
@@ -212,6 +215,9 @@ function bedroom_list:onRenderBody(p)
     end
 
     p:newline(40)
+    p:key_string('D_NOBLES', has_manager() and 'Replace manager' or 'Assign manager')
+
+    p:newline(40)
     p:key_string('UNITJOB_MANAGER', 'Open manager')
 end
 
@@ -232,6 +238,11 @@ function bedroom_list:onInput(keys)
     elseif keys.UNITJOB_MANAGER then
         dfhack.screen.show(df.viewscreen_jobmanagementst:new())
         self.dirty = true
+    elseif keys.D_NOBLES then
+        dfhack.gui.getViewscreenByType(df.viewscreen_dwarfmodest, 0):feed_key(df.interface_key.D_NOBLES)
+        local scr = dfhack.gui.getViewscreenByType(df.viewscreen_layer_noblelistst)
+        -- move to manager
+        scr.layer_objects[0].cursor = 4
     end
 end
 

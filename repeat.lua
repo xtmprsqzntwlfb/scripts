@@ -6,9 +6,9 @@ local usage = [====[
 
 repeat
 ======
-Repeatedly calls a lua script at the specified interval.  This allows
-neat background changes to the function of the game, especially when
-invoked from an init file.
+Repeatedly calls a lua script at the specified interval. This can be used from
+init files. Note that any time units other than ``frames`` are unsupported when
+a world is not loaded (see ``dfhack.timeout()``).
 
 Usage examples::
 

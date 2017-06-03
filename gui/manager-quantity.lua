@@ -19,16 +19,16 @@ function show_error(text)
     dialog.showMessage("Error", text, COLOR_LIGHTRED)
 end
 
-if dfhack.gui.getCurFocus() == 'jobmanagement' then
-    local scr = dfhack.gui.getCurViewscreen()
+local scr = dfhack.gui.getCurViewscreen()
+if df.viewscreen_jobmanagementst:is_instance(scr) then
     local orders = df.global.world.manager_orders
     function set_quantity(value)
         if tonumber(value) then
             value = tonumber(value)
             local i = scr.sel_idx
             local old_total = orders[i].amount_total
-            orders[i].amount_total = math.max(1, value)
-            orders[i].amount_left = math.max(1, orders[i].amount_left + (value - old_total))
+            orders[i].amount_total = math.max(0, value)
+            orders[i].amount_left = math.max(0, orders[i].amount_left + (value - old_total))
         else
             show_error(value .. " is not a number!")
         end

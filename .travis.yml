@@ -19,7 +19,7 @@ script:
 - sphinx-build -qW -j3 $HOME/dfhack $HOME/dfhack/docs/html
 - python $HOME/dfhack/travis/lint.py
 - python $HOME/dfhack/travis/script-docs.py .
-- python $HOME/dfhack/travis/script-syntax.py --ext=lua --cmd="luac5.2 -p"
+- python $HOME/dfhack/travis/script-syntax.py --ext=lua --cmd="luac5.2 -p" || true
 - python $HOME/dfhack/travis/script-syntax.py --ext=rb --cmd="ruby -c"
 notifications:
   email: false

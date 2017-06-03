@@ -10,7 +10,7 @@ Usage: ``gui/load-screen enable|disable``
 
 ]====]
 
-VERSION = '0.8.4'
+VERSION = '0.8.5'
 
 function usage()
     print([[Usage:
@@ -24,6 +24,7 @@ end
 local gui = require 'gui'
 local dialog = require 'gui.dialogs'
 local widgets = require 'gui.widgets'
+local save_version = reqscript 'devel/save-version'
 
 function showError(title, text)
     if text == nil then title, text = 'Error', title end
@@ -360,22 +361,22 @@ load_screen_options = gui.FramedScreen{
     frame_inset = 1,
 }
 
-function load_screen_options:onRenderBody(painter)
-    painter:key_pen(COLOR_LIGHTRED)
+function load_screen_options:onRenderBody(p)
+    p:key_pen(COLOR_LIGHTRED)
     if self.loading == true then
         self.loading = false
         self.parent:load_game(self.save.folder_name)
         self:dismiss()
         return
     end
-    painter:seek(0, 0)
-    painter:key('CUSTOM_R'):string(': Rename')
-    -- painter:seek(0, 1)
-    -- painter:key('CUSTOM_C'):string(': Copy')
-    painter:seek(0, self.frame_height - 1)
-    painter:key('LEAVESCREEN'):string(': Cancel')
-    painter:seek(self.frame_width - keyStringLength('SELECT', 'Play now'), self.frame_height - 1)
-    painter:key('SELECT'):string(': Play now')
+    p:string('Last saved: ' .. self.save_mtime):newline()
+    p:string('Last DF Version: ' .. self.save_version):newline()
+    p:key_string('CUSTOM_R', 'Rename'):newline()
+    -- p:key_string('CUSTOM_C', 'Copy')
+    p:seek(0, self.frame_height - 1)
+    p:key_string('LEAVESCREEN', 'Cancel')
+    p:seek(self.frame_width - keyStringLength('SELECT', 'Play now'), self.frame_height - 1)
+    p:key_string('SELECT', 'Play now')
 end
 
 function load_screen_options:onInput(keys)
@@ -402,6 +403,7 @@ end
 
 function load_screen_options:refresh()
     self.frame_title = "Load game: " .. self.save.folder_name
+    self.frame_width = math.min(df.global.gps.dimx, math.max(40, #self.frame_title + 4))
 end
 
 function load_screen_options:dialog(title, text, input, callback)
@@ -460,6 +462,19 @@ function load_screen_options:display(parent, save)
     if not save then return end
     self.parent = parent
     self.save = save
+
+    local world_sav_path = 'data/save/' .. save.folder_name .. '/world.sav'
+    self.save_mtime = os.date('%c', dfhack.filesystem.mtime(world_sav_path))
+    local f = io.open(world_sav_path, 'rb')
+    if f then
+        local v_raw = {f:read(4):byte(1, 4)}
+        f:close()
+        local v = v_raw[1] + (1 << 8) * v_raw[2] + (1 << 16) * v_raw[3] + (1 << 24) * v_raw[4]
+        self.save_version = save_version.versions[v] or 'unknown'
+    else
+        self.save_version = 'error'
+    end
+
     self:refresh()
     self:show()
 end
