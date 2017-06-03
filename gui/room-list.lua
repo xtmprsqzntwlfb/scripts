@@ -227,7 +227,7 @@ function RoomList:onInput(keys)
 
         if self.base_building then
             if not sel_item or self.base_building ~= sel_item.obj then
-                self:selectBuilding(self.base_building, self.old_cursor, self.old_view)
+                self:selectBuilding(self.base_building, self.old_cursor, self.old_viewport)
             end
             if self.unit and self.base_building.owner == self.unit then
                 df.global.ui_building_in_assign = false

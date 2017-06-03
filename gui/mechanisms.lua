@@ -121,7 +121,7 @@ function MechanismList:onInput(keys)
     elseif keys.LEAVESCREEN then
         self:dismiss()
         if self.selected ~= 1 then
-            self:selectBuilding(self.links[1].obj, self.old_cursor, self.old_view)
+            self:selectBuilding(self.links[1].obj, self.old_cursor, self.old_viewport)
         end
     elseif keys.SELECT_ALL then
         if self.selected > 1 then
