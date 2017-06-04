@@ -207,6 +207,8 @@ function RoomList:onRenderBody(dc)
             dc:string(": Assign")
         end
     end
+
+    dc:newline(1):key_string('LEAVESCREEN_ALL', "Exit to map")
 end
 
 function RoomList:changeSelected(delta)
@@ -222,10 +224,12 @@ function RoomList:onInput(keys)
         self:changeSelected(-1)
     elseif keys.SECONDSCROLL_DOWN then
         self:changeSelected(1)
-    elseif keys.LEAVESCREEN then
+    elseif keys.LEAVESCREEN or keys.LEAVESCREEN_ALL then
         self:dismiss()
 
-        if self.base_building then
+        if keys.LEAVESCREEN_ALL then
+            df.global.ui_building_in_assign = false
+        elseif self.base_building then
             if not sel_item or self.base_building ~= sel_item.obj then
                 self:selectBuilding(self.base_building, self.old_cursor, self.old_viewport)
             end

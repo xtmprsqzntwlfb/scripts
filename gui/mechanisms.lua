@@ -104,7 +104,8 @@ function MechanismList:onRenderBody(dc)
 
     dc:newline():newline(1):pen(COLOR_WHITE)
     dc:key('LEAVESCREEN'):string(": Back, ")
-    dc:key('SELECT'):string(": Switch")
+    dc:key('SELECT'):string(": Switch"):newline(1)
+    dc:key_string('LEAVESCREEN_ALL', "Exit to map")
 end
 
 function MechanismList:changeSelected(delta)
@@ -118,9 +119,9 @@ function MechanismList:onInput(keys)
         self:changeSelected(-1)
     elseif keys.SECONDSCROLL_DOWN then
         self:changeSelected(1)
-    elseif keys.LEAVESCREEN then
+    elseif keys.LEAVESCREEN or keys.LEAVESCREEN_ALL then
         self:dismiss()
-        if self.selected ~= 1 then
+        if self.selected ~= 1 and not keys.LEAVESCREEN_ALL then
             self:selectBuilding(self.links[1].obj, self.old_cursor, self.old_viewport)
         end
     elseif keys.SELECT_ALL then
