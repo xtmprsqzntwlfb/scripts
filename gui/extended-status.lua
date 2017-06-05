@@ -241,8 +241,13 @@ function bedroom_list:onInput(keys)
     elseif keys.D_NOBLES then
         dfhack.gui.getViewscreenByType(df.viewscreen_dwarfmodest, 0):feed_key(df.interface_key.D_NOBLES)
         local scr = dfhack.gui.getViewscreenByType(df.viewscreen_layer_noblelistst)
-        -- move to manager
-        scr.layer_objects[0].cursor = 4
+        for i, info in ipairs(scr.info) do
+            if info.position.code:lower() == 'manager' then
+                -- move cursor to manager
+                scr.layer_objects[0].cursor = i
+                break
+            end
+        end
     end
 end
 
