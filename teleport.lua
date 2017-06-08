@@ -1,6 +1,7 @@
 -- teleports a unit to a location
 -- author Putnam
 -- edited by expwnent
+--@module = true
 --[====[
 
 teleport
