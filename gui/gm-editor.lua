@@ -42,19 +42,25 @@ find_funcs = find_funcs or (function()
     return t
 end)()
 
-local keybindings={
-    offset={key="CUSTOM_ALT_O",desc="Show current items offset"},
-    find={key="CUSTOM_F",desc="Find a value by entering a predicate"},
-    find_id={key="CUSTOM_I",desc="Find object with this ID"},
-    lua_set={key="CUSTOM_ALT_S",desc="Set by using a lua function"},
-    insert={key="CUSTOM_ALT_I",desc="Insert a new value to the vector"},
-    delete={key="CUSTOM_ALT_D",desc="Delete selected entry"},
-    reinterpret={key="CUSTOM_ALT_R",desc="Open selected entry as something else"},
-    start_filter={key="CUSTOM_S",desc="Start typing filter, Enter to finish"},
-    help={key="HELP",desc="Show this help"},
-    displace={key="STRING_A093",desc="Open reference offseted by index"},
-    NOT_USED={key="SEC_SELECT",desc="Edit selected entry as a number (for enums)"}, --not a binding...
+local keybindings_raw = {
+    {name='offset', key="CUSTOM_ALT_O",desc="Show current items offset"},
+    {name='find', key="CUSTOM_F",desc="Find a value by entering a predicate"},
+    {name='find_id', key="CUSTOM_I",desc="Find object with this ID"},
+    {name='lua_set', key="CUSTOM_ALT_S",desc="Set by using a lua function"},
+    {name='insert', key="CUSTOM_ALT_I",desc="Insert a new value to the vector"},
+    {name='delete', key="CUSTOM_ALT_D",desc="Delete selected entry"},
+    {name='reinterpret', key="CUSTOM_ALT_R",desc="Open selected entry as something else"},
+    {name='start_filter', key="CUSTOM_S",desc="Start typing filter, Enter to finish"},
+    {name='help', key="HELP",desc="Show this help"},
+    {name='displace', key="STRING_A093",desc="Open reference offseted by index"},
+    {name='NOT_USED', key="SEC_SELECT",desc="Edit selected entry as a number (for enums)"}, --not a binding...
 }
+
+local keybindings = {}
+for _, v in ipairs(keybindings_raw) do
+    keybindings[v.name] = v
+end
+
 function getTargetFromScreens()
     local my_trg
     if dfhack.gui.getCurFocus() == 'item' then
@@ -112,8 +118,12 @@ function burning_red(input) -- todo does not work! bug angavrilov that so that h
     return {text=input,pen=dfhack.pen.parse{fg=COLOR_LIGHTRED,bg=0}}
 end
 function Disclaimer(tlb)
-    local dsc={"Association Of ",{text="Psychic ",pen=dfhack.pen.parse{fg=COLOR_YELLOW,bg=0}},
-        "Dwarves (AOPD) is not responsible for all the damage",NEWLINE,"that this tool can (and will) cause to you and your loved dwarves",NEWLINE,"and/or saves.Please use with caution.",NEWLINE,{text="Magma not included.",pen=dfhack.pen.parse{fg=COLOR_LIGHTRED,bg=0}}}
+    local dsc={
+        "Association Of ", {text="Psychic ",pen=COLOR_YELLOW}, "Dwarves (AOPD) is not responsible for all the damage", NEWLINE,
+        "that this tool can (and will) cause to you and your loved dwarves", NEWLINE,
+        "and/or saves.Please use with caution.", NEWLINE,
+        {text="Magma not included.", pen=COLOR_LIGHTRED,bg=0}
+    }
     if tlb then
         for _,v in ipairs(dsc) do
             table.insert(tlb,v)
@@ -127,7 +137,7 @@ function GmEditorUi:init(args)
     self.item_count=0
     self.keys={}
     local helptext={{text="Help"},NEWLINE,NEWLINE}
-    for k,v in pairs(keybindings) do
+    for _,v in ipairs(keybindings_raw) do
         table.insert(helptext,{text=v.desc,key=v.key,key_sep=': '})
         table.insert(helptext,NEWLINE)
     end
@@ -138,7 +148,7 @@ function GmEditorUi:init(args)
         subviews={widgets.Label{text=helptext,frame = {l=1,t=1,yalign=0}}}}
     local mainList=widgets.List{view_id="list_main",choices={},frame = {l=1,t=3,yalign=0},on_submit=self:callback("editSelected"),
         on_submit2=self:callback("editSelectedRaw"),
-        text_pen=dfhack.pen.parse{fg=COLOR_DARKGRAY,bg=0},cursor_pen=dfhack.pen.parse{fg=COLOR_YELLOW,bg=0}}
+        text_pen=COLOR_DARKGREY, cursor_pen=COLOR_YELLOW}
     local mainPage=widgets.Panel{
         subviews={
             mainList,
