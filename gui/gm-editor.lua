@@ -397,6 +397,10 @@ function GmEditorUi:onInput(keys)
         end
     end
 
+    if self.subviews.pages:getSelected() == 2 then
+        return
+    end
+
     if self.subviews.filter_input.active then
         self.super.onInput(self,keys)
         return
