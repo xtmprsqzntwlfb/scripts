@@ -112,6 +112,8 @@ when 'pull'
         raise 'invalid lever id' if not bld
     end
 
+    raise 'not a lever' if bld._rtti_classname != :building_trapst or bld.trap_type != :Lever
+
     if cheat
         lever_pull_cheat(bld)
     else
