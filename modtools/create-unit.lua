@@ -81,15 +81,25 @@ local utils=require 'utils'
 function createUnit(...)
   local old_gametype = df.global.gametype
   local old_mode = df.global.ui.main.mode
+  local old_popups = {}
+  for _, popup in pairs(df.global.world.status.popups) do
+    table.insert(old_popups, popup)
+  end
+  df.global.world.status.popups:resize(0)
 
-  local ok, err = dfhack.pcall(createUnitInner, ...)
+  local ok, ret = dfhack.pcall(createUnitInner, ...)
 
   df.global.gametype = old_gametype
   df.global.ui.main.mode = old_mode
+  for _, popup in pairs(old_popups) do
+    df.global.world.status.popups:insert('#', popup)
+  end
 
   if not ok then
-    error(err)
+    error(ret)
   end
+
+  return ret
 end
 
 function createUnitInner(race_id, caste_id, location)
