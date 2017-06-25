@@ -730,8 +730,8 @@ def get_effect(logger, ce, ticks, showdisplayeffects)
   when "FLASH_TILE"
     if !showdisplayeffects then return "", Output::DEFAULT end
     name = "Flash"
-    color = ce.sym_color >> 8
-    tile = ce.sym_color - (color * 256)
+    color = ce.sym_color[1]
+    tile = ce.sym_color[0]
     desc = "tile = #{tile}, colour=#{color}, time=#{ce.period}, period=#{ce.time}"
     color = Output::DEFAULT
   when "SPEED_CHANGE"
