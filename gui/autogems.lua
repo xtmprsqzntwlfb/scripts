@@ -1,0 +1,152 @@
+--[====[
+
+gui/autogems
+============
+
+
+
+]====]
+
+gui = require "gui"
+dialogs = require "gui.dialogs"
+widgets = require "gui.widgets"
+
+CONFIG_KEY = "autogems/config"
+blacklist = {}
+
+gems = {}
+for id, raw in pairs(df.global.world.raws.inorganics) do
+    if raw.material.flags.IS_GEM then
+        if blacklist[id] == nil then
+            blacklist[id] = false
+        end
+        local name = raw.material.gem_name1
+        local color = raw.material.basic_color[0] + (8 * raw.material.basic_color[1])
+        local entry = {
+            id = id,
+            text = {
+                {
+                    text = function() return blacklist[id] and 'X' or string.char(251) end,
+                    pen = function() return blacklist[id] and COLOR_LIGHTRED or COLOR_LIGHTGREEN end,
+                },
+                ' ',
+                {
+                    text = string.char(raw.material.tile),
+                    pen = color
+                },
+                ' ',
+                name,
+            },
+            color = color,
+            search_key = name,
+            crystal = raw.material.flags.CRYSTAL_GLASSABLE,
+        }
+        table.insert(gems, entry)
+    end
+end
+
+Autogems = defclass(nil, gui.FramedScreen)
+
+function Autogems:init()
+    self:addviews{
+        widgets.FilteredList{
+            view_id = 'list',
+            frame = {t=1, l=1, b=4},
+            choices = gems,
+            on_submit = self:callback('toggle'),
+            on_submit2 = self:callback('toggleAll'),
+            edit_key = 'CUSTOM_S',
+        },
+        widgets.Label{
+            view_id = 'main_controls',
+            frame = {b=1, l=1},
+            text = {
+                {key = 'CUSTOM_X', text = ": Clear filters, ",
+                    on_activate = self:callback('clearFilters'),
+                    enabled = function() return self.filtered end},
+                {key = 'CUSTOM_R', text = ": Rock crystal, ",
+                    on_activate = self:callback('showCrystal')},
+                {key = 'CUSTOM_C', text = ": Same color",
+                    on_activate = self:callback('filterByColor')},
+                NEWLINE,
+                {key = 'LEAVESCREEN', text = ": Back, "},
+                {key = 'SELECT', text = ": Toggle, "},
+                {key = 'SEC_SELECT', text = ": Toggle all"}
+            }
+        },
+        widgets.Label{
+            view_id = 'edit_controls',
+            frame = {b=1, l=1},
+            text = {
+                {key = 'LEAVESCREEN', text = ": Clear, "},
+                {key = 'SELECT', text = ": Done"},
+            }
+        },
+    }
+    self:updateControls()
+end
+
+function Autogems:updateControls()
+    self.subviews.main_controls.visible = not self.subviews.list.edit.active
+    self.subviews.edit_controls.visible = self.subviews.list.edit.active
+    if self.subviews.list.edit.active then
+        self.filtered = true
+    end
+end
+
+function Autogems:toggle(_, item)
+    blacklist[item.id] = not blacklist[item.id]
+end
+
+function Autogems:toggleAll(_, item)
+    local new_state = not blacklist[item.id]
+    for _, item in pairs(self.subviews.list:getVisibleChoices()) do
+        blacklist[item.id] = new_state
+    end
+end
+
+function Autogems:clearFilters()
+    self.subviews.list:setFilter('')
+    self.subviews.list:setChoices(gems)
+    self.filtered = false
+end
+
+function Autogems:showCrystal()
+    local choices = {}
+    for _, c in pairs(self.subviews.list:getChoices()) do
+        if c.crystal then
+            table.insert(choices, c)
+        end
+    end
+    self.subviews.list:setChoices(choices)
+    self.filtered = true
+end
+
+function Autogems:filterByColor()
+    if not self.subviews.list:getSelected() then return end
+    local choices = {}
+    local color = select(2, self.subviews.list:getSelected()).color
+    for _, c in pairs(self.subviews.list:getChoices()) do
+        if c.color == color then
+            table.insert(choices, c)
+        end
+    end
+    self.subviews.list:setChoices(choices)
+    self.filtered = true
+end
+
+function Autogems:onInput(keys)
+    if self.subviews.list.edit.active and (keys.SELECT or keys.LEAVESCREEN) then
+        self.subviews.list.edit.active = false
+        if keys.LEAVESCREEN then
+            self.subviews.list:setFilter('')
+        end
+    elseif keys.LEAVESCREEN then
+        self:dismiss()
+    else
+        self:inputToSubviews(keys)
+    end
+    self:updateControls()
+end
+
+Autogems():show()
