@@ -45,6 +45,17 @@ for id, raw in pairs(df.global.world.raws.inorganics) do
     end
 end
 
+local on_map_cache
+function getGemTypesOnMap()
+    if not on_map_cache then
+        on_map_cache = {}
+        for _, item in pairs(df.global.world.items.other.ROUGH) do
+            on_map_cache[item.mat_index] = true
+        end
+    end
+    return on_map_cache
+end
+
 Autogems = defclass(nil, gui.FramedScreen)
 
 Autogems.ATTRS{
@@ -70,8 +81,10 @@ function Autogems:init()
                     enabled = function() return self.filtered end},
                 {key = 'CUSTOM_R', text = ": Rock crystal, ",
                     on_activate = self:callback('showCrystal')},
-                {key = 'CUSTOM_C', text = ": Same color",
+                {key = 'CUSTOM_C', text = ": Same color, ",
                     on_activate = self:callback('filterByColor')},
+                {key = 'CUSTOM_M', text = ": On map",
+                    on_activate = self:callback('filterOnMap')},
                 NEWLINE,
                 {key = 'LEAVESCREEN', text = ": Back, "},
                 {key = 'SELECT', text = ": Toggle, "},
@@ -132,6 +145,18 @@ function Autogems:filterByColor()
     local color = select(2, self.subviews.list:getSelected()).color
     for _, c in pairs(self.subviews.list:getChoices()) do
         if c.color == color then
+            table.insert(choices, c)
+        end
+    end
+    self.subviews.list:setChoices(choices)
+    self.filtered = true
+end
+
+function Autogems:filterOnMap()
+    local choices = {}
+    local on_map = getGemTypesOnMap()
+    for _, c in pairs(self.subviews.list:getChoices()) do
+        if on_map[c.id] then
             table.insert(choices, c)
         end
     end
