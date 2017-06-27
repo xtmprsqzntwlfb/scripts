@@ -47,6 +47,10 @@ end
 
 Autogems = defclass(nil, gui.FramedScreen)
 
+Autogems.ATTRS{
+    frame_title = "autogems dashboard",
+}
+
 function Autogems:init()
     self:addviews{
         widgets.FilteredList{
