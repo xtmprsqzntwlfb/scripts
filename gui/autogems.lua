@@ -66,7 +66,7 @@ function Autogems:init()
     self:addviews{
         widgets.FilteredList{
             view_id = 'list',
-            frame = {t=1, l=1, b=4},
+            frame = {t=1, l=1, b=4, w=38},
             choices = gems,
             on_submit = self:callback('toggle'),
             on_submit2 = self:callback('toggleAll'),
