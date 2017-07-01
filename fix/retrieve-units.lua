@@ -1,4 +1,6 @@
 -- Spawns stuck invaders/guests
+-- Based on "unitretrieval" by RocheLimit:
+-- http://www.bay12forums.com/smf/index.php?topic=163671.0
 --@ module = true
 
 --[====[
