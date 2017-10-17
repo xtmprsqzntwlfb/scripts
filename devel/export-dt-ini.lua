@@ -265,6 +265,7 @@ address('powder_name',df.material_common,'state_name','Powder')
 address('paste_name',df.material_common,'state_name','Paste')
 address('pressed_name',df.material_common,'state_name','Pressed')
 address('flags',df.material_common,'flags')
+address('prefix',df.material,'prefix')
 address('inorganic_materials_vector',df.inorganic_raw,'material')
 address('inorganic_flags',df.inorganic_raw,'flags')
 
