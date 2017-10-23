@@ -446,6 +446,9 @@ address('perf_type',df.activity_event_performancest,'type')
 address('perf_participants',df.activity_event_performancest,'participant_actions')
 address('perf_histfig',df.activity_event_performancest.T_participant_actions,'histfig_id')
 
+header('art_offsets')
+address('name',df.poetic_form,'name')
+
 -- Final creation of the file
 
 local out = io.open('therapist.ini', 'w')
