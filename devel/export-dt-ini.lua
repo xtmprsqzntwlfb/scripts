@@ -265,6 +265,8 @@ address('powder_name',df.material_common,'state_name','Powder')
 address('paste_name',df.material_common,'state_name','Paste')
 address('pressed_name',df.material_common,'state_name','Pressed')
 address('flags',df.material_common,'flags')
+address('reaction_class',df.material_common,'reaction_class')
+address('prefix',df.material,'prefix')
 address('inorganic_materials_vector',df.inorganic_raw,'material')
 address('inorganic_flags',df.inorganic_raw,'flags')
 
@@ -444,6 +446,9 @@ address('knowledge_flag',df.activity_event_ponder_topicst,'knowledge','flags')
 address('perf_type',df.activity_event_performancest,'type')
 address('perf_participants',df.activity_event_performancest,'participant_actions')
 address('perf_histfig',df.activity_event_performancest.T_participant_actions,'histfig_id')
+
+header('art_offsets')
+address('name',df.poetic_form,'name')
 
 -- Final creation of the file
 
