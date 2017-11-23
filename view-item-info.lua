@@ -241,8 +241,8 @@ end
 function GetReactionProduct (inmat, reaction)
     for k,v in pairs (inmat.reaction_product.id) do
         if v.value == reaction then
-            return {inmat.reaction_product.material.mat_type[k],
-                    inmat.reaction_product.material.mat_index[k]}
+            return inmat.reaction_product.material.mat_type[k],
+                    inmat.reaction_product.material.mat_index[k]
         end
     end
 end
