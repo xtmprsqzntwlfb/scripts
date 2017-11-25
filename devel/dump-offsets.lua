@@ -1,3 +1,24 @@
+-- Dump all global addresses
+
+--[====[
+
+devel/dump-offsets
+==================
+
+WARNING: THIS SCRIPT IS STRICTLY FOR DFHACK DEVELOPERS.
+
+Running this script on a new DF version will NOT
+MAKE IT RUN CORRECTLY if any data structures
+changed, thus possibly leading to CRASHES AND/OR
+PERMANENT SAVE CORRUPTION.
+
+This dumps the contents of the table of global addresses (new in 0.44.01).
+
+Passing global names as arguments calls setAddress() to set those globals'
+addresses in-game. Passing "all" does this for all globals.
+
+]====]
+
 GLOBALS = {
     cursor = "cursor",
     point = "selection_rect",
@@ -147,6 +168,9 @@ function read_cstr(addr)
     return s
 end
 
+local utils = require 'utils'
+local iargs = utils.invert{...}
+
 local ms = require 'memscan'
 local data = ms.get_data_segment() or qerror('Could not find data segment')
 
@@ -172,6 +196,9 @@ while true do
         -- dfhack.printerr('Unknown DF global: ' .. df_name)
     else
         print(("<global-address name='%s' value='0x%x'/>"):format(g_name, g_addr))
+        if iargs[g_name] or iargs.all then
+            dfhack.internal.setAddress(g_name, g_addr)
+        end
     end
     index = index + 1
 end
