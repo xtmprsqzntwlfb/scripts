@@ -181,6 +181,15 @@ else
     search = {0x12345678, 0x87654321}
 end
 
+addrs = {}
+function save_addr(name, addr)
+    print(("<global-address name='%s' value='0x%x'/>"):format(name, addr))
+    if iargs[name] or iargs.all then
+        ms.found_offset(name, addr)
+    end
+    addrs[name] = addr
+end
+
 local start = data.intptr_t:find_one(search)
 
 local index = 1
@@ -195,10 +204,10 @@ while true do
     if not g_name then
         -- dfhack.printerr('Unknown DF global: ' .. df_name)
     else
-        print(("<global-address name='%s' value='0x%x'/>"):format(g_name, g_addr))
-        if iargs[g_name] or iargs.all then
-            dfhack.internal.setAddress(g_name, g_addr)
-        end
+        save_addr(g_name, g_addr)
     end
     index = index + 1
 end
+
+save_addr('ui_area_map_width', addrs['ui_menu_width'] + 1)
+save_addr('announcements', addrs['d_init'] + df.d_init:sizeof())
