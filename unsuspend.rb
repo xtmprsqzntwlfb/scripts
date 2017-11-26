@@ -9,7 +9,7 @@ for regular use.
 
 =end
 
-joblist = df.world.job_list.next
+joblist = df.world.jobs.list.next
 count = 0
 
 while joblist

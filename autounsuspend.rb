@@ -13,7 +13,7 @@ class AutoUnsuspend
 
     def process
         count = 0
-        df.world.job_list.each { |job|
+        df.world.jobs.list.each { |job|
             if job.job_type == :ConstructBuilding and job.flags.suspend and df.map_tile_at(job).designation.flow_size <= 1
                 job.flags.suspend = false
                 count += 1
