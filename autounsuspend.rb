@@ -3,7 +3,10 @@
 
 autounsuspend
 =============
-Automatically unsuspend jobs in workshops, on a recurring basis.
+Automatically unsuspend construction jobs, on a recurring basis.
+
+Will not unsuspend jobs where water flow > 1.
+
 See `unsuspend` for one-off use, or `resume` ``all``.
 
 =end
