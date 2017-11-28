@@ -126,7 +126,6 @@ address('active_sites_vector',df.world_data,'active_site')
 
 header('offsets')
 address('word_table',df.language_translation,'words')
-value('string_buffer_offset', 0x0000)
 
 header('word_offsets')
 address('base',df.language_word,'word')
