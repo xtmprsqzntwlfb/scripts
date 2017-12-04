@@ -142,8 +142,8 @@ address('word_type',df.language_name,'parts_of_speech')
 address('language_id',df.language_name,'language')
 
 header('general_ref_offsets')
---WARNING below value should be: "general_ref::vtable","1","0x8","0x4","vmethod","getType","general_ref_type",""
-value('ref_type',0x8)
+-- general_ref::getType is the third method in the vtable
+value('ref_type',2*(dfhack.getArchitecture()/8))
 address('artifact_id',df.general_ref_artifact,'artifact_id')
 address('item_id',df.general_ref_item,'item_id')
 
