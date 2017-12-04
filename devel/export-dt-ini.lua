@@ -142,8 +142,8 @@ address('word_type',df.language_name,'parts_of_speech')
 address('language_id',df.language_name,'language')
 
 header('general_ref_offsets')
---WARNING below value should be: "general_ref::vtable","1","0x8","0x4","vmethod","getType","general_ref_type",""
-value('ref_type',0x8)
+-- general_ref::getType is the third method in the vtable
+value('ref_type',2*(dfhack.getArchitecture()/8))
 address('artifact_id',df.general_ref_artifact,'artifact_id')
 address('item_id',df.general_ref_item,'item_id')
 
@@ -212,11 +212,6 @@ address('id',df.history_event,'id')
 address('killed_hist_id',df.history_event_hist_figure_diedst,'victim_hf')
 
 header('item_offsets')
-if os_type == 'darwin' then
-    value('item_type',0x4)
-else
-    value('item_type',0x1)
-end
 address('item_def',df.item_ammost,'subtype') --currently same for all
 address('id',df.item,'id')
 address('general_refs',df.item,'general_refs')
