@@ -208,6 +208,3 @@ while true do
     end
     index = index + 1
 end
-
-save_addr('ui_area_map_width', addrs['ui_menu_width'] + 1)
-save_addr('announcements', addrs['d_init'] + df.d_init:sizeof())
