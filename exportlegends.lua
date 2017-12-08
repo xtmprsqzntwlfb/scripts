@@ -367,73 +367,6 @@ function export_more_legends_xml()
     end
     file:write("</entities>\n")
 
-    file:write("<poetic_forms>\n")
-    for formK, formV in ipairs(df.global.world.poetic_forms.all) do
-        file:write("\t<poetic_form>\n")
-        file:write("\t\t<id>"..formV.id.."</id>\n")
-        file:write("\t\t<name>"..dfhack.df2utf(dfhack.TranslateName(formV.name,1)).."</name>\n")
-        file:write("\t</poetic_form>\n")
-    end
-    file:write("</poetic_forms>\n")
-
-    file:write("<musical_forms>\n")
-    for formK, formV in ipairs(df.global.world.musical_forms.all) do
-        file:write("\t<musical_form>\n")
-        file:write("\t\t<id>"..formV.id.."</id>\n")
-        file:write("\t\t<name>"..dfhack.df2utf(dfhack.TranslateName(formV.name,1)).."</name>\n")
-        file:write("\t</musical_form>\n")
-    end
-    file:write("</musical_forms>\n")
-
-    file:write("<dance_forms>\n")
-    for formK, formV in ipairs(df.global.world.dance_forms.all) do
-        file:write("\t<dance_form>\n")
-        file:write("\t\t<id>"..formV.id.."</id>\n")
-        file:write("\t\t<name>"..dfhack.df2utf(dfhack.TranslateName(formV.name,1)).."</name>\n")
-        file:write("\t</dance_form>\n")
-    end
-    file:write("</dance_forms>\n")
-
-    file:write("<written_contents>\n")
-    for wcK, wcV in ipairs(df.global.world.written_contents.all) do
-        file:write("\t<written_content>\n")
-        file:write("\t\t<id>"..wcV.id.."</id>\n")
-        file:write("\t\t<title>"..wcV.title.."</title>\n")
-        file:write("\t\t<page_start>"..wcV.page_start.."</page_start>\n")
-        file:write("\t\t<page_end>"..wcV.page_end.."</page_end>\n")
-        for refK, refV in pairs(wcV.refs) do
-            file:write("\t\t<reference>\n")
-            file:write("\t\t\t<type>"..df_enums.general_ref_type[refV:getType()].."</type>\n")
-            if refV:getType() == df.general_ref_type.ARTIFACT then file:write("\t\t\t<id>"..refV.artifact_id.."</id>\n") -- artifact
-            elseif refV:getType() == df.general_ref_type.ENTITY then file:write("\t\t\t<id>"..refV.entity_id.."</id>\n") -- entity
-            elseif refV:getType() == df.general_ref_type.HISTORICAL_EVENT then file:write("\t\t\t<id>"..refV.event_id.."</id>\n") -- event
-            elseif refV:getType() == df.general_ref_type.SITE then file:write("\t\t\t<id>"..refV.site_id.."</id>\n") -- site
-            elseif refV:getType() == df.general_ref_type.SUBREGION then file:write("\t\t\t<id>"..refV.region_id.."</id>\n") -- region
-            elseif refV:getType() == df.general_ref_type.HISTORICAL_FIGURE then file:write("\t\t\t<id>"..refV.hist_figure_id.."</id>\n") -- hist figure
-            elseif refV:getType() == df.general_ref_type.WRITTEN_CONTENT then file:write("\t\t\t<id>"..refV.written_content_id.."</id>\n")
-            elseif refV:getType() == df.general_ref_type.POETIC_FORM then file:write("\t\t\t<id>"..refV.poetic_form_id.."</id>\n") -- poetic form
-            elseif refV:getType() == df.general_ref_type.MUSICAL_FORM then file:write("\t\t\t<id>"..refV.musical_form_id.."</id>\n") -- musical form
-            elseif refV:getType() == df.general_ref_type.DANCE_FORM then file:write("\t\t\t<id>"..refV.dance_form_id.."</id>\n") -- dance form
-            elseif refV:getType() == df.general_ref_type.INTERACTION then -- TODO INTERACTION
-            elseif refV:getType() == df.general_ref_type.KNOWLEDGE_SCHOLAR_FLAG then -- TODO KNOWLEDGE_SCHOLAR_FLAG
-            elseif refV:getType() == df.general_ref_type.VALUE_LEVEL then -- TODO VALUE_LEVEL
-            elseif refV:getType() == df.general_ref_type.LANGUAGE then -- TODO LANGUAGE
-            elseif refV:getType() == df.general_ref_type.ABSTRACT_BUILDING then -- TODO ABSTRACT_BUILDING
-            else
-                print("unknown reference",refV:getType(),df_enums.general_ref_type[refV:getType()])
-                --for k,v in pairs(refV) do print(k,v) end
-            end
-            file:write("\t\t</reference>\n")
-        end
-        file:write("\t\t<type>"..(df_enums.written_content_type[wcV.type] or wcV.type).."</type>\n")
-        for styleK, styleV in pairs(wcV.styles) do
-            file:write("\t\t<style>"..(df_enums.written_content_style[styleV] or styleV).."</style>\n")
-        end
-        file:write("\t\t<author>"..wcV.author.."</author>\n")
-        file:write("\t</written_content>\n")
-    end
-    file:write("</written_contents>\n")
-
     file:write("<historical_events>\n")
     for ID, event in ipairs(df.global.world.history.events) do
         if event:getType() == df.history_event_type.ADD_HF_ENTITY_LINK
@@ -752,6 +685,75 @@ function export_more_legends_xml()
     file:write("</historical_event_collections>\n")
     file:write("<historical_eras>\n")
     file:write("</historical_eras>\n")
+	
+    file:write("<written_contents>\n")
+    for wcK, wcV in ipairs(df.global.world.written_contents.all) do
+        file:write("\t<written_content>\n")
+        file:write("\t\t<id>"..wcV.id.."</id>\n")
+        file:write("\t\t<title>"..wcV.title.."</title>\n")
+        file:write("\t\t<page_start>"..wcV.page_start.."</page_start>\n")
+        file:write("\t\t<page_end>"..wcV.page_end.."</page_end>\n")
+        for refK, refV in pairs(wcV.refs) do
+            file:write("\t\t<reference>\n")
+            file:write("\t\t\t<type>"..df_enums.general_ref_type[refV:getType()].."</type>\n")
+            if refV:getType() == df.general_ref_type.ARTIFACT then file:write("\t\t\t<id>"..refV.artifact_id.."</id>\n") -- artifact
+            elseif refV:getType() == df.general_ref_type.ENTITY then file:write("\t\t\t<id>"..refV.entity_id.."</id>\n") -- entity
+            elseif refV:getType() == df.general_ref_type.HISTORICAL_EVENT then file:write("\t\t\t<id>"..refV.event_id.."</id>\n") -- event
+            elseif refV:getType() == df.general_ref_type.SITE then file:write("\t\t\t<id>"..refV.site_id.."</id>\n") -- site
+            elseif refV:getType() == df.general_ref_type.SUBREGION then file:write("\t\t\t<id>"..refV.region_id.."</id>\n") -- region
+            elseif refV:getType() == df.general_ref_type.HISTORICAL_FIGURE then file:write("\t\t\t<id>"..refV.hist_figure_id.."</id>\n") -- hist figure
+            elseif refV:getType() == df.general_ref_type.WRITTEN_CONTENT then file:write("\t\t\t<id>"..refV.written_content_id.."</id>\n")
+            elseif refV:getType() == df.general_ref_type.POETIC_FORM then file:write("\t\t\t<id>"..refV.poetic_form_id.."</id>\n") -- poetic form
+            elseif refV:getType() == df.general_ref_type.MUSICAL_FORM then file:write("\t\t\t<id>"..refV.musical_form_id.."</id>\n") -- musical form
+            elseif refV:getType() == df.general_ref_type.DANCE_FORM then file:write("\t\t\t<id>"..refV.dance_form_id.."</id>\n") -- dance form
+            elseif refV:getType() == df.general_ref_type.INTERACTION then -- TODO INTERACTION
+            elseif refV:getType() == df.general_ref_type.KNOWLEDGE_SCHOLAR_FLAG then -- TODO KNOWLEDGE_SCHOLAR_FLAG
+            elseif refV:getType() == df.general_ref_type.VALUE_LEVEL then -- TODO VALUE_LEVEL
+            elseif refV:getType() == df.general_ref_type.LANGUAGE then -- TODO LANGUAGE
+            elseif refV:getType() == df.general_ref_type.ABSTRACT_BUILDING then -- TODO ABSTRACT_BUILDING
+            else
+                print("unknown reference",refV:getType(),df_enums.general_ref_type[refV:getType()])
+                --for k,v in pairs(refV) do print(k,v) end
+            end
+            file:write("\t\t</reference>\n")
+        end
+        file:write("\t\t<type>"..(df_enums.written_content_type[wcV.type] or wcV.type).."</type>\n")
+        for styleK, styleV in pairs(wcV.styles) do
+            file:write("\t\t<style>"..(df_enums.written_content_style[styleV] or styleV).."</style>\n")
+        end
+        file:write("\t\t<author>"..wcV.author.."</author>\n")
+        file:write("\t</written_content>\n")
+    end
+    file:write("</written_contents>\n")
+	
+    file:write("<poetic_forms>\n")
+    for formK, formV in ipairs(df.global.world.poetic_forms.all) do
+        file:write("\t<poetic_form>\n")
+        file:write("\t\t<id>"..formV.id.."</id>\n")
+        file:write("\t\t<name>"..dfhack.df2utf(dfhack.TranslateName(formV.name,1)).."</name>\n")
+        file:write("\t</poetic_form>\n")
+    end
+    file:write("</poetic_forms>\n")
+
+    file:write("<musical_forms>\n")
+    for formK, formV in ipairs(df.global.world.musical_forms.all) do
+        file:write("\t<musical_form>\n")
+        file:write("\t\t<id>"..formV.id.."</id>\n")
+        file:write("\t\t<name>"..dfhack.df2utf(dfhack.TranslateName(formV.name,1)).."</name>\n")
+        file:write("\t</musical_form>\n")
+    end
+    file:write("</musical_forms>\n")
+
+    file:write("<dance_forms>\n")
+    for formK, formV in ipairs(df.global.world.dance_forms.all) do
+        file:write("\t<dance_form>\n")
+        file:write("\t\t<id>"..formV.id.."</id>\n")
+        file:write("\t\t<name>"..dfhack.df2utf(dfhack.TranslateName(formV.name,1)).."</name>\n")
+        file:write("\t</dance_form>\n")
+    end
+    file:write("</dance_forms>\n")
+
+	
     file:write("</df_world>\n")
     file:close()
 end
