@@ -685,7 +685,7 @@ function export_more_legends_xml()
     file:write("</historical_event_collections>\n")
     file:write("<historical_eras>\n")
     file:write("</historical_eras>\n")
-	
+
     file:write("<written_contents>\n")
     for wcK, wcV in ipairs(df.global.world.written_contents.all) do
         file:write("\t<written_content>\n")
@@ -753,7 +753,6 @@ function export_more_legends_xml()
     end
     file:write("</dance_forms>\n")
 
-	
     file:write("</df_world>\n")
     file:close()
 end
