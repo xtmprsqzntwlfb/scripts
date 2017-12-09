@@ -725,7 +725,7 @@ function export_more_legends_xml()
         file:write("\t</written_content>\n")
     end
     file:write("</written_contents>\n")
-	
+
     file:write("<poetic_forms>\n")
     for formK, formV in ipairs(df.global.world.poetic_forms.all) do
         file:write("\t<poetic_form>\n")
