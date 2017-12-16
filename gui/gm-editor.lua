@@ -61,6 +61,9 @@ for _, v in ipairs(keybindings_raw) do
     keybindings[v.name] = v
 end
 
+function getTypeName(type)
+    return tostring(type):gmatch('<type: (.+)>')() or '<unknown type>'
+end
 function getTargetFromScreens()
     local my_trg
     if dfhack.gui.getCurFocus() == 'item' then
@@ -295,7 +298,7 @@ function GmEditorUi:editSelectedEnum(index,choice)
             table.insert(list,{text=('%s (%i)'):format(tostring(enum[i]), i),value=i})
         end
         guiScript.start(function()
-            local ret,idx,choice=guiScript.showListPrompt("Choose "..tostring(enum):sub(8,#tostring (enum)-1).." item:",nil,3,list,nil,true)
+            local ret,idx,choice=guiScript.showListPrompt("Choose "..getTypeName(enum).." item:",nil,3,list,nil,true)
             if ret then
                 trg.target[trg_key]=choice.value
                 self:updateTarget(true)
@@ -339,7 +342,7 @@ function GmEditorUi:editSelected(index,choice,opts)
         if self:getSelectedEnumType() and not opts.raw then
             self:editSelectedEnum()
         elseif trg_type=='number' or trg_type=='string' then --ugly TODO: add metatable get selected
-            dialog.showInputPrompt(tostring(trg_key),"Enter new "..tostring(trg.target:_field(trg_key)._type).." value:",COLOR_WHITE,
+            dialog.showInputPrompt(tostring(trg_key),"Enter new "..getTypeName(trg.target:_field(trg_key)._type).." value:",COLOR_WHITE,
                 tostring(trg.target[trg_key]),self:callback("commitEdit",trg_key))
 
         elseif trg_type == 'boolean' then
