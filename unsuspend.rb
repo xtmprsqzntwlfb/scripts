@@ -4,7 +4,7 @@
 
 unsuspend
 =========
-Unsuspend jobs in workshops, on a one-off basis.  See `autounsuspend`
+Unsuspend construction jobs, on a one-off basis.  See `autounsuspend`
 for regular use.
 
 =end
