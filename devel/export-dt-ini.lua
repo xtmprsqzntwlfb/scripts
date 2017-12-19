@@ -480,25 +480,25 @@ end
 
 write_flags('valid_flags_2', {})
 write_flags('invalid_flags_1', {
-	{ 'a skeleton', { df.unit_flags1.skeleton } },
-	{ 'a merchant', { df.unit_flags1.merchant } },
-	{ 'outpost liaison or diplomat', { df.unit_flags1.diplomat } },
-	{ 'an invader or hostile', { df.unit_flags1.active_invader } },
-	{ 'an invader or hostile', { df.unit_flags1.invader_origin } },
-	{ 'resident, invader or ambusher', { df.unit_flags1.hidden_ambusher, df.unit_flags1.invades } },
-	{ 'part of a merchant caravan', { df.unit_flags1.forest } },
-	{ 'Dead, Jim.', { df.unit_flags1.dead } },
-	{ 'marauder', { df.unit_flags1.marauder } }
+    { 'a skeleton', { df.unit_flags1.skeleton } },
+    { 'a merchant', { df.unit_flags1.merchant } },
+    { 'outpost liaison or diplomat', { df.unit_flags1.diplomat } },
+    { 'an invader or hostile', { df.unit_flags1.active_invader } },
+    { 'an invader or hostile', { df.unit_flags1.invader_origin } },
+    { 'resident, invader or ambusher', { df.unit_flags1.hidden_ambusher, df.unit_flags1.invades } },
+    { 'part of a merchant caravan', { df.unit_flags1.forest } },
+    { 'Dead, Jim.', { df.unit_flags1.dead } },
+    { 'marauder', { df.unit_flags1.marauder } }
 });
 write_flags ('invalid_flags_2', {
-	{ 'killed, Jim.', { df.unit_flags2.killed } },
-	{ 'from the Underworld. SPOOKY!', { df.unit_flags2.underworld } },
-	{ 'resident', { df.unit_flags2.resident } },
-	{ 'uninvited visitor', { df.unit_flags2.visitor_uninvited } },
-	{ 'visitor', { df.unit_flags2.visitor } }
+    { 'killed, Jim.', { df.unit_flags2.killed } },
+    { 'from the Underworld. SPOOKY!', { df.unit_flags2.underworld } },
+    { 'resident', { df.unit_flags2.resident } },
+    { 'uninvited visitor', { df.unit_flags2.visitor_uninvited } },
+    { 'visitor', { df.unit_flags2.visitor } }
 });
 write_flags ('invalid_flags_3', {
-	{ 'a ghost', { df.unit_flags3.ghostly } }
+    { 'a ghost', { df.unit_flags3.ghostly } }
 });
 
 out:close()
