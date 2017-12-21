@@ -57,15 +57,6 @@ function getItemSubTypeName(itemType, subType)
     end
 end
 
-function findEntity(id)
-    for k,v in ipairs(df.global.world.entities.all) do
-        if (v.id == id) then
-            return v
-        end
-    end
-    return nil
-end
-
 function table.contains(table, element)
     for _, value in pairs(table) do
         if value == element then
@@ -424,7 +415,7 @@ function export_more_legends_xml()
                 elseif event:getType() == df.history_event_type.ADD_HF_ENTITY_LINK and k == "link_type" then
                     file:write("\t\t<"..k..">"..df_enums.histfig_entity_link_type[v]:lower().."</"..k..">\n")
                 elseif event:getType() == df.history_event_type.ADD_HF_ENTITY_LINK and k == "position_id" then
-                    local entity = findEntity(event.civ)
+                    local entity = df.historical_entity.find(event.civ)
                     if (entity ~= nil and event.civ > -1 and v > -1) then
                         for entitypositionsK, entityPositionsV in ipairs(entity.positions.own) do
                             if entityPositionsV.id == v then
@@ -436,7 +427,7 @@ function export_more_legends_xml()
                         file:write("\t\t<position>-1</position>\n")
                     end
                 elseif event:getType() == df.history_event_type.CREATE_ENTITY_POSITION and k == "position" then
-                    local entity = findEntity(event.site_civ)
+                    local entity = df.historical_entity.find(event.site_civ)
                     if (entity ~= nil and v > -1) then
                         for entitypositionsK, entityPositionsV in ipairs(entity.positions.own) do
                             if entityPositionsV.id == v then
@@ -450,7 +441,7 @@ function export_more_legends_xml()
                 elseif event:getType() == df.history_event_type.REMOVE_HF_ENTITY_LINK and k == "link_type" then
                     file:write("\t\t<"..k..">"..df_enums.histfig_entity_link_type[v]:lower().."</"..k..">\n")
                 elseif event:getType() == df.history_event_type.REMOVE_HF_ENTITY_LINK and k == "position_id" then
-                    local entity = findEntity(event.civ)
+                    local entity = df.historical_entity.find(event.civ)
                     if (entity ~= nil and event.civ > -1 and v > -1) then
                         for entitypositionsK, entityPositionsV in ipairs(entity.positions.own) do
                             if entityPositionsV.id == v then
