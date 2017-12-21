@@ -75,6 +75,18 @@ function table.containskey(table, key)
     return false
 end
 
+function progress_ipairs(vector, desc, interval)
+    desc = desc or 'item'
+    interval = interval or 10000
+    local cb = ipairs(vector)
+    return function(vector, k, ...)
+        if k and k > 0 and k % interval == 0 then
+            print(('        %s %i/%i (%0.f%%)'):format(desc, k, #vector, k * 100 / #vector))
+        end
+        return cb(vector, k)
+    end, vector, 0
+end
+
 -- wrapper that returns "unknown N" for df.enum_type[BAD_VALUE],
 -- instead of returning nil or causing an error
 df_enums = {}
@@ -111,7 +123,7 @@ function export_more_legends_xml()
     file:write("<altname>"..dfhack.df2utf(dfhack.TranslateName(df.global.world.world_data.name,1)).."</altname>\n")
 
     file:write("<landmasses>\n")
-    for landmassK, landmassV in ipairs(df.global.world.world_data.landmasses) do
+    for landmassK, landmassV in progress_ipairs(df.global.world.world_data.landmasses, 'landmass') do
         file:write("\t<landmass>\n")
         file:write("\t\t<id>"..landmassV.index.."</id>\n")
         file:write("\t\t<name>"..dfhack.df2utf(dfhack.TranslateName(landmassV.name,1)).."</name>\n")
@@ -122,7 +134,7 @@ function export_more_legends_xml()
     file:write("</landmasses>\n")
 
     file:write("<mountain_peaks>\n")
-    for mountainK, mountainV in ipairs(df.global.world.world_data.mountain_peaks) do
+    for mountainK, mountainV in progress_ipairs(df.global.world.world_data.mountain_peaks, 'mountain') do
         file:write("\t<mountain_peak>\n")
         file:write("\t\t<id>"..mountainK.."</id>\n")
         file:write("\t\t<name>"..dfhack.df2utf(dfhack.TranslateName(mountainV.name,1)).."</name>\n")
@@ -133,7 +145,7 @@ function export_more_legends_xml()
     file:write("</mountain_peaks>\n")
 
     file:write("<regions>\n")
-    for regionK, regionV in ipairs(df.global.world.world_data.regions) do
+    for regionK, regionV in progress_ipairs(df.global.world.world_data.regions, 'region') do
         file:write("\t<region>\n")
         file:write("\t\t<id>"..regionV.index.."</id>\n")
         file:write("\t\t<coords>")
@@ -146,7 +158,7 @@ function export_more_legends_xml()
     file:write("</regions>\n")
 
     file:write("<underground_regions>\n")
-    for regionK, regionV in ipairs(df.global.world.world_data.underground_regions) do
+    for regionK, regionV in progress_ipairs(df.global.world.world_data.underground_regions, 'underground region') do
         file:write("\t<underground_region>\n")
         file:write("\t\t<id>"..regionV.index.."</id>\n")
         file:write("\t\t<coords>")
@@ -159,7 +171,7 @@ function export_more_legends_xml()
     file:write("</underground_regions>\n")
 
     file:write("<sites>\n")
-    for siteK, siteV in ipairs(df.global.world.world_data.sites) do
+    for siteK, siteV in progress_ipairs(df.global.world.world_data.sites, 'site') do
         file:write("\t<site>\n")
         for k,v in pairs(siteV) do
             if (k == "id" or k == "civ_id" or k == "cur_owner_id") then
@@ -196,7 +208,7 @@ function export_more_legends_xml()
     file:write("</sites>\n")
 
     file:write("<world_constructions>\n")
-    for wcK, wcV in ipairs(df.global.world.world_data.constructions.list) do
+    for wcK, wcV in progress_ipairs(df.global.world.world_data.constructions.list, 'construction') do
         file:write("\t<world_construction>\n")
         file:write("\t\t<id>"..wcV.id.."</id>\n")
         file:write("\t\t<name>"..dfhack.df2utf(dfhack.TranslateName(wcV.name,1)).."</name>\n")
@@ -211,7 +223,7 @@ function export_more_legends_xml()
     file:write("</world_constructions>\n")
 
     file:write("<artifacts>\n")
-    for artifactK, artifactV in ipairs(df.global.world.artifacts.all) do
+    for artifactK, artifactV in progress_ipairs(df.global.world.artifacts.all, 'artifact') do
         file:write("\t<artifact>\n")
         file:write("\t\t<id>"..artifactV.id.."</id>\n")
         if (artifactV.item:getType() ~= -1) then
@@ -243,7 +255,7 @@ function export_more_legends_xml()
     file:write("</artifacts>\n")
 
     file:write("<historical_figures>\n")
-    for hfK, hfV in ipairs(df.global.world.history.figures) do
+    for hfK, hfV in progress_ipairs(df.global.world.history.figures, 'historical figure') do
         file:write("\t<historical_figure>\n")
         file:write("\t\t<id>"..hfV.id.."</id>\n")
         file:write("\t\t<sex>"..hfV.sex.."</sex>\n")
@@ -253,7 +265,7 @@ function export_more_legends_xml()
     file:write("</historical_figures>\n")
 
     file:write("<entity_populations>\n")
-    for entityPopK, entityPopV in ipairs(df.global.world.entity_populations) do
+    for entityPopK, entityPopV in progress_ipairs(df.global.world.entity_populations, 'entity population') do
         file:write("\t<entity_population>\n")
         file:write("\t\t<id>"..entityPopV.id.."</id>\n")
         for raceK, raceV in ipairs(entityPopV.races) do
@@ -266,7 +278,7 @@ function export_more_legends_xml()
     file:write("</entity_populations>\n")
 
     file:write("<entities>\n")
-    for entityK, entityV in ipairs(df.global.world.entities.all) do
+    for entityK, entityV in progress_ipairs(df.global.world.entities.all, 'entity') do
         file:write("\t<entity>\n")
         file:write("\t\t<id>"..entityV.id.."</id>\n")
         if entityV.race >= 0 then
@@ -361,7 +373,7 @@ function export_more_legends_xml()
     file:write("</entities>\n")
 
     file:write("<historical_events>\n")
-    for ID, event in ipairs(df.global.world.history.events) do
+    for ID, event in progress_ipairs(df.global.world.history.events, 'event') do
         if event:getType() == df.history_event_type.ADD_HF_ENTITY_LINK
               or event:getType() == df.history_event_type.ADD_HF_SITE_LINK
               or event:getType() == df.history_event_type.ADD_HF_HF_LINK
@@ -680,7 +692,7 @@ function export_more_legends_xml()
     file:write("</historical_eras>\n")
 
     file:write("<written_contents>\n")
-    for wcK, wcV in ipairs(df.global.world.written_contents.all) do
+    for wcK, wcV in progress_ipairs(df.global.world.written_contents.all) do
         file:write("\t<written_content>\n")
         file:write("\t\t<id>"..wcV.id.."</id>\n")
         file:write("\t\t<title>"..wcV.title.."</title>\n")
@@ -720,7 +732,7 @@ function export_more_legends_xml()
     file:write("</written_contents>\n")
 
     file:write("<poetic_forms>\n")
-    for formK, formV in ipairs(df.global.world.poetic_forms.all) do
+    for formK, formV in progress_ipairs(df.global.world.poetic_forms.all, 'poetic form') do
         file:write("\t<poetic_form>\n")
         file:write("\t\t<id>"..formV.id.."</id>\n")
         file:write("\t\t<name>"..dfhack.df2utf(dfhack.TranslateName(formV.name,1)).."</name>\n")
@@ -729,7 +741,7 @@ function export_more_legends_xml()
     file:write("</poetic_forms>\n")
 
     file:write("<musical_forms>\n")
-    for formK, formV in ipairs(df.global.world.musical_forms.all) do
+    for formK, formV in progress_ipairs(df.global.world.musical_forms.all, 'musical form') do
         file:write("\t<musical_form>\n")
         file:write("\t\t<id>"..formV.id.."</id>\n")
         file:write("\t\t<name>"..dfhack.df2utf(dfhack.TranslateName(formV.name,1)).."</name>\n")
@@ -738,7 +750,7 @@ function export_more_legends_xml()
     file:write("</musical_forms>\n")
 
     file:write("<dance_forms>\n")
-    for formK, formV in ipairs(df.global.world.dance_forms.all) do
+    for formK, formV in progress_ipairs(df.global.world.dance_forms.all, 'dance form') do
         file:write("\t<dance_form>\n")
         file:write("\t\t<id>"..formV.id.."</id>\n")
         file:write("\t\t<name>"..dfhack.df2utf(dfhack.TranslateName(formV.name,1)).."</name>\n")
