@@ -825,10 +825,11 @@ if dfhack.gui.getCurFocus() == "legends" or dfhack.gui.getCurFocus() == "dfhack/
         export_detailed_maps()
     elseif args[1] == "sites" then
         export_site_maps()
-    else dfhack.printerr('Valid arguments are "all", "info", "maps" or "sites"')
+    else
+        qerror('Valid arguments are "all", "info", "custom", "maps" or "sites"')
     end
 elseif args[1] == "maps" and dfhack.gui.getCurFocus() == "export_graphical_map" then
     export_detailed_maps()
 else
-    dfhack.printerr('Exportlegends must be run from the main legends view')
+    qerror('Exportlegends must be run from the main legends view')
 end
