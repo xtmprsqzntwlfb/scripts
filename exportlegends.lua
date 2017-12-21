@@ -326,11 +326,13 @@ function export_more_legends_xml()
         for id, link in ipairs(entityV.children) do
             file:write("\t\t<child>"..link.."</child>\n")
         end
+
         file:write("\t\t<claims>")
-            for xK, xVal in ipairs(entityV.claims.unk2.x) do
-                file:write(xVal..","..entityV.claims.unk2.y[xK].."|")
-            end
+        for xK, xVal in ipairs(entityV.claims.border.x) do
+            file:write(xVal..","..entityV.claims.border.y[xK].."|")
+        end
         file:write("\t\t</claims>\n")
+
         if (table.containskey(entityV,"occasion_info") and entityV.occasion_info ~= nil) then
             for occasionK, occasionV in pairs(entityV.occasion_info.occasions) do
                 file:write("\t\t<occasion>\n")
