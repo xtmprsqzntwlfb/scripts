@@ -20,6 +20,7 @@ addresses in-game. Passing "all" does this for all globals.
 ]====]
 
 GLOBALS = {
+    enabler = "enabler",
     cursor = "cursor",
     point = "selection_rect",
     gamemode = "gamemode",
