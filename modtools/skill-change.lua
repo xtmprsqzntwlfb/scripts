@@ -1,7 +1,6 @@
 -- Sets or modifies a skill of a unit
 --author expwnent
 --based on skillChange.lua by Putnam
---TODO: update skill level once experience increases/decreases
 --TODO: skill rust?
 local help = [====[
 
@@ -15,7 +14,7 @@ Sets or modifies a skill of a unit.  Args:
                     direct experience, or experience levels?
 :-unit id:          id of the target unit
 :-value amount:     how much to set/add
-
+:-loud:  if present, prints changes to console
 ]====]
 local utils = require 'utils'
 
@@ -25,7 +24,8 @@ validArgs = validArgs or utils.invert({
  'mode',
  'value',
  'granularity',
- 'unit'
+ 'unit',
+ 'loud',
 })
 
 mode = mode or utils.invert({
@@ -75,12 +75,40 @@ if not skill then
  utils.insert_sorted(args.unit.status.current_soul.skills,skill,'id')
 end
 
-print('old: ' .. skill.rating .. ': ' .. skill.experience)
+if args.loud then
+ print('old: ' .. skill.rating .. ': ' .. skill.experience)
+end
+
 if args.granularity == granularity.experience then
  if args.mode == mode.set then
   skill.experience = args.value
  elseif args.mode == mode.add then
-  skill.experience = skill.experience + args.value
+ --Changing of skill levels when experience increases/decreases hacked in by Atkana
+  local function nextCost(rating)
+   if rating == 0 then
+    return 1
+   else
+    return (400 + (100 * rating))
+   end
+  end
+  local newExp = skill.experience + args.value
+  if (newExp < 0) or (newExp > nextCost(skill.rating+1)) then
+   if newExp > 0 then --positive
+    repeat
+	   newExp = newExp - nextCost(skill.rating+1)
+	   skill.rating = skill.rating + 1
+	  until newExp < nextCost(skill.rating)
+   else --negative
+    repeat
+	   newExp = newExp + nextCost(skill.rating)
+	   skill.rating = math.max(skill.rating - 1, 0)
+	  until (newExp >= 0) or skill.rating == 0
+	  --hack because I can't maths. Will only happen if loop stopped because skill was 0
+	  if newExp < 0 then newExp = 0 end
+   end
+  end
+  --Update exp
+  skill.experience = newExp
  else
   error 'bad mode'
  end
@@ -96,5 +124,6 @@ else
  error 'bad granularity'
 end
 
-print('new: ' .. skill.rating .. ': ' .. skill.experience)
-
+if args.loud then
+ print('new: ' .. skill.rating .. ': ' .. skill.experience)
+end
