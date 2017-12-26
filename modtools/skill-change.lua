@@ -95,16 +95,16 @@ if args.granularity == granularity.experience then
   if (newExp < 0) or (newExp > nextCost(skill.rating+1)) then
    if newExp > 0 then --positive
     repeat
-	   newExp = newExp - nextCost(skill.rating+1)
-	   skill.rating = skill.rating + 1
-	  until newExp < nextCost(skill.rating)
+     newExp = newExp - nextCost(skill.rating+1)
+     skill.rating = skill.rating + 1
+    until newExp < nextCost(skill.rating)
    else --negative
     repeat
-	   newExp = newExp + nextCost(skill.rating)
-	   skill.rating = math.max(skill.rating - 1, 0)
-	  until (newExp >= 0) or skill.rating == 0
-	  --hack because I can't maths. Will only happen if loop stopped because skill was 0
-	  if newExp < 0 then newExp = 0 end
+     newExp = newExp + nextCost(skill.rating)
+     skill.rating = math.max(skill.rating - 1, 0)
+    until (newExp >= 0) or skill.rating == 0
+    --hack because I can't maths. Will only happen if loop stopped because skill was 0
+    if newExp < 0 then newExp = 0 end
    end
   end
   --Update exp
