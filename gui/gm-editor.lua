@@ -342,8 +342,12 @@ function GmEditorUi:editSelected(index,choice,opts)
         if self:getSelectedEnumType() and not opts.raw then
             self:editSelectedEnum()
         elseif trg_type=='number' or trg_type=='string' then --ugly TODO: add metatable get selected
-            dialog.showInputPrompt(tostring(trg_key),"Enter new "..getTypeName(trg.target:_field(trg_key)._type).." value:",COLOR_WHITE,
-                tostring(trg.target[trg_key]),self:callback("commitEdit",trg_key))
+            local prompt = "Enter new value:"
+            if self:getSelectedEnumType() then
+                prompt = "Enter new " .. getTypeName(trg.target:_field(trg_key)._type) .. " value"
+            end
+            dialog.showInputPrompt(tostring(trg_key), prompt, COLOR_WHITE,
+                tostring(trg.target[trg_key]), self:callback("commitEdit",trg_key))
 
         elseif trg_type == 'boolean' then
             trg.target[trg_key] = not trg.target[trg_key]
