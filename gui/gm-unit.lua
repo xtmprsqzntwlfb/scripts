@@ -90,33 +90,33 @@ function editor_skills:init( args )
     local skill_list=list_skills(self.target_unit,self.learned_only)
 
     self:addviews{
-    widgets.FilteredList{
-        choices=skill_list,
-        frame = {t=0, b=1,l=1},
-        view_id="skills",
-    },
-    widgets.Label{
-                frame = { b=0,l=1},
-                text ={{text= ": exit editor ",
-                    key  = "LEAVESCREEN",
-                    on_activate= self:callback("dismiss")
-                    },
-                    {text=": remove level ",
-                    key = "SECONDSCROLL_UP",
-                    on_activate=self:callback("level_skill",-1)},
-                    {text=": add level ",
-                    key = "SECONDSCROLL_DOWN",
-                    on_activate=self:callback("level_skill",1)}
-                    ,
-                    {text=": show learned only ",
-                    key = "CHANGETAB",
-                    on_activate=function ()
-                        self.learned_only=not self.learned_only
-                        self:update_list(true)
-                    end}
-                    }
-            },
-        }
+        widgets.FilteredList{
+            choices=skill_list,
+            frame = {t=0, b=1,l=1},
+            view_id="skills",
+        },
+        widgets.Label{
+            frame = { b=0,l=1},
+            text ={{text= ": exit editor ",
+                key  = "LEAVESCREEN",
+                on_activate= self:callback("dismiss")
+                },
+                {text=": remove level ",
+                key = "SECONDSCROLL_UP",
+                on_activate=self:callback("level_skill",-1)},
+                {text=": add level ",
+                key = "SECONDSCROLL_DOWN",
+                on_activate=self:callback("level_skill",1)}
+                ,
+                {text=": show learned only ",
+                key = "CHANGETAB",
+                on_activate=function ()
+                    self.learned_only=not self.learned_only
+                    self:update_list(true)
+                end}
+            }
+        },
+    }
 end
 function editor_skills:get_cur_skill()
     local list_wid=self.subviews.skills
@@ -279,7 +279,7 @@ editor_civ.ATTRS={
     frame_style = gui.GREY_LINE_FRAME,
     frame_title = "Civilization editor",
     target_unit = DEFAULT_NIL,
-    }
+}
 
 function editor_civ:update_curren_civ()
     self.subviews.civ_name:setText("Currently: "..civ_name(self.target_unit.civ_id))
@@ -394,32 +394,84 @@ function editor_counters:init( args )
 
 
     self:addviews{
-    widgets.FilteredList{
-        choices=self.counter_list,
-        frame = {t=0, b=1,l=1},
-        view_id="counters",
-        on_submit=self:callback("choose_cur_counter"),
-        on_submit2=self:callback("set_cur_counter",0),--TODO some things need to be set to different defaults
-    },
-    widgets.Label{
-                frame = { b=0,l=1},
-                text ={{text= ": exit editor ",
-                    key  = "LEAVESCREEN",
-                    on_activate= self:callback("dismiss")
-                    },
-                    {text=": reset counter ",
-                    key = "SEC_SELECT",
-                    },
-                    {text=": set counter ",
-                    key = "SELECT",
-                    }
+        widgets.FilteredList{
+            choices=self.counter_list,
+            frame = {t=0, b=1,l=1},
+            view_id="counters",
+            on_submit=self:callback("choose_cur_counter"),
+            on_submit2=self:callback("set_cur_counter",0),--TODO some things need to be set to different defaults
+        },
+        widgets.Label{
+            frame = { b=0,l=1},
+            text = {{text= ": exit editor ",
+                key  = "LEAVESCREEN",
+                on_activate= self:callback("dismiss")
+                },
+                {text=": reset counter ",
+                key = "SEC_SELECT",
+                },
+                {text=": set counter ",
+                key = "SELECT",
+                }
 
-                    }
-            },
-        }
+            }
+        },
+    }
     self:update_counters()
 end
 add_editor(editor_counters)
+
+prof_editor = defclass(prof_editor, gui.FramedScreen)
+prof_editor.ATTRS = {
+    frame_style = gui.GREY_LINE_FRAME,
+    frame_title = "Profession editor",
+    target_unit = DEFAULT_NIL,
+}
+
+function prof_editor:init()
+    local u = self.target_unit
+    local opts = {}
+    local craw = df.creature_raw.find(u.race)
+    for i in ipairs(df.profession) do
+        if i ~= df.profession.NONE then
+            local attrs = df.profession.attrs[i]
+            local caption = attrs.caption or '?'
+            local tile = string.char(attrs.military and craw.creature_soldier_tile or craw.creature_tile)
+            table.insert(opts, {
+                text = {
+                    {text = tile, pen = dfhack.units.getCasteProfessionColor(u.race, u.caste, i)},
+                    ' ' .. caption
+                },
+                profession = i,
+                search_key = caption:lower(),
+            })
+        end
+    end
+
+    self:addviews{
+        widgets.FilteredList{
+            frame = {t=1, l=1, b=2},
+            choices = opts,
+            view_id = 'professions',
+            on_submit = self:callback('save_profession'),
+        },
+        widgets.Label{
+            frame = {b=0,l=1},
+            text = {
+                {key = "LEAVESCREEN", text= ": exit editor ",
+                on_activate = self:callback("dismiss")},
+            }
+        }
+    }
+end
+
+function prof_editor:save_profession(_, choice)
+    self.target_unit.profession = choice.profession
+    self.target_unit.profession2 = choice.profession
+    self:dismiss()
+end
+
+add_editor(prof_editor)
 
 wound_creator=defclass(wound_creator,gui.FramedScreen)
 wound_creator.ATTRS={
@@ -547,65 +599,62 @@ function editor_wounds:init( args )
     self.trg_wounds=self.target_unit.body.wounds
 
     self:addviews{
-    widgets.List{
+        widgets.List{
+            frame = {t=1, b=1,l=1},
+            view_id = "wounds",
+            on_submit = self:callback("edit_cur_wound"),
+            on_submit2 = self:callback("delete_current_wound")
+        },
+        widgets.Label{
+            frame = { b=0,l=1},
+            text ={{text= ": exit editor ",
+                key  = "LEAVESCREEN",
+                on_activate= self:callback("dismiss")},
 
-        frame = {t=1, b=1,l=1},
-        view_id="wounds",
-        on_submit=self:callback("edit_cur_wound"),
-        on_submit2=self:callback("delete_current_wound")
-    },
-    widgets.Label{
-                frame = { b=0,l=1},
-                text ={{text= ": exit editor ",
-                    key  = "LEAVESCREEN",
-                    on_activate= self:callback("dismiss")},
+                {text=": edit wound ",
+                key = "SELECT"},
 
-                    {text=": edit wound ",
-                    key = "SELECT"},
-
-                    {text=": delete wound ",
-                    key = "SEC_SELECT"},
-                    {text=": create wound ",
-                    key = "CUSTOM_CTRL_I",
-                    on_activate= self:callback("create_new_wound")},
-
-                    }
-            },
-        }
+                {text=": delete wound ",
+                key = "SEC_SELECT"},
+                {text=": create wound ",
+                key = "CUSTOM_CTRL_I",
+                on_activate= self:callback("create_new_wound")},
+            }
+        },
+    }
     self:update_wounds()
 end
 add_editor(editor_wounds)
 
 -------------------------------main window----------------
 unit_editor = defclass(unit_editor, gui.FramedScreen)
-unit_editor.ATTRS={
+unit_editor.ATTRS = {
     frame_style = gui.GREY_LINE_FRAME,
     frame_title = "GameMaster's unit editor",
     target_unit = DEFAULT_NIL,
-    }
+}
 
 
 function unit_editor:init(args)
-
     self:addviews{
-    widgets.FilteredList{
-        frame = {l=1, t=1},
-        choices=editors,
-        on_submit=function (idx,choice)
-            if choice.on_submit then
-                choice.on_submit(self.target_unit)
+        widgets.FilteredList{
+            frame = {l=1, t=1},
+            choices=editors,
+            on_submit=function (idx,choice)
+                if choice.on_submit then
+                    choice.on_submit(self.target_unit)
+                end
             end
-        end
-    },
-    widgets.Label{
-                frame = { b=0,l=1},
-                text ={{text= ": exit editor",
-                    key  = "LEAVESCREEN",
-                    on_activate= self:callback("dismiss")
-                    },
-                    }
-            },
+        },
+        widgets.Label{
+            frame = { b=0,l=1},
+            text = {{
+                text = ": exit editor",
+                key = "LEAVESCREEN",
+                on_activate = self:callback("dismiss")
+            }},
         }
+    }
 end
 
 
