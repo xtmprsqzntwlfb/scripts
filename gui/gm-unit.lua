@@ -28,7 +28,8 @@ if target == nil then
 end
 local editors = {}
 function add_editor(editor_class)
-    table.insert(editors,{text=editor_class.ATTRS.frame_title,on_submit=function ( unit )
+    local title = editor_class.ATTRS.frame_title
+    table.insert(editors, {text=title, search_key=title:lower(), on_submit=function(unit)
         editor_class{target_unit=unit}:show()
     end})
 end
