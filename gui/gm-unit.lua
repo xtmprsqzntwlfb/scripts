@@ -12,21 +12,21 @@ local dialog = require 'gui.dialogs'
 local widgets =require 'gui.widgets'
 local guiScript = require 'gui.script'
 local utils = require 'utils'
-local args={...}
+local args = {...}
 
 
 local target
 --TODO: add more ways to guess what unit you want to edit
-if args[1]~= nil then
-    target=df.units.find(args[1])
+if args[1] ~= nil then
+    target = df.units.find(args[1])
 else
-    target=dfhack.gui.getSelectedUnit(true)
+    target = dfhack.gui.getSelectedUnit(true)
 end
 
-if target==nil then
+if target == nil then
     qerror("No unit to edit") --TODO: better error message
 end
-local editors={}
+local editors = {}
 function add_editor(editor_class)
     table.insert(editors,{text=editor_class.ATTRS.frame_title,on_submit=function ( unit )
         editor_class{target_unit=unit}:show()
@@ -34,19 +34,19 @@ function add_editor(editor_class)
 end
 -------------------------------various subeditors---------
 --TODO set local sould or better yet skills vector to reduce long skill list access typing
-editor_skills=defclass(editor_skills,gui.FramedScreen)
-editor_skills.ATTRS={
+editor_skills = defclass(editor_skills, gui.FramedScreen)
+editor_skills.ATTRS = {
     frame_style = gui.GREY_LINE_FRAME,
     frame_title = "Skill editor",
     target_unit = DEFAULT_NIL,
-    learned_only= false,
+    learned_only = false,
 }
 function list_skills(unit,learned_only)
-    local u_skills=unit.status.current_soul.skills
-    local ret={}
+    local u_skills = unit.status.current_soul.skills
+    local ret = {}
     for skill,v in ipairs(df.job_skill) do
         if skill ~= df.job_skill.NONE then
-            local u_skill=utils.binsearch(u_skills,skill,"id")
+            local u_skill = utils.binsearch(u_skills, skill, "id")
             if u_skill or not learned_only then
                 if not u_skill then
                     u_skill={rating=-1,experience=0}
@@ -168,7 +168,7 @@ function RaceBox:preinit(info)
     if RaceBox.ATTRS.allow_none or info.allow_none then
         table.insert(choices,{text="<none>",num=-1})
     end
-    for i,v in ipairs(df.global.world.raws.creatures.all) do
+    for i, v in ipairs(df.global.world.raws.creatures.all) do
         local text=self:format_creature(v)
         table.insert(choices,{text=text,raw=v,num=i,search_key=text:lower()})
     end
@@ -211,9 +211,9 @@ function civ_name(id,format_name,format_no_name,name_other,name_invalid)
     end
     local t={NAME=dfhack.TranslateName(civ.name),ENGLISH=dfhack.TranslateName(civ.name,true),ID=civ.id} --TODO race?, maybe something from raws?
     if t.NAME=="" then
-        return string.gsub(format_no_name or "<unnamed>:$ID", "%$(%w+)", t)
+        return string.gsub(format_no_name or "<unnamed> ($ID)", "%$(%w+)", t)
     end
-    return string.gsub(format_name or "$NAME ($ENGLISH):$ID", "%$(%w+)", t)
+    return string.gsub(format_name or "$NAME ($ENGLISH) ($ID)", "%$(%w+)", t)
 end
 function CivBox:update_choices()
     local choices={}
@@ -221,7 +221,7 @@ function CivBox:update_choices()
         table.insert(choices,{text=self.name_other,num=-1})
     end
 
-    for i,v in ipairs(df.global.world.entities.all) do
+    for i, v in ipairs(df.global.world.entities.all) do
         if not self.race_filter or (v.race==self.race_filter) then --TODO filter type
             local text=civ_name(v,self.format_name,self.format_no_name,self.name_other,self.name_invalid)
             table.insert(choices,{text=text,raw=v,num=i})
@@ -292,7 +292,7 @@ function editor_civ:init( args )
     widgets.Label{view_id="civ_name",frame = { t=1,l=1}, text="Currently: "..civ_name(self.target_unit.civ_id)},
     widgets.Label{frame = { t=2,l=1}, text={{text=": set to other (-1, usually enemy)",key="CUSTOM_N",
         on_activate= function() self.target_unit.civ_id=-1;self:update_curren_civ() end}}},
-    widgets.Label{frame = { t=3,l=1}, text={{text=": set to current civ("..df.global.ui.civ_id..")",key="CUSTOM_C",
+    widgets.Label{frame = { t=3,l=1}, text={{text=": set to current civ ("..df.global.ui.civ_id..")",key="CUSTOM_C",
         on_activate= function() self.target_unit.civ_id=df.global.ui.civ_id;self:update_curren_civ() end}}},
     widgets.Label{frame = { t=4,l=1}, text={{text=": manually enter",key="CUSTOM_E",
         on_activate=function ()
@@ -358,24 +358,24 @@ editor_counters.ATTRS={
     }
 }
 function editor_counters:fill_counters()
-    local ret={}
-    local u=self.target_unit
-    for i,v in ipairs(self.counters1) do
-        table.insert(ret,{f=u.counters:_field(v),name=v})
+    local ret = {}
+    local u = self.target_unit
+    for i, v in ipairs(self.counters1) do
+        table.insert(ret, {f=u.counters:_field(v),name=v})
     end
-    for i,v in ipairs(self.counters2) do
-        table.insert(ret,{f=u.counters2:_field(v),name=v})
+    for i, v in ipairs(self.counters2) do
+        table.insert(ret, {f=u.counters2:_field(v),name=v})
     end
     return ret
 end
 function editor_counters:update_counters()
-    for i,v in ipairs(self.counter_list) do
-        v.text=string.format("%s:%d",v.name,v.f.value)
+    for i, v in ipairs(self.counter_list) do
+        v.text=string.format("%s: %d", v.name, v.f.value)
     end
     self.subviews.counters:setChoices(self.counter_list)
 end
 function editor_counters:set_cur_counter(value,index,choice)
-    choice.f.value=value
+    choice.f.value = value
     self:update_counters()
 end
 function editor_counters:choose_cur_counter(index,choice)
@@ -477,12 +477,12 @@ function format_flag_name( fname )
     return fname:sub(1,1):upper()..fname:sub(2):gsub("_"," ")
 end
 function name_from_flags( wp )
-    for i,v in ipairs(wp.flags1) do
+    for i, v in ipairs(wp.flags1) do
         if v then
             return format_flag_name(df.wound_damage_flags1[i])
         end
     end
-    for i,v in ipairs(wp.flags2) do
+    for i, v in ipairs(wp.flags2) do
         if v then
             return format_flag_name(df.wound_damage_flags2[i])
         end
@@ -508,8 +508,8 @@ function format_wound( list_id,wound, unit)
 end
 function editor_wounds:update_wounds()
     local ret={}
-    for i,v in ipairs(self.trg_wounds) do
-        table.insert(ret,{text=format_wound(i,v,self.target_unit),wound=v})
+    for i, v in ipairs(self.trg_wounds) do
+        table.insert(ret,{text=format_wound(i, v,self.target_unit),wound=v})
     end
     self.subviews.wounds:setChoices(ret)
     self.wound_list=ret
@@ -548,7 +548,7 @@ function editor_wounds:init( args )
     self:addviews{
     widgets.List{
 
-        frame = {t=0, b=1,l=1},
+        frame = {t=1, b=1,l=1},
         view_id="wounds",
         on_submit=self:callback("edit_cur_wound"),
         on_submit2=self:callback("delete_current_wound")
@@ -588,6 +588,7 @@ function unit_editor:init(args)
 
     self:addviews{
     widgets.FilteredList{
+        frame = {l=1, t=1},
         choices=editors,
         on_submit=function (idx,choice)
             if choice.on_submit then
