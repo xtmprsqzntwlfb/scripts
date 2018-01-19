@@ -436,9 +436,11 @@ function prof_editor:init()
         if i ~= df.profession.NONE then
             local attrs = df.profession.attrs[i]
             local caption = attrs.caption or '?'
-            local tile = string.char(attrs.military and craw.creature_soldier_tile or craw.creature_tile)
+            local tile = string.char(attrs.military and craw.creature_soldier_tile ~= 0 and
+                craw.creature_soldier_tile or craw.creature_tile)
             table.insert(opts, {
                 text = {
+                    (i == u.profession and '*' or ' ') .. ' ',
                     {text = tile, pen = dfhack.units.getCasteProfessionColor(u.race, u.caste, i)},
                     ' ' .. caption
                 },
