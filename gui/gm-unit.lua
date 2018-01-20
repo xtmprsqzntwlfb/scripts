@@ -9,7 +9,7 @@ An editor for various unit attributes.
 ]====]
 local gui = require 'gui'
 local dialog = require 'gui.dialogs'
-local widgets =require 'gui.widgets'
+local widgets = require 'gui.widgets'
 local guiScript = require 'gui.script'
 local utils = require 'utils'
 local args = {...}
@@ -34,7 +34,7 @@ function add_editor(editor_class)
     end})
 end
 -------------------------------various subeditors---------
---TODO set local sould or better yet skills vector to reduce long skill list access typing
+--TODO set local should or better yet skills vector to reduce long skill list access typing
 editor_skills = defclass(editor_skills, gui.FramedScreen)
 editor_skills.ATTRS = {
     frame_style = gui.GREY_LINE_FRAME,
@@ -474,48 +474,6 @@ function prof_editor:save_profession(_, choice)
 end
 
 add_editor(prof_editor)
-
-wound_creator=defclass(wound_creator,gui.FramedScreen)
-wound_creator.ATTRS={
-    frame_style = gui.GREY_LINE_FRAME,
-    frame_title = "Wound creator",
-    target_wound = DEFAULT_NIL,
-    --filter
-}
-function wound_creator:init( args )
-    if self.target_wound==nil then
-        qerror("invalid wound")
-    end
-
-
-    self:addviews{
-    widgets.List{
-
-        frame = {t=0, b=1,l=1},
-        view_id="fields",
-        on_submit=self:callback("edit_cur_wound"),
-        on_submit2=self:callback("delete_current_wound")
-    },
-    widgets.Label{
-                frame = { b=0,l=1},
-                text ={{text= ": exit editor ",
-                    key  = "LEAVESCREEN",
-                    on_activate= self:callback("dismiss")},
-
-                    {text=": edit wound ",
-                    key = "SELECT"},
-
-                    {text=": delete wound ",
-                    key = "SEC_SELECT"},
-                    {text=": create wound ",
-                    key = "CUSTOM_CTRL_I",
-                    on_activate= self:callback("create_new_wound")},
-
-                    }
-            },
-        }
-    self:update_wounds()
-end
 -------------------
 editor_wounds=defclass(editor_wounds,gui.FramedScreen)
 editor_wounds.ATTRS={
@@ -544,22 +502,43 @@ function name_from_flags( wp )
     end
     return "<unnamed wound>"
 end
-function format_wound( list_id,wound, unit)
+function lookup_bodypart( wound_part,unit,is_singular )
+    local bp=unit.body.body_plan.body_parts
+    local part=bp[wound_part.body_part_id]
 
+    if is_singular then
+        return part.name_singular[0].value
+    else
+        return part.name_plural[0].value
+    end
+end
+function format_wound( list_id,wound, unit)
+    --TODO(warmist): what if there are more parts?
     local name="<unnamed wound>"
-    if #wound.parts>0 and #wound.parts[0].effect_type>0 then --try to make wound name by effect...
-        name=tostring(df.wound_effect_type[wound.parts[0].effect_type[0]])
-        if #wound.parts>1 then --cheap and probably incorrect...
-            name=name.."s"
+    local body_part=""
+    if wound.flags.severed_part then
+        name="severed"
+        if #wound.parts>0 then
+            body_part=lookup_bodypart(wound.parts[0],unit,true)
         end
-    elseif #wound.parts>0 and is_scar(wound.parts[0]) then
-        name="Scar"
-    elseif #wound.parts>0 then
-        local wp=wound.parts[0]
-        name=name_from_flags(wp)
+    else
+        if #wound.parts>0 then
+            if #wound.parts[0].effect_type>0 then --try to make wound name by effect...
+                name=tostring(df.wound_effect_type[wound.parts[0].effect_type[0]])
+                if #wound.parts>1 then --cheap and probably incorrect...
+                    name=name.."s"
+                end
+            elseif is_scar(wound.parts[0]) then
+                name="Scar"
+            else
+                local wp=wound.parts[0]
+                name=name_from_flags(wp)
+            end
+            body_part=lookup_bodypart(wound.parts[0],unit,true)
+        end
     end
 
-    return string.format("%d. %s id=%d",list_id,name,wound.id)
+    return string.format("%d. %s %s(%d)",list_id,body_part,name,wound.id)
 end
 function editor_wounds:update_wounds()
     local ret={}
@@ -570,7 +549,13 @@ function editor_wounds:update_wounds()
     self.wound_list=ret
 end
 function editor_wounds:dirty_unit()
-    print("todo: implement unit status recalculation")
+    self.target_unit.flags2={calculated_nerves=false,calculated_bodyparts=false,calculated_insulation=false}
+    --[=[
+        FIXME(warmist): testing required, this might be not enough:
+            * look into body.body_plan.flags
+            * all the "good" flags
+        worked kindof okay so maybe not?
+    --]=]
 end
 function editor_wounds:get_cur_wound()
     local list_wid=self.subviews.wounds
@@ -601,29 +586,31 @@ function editor_wounds:init( args )
     self.trg_wounds=self.target_unit.body.wounds
 
     self:addviews{
-        widgets.List{
-            frame = {t=1, b=1,l=1},
-            view_id = "wounds",
-            on_submit = self:callback("edit_cur_wound"),
-            on_submit2 = self:callback("delete_current_wound")
-        },
-        widgets.Label{
-            frame = { b=0,l=1},
-            text ={{text= ": exit editor ",
-                key  = "LEAVESCREEN",
-                on_activate= self:callback("dismiss")},
+    widgets.List{
 
-                {text=": edit wound ",
-                key = "SELECT"},
+        frame = {t=0, b=1,l=1},
+        view_id="wounds",
+        on_submit=self:callback("edit_cur_wound"),
+        on_submit2=self:callback("delete_current_wound")
+    },
+    widgets.Label{
+                frame = { b=0,l=1},
+                text ={{text= ": exit editor ",
+                    key  = "LEAVESCREEN",
+                    on_activate= self:callback("dismiss")},
 
-                {text=": delete wound ",
-                key = "SEC_SELECT"},
-                {text=": create wound ",
-                key = "CUSTOM_CTRL_I",
-                on_activate= self:callback("create_new_wound")},
-            }
-        },
-    }
+                    --[[ TODO(warmist): implement this and the create_new_wound
+                    {text=": edit wound ",
+                    key = "SELECT"},]]
+
+                    {text=": delete wound ",
+                    key = "SEC_SELECT"},
+                    --[[{text=": create wound ",
+                    key = "CUSTOM_CTRL_I",
+                    on_activate= self:callback("create_new_wound")},]]
+                    }
+            },
+        }
     self:update_wounds()
 end
 add_editor(editor_wounds)
