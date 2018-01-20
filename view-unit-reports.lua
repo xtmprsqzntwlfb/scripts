@@ -47,15 +47,6 @@ local function find_last_unit_with_combat_log_and_race(race_id)
    return output
 end
 
-local function find_unit(unit_id)
-   for _, unit in pairs(df.global.world.units.all) do
-      if unit.id == unit_id then
-         return unit
-      end
-   end
-   return nil
-end
-
 local function current_selected_unit()
    -- 'v' view, 'k' at unit, unit list view
    local unit = dfhack.gui.getSelectedUnit(true)
@@ -66,7 +57,7 @@ local function current_selected_unit()
    -- 'k' over a corpse
    local item = dfhack.gui.getSelectedItem(true)
    if df.item_corpsest:is_instance(item) then
-      return find_unit(item.unit_id)
+      return df.unit.find(item.unit_id)
    end
 
    -- 'k' over some spatter (e.g. blood)
@@ -77,7 +68,7 @@ local function current_selected_unit()
 
       -- spatter is related to historical figure
       if matinfo.figure then
-         return find_unit(matinfo.figure.unit_id)
+         return df.unit.find(matinfo.figure.unit_id)
       end
 
       -- spatter is only related to a race. find good unit with that race.
