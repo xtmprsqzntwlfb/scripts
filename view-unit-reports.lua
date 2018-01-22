@@ -9,8 +9,6 @@ Current unit is unit near cursor in 'v', selected in 'u' list,
 unit/corpse/splatter at cursor in 'k'. And newest unit with race when
 'k' at race-specific blood spatter.
 
-keybinding add Ctrl-Shift-R view-unit-reports
-
 ]====]
 
 local function get_combat_logs(unit)
@@ -31,7 +29,7 @@ local function view_unit_report(unit)
    for _,report in pairs(get_combat_logs(unit)) do
       report_view.reports:insert('#', report)
    end
-   
+
    report_view.sel_idx = #report_view.reports - 1
 
    dfhack.screen.show(report_view)
