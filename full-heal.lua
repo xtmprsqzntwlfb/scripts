@@ -116,6 +116,8 @@ if unit then
     unit.counters2.sleepiness_timer=0
     unit.counters2.vomit_timeout=0
 
+    unit.animal.vanish_countdown = 0
+
     --print("Resetting body part status...")
     local v=unit.body.components
     for i=0,#v.nonsolid_remaining - 1,1 do
