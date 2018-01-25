@@ -150,6 +150,11 @@ if unit then
         status.sensory_nerve_severed = false
     end
 
+    for i, temp in ipairs(unit.status2.body_part_temperature) do
+        local bp = unit.body.body_plan.body_parts[i]
+        temp.whole = math.floor((bp.min_temp + bp.max_temp) / 2)
+    end
+
     if unit.job.current_job and unit.job.current_job.job_type == df.job_type.Rest then
         --print("Wake from rest -> clean self...")
         unit.job.current_job.job_type = df.job_type.CleanSelf
