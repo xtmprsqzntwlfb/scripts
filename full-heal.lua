@@ -39,8 +39,11 @@ if args.help then
     return
 end
 
+local item = dfhack.gui.getSelectedItem(true)
 if args.unit then
     unit = df.unit.find(tonumber(args.unit))
+elseif df.item_corpsest:is_instance(item) then
+    unit = df.unit.find(item.unit_id)
 else
     unit = dfhack.gui.getSelectedUnit()
 end
