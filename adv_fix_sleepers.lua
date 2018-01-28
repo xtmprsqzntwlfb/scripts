@@ -1,3 +1,4 @@
+--Fixes all local bugged sleepers in adventure mode.
 --[====[
 
 adv_fix_sleepers
