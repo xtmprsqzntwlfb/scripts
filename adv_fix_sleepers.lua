@@ -3,11 +3,11 @@
 
 adv_fix_sleepers
 ================
-Fixes :bug:'6798'. This bug is characterized by sleeping units who refuse to 
+Fixes :bug:'6798'. This bug is characterized by sleeping units who refuse to
     awaken in adventure mode regardless of talking to them, hitting them, or
-    waiting so long you die of thirst. 
+    waiting so long you die of thirst.
     
-Usage: If you come accross one or more bugged sleepers in adventure mode, 
+Usage: If you come accross one or more bugged sleepers in adventure mode,
     simply run the script (type adv_fix_sleepers into the dfhack console),
     and all nearby sleepers will be cured.
 
