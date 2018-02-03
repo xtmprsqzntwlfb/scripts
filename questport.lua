@@ -9,8 +9,10 @@ Don't try to travel normally while in forbidden travel areas (mountains, lairs) 
 
 ]====]
 local gui = require 'gui'
-local qp = df.global.gview.view.child
-local qmap = dfhack.gui.getCurViewscreen()
+local qp = dfhack.gui.getViewscreenByType(df.viewscreen_dungeonmodest, 0)
+    or qerror("Could not find main adventure mode screen")
+local qmap = dfhack.gui.getViewscreenByType(df.viewscreen_adventure_logst, 0)
+    or qerror("Could not find quest log screen")
 local qarm = df.global.world.armies.all
 if df.viewscreen_adventure_logst:is_instance(qmap) then
     local qx = qmap.cursor_x * 48
@@ -19,18 +21,18 @@ if df.viewscreen_adventure_logst:is_instance(qmap) then
     local ry = qmap.player_region_y * 48
     df.global.ui_advmode.unk_1 = qx
     df.global.ui_advmode.unk_2 = qy
-    if df.global.ui_advmode.menu == 0 then
+    if df.global.ui_advmode.menu == df.ui_advmode_menu.Default then
         gui.simulateInput(qp.child, 'LEAVESCREEN')
-        df.global.ui_advmode.menu = 26
+        df.global.ui_advmode.menu = df.ui_advmode_menu.Travel
         df.global.ui_advmode.travel_not_moved = true
         gui.simulateInput(qp, 'CURSOR_DOWN')
         dfhack.timeout(15, 'frames', function()
             gui.simulateInput(qp, 'A_TRAVEL_LOG')
         end)
-    elseif df.global.ui_advmode.menu == 26 then
+    elseif df.global.ui_advmode.menu == df.ui_advmode_menu.Travel then
         for k,v in ipairs(qarm) do
-            if v.flags[0] then
-                local my_arm = df.global.world.armies.all[k].pos
+            if v.flags.player then
+                local my_arm = v.pos
                 if rx ~= qx or ry ~= qy then
                     my_arm.x = qx
                     my_arm.y = qy
