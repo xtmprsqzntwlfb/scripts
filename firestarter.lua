@@ -1,20 +1,18 @@
---Use while viewing an item, unit inventory, or tile to start fires.
+--Lights things on fire: items, locations, entire inventories even!
 --[====[
 
 firestarter
 ===========
-Lights things on fire, items, locations, entire inventories even!
+Lights things on fire: items, locations, entire inventories even! Use while
+viewing an item, unit inventory, or tile to start fires.
 
 ]====]
-local tinder
-if dfhack.gui.getCurFocus() == 'item' then
-    tinder=dfhack.gui.getCurViewscreen().item
-    tinder.flags.on_fire=true
+if dfhack.gui.getSelectedItem(true) then
+    dfhack.gui.getSelectedItem(true).flags.on_fire = true
 elseif dfhack.gui.getSelectedUnit(true) then
-    tinder=dfhack.gui.getSelectedUnit(true).inventory
-        for k,v in ipairs(tinder) do
-            tinder[k].item.flags.on_fire=true
-        end
+    for _, entry in ipairs(dfhack.gui.getSelectedUnit(true).inventory) do
+        entry.item.flags.on_fire = true
+    end
 elseif df.global.cursor.x ~= -30000 then
     local curpos = xyz2pos(pos2xyz(df.global.cursor))
     df.global.world.fires:insert('#', {
