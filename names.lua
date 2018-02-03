@@ -36,17 +36,6 @@ end
 namescr = defclass(namescr, gui.Screen)
 namescr.focus_path = 'names'
 function namescr:init()
-    self:addviews{
-        widgets.Label{
-            view_id='namescr',
-            frame = {b=4, l=1},
-            text = {
-                {text = "Press f to Change First Name"},NEWLINE,
-                {text = "Press Esc to Set Name and Exit"},
-            },
-        }
-    }
-
     local parent = dfhack.gui.getCurViewscreen()
     local trg = dfhack.gui.getAnyUnit(parent)
     if trg then
@@ -78,35 +67,17 @@ function namescr:init()
     gui.simulateInput(choices, 'A_CUST_NAME')
 end
 function namescr:setName()
-    local parent = self._native.parent
-    for k = 0,6 do
-        self.trg.name.words[k] = parent.name.words[k]
-        self.trg.name.parts_of_speech[k] = parent.name.parts_of_speech[k]
-        self.trg.name.language = parent.name.language
-        self.trg.name.has_name = parent.name.has_name
-    end
-end
-function namescr:setFirst()
-    dlg.showInputPrompt("Set First Name?","First: ",COLOR_WHITE,'',
-        function(str)
-            self._native.parent.name.first_name = str
-            self.trg.name.first_name = str
-        end)
+    self.trg.name:assign(self._native.parent.name)
 end
 function namescr:onRenderBody(dc)
     self._native.parent:render()
 end
 function namescr:onInput(keys)
-    if keys.SELECT then
-        self:setName()
-    end
-    if keys.CUSTOM_F then
-        self:setFirst()
-    end
     if keys.LEAVESCREEN then
         self:setName()
         self:dismiss()
         dfhack.screen.dismiss(self._native.parent)
+        return
     end
     return self:sendInputToParent(keys)
 end
