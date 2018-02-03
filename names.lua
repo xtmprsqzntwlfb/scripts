@@ -33,8 +33,13 @@ arguments:
 ]])
     return
 end
+
+adv_screen = adv_screen or df.viewscreen_setupadventurest:new()
+adv_screen.page = df.viewscreen_setupadventurest.T_page.Background
+
 namescr = defclass(namescr, gui.Screen)
 namescr.focus_path = 'names'
+
 function namescr:init()
     local parent = dfhack.gui.getCurViewscreen()
     local trg = dfhack.gui.getAnyUnit(parent)
@@ -60,11 +65,8 @@ function namescr:init()
         qerror("Target's name does not have a language")
     end
     self.trg = trg
-    local choices = df.viewscreen_setupadventurest:new()
-    choices.page = df.viewscreen_setupadventurest.T_page.Background
-    local tn = choices.adventurer
-    utils.assign(tn.name, trg.name)
-    gui.simulateInput(choices, 'A_CUST_NAME')
+    adv_screen.adventurer.name:assign(trg.name)
+    gui.simulateInput(adv_screen, 'A_CUST_NAME')
 end
 function namescr:setName()
     self.trg.name:assign(self._native.parent.name)
