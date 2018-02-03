@@ -52,8 +52,10 @@ function namescr:init()
     if trg then
         -- ok
     elseif df.viewscreen_itemst:is_instance(parent) then
-        fact = parent.item.general_refs[0].artifact_id
-        trg = df.artifact_record.find(fact)
+        fact = dfhack.items.getGeneralRef(parent.item, df.general_ref_type.IS_ARTIFACT)
+        if fact then
+            trg = df.artifact_record.find(fact.artifact_id)
+        end
     elseif df.viewscreen_dungeon_monsterstatusst:is_instance(parent) then
         uid = parent.unit.id
         trg = df.unit.find(uid)
@@ -64,6 +66,9 @@ function namescr:init()
         end
     else
         qerror('Could not find valid target')
+    end
+    if trg.name.language == -1 then
+        qerror("Target's name does not have a language")
     end
     self.trg = trg
     local choices = df.viewscreen_setupadventurest:new()
