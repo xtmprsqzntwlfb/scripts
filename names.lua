@@ -16,11 +16,9 @@ local gui = require 'gui'
 local dlg = require 'gui.dialogs'
 local widgets = require 'gui.widgets'
 local utils = require 'utils'
-local trg
-local choices
 
 validArgs = validArgs or utils.invert({
- 'help',
+    'help',
 })
 local args = utils.processArgs({...}, validArgs)
 if args.help then
@@ -49,9 +47,8 @@ function namescr:init()
         }
     }
 
-    -- local parent = self._native.parent
     local parent = dfhack.gui.getCurViewscreen()
-    trg = dfhack.gui.getAnyUnit(parent)
+    local trg = dfhack.gui.getAnyUnit(parent)
     if trg then
         -- ok
     elseif df.viewscreen_itemst:is_instance(parent) then
@@ -68,8 +65,9 @@ function namescr:init()
     else
         qerror('Could not find valid target')
     end
-    choices = df.viewscreen_setupadventurest:new()
-    choices.page = 7
+    self.trg = trg
+    local choices = df.viewscreen_setupadventurest:new()
+    choices.page = df.viewscreen_setupadventurest.T_page.Background
     local tn = choices.adventurer
     utils.assign(tn.name, trg.name)
     gui.simulateInput(choices, 'A_CUST_NAME')
@@ -77,24 +75,18 @@ end
 function namescr:setName()
     local parent = self._native.parent
     for k = 0,6 do
-        trg.name.words[k] = parent.name.words[k]
-        trg.name.parts_of_speech[k] = parent.name.parts_of_speech[k]
-        trg.name.language = parent.name.language
-        trg.name.has_name = parent.name.has_name
+        self.trg.name.words[k] = parent.name.words[k]
+        self.trg.name.parts_of_speech[k] = parent.name.parts_of_speech[k]
+        self.trg.name.language = parent.name.language
+        self.trg.name.has_name = parent.name.has_name
     end
 end
 function namescr:setFirst()
-    local str = ''
     dlg.showInputPrompt("Set First Name?","First: ",COLOR_WHITE,'',
         function(str)
-            if str==nil then
-                self:callback("setFirst")
-            else
-                self._native.parent.name.first_name = str
-                trg.name.first_name = str
-            end
+            self._native.parent.name.first_name = str
+            self.trg.name.first_name = str
         end)
-    return str
 end
 function namescr:onRenderBody(dc)
     self._native.parent:render()
@@ -105,9 +97,6 @@ function namescr:onInput(keys)
     end
     if keys.CUSTOM_F then
         self:setFirst()
-        if not str==nil then
-            trg.name.first_name = str
-        end
     end
     if keys.LEAVESCREEN then
         self:setName()
