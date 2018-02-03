@@ -15,18 +15,15 @@ elseif dfhack.gui.getSelectedUnit(true) then
         for k,v in ipairs(tinder) do
             tinder[k].item.flags.on_fire=true
         end
-elseif df.global.ui_advmode.menu==1 then
-local curpos=df.global.cursor
-    df.global.world.fires:insert('#',{new=df.fire})
-local hot = df.global.world.fires
-    for _,k in ipairs(hot) do
-        if k.temperature==0 then
-        local spot = k
-            k.pos.x=curpos.x
-            k.pos.y=curpos.y
-            k.pos.z=curpos.z
-            k.timer=1000
-            k.temperature=60000
-        end
-    end
+elseif df.global.cursor.x ~= -30000 then
+    local curpos = xyz2pos(pos2xyz(df.global.cursor))
+    df.global.world.fires:insert('#', {
+        new=df.fire,
+        timer=1000,
+        pos=curpos,
+        temperature=60000,
+        temp_unk1=60000,
+        temp_unk2=60000,
+        temp_unk3=60000,
+    })
 end
