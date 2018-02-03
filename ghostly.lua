@@ -1,11 +1,17 @@
---Turn ghost on or off
+-- Turns an adventurer into a ghost or back
 --[====[
 
 ghostly
 =======
-Toggles being a ghost for walking through walls, avoiding attacks, or recovering after a death.
-    
+Toggles an adventurer's ghost status. Useful for walking through walls, avoiding
+attacks, or recovering after a death.
+
 ]====]
+
+if df.global.gamemode ~= df.game_mode.ADVENTURE then
+    qerror('This script must be used in adventure mode')
+end
+
 local unit = df.global.world.units.active[0]
 if unit then
     if unit.flags1.dead then
