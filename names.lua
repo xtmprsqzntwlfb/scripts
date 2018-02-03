@@ -16,7 +16,6 @@ local gui = require 'gui'
 local dlg = require 'gui.dialogs'
 local widgets = require 'gui.widgets'
 local utils = require 'utils'
-local vw
 local trg
 local choices
 
@@ -39,57 +38,59 @@ end
 namescr = defclass(namescr, gui.Screen)
 namescr.focus_path = 'names'
 function namescr:init()
-    if not dfhack.gui.getViewscreenByType(df.viewscreen_layer_choose_language_namest)==true then
-        self:addviews{
-            widgets.Label{
-                view_id='namescr',
-                frame = {b=4, l=1},
-                text = {
-                    {text = "Press f to Change First Name"},NEWLINE,
-                    {text = "Press Esc to Set Name and Exit"},
-                        },
-                    }
-                }
-        vw = dfhack.gui.getCurViewscreen()
-        if df.viewscreen_itemst:is_instance(vw.parent) then
-            fact = vw.parent.item.general_refs[0].artifact_id
-            trg = df.artifact_record.find(fact)
-        elseif df.viewscreen_dungeon_monsterstatusst:is_instance(vw.parent) then
-            uid = vw.parent.unit.id
-            trg = df.unit.find(uid)
-        elseif df.global.ui_advmode.menu==1 then
-            local t_look=df.global.ui_look_list.items[df.global.ui_look_cursor]
-            if t_look.type==2 then
-                trg=t_look.unit
-            end
+    self:addviews{
+        widgets.Label{
+            view_id='namescr',
+            frame = {b=4, l=1},
+            text = {
+                {text = "Press f to Change First Name"},NEWLINE,
+                {text = "Press Esc to Set Name and Exit"},
+            },
+        }
+    }
+
+    -- local parent = self._native.parent
+    local parent = dfhack.gui.getCurViewscreen()
+    trg = dfhack.gui.getAnyUnit(parent)
+    if trg then
+        -- ok
+    elseif df.viewscreen_itemst:is_instance(parent) then
+        fact = parent.item.general_refs[0].artifact_id
+        trg = df.artifact_record.find(fact)
+    elseif df.viewscreen_dungeon_monsterstatusst:is_instance(parent) then
+        uid = parent.unit.id
+        trg = df.unit.find(uid)
+    elseif df.global.ui_advmode.menu == df.ui_advmode_menu.Look then
+        local t_look = df.global.ui_look_list.items[df.global.ui_look_cursor]
+        if t_look.type == df.ui_look_list.T_items.T_type.Unit then
+            trg = t_look.unit
         end
-        choices = df.viewscreen_setupadventurest:new()
-        choices.page = 7
-        local tn = choices.adventurer
-        utils.assign(tn.name, trg.name)
-        gui.simulateInput(choices, 'A_CUST_NAME')
-        vw = dfhack.gui.getViewscreenByType(df.viewscreen_layer_choose_language_namest)
-    elseif dfhack.gui.getViewscreenByType(df.viewscreen_layer_choose_language_namest)==true then
-        qerror('names screen already displayed')
+    else
+        qerror('Could not find valid target')
     end
-    return vw,trg
+    choices = df.viewscreen_setupadventurest:new()
+    choices.page = 7
+    local tn = choices.adventurer
+    utils.assign(tn.name, trg.name)
+    gui.simulateInput(choices, 'A_CUST_NAME')
 end
 function namescr:setName()
+    local parent = self._native.parent
     for k = 0,6 do
-        trg.name.words[k] = vw.name.words[k]
-        trg.name.parts_of_speech[k] = vw.name.parts_of_speech[k]
-        trg.name.language = vw.name.language
-        trg.name.has_name = vw.name.has_name
+        trg.name.words[k] = parent.name.words[k]
+        trg.name.parts_of_speech[k] = parent.name.parts_of_speech[k]
+        trg.name.language = parent.name.language
+        trg.name.has_name = parent.name.has_name
     end
 end
 function namescr:setFirst()
-local str = ''
+    local str = ''
     dlg.showInputPrompt("Set First Name?","First: ",COLOR_WHITE,'',
         function(str)
             if str==nil then
                 self:callback("setFirst")
             else
-                vw.name.first_name = str
+                self._native.parent.name.first_name = str
                 trg.name.first_name = str
             end
         end)
@@ -115,4 +116,9 @@ function namescr:onInput(keys)
     end
     return self:sendInputToParent(keys)
 end
-namescr():show()
+
+if dfhack.gui.getViewscreenByType(df.viewscreen_layer_choose_language_namest, 0) then
+    qerror('names screen already shown')
+else
+    namescr():show()
+end
