@@ -12,8 +12,8 @@ function launch(unitSource,unitTarget,unitRider)
     local curpos
     if df.global.ui_advmode.menu == df.ui_advmode_menu.Look then
         curpos = df.global.cursor
-    elseif df.global.gamemode == 1 then
-        qerror("No [l] cursor located!You would have slammed into the ground and exploded.")
+    elseif df.global.gamemode == df.game_mode.ADVENTURE then
+        qerror("No [l] cursor located! You would have slammed into the ground and exploded.")
     else
         qerror("Must be used in adventurer mode or the arena!")
     end
