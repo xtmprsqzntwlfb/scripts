@@ -46,7 +46,7 @@ function run()
 end
 
 function enable(state)
-    if not dfhack.isWorldLoaded() then
+    if not dfhack.isWorldLoaded() and state then
         qerror('This script requires a world to be loaded')
     end
     enabled = state
