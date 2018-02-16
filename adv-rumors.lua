@@ -27,6 +27,10 @@ Improves the "Bring up specific incident or rumor" menu in Adventure mode.
 --      shortenString = will further shorten the line to = slew "XYZ" ( "n time" ago in " Region")
 --=======================
 
+utils = require "utils"
+
+names_blacklist = utils.invert{"a", "an", "you", "attacked", "slew", "was", "slain", "by"}
+
 function condenseChoiceTitle(choice)
     while #choice.title > 1 do
         choice.title[0].value = choice.title[0].value .. ' ' .. choice.title[1].value
@@ -34,14 +38,20 @@ function condenseChoiceTitle(choice)
     end
 end
 
+function addKeyword(choice, keyword)
+    local keyword_ptr = df.new('string')
+    keyword_ptr.value = keyword
+    choice.keywords:insert('#', keyword_ptr)
+end
+
 function rumorUpdate()
     improveReadability = true
     addKeywordSlew = true
     shortenString = true
+    addKeywordNames = true
 
     for i, choice in ipairs(df.global.ui_advmode.conversation.choices) do
         if choice.choice.type == df.talk_choice_type.SummarizeConflict then
-            titleLength = #choice.title
             if improveReadability then
                 condenseChoiceTitle(choice)
             end
@@ -53,9 +63,16 @@ function rumorUpdate()
             end
             if addKeywordSlew then
                 if string.find(choice.title[0].value, "slew") then
-                    local keyword = df.new('string')
-                    keyword.value = "slew"
-                    choice.keywords:insert('#', keyword)
+                    addKeyword(choice, 'slew')
+                end
+            end
+            if addKeywordNames then
+                local title = choice.title[0].value
+                for keyword in title:sub(1, title:find('%(') - 1):gmatch('%w+') do
+                    keyword = dfhack.utf2df(dfhack.df2utf(keyword):lower())
+                    if not names_blacklist[keyword] then
+                        addKeyword(choice, keyword)
+                    end
                 end
             end
         end
