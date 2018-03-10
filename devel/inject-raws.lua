@@ -45,7 +45,7 @@ df.global.pause_state = true
 local changed = false
 
 function inject_reaction(name)
-    for _,v in ipairs(raws.reactions) do
+    for _,v in ipairs(raws.reactions.reactions) do
         if v.code == name then
             print('Reaction '..name..' already exists.')
             return
@@ -55,11 +55,11 @@ function inject_reaction(name)
     print('Injecting reaction '..name)
     changed = true
 
-    raws.reactions:insert('#', {
+    raws.reactions.reactions:insert('#', {
         new = true,
         code = name,
         name = 'Dummy reaction '..name,
-        index = #raws.reactions,
+        index = #raws.reactions.reactions,
     })
 end
 

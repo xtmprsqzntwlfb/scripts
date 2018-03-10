@@ -21,7 +21,7 @@ end
 
 warnings = ''
 output = ''
-for _,reaction in ipairs(df.global.world.raws.reactions) do
+for _,reaction in ipairs(df.global.world.raws.reactions.reactions) do
  local function foreachProduct(product)
   local prodType = product:getType()
   if prodType ~= df.reaction_product_type.item then
