@@ -77,7 +77,7 @@ function GetMatPropertiesStringList (item)
     local deg_C = math.floor((deg_U-10000)*5/9)
     append(list,"Temperature: "..deg_C.."\248C ("..deg_U.."U)")
     if mat.state_color.Solid ~= -1 then
-        append(list,"Color: "..df.global.world.raws.language.colors[mat.state_color.Solid].name)
+        append(list,"Color: "..df.global.world.raws.descriptors.colors[mat.state_color.Solid].name)
     end
     local function GetStrainDescription (number)
         if tonumber(number) < 1 then return "crystalline"
