@@ -24,10 +24,26 @@ Arguments::
             RING
     -onStrike
         trigger the command on appropriate weapon strikes
-    -onEquip
+    -onEquip mode
         trigger the command when someone equips an appropriate item
-    -onUnequip
+        Optionally, the equipment mode can be specified
+        Possible values for mode:
+            Hauled
+            Weapon
+            Worn
+            Piercing
+            Flask
+            WrappedAround
+            StuckIn
+            InMouth
+            Pet
+            SewnInto
+            Strapped
+        multiple values can be specified simultaneously
+        example: -onEquip [ Weapon Worn Hauled ]
+    -onUnequip mode
         trigger the command when someone unequips an appropriate item
+        see above note regarding 'mode' values
     -material mat
         trigger the commmand on items with the given material
         examples
@@ -56,7 +72,6 @@ Arguments::
             \\UNIT_ID
             \\anything -> \anything
             anything -> anything
-
 ]====]
 local eventful = require 'plugins.eventful'
 local utils = require 'utils'
@@ -66,7 +81,7 @@ materialTriggers = materialTriggers or {}
 contaminantTriggers = contaminantTriggers or {}
 
 eventful.enableEvent(eventful.eventType.UNIT_ATTACK,1) -- this event type is cheap, so checking every tick is fine
-eventful.enableEvent(eventful.eventType.INVENTORY_CHANGE,5) --this is expensive, but you might still want to set it lower
+eventful.enableEvent(eventful.eventType.INVENTORY_CHANGE,5) -- this is expensive, but you might still want to set it lower
 eventful.enableEvent(eventful.eventType.UNLOAD,1)
 
 eventful.onUnload.itemTrigger = function()
@@ -120,6 +135,45 @@ function getitemType(item)
  return itemType
 end
 
+function compareInvModes(reqMode,itemMode)
+ if reqMode == nil then
+  return
+ end
+ if not tonumber(reqMode) and df.unit_inventory_item.T_mode[itemMode] == tostring(reqMode) then
+  return true
+ elseif tonumber(reqMode) == itemMode then
+  return true
+ end
+end
+
+function checkMode(table,triggerArg)
+ for _,command in ipairs(triggerArg) do
+  if command[""..table.mode..""] then
+   local reqModeType = command[""..table.mode..""]
+   local modeType = tonumber(table.modeType)
+   if #reqModeType == 1 then
+    if compareInvModes(reqModeType,modeType) or compareInvModes(reqModeType[1],modeType) then
+     utils.fillTable(command,table)
+     processTrigger(command)
+     utils.unfillTable(command,table)
+    end
+   elseif #reqModeType > 1 then
+    for _,r in ipairs(reqModeType) do
+     if compareInvModes(r,modeType) then
+      utils.fillTable(command,table)
+      processTrigger(command)
+      utils.unfillTable(command,table)
+     end
+    end
+   else
+    utils.fillTable(command,table)
+    processTrigger(command)
+    utils.unfillTable(command,table)
+   end
+  end
+ end
+end
+
 function handler(table)
  local itemMat = dfhack.matinfo.decode(table.item)
  local itemMatStr = itemMat:getToken()
@@ -127,40 +181,22 @@ function handler(table)
  table.itemMat = itemMat
  table.itemType = itemType
 
- for _,command in ipairs(itemTriggers[itemType] or {}) do
-  if command[table.mode] then
-   utils.fillTable(command,table)
-   processTrigger(command)
-   utils.unfillTable(command,table)
-  end
- end
-
- for _,command in ipairs(materialTriggers[itemMatStr] or {}) do
-  if command[table.mode] then
-   utils.fillTable(command,table)
-   processTrigger(command)
-   utils.unfillTable(command,table)
-  end
- end
+ checkMode(table,(itemTriggers[itemType] or {}))
+ checkMode(table,(materialTriggers[itemMatStr] or {}))
 
  for _,contaminant in ipairs(table.item.contaminants or {}) do
   local contaminantMat = dfhack.matinfo.decode(contaminant.mat_type, contaminant.mat_index)
   local contaminantStr = contaminantMat:getToken()
   table.contaminantMat = contaminantMat
-  for _,command in ipairs(contaminantTriggers[contaminantStr] or {}) do
-   utils.fillTable(command,table)
-   processTrigger(command)
-   utils.unfillTable(command,table)
-  end
+  checkMode(table,(contaminantTriggers[contaminantStr] or {}))
   table.contaminantMat = nil
  end
 end
 
-function equipHandler(unit, item, isEquip)
- local mode = (isEquip and 'onEquip') or (not isEquip and 'onUnequip')
-
+function equipHandler(unit, item, mode, modeType)
  local table = {}
  table.mode = mode
+ table.modeType = modeType
  table.item = df.item.find(item)
  table.unit = df.unit.find(unit)
  if table.item and table.unit then -- they must both be not nil or errors will occur after this point with instant reactions.
@@ -168,13 +204,27 @@ function equipHandler(unit, item, isEquip)
  end
 end
 
-eventful.onInventoryChange.equipmentTrigger = function(unit, item, item_old, item_new)
- if item_old and item_new then
-  return
+function modeHandler(unit, item, modeOld, modeNew)
+ local mode
+ local modeType
+ if modeOld then
+  mode = "onUnequip"
+  modeType = modeOld
+  equipHandler(unit, item, mode, modeType)
  end
+ if modeNew then
+  mode = "onEquip"
+  modeType = modeNew
+  equipHandler(unit, item, mode, modeType)
+ end
+end
 
- local isEquip = item_new and not item_old
- equipHandler(unit,item,isEquip)
+eventful.onInventoryChange.equipmentTrigger = function(unit, item, item_old, item_new)
+ local modeOld = (item_old and item_old.mode)
+ local modeNew = (item_new and item_new.mode)
+ if modeOld ~= modeNew then
+  modeHandler(unit,item,modeOld,modeNew)
+ end
 end
 
 eventful.onUnitAttack.attackTrigger = function(attacker,defender,wound)
@@ -252,12 +302,11 @@ if not args.command then
  return
 end
 
-if args.itemType then
- if dfhack.items.findType(args.itemType) == -1 then
+if args.itemType and dfhack.items.findType(args.itemType) == -1 then
  local temp
  for _,itemdef in ipairs(df.global.world.raws.itemdefs.all) do
   if itemdef.id == args.itemType then
-   temp = args.itemType --itemdef.subtype
+   temp = args.itemType--itemdef.subtype
    break
   end
  end
@@ -265,7 +314,6 @@ if args.itemType then
   error 'Could not find item type.'
  end
  args.itemType = temp
- end
 end
 
 local numConditions = (args.material and 1 or 0) + (args.itemType and 1 or 0) + (args.contaminant and 1 or 0)
@@ -291,4 +339,3 @@ elseif args.contaminant then
  end
  table.insert(contaminantTriggers[args.contaminant],args)
 end
-
