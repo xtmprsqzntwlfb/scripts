@@ -28,19 +28,19 @@ Arguments::
         trigger the command when someone equips an appropriate item
         Optionally, the equipment mode can be specified
         Possible values for mode:
-            0 = Hauled
-            1 = Weapon
-            2 = Worn
-            3 = Piercing
-            4 = Flask
-            5 = Wrapped around
-            6 = Stuck in
-            7 = In Mouth
-            8 = Pet
-            9 = Sewn into
-            10 = Strapped
+            Hauled
+            Weapon
+            Worn
+            Piercing
+            Flask
+            WrappedAround
+            StuckIn
+            InMouth
+            Pet
+            SewnInto
+            Strapped
         multiple values can be specified simultaneously
-        example: -onEquip [ 1 2 0 ]
+        example: -onEquip [ Weapon Worn Hauled ]
     -onUnequip mode
         trigger the command when someone unequips an appropriate item
         see above note regarding 'mode' values
@@ -72,7 +72,6 @@ Arguments::
             \\UNIT_ID
             \\anything -> \anything
             anything -> anything
-
 ]====]
 local eventful = require 'plugins.eventful'
 local utils = require 'utils'
@@ -81,8 +80,8 @@ itemTriggers = itemTriggers or {}
 materialTriggers = materialTriggers or {}
 contaminantTriggers = contaminantTriggers or {}
 
-eventful.enableEvent(eventful.eventType.UNIT_ATTACK,1)-- this event type is cheap, so checking every tick is fine
-eventful.enableEvent(eventful.eventType.INVENTORY_CHANGE,5)--this is expensive, but you might still want to set it lower
+eventful.enableEvent(eventful.eventType.UNIT_ATTACK,1) -- this event type is cheap, so checking every tick is fine
+eventful.enableEvent(eventful.eventType.INVENTORY_CHANGE,5) -- this is expensive, but you might still want to set it lower
 eventful.enableEvent(eventful.eventType.UNLOAD,1)
 
 eventful.onUnload.itemTrigger = function()
@@ -136,20 +135,31 @@ function getitemType(item)
  return itemType
 end
 
+function compareInvModes(reqMode,itemMode)
+ if reqMode == nil then
+  return
+ end
+ if not tonumber(reqMode) and df.unit_inventory_item.T_mode[itemMode] == tostring(reqMode) then
+  return true
+ elseif tonumber(reqMode) == itemMode then
+  return true
+ end
+end
+
 function checkMode(table,triggerArg)
  for _,command in ipairs(triggerArg) do
   if command[""..table.mode..""] then
    local reqModeType = command[""..table.mode..""]
    local modeType = tonumber(table.modeType)
    if #reqModeType == 1 then
-    if (tonumber(reqModeType) or tonumber(reqModeType[1])) == modeType then
+    if compareInvModes(reqModeType,modeType) or compareInvModes(reqModeType[1],modeType) then
      utils.fillTable(command,table)
      processTrigger(command)
      utils.unfillTable(command,table)
-	end
+    end
    elseif #reqModeType > 1 then
     for _,r in ipairs(reqModeType) do
-     if tonumber(r) == modeType then
+     if compareInvModes(r,modeType) then
       utils.fillTable(command,table)
       processTrigger(command)
       utils.unfillTable(command,table)
@@ -189,7 +199,7 @@ function equipHandler(unit, item, mode, modeType)
  table.modeType = modeType
  table.item = df.item.find(item)
  table.unit = df.unit.find(unit)
- if table.item and table.unit then--they must both be not nil or errors will occur after this point with instant reactions.
+ if table.item and table.unit then -- they must both be not nil or errors will occur after this point with instant reactions.
   handler(table)
  end
 end
