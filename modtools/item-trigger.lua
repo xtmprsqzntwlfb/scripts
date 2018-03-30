@@ -173,6 +173,7 @@ function checkMode(triggerArgs,table)
 end
 
 function checkForTrigger(table)
+ local itemTypeStr = table.itemType
  local itemMatStr = table.itemMat:getToken()
  local contaminantStr
  if table.contaminantMat then
@@ -185,13 +186,13 @@ function checkForTrigger(table)
   for _,t in pairs(trigger) do
    triggerCount = triggerCount+1
   end
-  if trigger['itemType'] == table.itemType then
+  if itemTypeStr and trigger['itemType'] == itemTypeStr then
    count = count+1
   end
-  if trigger['material'] == itemMatStr then
+  if itemMatStr and trigger['material'] == itemMatStr then
    count = count+1
   end
-  if trigger['contaminant'] == contaminantStr then
+  if contaminantStr and trigger['contaminant'] == contaminantStr then
    count = count+1
   end
   if count == triggerCount then
