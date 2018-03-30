@@ -78,13 +78,13 @@ Arguments::
 local eventful = require 'plugins.eventful'
 local utils = require 'utils'
 
-triggers = triggers or {}
+itemTriggers = itemTriggers or {}
 eventful.enableEvent(eventful.eventType.UNIT_ATTACK,1) -- this event type is cheap, so checking every tick is fine
 eventful.enableEvent(eventful.eventType.INVENTORY_CHANGE,5) -- this is expensive, but you might still want to set it lower
 eventful.enableEvent(eventful.eventType.UNLOAD,1)
 
 eventful.onUnload.itemTrigger = function()
- triggers = {}
+ itemTriggers = {}
 end
 
 function processTrigger(command)
@@ -179,7 +179,7 @@ function checkForTrigger(table)
  if table.contaminantMat then
   contaminantStr = table.contaminantMat:getToken()
  end
- for _,triggerBundle in ipairs(triggers) do
+ for _,triggerBundle in ipairs(itemTriggers) do
   local count = 0
   local trigger = triggerBundle['triggers']
   local triggerCount = 0
@@ -202,7 +202,7 @@ function checkForTrigger(table)
 end
 
 function checkForDuplicates(args)
- for k,triggerBundle in ipairs(triggers) do
+ for k,triggerBundle in ipairs(itemTriggers) do
   local count = 0
   local trigger = triggerBundle['triggers']
   if trigger['itemType'] == args.itemType then
@@ -321,7 +321,7 @@ if args.help then
 end
 
 if args.clear then
- triggers = {}
+ itemTriggers = {}
 end
 
 if args.checkAttackEvery then
@@ -365,13 +365,13 @@ if numConditions == 0 then
 end
 
 local index
-if #triggers > 0 then
+if #itemTriggers > 0 then
  index = checkForDuplicates(args)
 end
 
 if not index then
- index = #triggers+1
- triggers[index] = {}
+ index = #itemTriggers+1
+ itemTriggers[index] = {}
  local triggerArray = {}
  if args.itemType then
   triggerArray['itemType'] = args.itemType
@@ -382,13 +382,13 @@ if not index then
  if args.contaminant then
   triggerArray['contaminant'] = args.contaminant
  end
- triggers[index]['triggers'] = triggerArray
+ itemTriggers[index]['triggers'] = triggerArray
 end
 
-if not triggers[index]['args'] then
- triggers[index]['args'] = {}
+if not itemTriggers[index]['args'] then
+ itemTriggers[index]['args'] = {}
 end
-local triggerArgs = triggers[index]['args']
+local triggerArgs = itemTriggers[index]['args']
 table.insert(triggerArgs,args)
 local argsArray = triggerArgs[#triggerArgs]
 argsArray.itemType = nil
