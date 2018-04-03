@@ -146,9 +146,9 @@ end
 function checkMode(triggerArgs,table)
  local mode = table.mode
  for _,argArray in ipairs(triggerArgs) do
-  if argArray[""..mode..""] then
+  if argArray[tostring(mode)] then
    local modeType = table.modeType
-   local reqModeType = argArray[""..mode..""]
+   local reqModeType = argArray[tostring(mode)]
    if #reqModeType == 1 then
     if compareInvModes(reqModeType,modeType) or compareInvModes(reqModeType[1],modeType) then
      utils.fillTable(argArray,table)
