@@ -7,7 +7,9 @@ Kills any unit of a given race.
 
 With no argument, lists the available races and count eligible targets.
 
-With the special argument ``him``, targets only the selected creature.
+With the special argument ``this``, targets only the selected creature.
+Alternatively, ``him``, ``her``, ``it``, ``this``, ``target``, and ``selected``
+do the same thing.
 
 With the special argument ``undead``, targets all undeads on the map,
 regardless of their race.
@@ -35,7 +37,7 @@ Ex::
 
 To kill a single creature, select the unit with the 'v' cursor and::
 
-    exterminate him
+    exterminate this
 
 To purify all elves on the map with fire (may have side-effects)::
 
@@ -131,13 +133,8 @@ Ex: exterminate gob
     exterminate pig butcher
 EOS
 
-when 'him', 'her', 'it', 'that'
+when 'him', 'her', 'it', 'that', 'this', 'selected', 'target'
     if him = df.unit_find
-        case him.race_tg.caste[him.caste].gender
-        when 0; puts 'its a she !' if race != 'her'
-        when 1; puts 'its a he !'  if race != 'him'
-        else;   puts 'its an it !' if race != 'it' and race != 'that'
-        end
         slayit[him]
     else
         puts "Select a target ingame"
