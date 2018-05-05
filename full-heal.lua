@@ -84,9 +84,10 @@ if unit then
     --print("Refilling blood...")
     unit.body.blood_count = unit.body.blood_max
 
-    --print("Resetting grasp/stand status...")
+    --print("Resetting grasp/stand/fly status...")
     unit.status2.limbs_stand_count = unit.status2.limbs_stand_max
     unit.status2.limbs_grasp_count = unit.status2.limbs_grasp_max
+    unit.status2.limbs_fly_count = unit.status2.limbs_fly_max
 
     --print("Resetting status flags...")
     unit.flags2.has_breaks = false
