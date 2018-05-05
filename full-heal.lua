@@ -168,8 +168,8 @@ if unit then
     end
 
     if unit.job.current_job and unit.job.current_job.job_type == df.job_type.Rest then
-        --print("Wake from rest -> clean self...")
-        unit.job.current_job.job_type = df.job_type.CleanSelf
+        --print("Wake from rest...")
+        unit.job.current_job = nil
     end
 end
 
