@@ -103,6 +103,7 @@ if unit then
     unit.flags2.calculated_bodyparts = false
     unit.flags2.calculated_insulation = false
     unit.flags3.compute_health = true
+    unit.flags3.gelded = false
 
     --print("Resetting counters...")
     unit.counters.winded = 0
@@ -157,6 +158,8 @@ if unit then
         status.skin_damage = false
         status.motor_nerve_severed = false
         status.sensory_nerve_severed = false
+        status.spilled_guts = false
+        status.severed_or_jammed = false
     end
 
     for i, temp in ipairs(unit.status2.body_part_temperature) do
