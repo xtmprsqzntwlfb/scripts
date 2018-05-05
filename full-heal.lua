@@ -112,8 +112,16 @@ if unit then
     unit.counters.pain = 0
     unit.counters.nausea = 0
     unit.counters.dizziness = 0
+    unit.counters.suffocation = 0
+    unit.counters.guts_trail1.x = -30000
+    unit.counters.guts_trail1.y = -30000
+    unit.counters.guts_trail1.z = -30000
+    unit.counters.guts_trail2.x = -30000
+    unit.counters.guts_trail2.y = -30000
+    unit.counters.guts_trail2.z = -30000
 
     unit.counters2.paralysis = 0
+    unit.counters2.numbness = 0
     unit.counters2.fever = 0
     unit.counters2.exhaustion = 0
     unit.counters2.hunger_timer = 0
