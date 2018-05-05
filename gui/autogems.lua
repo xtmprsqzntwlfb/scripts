@@ -1,3 +1,5 @@
+-- A configuration UI for the autogems plugin
+
 --[====[
 
 gui/autogems
