@@ -31,6 +31,7 @@ with "lazuli" in their name (only 1).
 gui = require "gui"
 dialogs = require "gui.dialogs"
 widgets = require "gui.widgets"
+json = require "json"
 
 CONFIG_KEY = "autogems/config"
 blacklist = {}
@@ -77,6 +78,36 @@ function getGemTypesOnMap()
     return on_map_cache
 end
 
+function configPath()
+    return dfhack.getSavePath() .. '/autogems.json'
+end
+
+function load()
+    if dfhack.filesystem.isfile(configPath()) then
+        local data = json.decode_file(configPath())
+        if data.blacklist then
+            for _, v in pairs(data.blacklist) do
+                blacklist[v] = true
+            end
+        end
+    end
+end
+
+function save()
+    local save_blacklist = {}
+    for id in ipairs(df.global.world.raws.inorganics) do
+        if blacklist[id] then
+            table.insert(save_blacklist, id)
+        end
+    end
+    json.encode_file(
+        {blacklist = save_blacklist},
+        configPath(),
+        {pretty = false}
+    )
+    dfhack.run_command('autogems-reload')
+end
+
 Autogems = defclass(nil, gui.FramedScreen)
 
 Autogems.ATTRS{
@@ -84,6 +115,7 @@ Autogems.ATTRS{
 }
 
 function Autogems:init()
+    load()
     self:addviews{
         widgets.FilteredList{
             view_id = 'list',
@@ -197,6 +229,10 @@ function Autogems:onInput(keys)
         self:inputToSubviews(keys)
     end
     self:updateControls()
+end
+
+function Autogems:onDismiss()
+    save()
 end
 
 Autogems():show()
