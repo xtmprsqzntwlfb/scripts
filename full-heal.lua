@@ -102,6 +102,7 @@ if unit then
     unit.flags2.calculated_nerves = false
     unit.flags2.calculated_bodyparts = false
     unit.flags2.calculated_insulation = false
+    unit.flags3.body_temp_in_range = false
     unit.flags3.compute_health = true
     unit.flags3.gelded = false
 
@@ -131,6 +132,8 @@ if unit then
     unit.counters2.vomit_timeout = 0
 
     unit.animal.vanish_countdown = 0
+
+    unit.body.infection_level = 0
 
     --print("Resetting body part status...")
     local comp = unit.body.components
@@ -162,9 +165,21 @@ if unit then
         status.severed_or_jammed = false
     end
 
-    for i, temp in ipairs(unit.status2.body_part_temperature) do
-        local bp = unit.body.body_plan.body_parts[i]
-        temp.whole = math.floor((bp.min_temp + bp.max_temp) / 2)
+    for i = #unit.status2.body_part_temperature-1,0,-1 do
+      unit.status2.body_part_temperature:erase(i) -- attempting to rewrite temperature was causing body parts to melt for some reason; forcing repopulation in this manner appears to be safer
+    end
+
+    for i = 0,#unit.enemy.body_part_8a8-1,1 do
+      unit.enemy.body_part_8a8[i] = 1 -- not sure what this does, but values appear to change following injuries
+    end
+    for i = 0,#unit.enemy.body_part_8d8-1,1 do
+      unit.enemy.body_part_8d8[i] = 0 -- same as above
+    end
+
+    local histFig = df.historical_figure.find(unit.hist_figure_id)
+    if histFig and histFig.info and histFig.info.wounds then
+      --print("Clearing historical wounds...")
+      histFig.info.wounds = nil
     end
 
     if unit.job.current_job and unit.job.current_job.job_type == df.job_type.Rest then
