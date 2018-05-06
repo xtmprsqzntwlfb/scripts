@@ -187,7 +187,7 @@ if unit then
       for i = 0, #health.flags-1,1 do
         health.flags[i] = false
       end
-      for _,bpFlags in ipairs(unit.health.body_part_flags) do
+      for _,bpFlags in ipairs(health.body_part_flags) do
         for i = 0, #bpFlags-1,1 do
           bpFlags[i] = false
         end
