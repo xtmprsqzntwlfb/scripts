@@ -181,5 +181,12 @@ if unit then
       --print("Clearing historical wounds...")
       histFig.info.wounds = nil
     end
+
+    local job = unit.job.current_job
+    if job and job.job_type == df.job_type.Rest then
+        --print("Wake from rest...")
+        job.completion_timer = 0
+        job.pos:assign(unit.pos)
+    end
 end
 
