@@ -1,6 +1,6 @@
 -- Attempts to fully heal the selected unit
 --author Kurik Amudnil, Urist DaVinci
---edited by expwnent
+--edited by expwnent and AtomicChicken
 
 --[====[
 
@@ -187,6 +187,19 @@ if unit then
         --print("Wake from rest...")
         job.completion_timer = 0
         job.pos:assign(unit.pos)
+    end
+
+    local job_link = df.global.world.jobs.list.next
+    while job_link do
+      local doctor_job = job_link.item
+      if doctor_job then
+        local patientRef = dfhack.job.getGeneralRef(doctor_job, df.general_ref_type['UNIT_PATIENT'])
+        if patientRef and patientRef.unit_id == unit.id then
+          patientRef.unit_id = -1 -- causes active healthcare job to be cancelled, generating a job cancellation announcement indicating the lack of a patient
+          break
+        end
+      end
+      job_link = job_link.next
     end
 end
 
