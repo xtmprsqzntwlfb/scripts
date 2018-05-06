@@ -181,6 +181,23 @@ if unit then
       --print("Clearing historical wounds...")
       histFig.info.wounds = nil
     end
+    
+    local health = unit.health
+    if health then
+      for i = 0, #health.flags-1,1 do
+        health.flags[i] = false
+      end
+      for _,bpFlags in ipairs(unit.health.body_part_flags) do
+        for i = 0, #bpFlags-1,1 do
+          bpFlags[i] = false
+        end
+      end
+      health.immobilize_cntdn = 0
+      health.dressing_cntdn = 0
+      health.suture_cntdn = 0
+      health.crutch_cntdn = 0
+      health.unk_18_cntdn = 0
+    end
 
     local job = unit.job.current_job
     if job and job.job_type == df.job_type.Rest then
