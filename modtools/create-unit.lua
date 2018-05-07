@@ -1,16 +1,17 @@
 -- Creates a unit.  Beta; use at own risk.
 
 -- Originally created by warmist
--- Significant contributions over time by Boltgun, Dirst, Expwnent, lethosor, mifki and Putnam.
+-- Significant contributions over time by Boltgun, Dirst, Expwnent, lethosor, mifki, Putnam and Atomic Chicken.
 
--- version 0.55
+-- version 0.6
 -- This is a beta version. Use at your own risk.
 
--- Modifications from 0.5: civ -1 creates are NOT historical figures, mitigated screen-movement bug in createUnit()
-
+-- Modifications from 0.55: 
+--   sets baby/child profession and mood for creatures of the appropriate age where relevant
+--   properly assigns civ_id to historical_figure to eliminate a number of hostility issues
+--   removes the arena-generated string of numbers from the first name of units
 --[[
   TODO
-    children and babies: set child/baby job
     confirm body size is computed appropriately for different ages / life stages
     incarnate pre-existing historical figures
     some sort of invasion helper script
@@ -37,9 +38,7 @@ Creates a unit.  Usage::
             MALE
             FEMALE
     -domesticate
-        if the unit can't learn or can't speak, make it a friendly animal
-    -setUnitToFort
-        Sets the groupId and civId to the local fort.
+        tames the unit if it lacks the CAN_LEARN and CAN_SPEAK tokens
     -civId id
         Make the created unit a member of the specified civ
         (or none if id = -1).  If id is \\LOCAL, make it a member of the
@@ -48,6 +47,9 @@ Creates a unit.  Usage::
         Make the created unit a member of the specified group
         (or none if id = -1).  If id is \\LOCAL, make it a member of the
         group associated with the fort; otherwise id must be an integer
+    -setUnitToFort
+        Sets the groupId and civId to the local fort
+        Can be used instead of -civId \\LOCAL and -groupId \\LOCAL
     -name entityRawName
         set the unit's name to be a random name appropriate for the
         given entity.  examples:
@@ -57,7 +59,7 @@ Creates a unit.  Usage::
     -location [ x y z ]
         create the unit at the specified coordinates
     -age howOld
-        set the birth date of the unitby current age
+        set the birth date of the unit by current age
     -flagSet [ flag1 flag2 ... ]
         set the specified unit flags in the new unit to true
         flags may be selected from df.unit_flags1, df.unit_flags2,
@@ -102,7 +104,7 @@ function createUnit(...)
   return ret
 end
 
-function createUnitInner(race_id, caste_id, location)
+function createUnitInner(race_id, caste_id, location, entityRawName)
   local view_x = df.global.window_x
   local view_y = df.global.window_y
   local view_z = df.global.window_z
@@ -154,13 +156,21 @@ function createUnitInner(race_id, caste_id, location)
   df.global.window_y = view_y
   df.global.window_z = view_z
 
+  local unit = df.unit.find(id)
+  if entityRawName and tostring(entityRawName) then
+    nameUnit(id, entityRawName)
+  else
+    unit.name.first_name = '' -- removes the string of numbers produced by the arena spawning process
+    unit.name.has_name = false
+    if unit.status.current_soul then
+      unit.status.current_soul.name.has_name = false
+    end
+  end
+
   return id
 end
 
---local u = df.unit.find(df.global.unit_next_id-1)
---u.civ_id = df.global.ui.civ_id
 --u.population_id = df.historical_entity.find(df.global.ui.civ_id).populations[0]
---local group = df.global.ui.group_id
 
 -- Picking a caste or gender at random
 function getRandomCasteId(race_id)
@@ -193,10 +203,10 @@ local function allocateIds(nemesis_record,hist_entity)
 end
 
 function createFigure(trgunit,he,he_group)
-  local hf=df.historical_figure:new()
-  hf.id=df.global.hist_figure_next_id
-  hf.race=trgunit.race
-  hf.caste=trgunit.caste
+  local hf = df.historical_figure:new()
+  hf.id = df.global.hist_figure_next_id
+  hf.race = trgunit.race
+  hf.caste = trgunit.caste
   hf.profession = trgunit.profession
   hf.sex = trgunit.sex
   df.global.hist_figure_next_id=df.global.hist_figure_next_id+1
@@ -217,6 +227,7 @@ function createFigure(trgunit,he,he_group)
   hf.population_id = trgunit.population_id
   hf.breed_id = -1
   hf.unit_id = trgunit.id
+  hf.unit_id2 = trgunit.id
 
   df.global.world.history.figures:insert("#",hf)
 
@@ -237,7 +248,7 @@ function createFigure(trgunit,he,he_group)
 
   he.histfig_ids:insert('#', hf.id)
   he.hist_figures:insert('#', hf)
-  if he_group then
+  if he_group and he_group ~= he then
     he_group.histfig_ids:insert('#', hf.id)
     he_group.hist_figures:insert('#', hf)
     hf.entity_links:insert("#",{new=df.histfig_entity_link_memberst,entity_id=he_group.id,link_strength=100})
@@ -283,7 +294,6 @@ function createNemesis(trgunit,civ_id,group_id)
   df.global.world.nemesis.all:insert("#",nem)
   df.global.nemesis_next_id=id+1
   trgunit.general_refs:insert("#",{new=df.general_ref_is_nemesisst,nemesis_id=id})
-  trgunit.flags1.important_historical_figure=true
 
   nem.save_file_id=-1
 
@@ -291,7 +301,7 @@ function createNemesis(trgunit,civ_id,group_id)
   he.nemesis_ids:insert("#",id)
   he.nemesis:insert("#",nem)
   local he_group
-  if group_id and group_id~=-1 then
+  if group_id and group_id ~= -1 then
       he_group=df.historical_entity.find(group_id)
   end
   if he_group then
@@ -302,22 +312,14 @@ function createNemesis(trgunit,civ_id,group_id)
   nem.figure=createFigure(trgunit,he,he_group)
 end
 
---createNemesis(u, u.civ_id,group)
-function createUnitInCiv(race_id, caste_id, civ_id, group_id, location)
-  local uid = createUnit(race_id, caste_id, location)
+function createUnitInCiv(race_id, caste_id, civ_id, group_id, location, entityRawName)
+  local uid = createUnit(race_id, caste_id, location, entityRawName)
   local unit = df.unit.find(uid)
   if ( civ_id ) then
+    unit.civ_id = civ_id
     createNemesis(unit, civ_id, group_id)
   end
   return uid
-end
-
-function createUnitInFortCiv(race_id, caste_id, location)
-  return createUnitInCiv(race_id, caste_id, df.global.ui.civ_id, 0, location)
-end
-
-function createUnitInFortCivAndGroup(race_id, caste_id, location)
-  return createUnitInCiv(race_id, caste_id, df.global.ui.civ_id, df.global.ui.group_id, location)
 end
 
 function domesticate(uid, group_id)
@@ -338,13 +340,6 @@ function domesticate(uid, group_id)
     u.animal.population.population_idx = -1
     u.animal.population.depth = -1
 
-    u.counters.soldier_mood_countdown = -1
-    u.counters.death_cause = -1
-
-    u.enemy.anon_4 = -1
-    u.enemy.anon_5 = -1
-    u.enemy.anon_6 = -1
-
     -- And make them tame (from Dirst)
     u.flags1.tame = true
     u.training_level = 7
@@ -359,8 +354,10 @@ function wild(uid)
   -- y = df.global.world.world_data.active_site[0].pos.y
   -- region = df.global.map.map_blocks[df.global.map.x_count_block*x+y]
   if not(caste.flags.CAN_SPEAK and caste.flags.CAN_LEARN) then
-    u.animal.population.region_x = df.global.world.world_data.active_site[0].pos.x
-    u.animal.population.region_y = df.global.world.world_data.active_site[0].pos.y
+    if #df.global.world.world_data.active_site > 0 then -- empty in adventure mode
+      u.animal.population.region_x = df.global.world.world_data.active_site[0].pos.x
+      u.animal.population.region_y = df.global.world.world_data.active_site[0].pos.y
+    end
     u.animal.population.unk_28 = -1
     u.animal.population.population_idx = -1  -- Eventually want to make a real population
     u.animal.population.depth = -1  -- Eventually this should be a parameter
@@ -371,8 +368,7 @@ function wild(uid)
   end
 end
 
-
-function nameUnit(id, entityRawName, civ_id)
+function nameUnit(id, entityRawName)
   --pick a random appropriate name
   --choose three random words in the appropriate things
   local unit = df.unit.find(id)
@@ -384,13 +380,10 @@ function nameUnit(id, entityRawName, civ_id)
         break
       end
     end
-  else
-    local entity = df.historical_entity.find(civ_id)
-    entity_raw = entity.entity_raw
   end
 
   if not entity_raw then
-    error('entity raw = nil: ', id, entityRawName, civ_id)
+    qerror('Entity raw not found: '..entityRawName)
   end
 
   local translation = entity_raw.translation
@@ -435,7 +428,28 @@ function nameUnit(id, entityRawName, civ_id)
   end
 end
 
-validArgs = --[[validArgs or]]utils.invert({
+function setAgeProfession(unit)
+-- checks for [BABY] and [CHILD] tokens and turns the unit into a baby/child if its age is appropriate
+-- (AtomicChicken)
+  local age = dfhack.units.getAge(unit,true)
+  local cr = df.creature_raw.find(unit.race).caste[unit.caste]
+  if cr.flags.BABY == true and age < cr.misc.baby_age then
+    unit.profession = df.profession['BABY']
+    --unit.profession2 = df.profession['BABY']
+    unit.mood = df.mood_type['Baby']
+  elseif cr.flags.CHILD == true and age < cr.misc.child_age then
+    unit.profession = df.profession['CHILD']
+    --unit.profession2 = df.profession['CHILD']
+  else
+    return
+  end
+  local hf = df.historical_figure.find(unit.hist_figure_id)
+  if hf then
+    hf.profession = unit.profession
+  end
+end
+
+validArgs = validArgs or utils.invert({
   'help',
   'race',
   'caste',
@@ -523,14 +537,9 @@ end
 
 local unitId
 if civ_id == -1 then
-    unitId = createUnit(raceIndex, casteIndex, args.location)
+    unitId = createUnit(raceIndex, casteIndex, args.location, args.name)
   else
-    unitId = createUnitInCiv(raceIndex, casteIndex, civ_id, group_id, args.location)
-end
-
-if civ_id then -- moved it here made more sense... why isn't this done inside of nemesis, above?
-  local u = df.unit.find(unitId)
-  u.civ_id = civ_id
+    unitId = createUnitInCiv(raceIndex, casteIndex, civ_id, group_id, args.location, args.name)
 end
 
 if args.domesticate then
@@ -539,8 +548,14 @@ if args.domesticate then
   wild(unitId)
 end
 
---these flags are an educated guess of how to get the game to compute sizes correctly: use -flagSet and -flagClear arguments to override or supplement
 local u = df.unit.find(unitId)
+u.counters.soldier_mood_countdown = -1
+u.counters.death_cause = -1
+u.enemy.unk_450 = -1
+u.enemy.unk_454 = -1
+u.enemy.army_controller_id = -1
+
+--these flags are an educated guess of how to get the game to compute sizes correctly: use -flagSet and -flagClear arguments to override or supplement
 u.flags2.calculated_nerves = false
 u.flags2.calculated_bodyparts = false
 u.flags3.body_part_relsize_computed = false
@@ -548,7 +563,6 @@ u.flags3.size_modifier_computed = false
 u.flags3.compute_health = true
 u.flags3.weight_computed = false
 
---TODO: if the unit is a child or baby it will still behave like an adult
 if age or age == 0 then
   if age == 0 then
     u.birth_time = df.global.cur_year_tick
@@ -567,6 +581,7 @@ if age or age == 0 then
     hf.old_seconds = u.old_time
   end
 end
+setAgeProfession(u)
 
 if args.flagSet or args.flagClear then
   local u = df.unit.find(unitId)
@@ -599,20 +614,6 @@ if args.flagSet or args.flagClear then
       u.flags3[k] = false;
     end
   end
-end
-
-if args.name then
-  nameUnit(unitId, args.name, civ_id)
-else
-  local unit = df.unit.find(unitId)
-  unit.name.has_name = false
-  if unit.status.current_soul then
-    unit.status.current_soul.name.has_name = false
-  end
-  --[[if unit.hist_figure_id ~= -1 then
-    local histfig = df.historical_figure.find(unit.hist_figure_id)
-    histfig.name.has_name = false
-  end--]]
 end
 
 if args.nick and type(args.nick) == 'string' then
