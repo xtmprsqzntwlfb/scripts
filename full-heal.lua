@@ -175,6 +175,12 @@ if unit then
     for i = 0,#unit.enemy.body_part_8d8-1,1 do
       unit.enemy.body_part_8d8[i] = 0 -- same as above
     end
+    for i = 0,#unit.enemy.body_part_878-1,1 do
+      unit.enemy.body_part_878[i] = 3 -- as above
+    end
+    for i = 0,#unit.enemy.body_part_888-1,1 do
+      unit.enemy.body_part_888[i] = 3 -- as above
+    end
 
     local histFig = df.historical_figure.find(unit.hist_figure_id)
     if histFig and histFig.info and histFig.info.wounds then
