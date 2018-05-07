@@ -6,7 +6,7 @@
 -- version 0.6
 -- This is a beta version. Use at your own risk.
 
--- Modifications from 0.55: 
+-- Modifications from 0.55:
 --   sets baby/child profession and mood for creatures of the appropriate age where relevant
 --   properly assigns civ_id to historical_figure to eliminate a number of hostility issues
 --   removes the arena-generated string of numbers from the first name of units
