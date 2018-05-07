@@ -14,6 +14,9 @@ local utils = require('utils')
 local args = utils.processArgs({...})
 
 function satisfyNeeds(unit)
+    if not unit.status.current_soul then
+        return
+    end
     local mind = unit.status.current_soul.personality.needs
     for k,v in ipairs(mind) do
         mind[k].focus_level = 400

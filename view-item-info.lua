@@ -120,7 +120,10 @@ function GetArmorPropertiesStringList (item)
     append(list,"Armor properties: ")
     append(list,"Thickness: "..item.subtype.props.layer_size,1)
     append(list,"Coverage: "..item.subtype.props.coverage.."%",1)
-    append(list,"Fit for "..df.creature_raw.find(item.maker_race).name[0],1)
+    local craw = df.creature_raw.find(item.maker_race)
+    if craw then
+        append(list,"Fit for "..craw.name[0],1)
+    end
     return list
 end
 
