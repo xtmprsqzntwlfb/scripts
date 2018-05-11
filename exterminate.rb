@@ -8,7 +8,7 @@ Kills any unit of a given race.
 With no argument, lists the available races and count eligible targets.
 
 With the special argument ``this``, targets only the selected creature.
-Alternatively, ``him``, ``her``, ``it``, ``this``, ``target``, and ``selected``
+Alternatively, ``him``, ``her``, ``it``, ``target``, and ``selected``
 do the same thing.
 
 With the special argument ``undead``, targets all undeads on the map,
@@ -118,7 +118,8 @@ when 'help', '?'
     puts <<EOS
 Kills all creatures of a given race.
 With no argument, lists possible targets with their head count.
-With the special argument 'him' or 'her', kill only the currently selected creature.
+With the special argument 'this', kill only the currently selected creature.
+    Alternatively, 'him', 'her', 'it', 'target', and 'selected' do the same thing.
 With the special argument 'undead', kill all undead creatures/thralls.
 
 The targets will bleed out on the next game tick, or if they are immune to that, will vanish in a puff of smoke.
