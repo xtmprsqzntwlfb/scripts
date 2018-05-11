@@ -54,6 +54,17 @@ end
 log_command('devel/save-version')
 log_command('plug')
 
+log('Tweak log entries:')
+if not pcall(function()
+    for line in io.lines('stderr.log') do
+        if line:match('tweak') then
+            log('    ' .. line)
+        end
+    end
+end) then
+    log('Failed to read stderr.log')
+end
+
 if not f then
     qerror('Could not write to install-info.txt.\nCopy the above text instead.')
 else
