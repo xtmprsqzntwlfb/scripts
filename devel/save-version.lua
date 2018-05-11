@@ -137,7 +137,7 @@ end
 
 function describe(version)
     if version == 0 then
-        return 'no world loaded'
+        return 'not saved'
     elseif versions[version] then
         return versions[version] .. (' (%i)'):format(version)
     elseif version < min_version then
@@ -162,4 +162,5 @@ if not moduleMode then
     if not dfhack.isWorldLoaded() then qerror('no world loaded') end
     dump('original DF version', get_original_save_version)
     dump('most recent DF version', get_save_version)
+    dump('running DF version', function() return df.global.version end)
 end
