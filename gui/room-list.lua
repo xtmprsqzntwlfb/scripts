@@ -229,6 +229,10 @@ function RoomList:onInput(keys)
     end
 end
 
+function RoomList:onGetSelectedBuilding()
+    return self.items[self.selected].obj
+end
+
 local focus = dfhack.gui.getCurFocus()
 
 if focus == 'dwarfmode/QueryBuilding/Some/Assign/Unit' then
