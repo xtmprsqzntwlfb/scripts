@@ -21,6 +21,8 @@
     option to attach to a map feature
 ]]
 
+--@ module = true
+
 local usage = [====[
 
 modtools/create-unit
@@ -245,26 +247,29 @@ function createFigure(trgunit,he,he_group)
   -- note that innate skills are automaticaly set by DF
   hf.info.skills = {new=true}
 
+  if he then
+    he.histfig_ids:insert('#', hf.id)
+    he.hist_figures:insert('#', hf)
+    hf.entity_links:insert("#",{new=df.histfig_entity_link_memberst,entity_id=trgunit.civ_id,link_strength=100})
 
-  he.histfig_ids:insert('#', hf.id)
-  he.hist_figures:insert('#', hf)
+    --add entity event
+    local hf_event_id = df.global.hist_event_next_id
+    df.global.hist_event_next_id = df.global.hist_event_next_id+1
+    df.global.world.history.events:insert("#",{new=df.history_event_add_hf_entity_linkst,year=trgunit.birth_year,
+    seconds=trgunit.birth_time,id=hf_event_id,civ=hf.civ_id,histfig=hf.id,link_type=0})
+  end
+
   if he_group and he_group ~= he then
     he_group.histfig_ids:insert('#', hf.id)
     he_group.hist_figures:insert('#', hf)
     hf.entity_links:insert("#",{new=df.histfig_entity_link_memberst,entity_id=he_group.id,link_strength=100})
   end
+
   trgunit.flags1.important_historical_figure = true
   trgunit.flags2.important_historical_figure = true
   trgunit.hist_figure_id = hf.id
   trgunit.hist_figure_id2 = hf.id
 
-  hf.entity_links:insert("#",{new=df.histfig_entity_link_memberst,entity_id=trgunit.civ_id,link_strength=100})
-
-  --add entity event
-  local hf_event_id=df.global.hist_event_next_id
-  df.global.hist_event_next_id=df.global.hist_event_next_id+1
-  df.global.world.history.events:insert("#",{new=df.history_event_add_hf_entity_linkst,year=trgunit.birth_year,
-  seconds=trgunit.birth_time,id=hf_event_id,civ=hf.civ_id,histfig=hf.id,link_type=0})
   return hf
 end
 
@@ -297,9 +302,12 @@ function createNemesis(trgunit,civ_id,group_id)
 
   nem.save_file_id=-1
 
-  local he=df.historical_entity.find(civ_id)
-  he.nemesis_ids:insert("#",id)
-  he.nemesis:insert("#",nem)
+  if civ_id ~= -1 then
+    local he=df.historical_entity.find(civ_id)
+    he.nemesis_ids:insert("#",id)
+    he.nemesis:insert("#",nem)
+    allocateIds(nem,he)
+  end
   local he_group
   if group_id and group_id ~= -1 then
       he_group=df.historical_entity.find(group_id)
@@ -308,8 +316,8 @@ function createNemesis(trgunit,civ_id,group_id)
       he_group.nemesis_ids:insert("#",id)
       he_group.nemesis:insert("#",nem)
   end
-  allocateIds(nem,he)
   nem.figure=createFigure(trgunit,he,he_group)
+  return nem
 end
 
 function createUnitInCiv(race_id, caste_id, civ_id, group_id, location, entityRawName)
