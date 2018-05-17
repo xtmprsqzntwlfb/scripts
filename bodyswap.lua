@@ -1,23 +1,9 @@
 -- Shifts player control over to another unit in adventure mode.
 -- author: Atomic Chicken
 -- based on "assumecontrol.lua" by maxthyme, as well as the defunct advtools plugin "adv-bodyswap"
--- nemesis and historical figure creation uses slightly modified functions from modtools/create-unit
+-- calls "modtools/create-unit" for nemesis and histfig creation
 
---[====[
-
-bodyswap
-========
-
-Shifts player control over to another unit (including wild animals) in adventure mode.
-Usage:
-
-:bodyswap:
-    Swaps into the unit selected in the UI (for example, when viewing the unit's status screen or description).
-
-:bodyswap -unit [unitId]:
-    Swaps into the unit corresponding to the specified id.
-
-]====]
+--@ module = true
 
 local utils = require 'utils'
 validArgs = validArgs or utils.invert({
@@ -70,7 +56,7 @@ function setOldAdvNemFlags(nem)
   nem.unit.idle_area.z = nem.unit.pos.z
 end
 
-function clearNemesisFromSite(nem)
+function clearNemesisFromLinkedSites(nem)
 -- this is a workaround for a bug which tends to cause duplication of the unit entry in df.global.world.units.active when the site to which a historical figure is linked is reloaded with the unit present
 -- appears to fix the problem without causing any noticeable issues
   if not nem.figure then
@@ -86,21 +72,16 @@ function clearNemesisFromSite(nem)
   end
 end
 
-function swapAdvUnit()
+function createNemesis(unit)
+  local nemesis = reqscript('modtools/create-unit').createNemesis(unit,unit.civ_id)
+  nemesis.figure.flags.never_cull = true
+  return nemesis
+end
 
-  local newUnit
-  if args.unit then
-    newUnit = df.unit.find(tonumber(args.unit))
-  else
-    newUnit = dfhack.gui.getSelectedUnit()
-  end
+function swapAdvUnit(newUnit)
+
   if not newUnit then
-    print("Enter the following if you require assistance: bodyswap -help")
-    if args.unit then
-      qerror("Invalid unit id: "..args.unit)
-    else
-      qerror("Target unit not specified!")
-    end
+    qerror('Target unit not specified!')
   end
 
   local oldUnit = df.nemesis_record.find(df.global.ui_advmode.player_id).unit
@@ -112,7 +93,7 @@ function swapAdvUnit()
   local oldUnitIndex
   if activeUnits[0] == oldUnit then
     oldUnitIndex = 0
-  else
+  else -- unlikely; this is just in case
     for i,u in pairs(activeUnits) do
       if u == oldUnit then
         oldUnitIndex = i
@@ -142,114 +123,20 @@ function swapAdvUnit()
       setOldAdvNemFlags(oldNem)
     end
     setNewAdvNemFlags(newNem)
-    clearNemesisFromSite(newNem)
+    clearNemesisFromLinkedSites(newNem)
     df.global.ui_advmode.player_id = newNem.id
   end
 end
 
-local function allocateNewChunk(hist_entity)
-  hist_entity.save_file_id = df.global.unit_chunk_next_id
-  df.global.unit_chunk_next_id = df.global.unit_chunk_next_id+1
-  hist_entity.next_member_idx = 0
-end
-
-local function allocateIds(nemesis_record,hist_entity)
-  if hist_entity.next_member_idx == 100 then
-    allocateNewChunk(hist_entity)
+if not dfhack_flags.module then
+  local unit = args.unit and df.unit.find(tonumber(args.unit)) or dfhack.gui.getSelectedUnit()
+  if not unit then
+    print("Enter the following if you require assistance: bodyswap -help")
+    if args.unit then
+      qerror("Invalid unit id: "..args.unit)
+    else
+      qerror("Target unit not specified!")
+    end
   end
-  nemesis_record.save_file_id = hist_entity.save_file_id
-  nemesis_record.member_idx = hist_entity.next_member_idx
-  hist_entity.next_member_idx = hist_entity.next_member_idx+1
+  swapAdvUnit(unit)
 end
-
-function createFigure(unit,he,he_group)
-  local hf = df.historical_figure:new()
-  hf.id = df.global.hist_figure_next_id
-  hf.race = unit.race
-  hf.caste = unit.caste
-  hf.profession = unit.profession
-  hf.sex = unit.sex
-  df.global.hist_figure_next_id=df.global.hist_figure_next_id+1
-  hf.appeared_year = df.global.cur_year
-
-  hf.born_year = unit.birth_year
-  hf.born_seconds = unit.birth_time
-  hf.curse_year = unit.curse_year
-  hf.curse_seconds = unit.curse_time
-  hf.birth_year_bias = unit.birth_year_bias
-  hf.birth_time_bias = unit.birth_time_bias
-  hf.old_year = unit.old_year
-  hf.old_seconds = unit.old_time
-  hf.died_year = -1
-  hf.died_seconds = -1
-  hf.name:assign(unit.name)
-  hf.civ_id = unit.civ_id
-  hf.population_id = unit.population_id
-  hf.breed_id = -1
-  hf.unit_id = unit.id
-  hf.unit_id2 = unit.id
-
-  hf.flags.never_cull = true
-
-  df.global.world.history.figures:insert("#",hf)
-
-  hf.info = df.historical_figure_info:new()
-  hf.info.unk_14 = df.historical_figure_info.T_unk_14:new()
-  hf.info.unk_14.unk_18 = -1; hf.info.unk_14.unk_1c = -1
-  hf.info.skills = {new=true}
-
-  unit.flags1.important_historical_figure = true
-  unit.flags2.important_historical_figure = true
-  unit.hist_figure_id = hf.id
-  unit.hist_figure_id2 = hf.id
-
-  if he then
-    he.histfig_ids:insert('#',hf.id)
-    he.hist_figures:insert('#',hf)
-
-    hf.entity_links:insert("#",{new=df.histfig_entity_link_memberst,entity_id=unit.civ_id,link_strength=100})
-
-    local hf_event_id = df.global.hist_event_next_id
-    df.global.hist_event_next_id = df.global.hist_event_next_id+1
-    df.global.world.history.events:insert("#",{new=df.history_event_add_hf_entity_linkst,year=unit.birth_year,
-    seconds=unit.birth_time,id = hf_event_id,civ=hf.civ_id,histfig=hf.id,link_type=0})
-  end
-  return hf
-end
-
-function createNemesis(unit)
-  local id = df.global.nemesis_next_id
-  local nem = df.nemesis_record:new()
-
-  nem.id = id
-  nem.unit_id = unit.id
-  nem.unit = unit
-  nem.flags:resize(4)
-  nem.flags[4] = true
-  nem.flags[5] = true
-  nem.flags[6] = true
-  nem.flags[7] = true
-  nem.flags[8] = true
-  nem.flags[9] = true
-  nem.unk10 = -1
-  nem.unk11 = -1
-  nem.unk12 = -1
-  df.global.world.nemesis.all:insert("#",nem)
-  df.global.nemesis_next_id = id+1
-  unit.general_refs:insert("#",{new=df.general_ref_is_nemesisst,nemesis_id=id})
-
-  nem.save_file_id = -1
-
-  local civ_id = unit.civ_id
-  local he
-  if civ_id ~= -1 then
-    he = df.historical_entity.find(civ_id)
-    he.nemesis_ids:insert("#",id)
-    he.nemesis:insert("#",nem)
-    allocateIds(nem,he)
-  end
-  nem.figure = createFigure(unit,he)
-  return nem
-end
-
-swapAdvUnit()
