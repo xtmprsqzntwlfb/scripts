@@ -4,11 +4,7 @@
 gui/manager-quantity
 ====================
 
-Sets the quantity of the selected manager job
-
-Sample usage::
-
-    keybinding add Alt-Q@jobmanagement gui/manager-quantity
+Sets the quantity of the selected manager job (in the j-m or u-m screens).
 
 ]====]
 

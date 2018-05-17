@@ -6,6 +6,10 @@ adv-rumors
 ==========
 Improves the "Bring up specific incident or rumor" menu in Adventure mode.
 
+- Moves entries into one line
+- Adds a "slew" keyword for filtering, making it easy to find your kills and not your companions'
+- Trims repetitive words
+
 ]====]
 
 --========================
@@ -13,12 +17,9 @@ Improves the "Bring up specific incident or rumor" menu in Adventure mode.
 -- Version : 0.2
 -- Description : A small utility based on dfhack to improve the rumor UI in adventure mode.
 --
--- Usage: Save this code as rumors.lua file in your /hack/scripts/ folder
 --      In game when you want to boast about your kill to someone. Start conversation and choose
 --      the menu "Bring up specific incident or rumor"
 --      type rumors in dfhack window and hit enter. Or do the below keybind and use that directly from DF window.
--- Optional One time setup : run below command at dfhack command prompt once to setup easy keybind for this
---          keybinding add Ctrl-A@dungeonmode/ConversationSpeak rumors
 --
 -- Prior Configuration: (you can skip this if you want)
 --      Set the three boolean values below and play around with the script as to how you like

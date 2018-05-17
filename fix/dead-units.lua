@@ -17,7 +17,7 @@ for i=#units-1,0,-1 do
     local unit = units[i]
     local flags1 = unit.flags1
     local flags2 = unit.flags2
-    if flags1.dead and unit.race ~= dwarf_race then
+    if flags1.dead and flags2.killed and unit.race ~= dwarf_race then
         local remove = false
         if flags2.slaughter then
             remove = true

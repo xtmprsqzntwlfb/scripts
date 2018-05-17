@@ -229,6 +229,8 @@ address('sub_type',df.itemdef,'subtype')
 address('name',df.itemdef_armorst,'name')
 address('name_plural',df.itemdef_armorst,'name_plural')
 address('adjective',df.itemdef_armorst,'name_preplural')
+address('tool_flags',df.itemdef_toolst,'flags')
+address('tool_adjective',df.itemdef_toolst,'adjective')
 
 header('item_filter_offsets')
 address('item_subtype',df.item_filter_spec,'item_subtype')

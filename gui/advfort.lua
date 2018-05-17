@@ -6,7 +6,7 @@ gui/advfort
 ===========
 This script allows to perform jobs in adventure mode. For more complete help
 press :kbd:`?` while script is running. It's most comfortable to use this as a
-keybinding. (e.g. ``keybinding set Ctrl-T gui/advfort``). Possible arguments:
+keybinding (see below for the default binding). Possible arguments:
 
 :-a, --nodfassign:  uses different method to assign items.
 :-i, --inventory:   checks inventory for possible items to use in the job.
@@ -718,7 +718,7 @@ function isSuitableItem(job_item,item)
             print(v)
         end
         --]]
-        
+
         return false,"matinfo"
     end
     -- some bonus checks:
@@ -914,7 +914,7 @@ function AssignJobItems(args)
     -- first find items that you want to use for the job
     local job=args.job
     local its=EnumItems_with_settings(args)
-    
+
     local item_suitability,item_counts=find_suitable_items(job,its)
     --[[while(#job.items>0) do --clear old job items
         job.items[#job.items-1]:delete()
@@ -923,7 +923,7 @@ function AssignJobItems(args)
 
     if settings.gui_item_select and #job.job_items>0 then
         local item_dialog=require('hack.scripts.gui.advfort_items')
-       
+
         if settings.quick then --TODO not so nice hack. instead of rewriting logic for job item filling i'm using one in gui dialog...
             local item_editor=item_dialog.jobitemEditor{
                 job = job,
@@ -1060,7 +1060,7 @@ function fake_linking(lever,building,slots)
     end
     item2.general_refs:insert("#",{new=df.general_ref_building_triggerst,building_id=lever.id})
     item1.general_refs:insert("#",{new=df.general_ref_building_triggertargetst,building_id=building.id})
-    
+
     lever.linked_mechanisms:insert("#",item2)
     --fixes...
     if building:getType()==df.building_type.Door then
@@ -1143,7 +1143,7 @@ function PlantGatherFix(args)
     local pos=args.pos
     --[[args.job.flags[17]=false --??
 
-    
+
     local block=dfhack.maps.getTileBlock(pos)
     local ev=get_design_block_ev(block)
     if ev==nil then
@@ -1218,7 +1218,7 @@ function usetool:update_site()
     self.current_site=site
     local site_label=self.subviews.siteLabel
     if site then
-        
+
         site_label:itemById("site").text=dfhack.TranslateName(site.name)
     else
         if settings.safe then
@@ -1404,7 +1404,7 @@ function usetool:openShopWindowButtoned(building,no_reset)
         --]]
     end
     building:fillSidebarMenu()
-    
+
     local list={}
     for id,choice in pairs(wui.choices_visible) do
         table.insert(list,{text=utils.call_with_string(choice,"getLabel"),button=choice})
@@ -1420,7 +1420,7 @@ function usetool:openShopWindowButtoned(building,no_reset)
 end
 function usetool:openShopWindow(building)
     local adv=df.global.world.units.active[0]
-    
+
     local filter_pile=workshopJobs.getJobs(building:getType(),building:getSubtype(),building:getCustomType())
     if filter_pile then
         local state={unit=adv,from_pos={x=adv.pos.x,y=adv.pos.y, z=adv.pos.z},building=building
@@ -1522,7 +1522,7 @@ function usetool:hiveActions(building)
     --CollectHiveProducts,
 end
 function usetool:operatePump(building)
-    
+
     local adv=df.global.world.units.active[0]
     makeJob{unit=adv,post_actions={AssignBuildingRef},pos=adv.pos,from_pos=adv.pos,job_type=df.job_type.OperatePump,screen=self}
 end
@@ -1537,7 +1537,7 @@ function usetool:farmPlot(building)
         end
     end
     --check if there tile is without plantseeds,add job
-    
+
     local args={unit=adv,pos=adv.pos,from_pos=adv.pos,screen=self}
     if do_harvest then
         args.job_type=df.job_type.HarvestPlants
@@ -1702,7 +1702,7 @@ function usetool:fieldInput(keys)
                     break
                 end
             end
-           
+
             --First check site
             local ok,msg=self:siteCheck() --TODO: some jobs might be possible without a site?
             if not ok then
@@ -1717,7 +1717,7 @@ function usetool:fieldInput(keys)
                     end
                 end
             end
-            
+
             if not failed then
                 local ok,msg
                 if type(cur_mode[2])=="function" then
@@ -1725,9 +1725,9 @@ function usetool:fieldInput(keys)
                 else
                     makeJob(state)
                     --(adv,moddedpos(adv.pos,MOVEMENT_KEYS[code]),cur_mode[2],adv.pos,cur_mode[4])
-                    
+
                 end
-                
+
                 if code=="SELECT" then
                     self:sendInputToParent("LEAVESCREEN")
                 end
@@ -1741,7 +1741,7 @@ function usetool:fieldInput(keys)
             end
         end
     end
-    
+
 end
 
 function usetool:onInput(keys)
@@ -1749,7 +1749,7 @@ function usetool:onInput(keys)
     self:update_site()
 
     local adv=df.global.world.units.active[0]
-    
+
     if keys.LEAVESCREEN  then
         if df.global.cursor.x~=-30000 then --if not poiting at anything
             self:sendInputToParent("LEAVESCREEN") --leave poiting
@@ -1782,7 +1782,7 @@ function usetool:onInput(keys)
             self:fieldInput(keys)
         end
     end
-    
+
 end
 function usetool:cancel_wait()
     self.long_wait_timer=nil
