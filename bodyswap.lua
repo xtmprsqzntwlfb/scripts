@@ -29,7 +29,7 @@ Arguments::
 
     -unit id
         replace "id" with the unit id of your target
-        example: 
+        example:
             bodyswap -unit 42
 
 ]====]
