@@ -17,6 +17,8 @@ so missing items simply go undescribed if not defined in the fallback.
 
 ]====]
 
+local utils = require 'utils'
+
 function isInList(list, item, helper)
     if not helper then
         helper = function(v) return v end
@@ -370,7 +372,10 @@ function get_custom_item_desc (item)
     if dfhack.findScript("more-item-descriptions") then
         desc = dfhack.script_environment("more-item-descriptions").descriptions[ID] or desc
     end
-    if desc then add_lines_to_list(desc, {""}) end
+    if desc then
+        desc = utils.clone(desc)
+        add_lines_to_list(desc, {""})
+    end
     return desc
 end
 
