@@ -17,6 +17,8 @@ so missing items simply go undescribed if not defined in the fallback.
 
 ]====]
 
+local utils = require 'utils'
+
 function isInList(list, item, helper)
     if not helper then
         helper = function(v) return v end
@@ -120,7 +122,10 @@ function GetArmorPropertiesStringList (item)
     append(list,"Armor properties: ")
     append(list,"Thickness: "..item.subtype.props.layer_size,1)
     append(list,"Coverage: "..item.subtype.props.coverage.."%",1)
-    append(list,"Fit for "..df.creature_raw.find(item.maker_race).name[0],1)
+    local craw = df.creature_raw.find(item.maker_race)
+    if craw then
+        append(list,"Fit for "..craw.name[0],1)
+    end
     return list
 end
 
@@ -367,7 +372,10 @@ function get_custom_item_desc (item)
     if dfhack.findScript("more-item-descriptions") then
         desc = dfhack.script_environment("more-item-descriptions").descriptions[ID] or desc
     end
-    if desc then add_lines_to_list(desc, {""}) end
+    if desc then
+        desc = utils.clone(desc)
+        add_lines_to_list(desc, {""})
+    end
     return desc
 end
 
