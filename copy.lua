@@ -209,6 +209,7 @@ function CopyUI:invertBuffer() --this modifies the buffer instead of copying it
     self:transformBuffer(function(x,y,xlen,ylen,tile) if tile.dig>0 then tile.dig=0 else tile.dig=1 end return x,y end)
 end
 function CopyUI:renderOverlay(cursor)
+    local vp=self:getViewport()
     local dc = gui.Painter.new(self.df_layout.map)
     local visible = gui.blink_visible(500)
 --   paintMapTile(dc, vp, cursor, startp, 240, COLOR_LIGHTGREEN, COLOR_GREEN)
