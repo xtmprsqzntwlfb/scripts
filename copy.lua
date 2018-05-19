@@ -20,7 +20,6 @@ local utils = require 'utils'
 local gui = require 'gui'
 local guidm = require 'gui.dwarfmode'
 local dlg = require 'gui.dialogs'
-local build = require 
 
 CopyUI = defclass(CopyUI, guidm.MenuOverlay)
 
@@ -320,7 +319,7 @@ function CopyUI:onInput(keys)
         elseif keys.CUSTOM_H then
             self.buffer=self:transformBuffer(function(x,y,xlen,ylen,tile) return xlen-x, y end)
         elseif keys.CUSTOM_V then
-            self.buffer=self:transformBuffer(function(x,y,xlen,ylen,tile) return x, ylen-y end)            
+            self.buffer=self:transformBuffer(function(x,y,xlen,ylen,tile) return x, ylen-y end)
         elseif keys.CUSTOM_R then
             self.buffer=self:transformBuffer(function(x,y,xlen,ylen,tile) return y, xlen-x end)
             self.offsetDirection=(self.offsetDirection+1)%4
@@ -357,7 +356,7 @@ function CopyUI:onInput(keys)
                 self.state='paste'
                 return
         elseif keys.CUSTOM_P then
-            self.cull = not self.cull            
+            self.cull = not self.cull
         end
     elseif self.state=='convert' then
         if keys.LEAVESCREEN then
@@ -380,7 +379,7 @@ function CopyUI:onInput(keys)
             self.state='paste'
         elseif keys.CUSTOM_R then
             self:transformBuffer(function(x,y,xlen,ylen,tile) if tile.dig>0 then tile.dig=4 end  return x,y end)
-            self.state='paste'     
+            self.state='paste'
         end
         
     end
@@ -394,7 +393,7 @@ end
 --------------------------WARNING: JANKY SHIT BELOW--------------------------
 for i=1, 4 do
     if not string.match(dfhack.gui.getCurFocus(), '^dwarfmode/Default') then
-        gui.simulateInput(dfhack.gui.getCurViewscreen(true),"LEAVESCREEN") 
+        gui.simulateInput(dfhack.gui.getCurViewscreen(true),"LEAVESCREEN")
     else
         break
     end
@@ -405,7 +404,7 @@ end
 local list = CopyUI{state='mark', blink=false,cull=true}
 
 if not list.df_layout.menu then
-    gui.simulateInput(dfhack.gui.getCurViewscreen(true),"CHANGETAB") --sorry 
+    gui.simulateInput(dfhack.gui.getCurViewscreen(true),"CHANGETAB") --sorry
     for i=1, 2 do
         if not list.df_layout.menu then
             gui.simulateInput(dfhack.gui.getCurViewscreen(true),"CHANGETAB")
