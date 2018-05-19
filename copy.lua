@@ -1,7 +1,13 @@
---copy.lua
+--designating tool
+
 --[====[
-    copy is a gui program designed to make designating easier.
+
+    copy
+    ====
+    copy is a gui program designed to make designating easier and more efficient.
+
 ]====]
+
 --[[
  Author's Note:
  
