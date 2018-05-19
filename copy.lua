@@ -2,9 +2,9 @@
 
 --[====[
 
-    copy
-    ====
-    copy is a gui program designed to make designating easier and more efficient.
+copy
+====
+copy is a gui program designed to make designating easier and more efficient.
 
 ]====]
 
