@@ -99,22 +99,22 @@ local function getTiles(p1,p2,cull)
     local z=p1.z
     local data={}
     for k, block in ipairs(df.global.world.map.map_blocks) do
-      if block.map_pos.z==z then
-         for block_x, row in ipairs(block.designation) do
-            local x=block_x+block.map_pos.x
-            if x>=x1 and x<=x2 then
-                if not data[x-x1] then
-                    data[x-x1]={}
-                end
-                for block_y, tile in ipairs(row) do
-                    local y=block_y+block.map_pos.y
-                    if y>=y1 and y<=y2 then
-                        data[x-x1][y-y1]=copyall(tile)
+        if block.map_pos.z==z then
+            for block_x, row in ipairs(block.designation) do
+                local x=block_x+block.map_pos.x
+                if x>=x1 and x<=x2 then
+                    if not data[x-x1] then
+                        data[x-x1]={}
+                    end
+                    for block_y, tile in ipairs(row) do
+                        local y=block_y+block.map_pos.y
+                        if y>=y1 and y<=y2 then
+                            data[x-x1][y-y1]=copyall(tile)
+                        end
                     end
                 end
             end
-         end
-      end
+        end
     end
     data.xlen=xlen
     data.ylen=ylen
