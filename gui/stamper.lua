@@ -9,14 +9,6 @@ designations can also be used as brushes to erase other designations and cancel 
 
 ]====]
 
---[[
- Author's Note:
- 
- shoutout to twitch.tv/keupo
- created by flavorstreet
- 
- pipicaca.
-]]
 local utils = require "utils"
 local gui = require "gui"
 local guidm = require "gui.dwarfmode"
