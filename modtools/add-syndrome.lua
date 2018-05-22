@@ -38,7 +38,7 @@ Arguments::
 local syndromeUtil = require 'syndrome-util'
 local utils = require 'utils'
 
-validArgs = validArgs or utils.invert({
+validArgs = utils.invert({
  'help',
  'syndrome',
  'resetPolicy',

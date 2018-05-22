@@ -8,7 +8,7 @@ Merge stacks of plants or plant growths in the selected container or stockpile.
 ]====]
 local utils = require 'utils'
 
-validArgs = validArgs or utils.invert({ 'max', 'stockpile', 'container' })
+validArgs = utils.invert({ 'max', 'stockpile', 'container' })
 local args = utils.processArgs({...}, validArgs)
 
 local max = 12

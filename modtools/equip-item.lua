@@ -33,16 +33,16 @@ function equipItem(unit, item, bodyPart, mode)
   if not foundItem then
     occupancy.item = false
   end
-  
+
   local inventoryItem = df.unit_inventory_item:new()
   inventoryItem.item = item
   inventoryItem.mode = mode
   inventoryItem.body_part_id = bodyPart
   unit.inventory:insert(#unit.inventory,inventoryItem)
-  
+
 end
 
-validArgs = --[[validArgs or--]] utils.invert({
+validArgs = utils.invert({
   'help',
   'unit',
   'item',

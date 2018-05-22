@@ -18,7 +18,7 @@ Sets or modifies a skill of a unit.  Args:
 ]====]
 local utils = require 'utils'
 
-validArgs = validArgs or utils.invert({
+validArgs = utils.invert({
     'help',
     'skill',
     'mode',
@@ -28,12 +28,12 @@ validArgs = validArgs or utils.invert({
     'loud',
 })
 
-mode = mode or utils.invert({
+mode = utils.invert({
     'add',
     'set',
 })
 
-granularity = granularity or utils.invert({
+granularity = utils.invert({
     'experience',
     'level',
 })

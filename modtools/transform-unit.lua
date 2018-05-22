@@ -41,7 +41,7 @@ local function transform(unit,race,caste)
  unit.enemy.were_caste = caste
 end
 
-validArgs = validArgs or utils.invert({
+validArgs = utils.invert({
  'clear',
  'help',
  'unit',

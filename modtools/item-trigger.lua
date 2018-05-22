@@ -300,7 +300,7 @@ eventful.onUnitAttack.attackTrigger = function(attacker,defender,wound)
  handler(table)
 end
 
-validArgs = validArgs or utils.invert({
+validArgs = utils.invert({
  'clear',
  'help',
  'checkAttackEvery',

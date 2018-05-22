@@ -47,7 +47,7 @@ function addEmotionToUnit(unit,thought,emotion,severity,strength,subthought)
     end
 end
 
-validArgs = validArgs or utils.invert({
+validArgs = utils.invert({
  'unit',
  'thought',
  'emotion',

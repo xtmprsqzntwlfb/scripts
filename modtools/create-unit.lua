@@ -457,7 +457,7 @@ function setAgeProfession(unit)
   end
 end
 
-validArgs = validArgs or utils.invert({
+validArgs = utils.invert({
   'help',
   'race',
   'caste',

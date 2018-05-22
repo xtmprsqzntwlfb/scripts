@@ -11,7 +11,7 @@ of pets.
 
 local utils=require('utils')
 
-validArgs = validArgs or utils.invert({
+validArgs = utils.invert({
  'pets'
 })
 

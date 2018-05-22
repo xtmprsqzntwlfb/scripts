@@ -67,7 +67,7 @@ eventful.onProjItemCheckImpact.expansion = function(projectile)
  end
 end
 
-validArgs = validArgs or utils.invert({
+validArgs = utils.invert({
  'help',
  'clear',
  'command',

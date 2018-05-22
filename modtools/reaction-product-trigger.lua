@@ -93,7 +93,7 @@ eventful.onReactionComplete.reactionProductTrigger = function(reaction,reaction_
  reactionInputItems = nil
 end
 
-validArgs = validArgs or utils.invert({
+validArgs = utils.invert({
  'help',
  'clear',
  'reactionName',

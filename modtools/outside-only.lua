@@ -24,7 +24,7 @@ Arguments::
 local eventful = require 'plugins.eventful'
 local utils = require 'utils'
 
-buildingType = buildingType or utils.invert({'EITHER','OUTSIDE_ONLY','INSIDE_ONLY'})
+buildingType = utils.invert({'EITHER','OUTSIDE_ONLY','INSIDE_ONLY'})
 registeredBuildings = registeredBuildings or {}
 checkEvery = checkEvery or 100
 timeoutId = timeoutId or nil
@@ -98,7 +98,7 @@ eventful.onBuildingCreatedDestroyed.outsideOnly = function(buildingId)
  checkBuildings()
 end
 
-validArgs = validArgs or utils.invert({
+validArgs = utils.invert({
  'help',
  'clear',
  'checkEvery',

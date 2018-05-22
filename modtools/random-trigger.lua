@@ -84,7 +84,7 @@ eventful.onUnload.randomTrigger = function()
  outcomeLists = {}
 end
 
-validArgs = validArgs or utils.invert({
+validArgs = utils.invert({
  'help',
  'command',
  'outcomeListName',

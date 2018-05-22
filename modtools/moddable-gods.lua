@@ -25,7 +25,7 @@ Arguments::
 ]====]
 local utils = require 'utils'
 
-validArgs = validArgs or utils.invert({
+validArgs = utils.invert({
  'help',
  'name',
  'spheres',

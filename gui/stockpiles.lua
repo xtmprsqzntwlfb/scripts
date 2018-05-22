@@ -40,7 +40,7 @@ function guard()
 end
 
 utils = require('utils')
-validArgs = validArgs or utils.invert({
+validArgs = utils.invert({
     'help',
     'load',
     'save',

@@ -132,7 +132,7 @@ end
 ----------------------------------------------------
 --argument processing
 
-validArgs = validArgs or utils.invert({
+validArgs = utils.invert({
  'clear',
  'help',
  'onAttackStr',

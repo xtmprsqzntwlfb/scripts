@@ -31,7 +31,7 @@ end
 
 utils = require('utils')
 
-validArgs = validArgs or utils.invert({
+validArgs = utils.invert({
  'unit',
  'x',
  'y',

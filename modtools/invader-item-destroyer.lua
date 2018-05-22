@@ -115,7 +115,7 @@ end
  --TODO: delete corpses?
 end]]
 
-validArgs = validArgs or utils.invert({
+validArgs = utils.invert({
  'clear',
  'help',
  'allRaces',

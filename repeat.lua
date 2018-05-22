@@ -39,7 +39,7 @@ Arguments:
 local repeatUtil = require 'repeat-util'
 local utils = require 'utils'
 
-validArgs = validArgs or utils.invert({
+validArgs = utils.invert({
  'help',
  'cancel',
  'name',

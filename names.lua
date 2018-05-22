@@ -17,7 +17,7 @@ local dlg = require 'gui.dialogs'
 local widgets = require 'gui.widgets'
 local utils = require 'utils'
 
-validArgs = validArgs or utils.invert({
+validArgs = utils.invert({
     'help',
 })
 local args = utils.processArgs({...}, validArgs)

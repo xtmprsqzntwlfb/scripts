@@ -42,7 +42,7 @@ local function findCiv(arg)
  return nil
 end
 
-validArgs = validArgs or utils.invert({
+validArgs = utils.invert({
  'eventType',
  'help',
  'civ'
