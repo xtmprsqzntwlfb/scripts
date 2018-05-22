@@ -1,5 +1,6 @@
 -- Sets stress to negative one million
 --By Putnam; http://www.bay12forums.com/smf/index.php?topic=139553.msg5820486#msg5820486
+--@module = true
 local help = [====[
 
 remove-stress
@@ -12,27 +13,39 @@ Applies to the selected unit, or use ``remove-stress -all`` to apply to all unit
 
 local utils = require 'utils'
 
-validArgs = validArgs or utils.invert({
- 'help',
- 'all'
-})
-
-local args = utils.processArgs({...}, validArgs)
-
-if args.help then
-    print(help)
-    return
+function removeStress(unit)
+    if unit.status.current_soul then
+        unit.status.current_soul.personality.stress_level = -1000000
+    end
 end
 
-if args.all then
- for k,v in ipairs(df.global.world.units.active) do
-  v.status.current_soul.personality.stress_level=-1000000
- end
-else
- local unit = dfhack.gui.getSelectedUnit()
- if unit then
-  unit.status.current_soul.personality.stress_level=-1000000
- else
-  error 'Invalid usage: No unit selected and -all argument not given.'
- end
+validArgs = utils.invert({
+    'help',
+    'all'
+})
+
+function main(...)
+    local args = utils.processArgs({...}, validArgs)
+
+    if args.help then
+        print(help)
+        return
+    end
+
+    if args.all then
+        for k,v in ipairs(df.global.world.units.active) do
+            removeStress(v)
+        end
+    else
+        local unit = dfhack.gui.getSelectedUnit()
+        if unit then
+            removeStress(unit)
+        else
+            error 'Invalid usage: No unit selected and -all argument not given.'
+        end
+    end
+end
+
+if not dfhack_flags.module then
+    main(...)
 end
