@@ -185,11 +185,8 @@ end
 --u.population_id = df.historical_entity.find(df.global.ui.civ_id).populations[0]
 
 -- Picking a caste or gender at random
-function getRandomCasteId(race_id)
-  local cr = df.creature_raw.find(race_id)
-  local caste_id, casteMax
-
-  casteMax = #cr.caste - 1
+function getRandomCasteId(race)
+  local casteMax = #race.caste - 1
 
   if casteMax > 0 then
     return math.random(0, casteMax)
@@ -567,7 +564,7 @@ end
 for n = 1,spawnNumber do
 
   if not args.caste then -- randomly select caste each time
-    casteIndex = getRandomCasteId(raceIndex)
+    casteIndex = getRandomCasteId(race)
   end
 
   local unitId
