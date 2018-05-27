@@ -16,11 +16,11 @@ already_banned = {}
 # Just create a shorthand reference to the kitchen object
 kitchen = df.ui.kitchen
 
-# Store our list of banned items in the dictionary/hash table, along with their index number
-# -- index number storage was added from the original script so as to assist in addressing
-#  the specific kitchen array entry directly later in the script, rather than search through it again.
+# Store our list of banned items in the dictionary/hash table
 kitchen.item_types.length.times { |i|
-    already_banned[[kitchen.mat_types[i], kitchen.mat_indices[i], kitchen.item_types[i], kitchen.item_subtypes[i]]] = [ kitchen.exc_types[i] & 1, i ]
+    if kitchen.exc_types[i] == :Cook
+        already_banned[[kitchen.mat_types[i], kitchen.mat_indices[i], kitchen.item_types[i], kitchen.item_subtypes[i]]] = true
+    end
 }
 
 # The function for actually banning cooking of an item.
@@ -35,20 +35,6 @@ ban_cooking = lambda { |print_name, mat_type, mat_index, type, subtype|
     key = [mat_type, mat_index, type, subtype]
     # Skip adding a new entry further below, if the item is already banned.
     if already_banned[key]
-        # Get our stored index kitchen arrays' index value
-        index = already_banned[key][1]
-        # Check that the banned flag is set.
-        return if already_banned[key][0] == 1
-        # Added a check here to ensure that the exc_types array entry had something at the index entry
-        # as the original script didn't check for :EDIBLE_COOKED before banning certain plants, so that
-        # lead to mismatched array lengths, and a crash possibly due to memory corruption.
-        if kitchen.exc_types[index]
-            # Or's the value of the exc_type to turn the first bit of the byte on.
-            puts(print_name + ' has been banned!')
-            kitchen.exc_types[index] |= 1
-        end
-        # Record in the dictionary/hash table that the item is now cooking banned.
-        already_banned[key][0] = 1
         return
     end
     # The item hasn't already been banned, so we do that here by appending its values to the various arrays
@@ -59,8 +45,8 @@ ban_cooking = lambda { |print_name, mat_type, mat_index, type, subtype|
     df.ui.kitchen.mat_indices   << mat_index
     df.ui.kitchen.item_types    << type
     df.ui.kitchen.item_subtypes << subtype
-    df.ui.kitchen.exc_types     << 1
-    already_banned[key] = [ 1, length ]
+    df.ui.kitchen.exc_types     << :Cook
+    already_banned[key] = true
 }
 
 $script_args.each do |arg|
@@ -354,51 +340,8 @@ $script_args.each do |arg|
                 # There's no entry for this item in our calculated list of cookable items.  So, it's not a plant, alcohol, tallow, or milk.  It's likely that it's a meat that has been banned.
                 output += '|"' + key.inspect + ' unknown banned material type (meat?) " ' + '|item type: "' +  b[0][2].inspect + '"|item subtype: "' + b[0][3].inspect
             end
-            output += '|exc type: "' + kitchen.exc_types[b[1][1]].inspect + '"'
             puts output
         end
-
-    # prints out the data structures for several different plants and one animal so that their data structure can be examined/understood
-    when 'potato'
-        df.world.raws.plants.all.each_with_index do |p, i|
-            if p.name.include?('potato')
-                puts(p.inspect)
-            end
-        end
-
-    when 'pig'
-        df.world.raws.plants.all.each_with_index do |p, i|
-            if p.name.include?('pig tail')
-                puts(p.inspect)
-            end
-        end
-
-    when 'cherry'
-        df.world.raws.plants.all.each_with_index do |p, i|
-            if p.name.include?('cherry')
-                puts(p.inspect)
-            end
-        end
-
-    # an example of both milling and thread in one plant
-    when 'hemp'
-        df.world.raws.plants.all.each_with_index do |p, i|
-            if p.name.include?('hemp')
-                puts(p.inspect)
-            end
-        end
-
-    when 'cow'
-        df.world.raws.creatures.all.each_with_index do |c, i|
-            # can't just do "cow", as that would print reindeer cow, yak cow, and cow
-            if c.name.include?('yak')
-                # c.inspect truncates output too early to get to the materials we want to view
-                c.material.each_with_index do |m, j|
-                    puts(m.inspect)
-                end
-            end
-        end
-
     else
         puts "ban-cooking booze  - bans cooking of drinks"
         puts "ban-cooking honey  - bans cooking of honey bee honey"
