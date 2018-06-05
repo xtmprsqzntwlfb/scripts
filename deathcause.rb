@@ -30,7 +30,9 @@ def display_death_unit(u)
         death_info = u.counters.death_tg
         killer = death_info.killer_tg if death_info
 
-        str << " died"
+        str << " died" if !u.flags2.slaughter
+        str << " was slaughtered" if u.flags2.slaughter
+        
         str << " in year #{death_info.event_year}" if death_info
         str << " (cause: #{u.counters.death_cause.to_s.downcase})," if u.counters.death_cause != -1
         str << " killed by the #{killer.race_tg.name[0]} #{killer.name}" if killer
@@ -42,7 +44,7 @@ end
 item = df.item_find(:selected)
 unit = df.unit_find(:selected)
 
-if !item or !item.kind_of?(DFHack::ItemBodyComponent)
+if !unit and (!item or !item.kind_of?(DFHack::ItemBodyComponent))
     item = df.world.items.other[:ANY_CORPSE].find { |i| df.at_cursor?(i) }
 end
 
