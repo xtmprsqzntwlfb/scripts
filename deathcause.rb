@@ -52,13 +52,13 @@ elsif hf == -1
     if unit ||= item.unit_tg
         display_death_unit(unit)
     else
-        puts "Not a historical figure, cannot death find info"
+        puts "Not a historical figure, cannot find death info"
     end
 
 else
     histfig = df.world.history.figures.binsearch(hf)
     unit = histfig ? df.unit_find(histfig.unit_id) : nil
-    if unit and not unit.flags1.dead and not unit.flags3.ghostly
+    if unit and not unit.flags2.killed and not unit.flags3.ghostly
         puts "#{unit.name} is not dead yet !"
 
     else
