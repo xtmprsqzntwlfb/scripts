@@ -20,8 +20,11 @@ end
 
 def display_death_unit(u)
     if not u.flags2.killed and not u.flags3.ghostly
-        puts "#{u.name} is not dead yet !"
+        str = "The #{u.race_tg.name[0]}"
+        str << " #{u.name}" if u.name.has_name
+        str << " is not dead yet !"
         
+        puts str.chomp(',')
     else
         death_info = u.counters.death_tg
         killer = death_info.killer_tg if death_info
