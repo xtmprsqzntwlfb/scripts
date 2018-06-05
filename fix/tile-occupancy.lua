@@ -39,7 +39,7 @@ end
 
 local occ = dfhack.maps.getTileBlock(pos2xyz(cursor)).occupancy[cursor.x % 16][cursor.y % 16]
 
-if occ.building and not dfhack.buildings.findAtTile(pos2xyz(cursor)) then
+if occ.building ~= df.tile_building_occ.None and not dfhack.buildings.findAtTile(pos2xyz(cursor)) then
     occ.building = df.tile_building_occ.None
     report('building')
 end

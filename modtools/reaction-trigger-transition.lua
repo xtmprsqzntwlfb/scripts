@@ -87,8 +87,8 @@ for _,reaction in ipairs(df.global.world.raws.reactions.reactions) do
     if not workerOnly then
      reactionTriggerStr = reactionTriggerStr .. ' -workerOnly false'
     end
-    if not allowMultipleTargets then
-     reactionTriggerStr = reactionTriggerStr .. ' -allowMultipleTargets false'
+    if allowMultipleTargets then
+     reactionTriggerStr = reactionTriggerStr .. ' -allowMultipleTargets true'
     end
     if resetPolicy and resetPolicy ~= 'NewInstance' then
      reactionTriggerStr = reactionTriggerStr .. ' -resetPolicy ' .. resetPolicy
