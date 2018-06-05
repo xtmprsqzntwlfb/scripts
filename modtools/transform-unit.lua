@@ -32,7 +32,8 @@ Arguments::
 ]====]
 local utils = require 'utils'
 
-normalRace = normalRace or {}
+--luacheck: global
+normalRace = normalRace or {} --as:{race:number,caste:number}[]
 
 local function transform(unit,race,caste)
  unit.enemy.normal_race = race
@@ -41,7 +42,7 @@ local function transform(unit,race,caste)
  unit.enemy.were_caste = caste
 end
 
-validArgs = utils.invert({
+local validArgs = utils.invert({
  'clear',
  'help',
  'unit',

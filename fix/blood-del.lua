@@ -8,7 +8,6 @@ Makes it so that future caravans won't bring barrels full of blood, ichor, or go
 
 ]====]
 local my_entity=df.historical_entity.find(df.global.ui.civ_id)
-local sText=" "
 local k=0
 local v=1
 
@@ -17,34 +16,34 @@ for x,y in pairs(df.global.world.entities.all) do
  k=0
  while k < #my_entity.resources.misc_mat.extracts.mat_index do
   v=my_entity.resources.misc_mat.extracts.mat_type[k]
-  sText=dfhack.matinfo.decode(v,my_entity.resources.misc_mat.extracts.mat_index[k])
-  if (sText==nil) then
+  local mat=dfhack.matinfo.decode(v,my_entity.resources.misc_mat.extracts.mat_index[k])
+  if (mat==nil) then
    --LIQUID barrels
    my_entity.resources.misc_mat.extracts.mat_type:erase(k)
    my_entity.resources.misc_mat.extracts.mat_index:erase(k)
    k=k-1
   else
-   if(sText.material.id=="BLOOD") then
+   if(mat.material.id=="BLOOD") then
     my_entity.resources.misc_mat.extracts.mat_type:erase(k)
     my_entity.resources.misc_mat.extracts.mat_index:erase(k)
     k=k-1
    end
-   if(sText.material.id=="ICHOR") then
+   if(mat.material.id=="ICHOR") then
     my_entity.resources.misc_mat.extracts.mat_type:erase(k)
     my_entity.resources.misc_mat.extracts.mat_index:erase(k)
     k=k-1
    end
-   if(sText.material.id=="GOO") then
+   if(mat.material.id=="GOO") then
     my_entity.resources.misc_mat.extracts.mat_type:erase(k)
     my_entity.resources.misc_mat.extracts.mat_index:erase(k)
     k=k-1
    end
-   if(sText.material.id=="SWEAT") then
+   if(mat.material.id=="SWEAT") then
     my_entity.resources.misc_mat.extracts.mat_type:erase(k)
     my_entity.resources.misc_mat.extracts.mat_index:erase(k)
     k=k-1
    end
-   if(sText.material.id=="TEARS") then
+   if(mat.material.id=="TEARS") then
     my_entity.resources.misc_mat.extracts.mat_type:erase(k)
     my_entity.resources.misc_mat.extracts.mat_index:erase(k)
     k=k-1

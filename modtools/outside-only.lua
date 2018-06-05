@@ -24,9 +24,13 @@ Arguments::
 local eventful = require 'plugins.eventful'
 local utils = require 'utils'
 
+--luacheck: global
 buildingType = utils.invert({'EITHER','OUTSIDE_ONLY','INSIDE_ONLY'})
-registeredBuildings = registeredBuildings or {}
+--luacheck: global
+registeredBuildings = registeredBuildings or {} --as:number[]
+--luacheck: global
 checkEvery = checkEvery or 100
+--luacheck: global
 timeoutId = timeoutId or nil
 
 eventful.enableEvent(eventful.eventType.UNLOAD,1)
@@ -98,7 +102,7 @@ eventful.onBuildingCreatedDestroyed.outsideOnly = function(buildingId)
  checkBuildings()
 end
 
-validArgs = utils.invert({
+local validArgs = utils.invert({
  'help',
  'clear',
  'checkEvery',

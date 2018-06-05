@@ -27,7 +27,8 @@ This triggers dfhack commands when projectiles hit their targets.  Usage::
 local eventful = require 'plugins.eventful'
 local utils = require 'utils'
 
-materialTriggers = materialTriggers or {}
+--luacheck: global
+materialTriggers = materialTriggers or {} --as:{_type:table,command:__arg,material:__arg}[][]
 
 eventful.enableEvent(eventful.eventType.UNLOAD,1)
 eventful.onUnload.projectileTrigger = function()
@@ -56,18 +57,18 @@ end
 
 eventful.onProjItemCheckImpact.expansion = function(projectile)
  local matStr = dfhack.matinfo.decode(projectile.item):getToken()
- local table = {}
- table.pos = projectile.cur_pos
- table.projectile = projectile
- table.item = projectile.item
  for _,args in ipairs(materialTriggers[matStr] or {}) do
-  utils.fillTable(args,table)
-  processTrigger(args)
-  utils.unfillTable(args,table)
+  processTrigger({
+   pos = projectile.cur_pos,
+   projectile = projectile,
+   item = projectile.item,
+   command = args.command,
+   material = args.material
+  })
  end
 end
 
-validArgs = utils.invert({
+local validArgs = utils.invert({
  'help',
  'clear',
  'command',

@@ -76,7 +76,9 @@ Arguments::
 local utils = require 'utils'
 local eventful = require 'plugins.eventful'
 
-outcomeLists = outcomeLists or {}
+--luacheck: global
+outcomeLists = outcomeLists or {} --as:{total:number,outcomes:'{weight:number,command:__arg}[]'}[]
+--luacheck: global
 randomGen = randomGen or dfhack.random.new()
 
 eventful.enableEvent(eventful.eventType.UNLOAD, 1)
@@ -84,7 +86,7 @@ eventful.onUnload.randomTrigger = function()
  outcomeLists = {}
 end
 
-validArgs = utils.invert({
+local validArgs = utils.invert({
  'help',
  'command',
  'outcomeListName',
@@ -132,11 +134,11 @@ end
 if args.weight and not tonumber(args.weight) then
  error ('Invalid weight: ' .. args.weight)
 end
-args.weight = (args.weight and tonumber(args.weight)) or 1
-if args.weight ~= math.floor(args.weight) then
+local weight = (args.weight and tonumber(args.weight)) or 1
+if weight ~= math.floor(weight) then
  error 'Noninteger weight.'
 end
-if args.weight < 0 then
+if weight < 0 then
  error 'invalid weight: must be non-negative'
 end
 
@@ -148,11 +150,11 @@ args.outcomeListName = args.outcomeListName or ''
 args.outcomeListName = 'outcomeList ' .. args.outcomeListName
 
 if args.withProbability then
- args.withProbability = tonumber(args.withProbability)
- if not args.withProbability or args.withProbability < 0 or args.withProbability > 1 then
-  error('Invalid withProbability: ' .. (args.withProbability or 'nil'))
+ local withProbability = tonumber(args.withProbability)
+ if not withProbability or withProbability < 0 or withProbability > 1 then
+  error('Invalid withProbability: ' .. (withProbability or 'nil'))
  end
- if randomGen:drandom() < args.withProbability then
+ if randomGen:drandom() < withProbability then
   dfhack.run_command(table.unpack(args.command))
  end
 end
@@ -190,9 +192,9 @@ if not outcomeList then
  outcomeList = outcomeLists[args.outcomeListName]
 end
 
-outcomeList.total = args.weight + (outcomeList.total or 0)
-local outcome = {}
-outcome.weight = args.weight
+outcomeList.total = weight + (outcomeList.total or 0)
+local outcome = {} --as:{weight:number,command:__arg}
+outcome.weight = weight
 outcome.command = args.command
 outcomeList.outcomes = outcomeList.outcomes or {}
 table.insert(outcomeList.outcomes, outcome)

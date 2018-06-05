@@ -33,10 +33,10 @@ elseif args[1] then
     qerror("Unrecognized argument: " .. args[1])
 else
     -- df.global.current_weather is arranged in columns, not rows
-    kind = {[0]="C", "R", "S"}
+    local kind = {[0]="C", "R", "S"}
     print("Weather map (C = clear, R = rain, S = snow):")
     for y=0, 4 do
-        s = ""
+        local s = ""
         for x=0, 4 do
             local cur = df.global.current_weather[x][y]
             s = s .. (kind[cur] or cur) .. ' '

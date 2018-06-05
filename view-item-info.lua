@@ -73,6 +73,7 @@ function compare_iron (mat_prop, iron_prop)
 end
 
 function GetMatPropertiesStringList (item)
+    local item = item --as:df.item_actual
     local mat = dfhack.matinfo.decode(item).material
     local list = {}
     local deg_U = item.temperature.whole
@@ -147,6 +148,7 @@ function GetWeaponPropertiesStringList (item)
     if item._type == df.item_toolst and #item.subtype.attacks < 1 then
         return list
     end
+    local item = item --as:df.item_weaponst
     append(list,"Weapon properties: ")
     if item.sharpness > 0 then
         append(list,"Sharpness:"..compare_iron(item.sharpness, standard.strength.max_edge),1)
@@ -331,6 +333,7 @@ function GetFoodPropertiesStringList (item)
     return list
 end
 
+--luacheck: in=df.item_actual out=string[]
 function get_all_uses_strings (item)
     local all_lines = {}
     local FoodsAndPlants = {df.item_meatst, df.item_globst,
@@ -364,6 +367,7 @@ function get_custom_item_desc (item)
     local desc
     local ID = get_textid (item)
     if ID and dfhack.items.getSubtypeCount(df.item_type[ID]) ~= -1 then
+        local item = item --as:df.item_armorst
         ID = item.subtype.id end
     if not ID then return nil end
     if dfhack.findScript("item-descriptions") then
@@ -396,7 +400,7 @@ function dfhack.onStateChange.item_info (code)
     if code == SC_VIEWSCREEN_CHANGED and dfhack.isWorldLoaded() then
         standard = dfhack.matinfo.find("INORGANIC:IRON").material
         if not standard then return end
-        local scr = dfhack.gui.getCurViewscreen()
+        local scr = dfhack.gui.getCurViewscreen() --as:df.viewscreen_itemst
         if scr._type == df.viewscreen_itemst then
             if isInList(scr.entry_string, vi_label, function(v) return v.value end) then
                 return
