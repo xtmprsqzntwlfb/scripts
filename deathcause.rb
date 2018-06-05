@@ -19,17 +19,22 @@ def display_death_event(e)
 end
 
 def display_death_unit(u)
-    death_info = u.counters.death_tg
-    killer = death_info.killer_tg if death_info
+    if not u.flags2.killed and not u.flags3.ghostly
+        puts "#{u.name} is not dead yet !"
+        
+    else
+        death_info = u.counters.death_tg
+        killer = death_info.killer_tg if death_info
 
-    str = "The #{u.race_tg.name[0]}"
-    str << " #{u.name}" if u.name.has_name
-    str << " died"
-    str << " in year #{death_info.event_year}" if death_info
-    str << " (cause: #{u.counters.death_cause.to_s.downcase})," if u.counters.death_cause != -1
-    str << " killed by the #{killer.race_tg.name[0]} #{killer.name}" if killer
+        str = "The #{u.race_tg.name[0]}"
+        str << " #{u.name}" if u.name.has_name
+        str << " died"
+        str << " in year #{death_info.event_year}" if death_info
+        str << " (cause: #{u.counters.death_cause.to_s.downcase})," if u.counters.death_cause != -1
+        str << " killed by the #{killer.race_tg.name[0]} #{killer.name}" if killer
 
-    puts str.chomp(',') + '.'
+        puts str.chomp(',') + '.'
+    end
 end
 
 item = df.item_find(:selected)
