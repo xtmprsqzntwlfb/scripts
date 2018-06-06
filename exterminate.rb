@@ -76,7 +76,7 @@ slayit = lambda { |u|
         # it's getting hot around here
         # !!WARNING!! do not call on a magma-safe creature
         ouh = df.onupdate_register("exterminate ensure #{u.id}", 1) {
-            if u.flags1.dead
+            if u.flags2.killed
                 df.onupdate_unregister(ouh)
             else
                 x, y, z = u.pos.x, u.pos.y, u.pos.z
