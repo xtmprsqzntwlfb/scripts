@@ -408,7 +408,7 @@ function Identity:init(args)
 
 
  ------------ death ------------
- self.dead = u.flags1.dead
+ self.dead = u.flags2.killed
  self.ghostly = u.flags3.ghostly
  self.undead = u.enemy.undead
 
