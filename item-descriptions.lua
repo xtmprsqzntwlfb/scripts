@@ -486,7 +486,7 @@ descriptions = {
                 "A great axe is a very large axe, nearly twice the size of the",
                 "battle axe. Its size makes it unsuitable for dwarves, but its heft",
                 "makes it a formidable weapon in the hands of those with the strength",
-                "and size wield it."},
+                "and size to wield it."},
     ITEM_WEAPON_AXE_TRAINING = {
                 "A battle axe made of wood, this practice weapon is useful for",
                 "training recruits before your metal industry is set up."},
