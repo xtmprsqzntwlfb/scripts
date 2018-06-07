@@ -41,13 +41,15 @@ the latter script, view-item-info will fall back to the former.
 ]]
 
 -- see http://dwarffortresswiki.org/index.php/cv:Item_token
+---luacheck: global
+
 descriptions = {
     AMULET = {  "An item of jewellery worn around the neck for its aesthetic value.",
                 "An amulet does not interfere with wearing other equipment."},
     ANIMALTRAP = {
                 "This tiny trap is used by your trappers to catch vermin. Some dwarves",
                 "like vermin as pets - if your cats don't get them first. May be built",
-                "of wood or metal. Catching vermin requires trap to be set with bait."},
+                "from wood or metal. Catching vermin requires trap to be set with bait."},
     ANVIL = {   "An essential component of the forge."},
     ARMORSTAND = {
                 "A rack for the storage of military equipment, specifically armor.",
@@ -185,8 +187,9 @@ descriptions = {
     ITEM_AMMO_ARROWS = {
                 "Ammunition for bows, which are primarily used by elves."},
     ITEM_AMMO_BOLTS = {
-                "Ammunition for crossbows, which are the dwarves' preferred ranged weapon.",
-                "It is not recommended to store bolts in bins, due to pickup bugs."},
+                "Ammunition for crossbows, which are the dwarves' preferred ranged",
+                "weapon. It is not recommended to store bolts in bins, due to pickup",
+                "bugs."},
     ITEM_ARMOR_BREASTPLATE = {
                 "A breastplate is a piece of plate armor that covers the upper body and",
                 "the lower body. It is usually worn in the armor layer."},
@@ -473,16 +476,17 @@ descriptions = {
                 "more effective against heavily armored foes. They also make for a",
                 "surprisingly valuable trade good, on par with serrated discs."},
     ITEM_WEAPON_AXE_BATTLE = {
-                "A battle axe is an edged weapon: essentially a sharp blade mounted",
-                "along the end of a short and heavy handle. Battle axes can be forged",
-                "out of any weapon-grade metal, though those with superior edge",
-                "properties are more effective.",
+                "A battle axe is an axe designed for combat. It consists of a narrow",
+                "sharpened axe head mounted on a sturdy haft typically made of wood.",
+                "Battle axes can be forged out of any weapon-grade metal, though those",
+                "with superior edge properties are more effective in combat.",
                 "",
                 "A battle axe may also be used as a tool for chopping down trees."},
     ITEM_WEAPON_AXE_GREAT = {
-                "This is an axe nearly twice as large as a battle axe. Its size",
-                "makes it unsuitable for a dwarf, but those who can wield it find",
-                "its increased size and weight contribute to its effectiveness."},
+                "A great axe is a very large axe, nearly twice the size of the",
+                "battle axe. Its size makes it unsuitable for dwarves, but its heft",
+                "makes it a formidable weapon in the hands of those with the strength",
+                "and size wield it."},
     ITEM_WEAPON_AXE_TRAINING = {
                 "A battle axe made of wood, this practice weapon is useful for",
                 "training recruits before your metal industry is set up."},
@@ -502,21 +506,21 @@ descriptions = {
                 "as a melee weapon, training the hammerdwarf skill."},
     ITEM_WEAPON_DAGGER_LARGE = {
                 "A large dagger is an edge weapon that is just a bit smaller than",
-                "a short sword. It's used for stabbing rather than slashing.",
+                "the short sword. It's used for stabbing rather than slashing.",
                 "Large daggers use and train the knife user skill, and are common",
                 "weapons for kobold and goblin thieves. As foreign weapons, they",
                 "cannot be forged by dwarves"},
     ITEM_WEAPON_FLAIL = {
                 "A flail is a blunt weapon that consists of a rounded weight attached to",
                 "a handle by a length of chain. Flails are the same size as a morningstar,",
-                "but have a contact area twice as large as a much larger maul. As foreign",
+                "but have a contact area twice that of the much larger maul. As foreign",
                 "weapons they cannot be forged by dwarves. Flails use and train the",
                 "maceman skill."},
     ITEM_WEAPON_HALBERD = {
                 "A halberd is an axe with a long haft and a sharp point that can be used",
                 "for stabbing attacks. It is 50% larger than the battle axe, making it",
                 "too large to be wielded by dwarves. As foreign weapons, they cannot be",
-                "forged by dwarves, either."},
+                "forged by dwarves either."},
     ITEM_WEAPON_HAMMER_WAR = {
                 "A war hammer is a blunt weapon that is essentially a hammer with a long",
                 "shaft. War hammers use and train the hammerdwarf skill. Dwarves can",
@@ -524,10 +528,10 @@ descriptions = {
                 "higher densities tend to cause greater damage."},
     ITEM_WEAPON_MACE = {
                 "A mace is a blunt weapon that consists of a rounded or flanged weight",
-                "mounted on a shaft. Compared to the morningstar, a mace is 60% larger",
+                "mounted on a shaft. Compared to the morningstar, the mace is 60% larger",
                 "and has twice the contact area. Maces use and train the macedwarf skill.",
                 "Dwarves can forge maces out of any weapons-grade metal, though those with",
-                "higher densities (like silver) have greater effectiveness."},
+                "higher densities (like silver) have greater combat effectiveness."},
     ITEM_WEAPON_MAUL = {
                 "A maul is a blunt weapon that is essentially a very large war hammer,",
                 "similar to a sledgehammer. Mauls are more than three times larger than",
@@ -537,9 +541,9 @@ descriptions = {
                 "skill. Being foreign weapons, mauls cannot be forged by dwarves."},
     ITEM_WEAPON_MORNINGSTAR = {
                 "A morningstar is an edged weapon that consists of a spiked ball mounted",
-                "on the end of a shaft. Despite similarities to the mace in appearance,",
-                "a morningstar's size and contact area are closer to those of the war",
-                "hammer. Specifically, a morningstar is 25% larger than the war hammer",
+                "on the end of a shaft. Despite its visual similarity with the mace,",
+                "the morningstar's size and contact area are closer to those of the war",
+                "hammer. Specifically, the morningstar is 25% larger than the war hammer",
                 "with the same contact area, and uses piercing damage to inflict internal",
                 "injuries. Morningstars use and train the macedwarf skill."},
     ITEM_WEAPON_PICK = {
@@ -550,12 +554,11 @@ descriptions = {
                 "A pick is also useful as a weapon, though putting miners in the",
                 "military can cause equipment clashes."},
     ITEM_WEAPON_PIKE = {
-                "A pike is a weapon that is essentially a very long spear.",
-                "Pikes use and train the Pikedwarf skill. As foreign weapons, pikes",
-                "cannot be forged by dwarves."},
+                "A pike is a very long spear. Pikes use and train the Pikeman skill.",
+                "As foreign weapons, pikes cannot be forged by dwarves."},
     ITEM_WEAPON_SCIMITAR = {
                 "A scimitar is an edged weapon with a curved blade that is very similar",
-                "to a short sword. Scimitars use and train the swordsdwarf skill.",
+                "to the short sword. Scimitars use and train the swordsdwarf skill.",
                 "As foreign weapons, scimitars cannot be forged by dwarves."},
     ITEM_WEAPON_SCOURGE = {
                 "A scourge is an edge weapon that consists of a spike or bladed weight",
@@ -564,10 +567,10 @@ descriptions = {
                 "weapon with an even smaller contact area. Scourges use and train the",
                 "lasher skill. As foreign weapons, scourges cannot be forged by dwarves."},
     ITEM_WEAPON_SPEAR = {
-                "A pole weapon consisting of a shaft, usually of wood, with a pointed",
-                "head made of metal or just the sharpened end of the shaft itself.",
-                "With the ability to pin opponents, supporting squads of spearmen can",
-                "increase the effectiveness of your other squads."},
+                "A spear is a pole weapon consisting of a shaft, usually of wood, with",
+                "a pointed head made of metal or just the sharpened end of the shaft",
+                "itself. With the ability to pin opponents, supporting squads of",
+                "spearmen can increase the effectiveness of your other squads."},
     ITEM_WEAPON_SPEAR_TRAINING = {
                 "A spear made of wood, this practice weapon is useful for",
                 "training recruits before your metal industry is set up."},
@@ -589,7 +592,7 @@ descriptions = {
                 "training recruits before your metal industry is set up."},
     ITEM_WEAPON_WHIP = {
                 "A highly effective weapon known to cause large amounts of pain.",
-                "It cannot be forged by dwarves."},
+                "It cannot be created by dwarves."},
     MEAT = {    "Butchering an animal gives meat, the amount depending on the size",
                 "of the butchered animal. Along with plants, meat is the",
                 "backbone of every food industry."},
@@ -625,7 +628,7 @@ descriptions = {
                 "and shields made of leather are not terribly effective, but are",
                 "still better than nothing at all."},
     SLAB = {    "A memorial stone, used to calm a restless ghost when engraved with",
-                "the name of the deceased and constructed."},
+                "the name of the deceased and built."},
     SMALLGEM = {"Cut gemstones and the odd gizzard stone (a product of butchering",
                 "certain species of animals) are used by a Gem Setter to decorate items",
                 "at a Jeweler's Workshop."},
