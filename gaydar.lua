@@ -24,7 +24,7 @@ Orientation filters:
 ]====]
 local utils = require('utils')
 
-validArgs = utils.invert({
+local validArgs = utils.invert({
   'all',
   'citizens',
   'named',

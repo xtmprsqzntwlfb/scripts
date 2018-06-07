@@ -32,7 +32,6 @@ Arguments::
 ]====]
 local utils = require 'utils'
 
---luacheck: global
 normalRace = normalRace or {} --as:{race:number,caste:number}[]
 
 local function transform(unit,race,caste)

@@ -18,8 +18,10 @@ UnitPathUI = defclass(UnitPathUI, guidm.MenuOverlay)
 
 UnitPathUI.focus_path = 'unit-path'
 
+local default_nil_unit = DEFAULT_NIL --as:df.unit
+
 UnitPathUI.ATTRS {
-    unit = DEFAULT_NIL,
+    unit = default_nil_unit,
     has_path = false,
     has_goal = false,
 }

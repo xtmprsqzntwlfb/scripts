@@ -16,6 +16,7 @@ local count = 0
 local types = {} --as:number[]
 
 local function update_temp(item,btemp)
+    local item = item --as:df.item_actual
     if item.temperature.whole ~= btemp then
         count = count + 1
         local tid = item:getType()
@@ -45,7 +46,8 @@ end
 
 local last_frame = df.global.world.frame_counter-1
 
-for _,item in ipairs(df.global.world.items.all) do --as:df.item_actual
+for _,item in ipairs(df.global.world.items.all) do
+    local item = item --as:df.item_actual
     if item.flags.on_ground and df.item_actual:is_instance(item) and
        item.temp_updated_frame == last_frame then
         local pos = item.pos

@@ -55,7 +55,7 @@ local subs = {
     g =    { 0.5, 0.5, 0.5 },
 }
 
-function mkdelta(v)
+local function mkdelta(v)
     if v == 0 then
         return ''
     else
@@ -63,7 +63,8 @@ function mkdelta(v)
     end
 end
 
-function mkexpr(expr)
+--luacheck: in=string out={_type:function,_node:number} skip
+local function mkexpr(expr)
     -- Collect referenced variables
     local max_octave = -1
     local vars = {}
@@ -151,6 +152,7 @@ function render(thresh,file)
                 end
             end
             if file then
+                local file = file --as:io
                 file:write(line,line)
             end
         end

@@ -25,8 +25,7 @@ Arguments::
 local eventful = require 'plugins.eventful'
 local utils = require 'utils'
 
---luacheck: global
-onInfection = onInfection or {} --as:table[]
+onInfection = onInfection or {} --as:{command:__arg}[][]
 
 eventful.enableEvent(eventful.eventType.UNLOAD,1)
 eventful.onUnload.syndromeTrigger = function()

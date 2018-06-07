@@ -26,11 +26,8 @@ local utils = require 'utils'
 
 --luacheck: global
 buildingType = utils.invert({'EITHER','OUTSIDE_ONLY','INSIDE_ONLY'})
---luacheck: global
 registeredBuildings = registeredBuildings or {} --as:number[]
---luacheck: global
 checkEvery = checkEvery or 100
---luacheck: global
 timeoutId = timeoutId or nil
 
 eventful.enableEvent(eventful.eventType.UNLOAD,1)

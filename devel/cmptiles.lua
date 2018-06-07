@@ -13,8 +13,8 @@ local nmat1,nmat2=...
 local mat1 = df.tiletype_material[nmat1]
 local mat2 = df.tiletype_material[nmat2]
 
-local tmat1 = {}
-local tmat2 = {}
+local tmat1 = {} --as:bool[]
+local tmat2 = {} --as:bool[]
 
 local attrs = df.tiletype.attrs
 

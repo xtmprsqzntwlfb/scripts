@@ -29,7 +29,6 @@ local eventful = require 'plugins.eventful'
 local utils = require 'utils'
 
 --TODO: onUnload
---luacheck: global
 productHooks = productHooks or {} --as:{clear:__arg,reactionName:__arg,command:__arg}[][]
 
 eventful.enableEvent(eventful.eventType.UNLOAD,1)

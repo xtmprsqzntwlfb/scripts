@@ -17,6 +17,8 @@ Usage:  ``emigration enable|disable``
 
 ]====]
 
+enabled = enabled or false
+
 local args = {...}
 if args[1] == "enable" then
     enabled = true

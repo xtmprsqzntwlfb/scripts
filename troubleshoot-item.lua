@@ -76,7 +76,7 @@ end
 
 
 function main(args)
-    item = dfhack.gui.getSelectedItem(true)
+    local item = dfhack.gui.getSelectedItem(true)
     if item then
         troubleshoot_item(item, print)
     else

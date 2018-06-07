@@ -45,7 +45,7 @@ local function address(name,base,field,...)
             _,addr = df.sizeof(ms.field_ref(base,field,...))
         end
         addr = addr - rdelta
-    elseif base._kind == 'class-type' then
+    elseif base._kind == 'class-type' then --luacheck: skip
         -- field_offset crashes with classes due to vtable problems,
         -- so we have to create a real temporary object here.
         local obj = df.new(base)
@@ -467,6 +467,7 @@ end
 
 -- Flags
 local function write_flags(name,flag_array)
+    local flag_array = flag_array --as:{1:string,2:'number[]'}[]
     out:write('\n')
     out:write('['..name..']\n')
     out:write('size='..#flag_array..'\n')

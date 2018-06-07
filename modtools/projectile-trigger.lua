@@ -27,7 +27,6 @@ This triggers dfhack commands when projectiles hit their targets.  Usage::
 local eventful = require 'plugins.eventful'
 local utils = require 'utils'
 
---luacheck: global
 materialTriggers = materialTriggers or {} --as:{_type:table,command:__arg,material:__arg}[][]
 
 eventful.enableEvent(eventful.eventType.UNLOAD,1)

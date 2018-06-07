@@ -39,7 +39,7 @@ local is_known = dfhack.internal.getAddress
 
 local os_type = dfhack.getOSType()
 
-local force_scan = {}
+local force_scan = {} --as:bool[]
 for _,v in ipairs({...}) do
     force_scan[v] = true
 end
@@ -167,10 +167,12 @@ end
 
 local finder_searches = {}
 local function exec_finder(finder, names, validators)
-    if type(names) ~= 'table' then
+    local names = names --as:string[]
+    local validators = validators --as:{_type:function,_node:bool}[]
+    if type(names) ~= 'table' then --luacheck: skip
         names = { names }
     end
-    if type(validators) ~= 'table' then
+    if type(validators) ~= 'table' then --luacheck: skip
         validators = { validators }
     end
     local search = force_scan['all']
@@ -179,7 +181,7 @@ local function exec_finder(finder, names, validators)
             table.insert(finder_searches, v)
             search = true
         elseif validators[k] then
-            if not validators[k](df.global[v]) then
+            if not validators[k](df.global[v]) then --luacheck: skip
                 dfhack.printerr('Validation failed for '..v..', will try to find again')
                 table.insert(finder_searches, v)
                 search = true
@@ -259,7 +261,7 @@ local function dwarfmode_to_top()
         return false
     end
 
-    local screen = screen_dwarfmode()
+    local screen = screen_dwarfmode() --as:df.viewscreen_dwarfmodest
     if not df.isvalid(screen) then
         return false
     end
@@ -1794,8 +1796,9 @@ local function find_standing_orders(gname, seq, depends)
 end
 
 local function exec_finder_so(gname, seq, _depends)
-    local depends = {}
+    local depends = {} --as:number[]
     for k, v in pairs(_depends or {}) do
+        local v = v --as:number
         if k:find('standing_orders_') ~= 1 then
             k = 'standing_orders_' .. k
         end

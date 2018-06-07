@@ -76,9 +76,7 @@ Arguments::
 local utils = require 'utils'
 local eventful = require 'plugins.eventful'
 
---luacheck: global
 outcomeLists = outcomeLists or {} --as:{total:number,outcomes:'{weight:number,command:__arg}[]'}[]
---luacheck: global
 randomGen = randomGen or dfhack.random.new()
 
 eventful.enableEvent(eventful.eventType.UNLOAD, 1)

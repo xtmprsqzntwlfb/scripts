@@ -44,6 +44,7 @@ df.global.pause_state = true
 
 local changed = false
 
+--luacheck: in=string
 function inject_reaction(name)
     for _,v in ipairs(raws.reactions.reactions) do
         if v.code == name then
@@ -68,6 +69,7 @@ local building_types = {
     furnace = { df.building_def_furnacest, raws.buildings.furnaces },
 }
 
+--luacheck: in=string,string
 function inject_building(btype, name)
     for _,v in ipairs(raws.buildings.all) do
         if v.code == name then
@@ -95,7 +97,7 @@ function inject_building(btype, name)
 end
 
 local itemdefs = raws.itemdefs
-local item_types = {
+local item_types = { --as:{1:df.itemdef,2:'df.itemdef[]',3:string}[]
     weapon = { df.itemdef_weaponst, itemdefs.weapons, 'weapon_type' },
     trainweapon = { df.itemdef_weaponst, itemdefs.weapons, 'training_weapon_type' },
     pick = { df.itemdef_weaponst, itemdefs.weapons, 'digger_type' },
@@ -115,13 +117,14 @@ local item_types = {
 }
 
 function add_to_civ(entity, bvec, id)
-    for _,v in ipairs(entity.resources[bvec]) do
+    local resources = entity.resources --as:number[][]
+    for _,v in ipairs(resources[bvec]) do
         if v == id then
             return
         end
     end
 
-    entity.resources[bvec]:insert('#', id)
+    resources[bvec]:insert('#', id)
 end
 
 function add_to_dwarf_civs(btype, id)
@@ -132,11 +135,13 @@ function add_to_dwarf_civs(btype, id)
 
     for _,entity in ipairs(df.global.world.entities.all) do
         if entity.race == df.global.ui.race_id then
-            add_to_civ(entity, typeinfo[3], id)
+            local bvec = typeinfo[3] --as:string
+            add_to_civ(entity, bvec, id)
         end
     end
 end
 
+--luacheck: in=string,string
 function inject_item(btype, name)
     for _,v in ipairs(itemdefs.all) do
         if v.id == name then
@@ -167,7 +172,7 @@ end
 
 local args = {...}
 local mode = nil
-local ops = {}
+local ops = {} --as:{_type:function,_node:none}[]
 
 for _,kv in ipairs(args) do
     if mode and string.match(kv, '^[%u_ ]+$') then

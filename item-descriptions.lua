@@ -30,7 +30,7 @@ if not moduleMode then
     print("scripts/item-descriptions.lua is a content library; calling it does nothing.")
 end
 
-local help --[[
+--[[
 This script has a single function: to return a custom description for every
 vanilla item in the game.
 
@@ -41,6 +41,7 @@ the latter script, view-item-info will fall back to the former.
 ]]
 
 -- see http://dwarffortresswiki.org/index.php/cv:Item_token
+--luacheck: global
 descriptions = {
     AMULET = {  "An item of jewellery worn around the neck for it's aesthetic value.",
                 "An amulet does not interfere with wearing other equipment."},

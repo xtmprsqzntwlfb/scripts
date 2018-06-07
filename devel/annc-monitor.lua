@@ -15,11 +15,9 @@ Displays announcements and reports in the console.
 
 VERSION = '0.2'
 
-eventful = require 'plugins.eventful'
+local eventful = require 'plugins.eventful'
 
-if enabled == nil then
-    enabled = false
-end
+enabled = enabled or false
 
 function usage()
     print [[
@@ -35,15 +33,7 @@ function log(s, color)
     dfhack.color(COLOR_RESET)
 end
 
-function annc_handler(id)
-    if enabled and dfhack.isWorldLoaded() then
-        local annc = df.report.find(id)
-        local color = annc.color + (annc.bright and 8 or 0)
-        log(annc.text, color)
-    end
-end
-
-args = {...}
+local args = {...}
 if dfhack_flags and dfhack_flags.enable then
     table.insert(args, dfhack_flags.enable_state and 'enable' or 'disable')
 end
@@ -60,4 +50,11 @@ else
 end
 
 eventful.enableEvent(eventful.eventType.REPORT, 1)
-eventful.onReport.annc_monitor = annc_handler
+function eventful.onReport.annc_monitor(id)
+    if enabled and dfhack.isWorldLoaded() then
+        local annc = df.report.find(id)
+        local color = annc.color + (annc.bright and 8 or 0)
+        log(annc.text, color)
+    end
+end
+

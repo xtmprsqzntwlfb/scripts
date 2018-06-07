@@ -27,25 +27,25 @@ Examples::
 
 ]====]
 
-args={...}
+local args={...}
 
 if args[1] == '?' or args[1] == 'help' then
     print(help)
     return
 end
 
-pos = copyall(df.global.cursor)
-size = tonumber(args[1])
+local pos = copyall(df.global.cursor)
+local size = tonumber(args[1])
 if size == nil or size < 1 then size = 1 end
 
-wallOff = tonumber(args[2])
-stairs = tonumber(args[3])
+local wallOff = tonumber(args[2])
+local stairs = tonumber(args[3])
 
 --Get the layer of the underworld
-for index,value in ipairs(df.global.world.features.map_features) do
-    local featureType=value:getType()
-    if featureType==9 then --Underworld
-        underworldLayer = value.layer
+local underworldLayer
+for index, feature in ipairs(df.global.world.features.map_features) do
+    if feature:getType() == df.feature_type.underworld_from_layer then
+        underworldLayer = feature.layer --hint:df.feature_init_underworld_from_layerst
     end
 end
 
@@ -56,7 +56,7 @@ local x = 0
 local y = 0
 for x=pos.x-size,pos.x+size,1 do
     for y=pos.y-size,pos.y+size,1 do
-        z=1
+        local z=1
         local hitAir = false
         local hitCeiling = false
         while z <= pos.z do
@@ -81,7 +81,7 @@ for x=pos.x-size,pos.x+size,1 do
                         end
                     end
                     if hitCeiling == true then
-                        if block.designation[x%16][y%16].flow_size > 0 or wallOff == 1 then needsWall = true else needsWall = false end
+                        local needsWall = block.designation[x%16][y%16].flow_size > 0 or wallOff == 1
                         if (x == pos.x-size or x == pos.x+size or y == pos.y-size or y == pos.y+size) and z==pos.z then
                             --Do nothing, this is the lip of the hole
                         elseif x == pos.x-size and y == pos.y-size then if needsWall == true then block.tiletype[x%16][y%16]=320 end

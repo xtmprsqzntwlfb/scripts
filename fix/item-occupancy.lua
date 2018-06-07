@@ -101,7 +101,7 @@ function check_block_items(fix)
         if item.flags.on_ground and not found[item.id] then
             can_fix = false
             if not found_somewhere[item.id] then
-                print(id,item.pos.x,item.pos.y,item.pos.z,'on ground & not in block')
+                print(item.id,item.pos.x,item.pos.y,item.pos.z,'on ground & not in block')
             end
         end
     end

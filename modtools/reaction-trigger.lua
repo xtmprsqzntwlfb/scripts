@@ -46,7 +46,6 @@ local eventful = require 'plugins.eventful'
 local syndromeUtil = require 'syndrome-util'
 local utils = require 'utils'
 
---luacheck: global
 reactionHooks = reactionHooks or {} --as:{reactionName:__arg,syndrome:__arg,allowNonworkerTargets:__arg,allowMultipleTargets:__arg,resetPolicy:__arg,command:__arg}[][]
 
 eventful.enableEvent(eventful.eventType.UNLOAD,1)
