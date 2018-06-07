@@ -30,7 +30,7 @@ if not moduleMode then
     print("scripts/item-descriptions.lua is a content library; calling it does nothing.")
 end
 
-local help --[[
+--[[
 This script has a single function: to return a custom description for every
 vanilla item in the game.
 
