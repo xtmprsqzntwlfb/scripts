@@ -47,7 +47,7 @@ end
 
 function process_args(args)
     local n, v, ori, crename, crenum
-    local creatures = {}
+    local creatures = {} --as:number[]
     --Checks for any arguments at all.
     if args == nil or #args == 0 then
         print("No arguments.  Usage is: fixster <fert|ster> [all|animals|only:<creature>]")

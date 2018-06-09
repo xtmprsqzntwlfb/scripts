@@ -11,7 +11,7 @@ getting old, or there are too many babies around...
 
 function rejuvenate()
     local current_year,newbirthyear
-    unit=dfhack.gui.getSelectedUnit()
+    local unit=dfhack.gui.getSelectedUnit()
 
     if unit==nil then print ("No unit under cursor!  Aborting.") return end
 

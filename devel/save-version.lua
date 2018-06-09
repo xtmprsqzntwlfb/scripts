@@ -14,6 +14,7 @@ function has_field(tbl, field)
     return (pcall(function() assert(tbl[field] ~= nil) end))
 end
 
+--luacheck: global
 versions = {
 -- skipped v0.21-v0.28
     [1287] = "0.31.01",
@@ -103,7 +104,9 @@ versions = {
     [1620] = "0.44.10",
 }
 
+--luacheck: global
 min_version = math.huge
+--luacheck: global
 max_version = -math.huge
 
 for k in pairs(versions) do

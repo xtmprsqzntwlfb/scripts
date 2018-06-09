@@ -14,8 +14,8 @@ emergencies, e.g. when a siege appears, and all your military is partying.
 local utils = require 'utils'
 
 local args = {...}
-local burrows = {}
-local bnames = {}
+local burrows = {} --as:df.burrow[]
+local bnames = {} --as:string[]
 
 if not dfhack.isMapLoaded() then
     qerror('Map is not loaded.')
@@ -117,7 +117,7 @@ for _,v in ipairs(df.global.ui.parties) do
     if is_in_burrows(pos) then
         v.timer = 0
         for _, u in ipairs(v.units) do
-            add_thought(unit, df.emotion_type.Grumpiness, df.unit_thought_type.Drowsy)
+            add_thought(u, df.emotion_type.Grumpiness, df.unit_thought_type.Drowsy)
         end
     end
 end
