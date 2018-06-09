@@ -41,8 +41,8 @@ the latter script, view-item-info will fall back to the former.
 ]]
 
 -- see http://dwarffortresswiki.org/index.php/cv:Item_token
---luacheck: global
 
+--luacheck: global
 descriptions = {
     AMULET = {  "An item of jewellery worn around the neck for its aesthetic value.",
                 "An amulet does not interfere with wearing other equipment."},
