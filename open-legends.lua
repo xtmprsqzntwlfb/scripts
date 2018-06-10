@@ -9,13 +9,13 @@ Compatible with `exportlegends`.
 
 ]====]
 
-gui = require 'gui'
-utils = require 'utils'
+local gui = require 'gui'
+local utils = require 'utils'
 
 Wrapper = defclass(Wrapper, gui.Screen)
 Wrapper.focus_path = 'legends'
 
-region_details_backup = {}
+local region_details_backup = {} --as:df.world_region_details[]
 
 function Wrapper:onRender()
     self._native.parent:render()
@@ -30,7 +30,7 @@ function Wrapper:onHelp()
 end
 
 function Wrapper:onInput(keys)
-    if self._native.parent.cur_page == 0 and keys.LEAVESCREEN then
+    if self._native.parent.cur_page == 0 and keys.LEAVESCREEN then --hint:df.viewscreen_legendsst
         local v = df.global.world.world_data.region_details
         while (#v > 0) do v:erase(0) end
         for _,item in pairs(region_details_backup) do

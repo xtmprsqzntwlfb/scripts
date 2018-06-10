@@ -15,7 +15,7 @@ local utils=require('utils')
 function addEmotionToUnit(unit,thought,emotion,severity,strength,subthought)
     local emotions=unit.status.current_soul.personality.emotions
     if not (tonumber(emotion)) then
-        emotion=df.emotion_type[emotion]
+        emotion=df.emotion_type[emotion] --luacheck: retype
     end
     local properThought = tonumber(thought) --as:df.unit_thought_type
     local properSubthought = tonumber(subthought)

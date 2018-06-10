@@ -58,13 +58,13 @@ function check_file(path)
         perr('Name mismatch: expected %s, found %s', filename, realname)
     end
     local objname = filename
-    local check_objnames = {}
+    local check_objnames = {} --as:string[]
     for k, v in pairs(objname_overrides) do
         if filename:sub(1, #k) == k and valid_objnames[v] ~= nil then
             table.insert(check_objnames, v)
         end
     end
-    local start = filename:find('_', start)
+    local start = filename:find('_')
     while start ~= nil do
         local part = filename:sub(1, filename:find('_', start) - 1):upper()
         if valid_objnames[part] ~= nil then

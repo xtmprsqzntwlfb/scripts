@@ -25,7 +25,7 @@ Arguments::
 local eventful = require 'plugins.eventful'
 local utils = require 'utils'
 
-onInfection = onInfection or {} --as:{command:__arg}[][]
+onInfection = onInfection or {} --as:{_type:table,_array:{_type:table,_array:{_type:table,command:__arg}}}
 
 eventful.enableEvent(eventful.eventType.UNLOAD,1)
 eventful.onUnload.syndromeTrigger = function()
@@ -35,7 +35,7 @@ end
 eventful.enableEvent(eventful.eventType.SYNDROME,5) --requires iterating through every unit, so not cheap, but not slow either
 
 local function processTrigger(args)
- local command = {}
+ local command = {} --as:string[]
  for i,arg in ipairs(args.command) do --as:string
   if arg == '\\SYNDROME_ID' then
    table.insert(command, '' .. args.syndrome.id)

@@ -14,7 +14,7 @@ local globals = df.global
 local global_addr = dfhack.internal.getAddress
 local os_type = dfhack.getOSType()
 local rdelta = dfhack.internal.getRebaseDelta()
-local lines = {}
+local lines = {} --as:string[]
 local complete = true
 
 local function header(name)

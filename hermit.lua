@@ -18,10 +18,10 @@ Use ``enable`` or ``disable`` to enable/disable, or ``help`` for this help.
 
 ]====]
 
-repeat_util = require "repeat-util"
-timed_events = df.global.timed_events
+local repeat_util = require "repeat-util"
+local timed_events = df.global.timed_events
 
-whitelist = {
+local whitelist = {
     [df.timed_event_type.WildlifeCurious] = true,
     [df.timed_event_type.WildlifeMischievous] = true,
     [df.timed_event_type.WildlifeFlier] = true,
@@ -30,7 +30,7 @@ whitelist = {
 enabled = enabled or false
 
 function run()
-    local tmp_events = {}
+    local tmp_events = {} --as:df.timed_event[]
     for _, event in pairs(timed_events) do
         table.insert(tmp_events, event)
     end
@@ -65,7 +65,7 @@ function dfhack.onStateChange.hermit(event)
     end
 end
 
-args = {...}
+local args = {...}
 
 if dfhack_flags.enable then
     enable(dfhack_flags.enable_state)

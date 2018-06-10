@@ -67,9 +67,8 @@ if list_only then
 end
 
 for id in pairs(creatures) do
-    local females = females[id] or {}
-    total = total + #females
-    for _, female in pairs(females) do
+    total = total + #(females[id] or {})
+    for _, female in pairs(females[id]) do
         if female.pregnancy_timer ~= 0 then
             female.pregnancy_timer = math.random(1, 100)
             total_changed = total_changed + 1

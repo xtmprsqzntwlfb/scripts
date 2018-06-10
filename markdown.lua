@@ -151,17 +151,20 @@ local function formattime(year, ticks)
 
     day = day + 1
     if (day == 1 or day == 21) then
-        day = day .. 'st'
+        day = day .. 'st' --luacheck: retype
     elseif (day == 2 or day == 22) then
-        day = day .. 'nd'
+        day = day .. 'nd' --luacheck: retype
+    elseif (day == 3 or day == 23) then
+        day = day .. 'rd' --luacheck: retype
     else
-        day = day .. 'th'
+        day = day .. 'th' --luacheck: retype
     end
 
     return (day .. " " .. months[month + 1] .. " " .. year .. " " .. H .. ":" .. m..":" .. i)
 end
 
 if flerb == 'textviewer' then
+    local scrn = scrn --as:df.viewscreen_textviewerst
 
     local lines = scrn.src_text
 
@@ -181,6 +184,7 @@ if flerb == 'textviewer' then
     end
 
 elseif flerb == 'announcelist' then
+    local scrn = scrn --as:df.viewscreen_announcelistst
 
     local lines = scrn.reports
 
@@ -204,7 +208,7 @@ elseif flerb == 'announcelist' then
 
 
 elseif flerb == 'topicmeeting' then
-    local lines = scrn.text
+    local lines = scrn.text --hint:df.viewscreen_topicmeetingst
 
     if lines ~= nil then
         local log = getFileHandle()

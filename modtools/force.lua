@@ -42,14 +42,14 @@ local function findCiv(arg)
  return nil
 end
 
-validArgs = utils.invert({
+local validArgs = utils.invert({
  'eventType',
  'help',
  'civ'
 })
 
 local args = utils.processArgs({...}, validArgs)
-if next(args) == nil or args.help then
+if #args == 0 or args.help then
  print(help)
  print('force: -eventType [Megabeast, Migrants, Caravan, Diplomat, WildlifeCurious, WildlifeMischievous, WildlifeFlier, NightCreature] -civ [player,ENTITY_ID]')
  return
@@ -61,28 +61,31 @@ elseif not df.timed_event_type[args.eventType] then
  error('Invalid eventType: ' .. args.eventType)
 end
 
+local civ = nil --as:df.historical_entity
 if args.civ == 'player' then
- args.civ = df.historical_entity.find(df.global.ui.civ_id)
+ civ = df.historical_entity.find(df.global.ui.civ_id)
 elseif args.civ then
- local civ = args.civ
- args.civ = findCiv(args.civ)
- if not args.civ then
-  error('Invalid civ: ' .. civ)
+ civ = findCiv(args.civ)
+end
+if args.civ and not civ then
+ error('Invalid civ: ' .. args.civ)
+end
+if args.eventType == 'Caravan' or args.eventType == 'Diplomat' then
+ if not civ then
+  error('Specify civ for this eventType')
  end
-elseif args.eventType == 'Caravan' or args.eventType == 'Diplomat' then
- error('Specify civ for this eventType')
 end
 
 if args.eventType == 'Migrants' then
- args.civ = df.historical_entity.find(df.global.ui.civ_id)
+ civ = df.historical_entity.find(df.global.ui.civ_id)
 end
 
 local timedEvent = df.timed_event:new()
 timedEvent.type = df.timed_event_type[args.eventType]
 timedEvent.season = df.global.cur_season
 timedEvent.season_ticks = df.global.cur_season_tick
-if args.civ then
- timedEvent.entity = args.civ
+if civ then
+ timedEvent.entity = civ
 end
 
 df.global.timed_events:insert('#', timedEvent)

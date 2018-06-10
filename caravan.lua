@@ -72,7 +72,7 @@ local function list()
 end
 
 local function extend(days, ...)
-    days = tonumber(days or 7) or qerror('invalid number of days: ' .. days)
+    days = tonumber(days or 7) or qerror('invalid number of days: ' .. days) --luacheck: retype
     for id, car in pairs(caravans_from_ids{...}) do
         car.time_remaining = car.time_remaining + (days * 120)
         bring_back(car)

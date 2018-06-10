@@ -28,7 +28,7 @@ local utils = require 'utils'
 buildingType = utils.invert({'EITHER','OUTSIDE_ONLY','INSIDE_ONLY'})
 registeredBuildings = registeredBuildings or {} --as:number[]
 checkEvery = checkEvery or 100
-timeoutId = timeoutId or nil
+timeoutId = timeoutId or nil --as:number
 
 eventful.enableEvent(eventful.eventType.UNLOAD,1)
 eventful.onUnload.outsideOnly = function()
@@ -50,7 +50,7 @@ local function destroy(building)
 end
 
 local function checkBuildings()
- local toDestroy = {}
+ local toDestroy = {} --as:df.building[]
  local function forEach(building)
   if building:getCustomType() < 0 then
    --TODO: support builtin building types if someone wants

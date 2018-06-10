@@ -76,7 +76,7 @@ Arguments::
 local utils = require 'utils'
 local eventful = require 'plugins.eventful'
 
-outcomeLists = outcomeLists or {} --as:{total:number,outcomes:'{weight:number,command:__arg}[]'}[]
+outcomeLists = outcomeLists or {} --as:{_type:table,_array:{_type:table,total:number,outcomes:{_type:table,_array:{_type:table,weight:number,command:__arg}}}}
 randomGen = randomGen or dfhack.random.new()
 
 eventful.enableEvent(eventful.eventType.UNLOAD, 1)
@@ -191,7 +191,7 @@ if not outcomeList then
 end
 
 outcomeList.total = weight + (outcomeList.total or 0)
-local outcome = {} --as:{weight:number,command:__arg}
+local outcome = {}
 outcome.weight = weight
 outcome.command = args.command
 outcomeList.outcomes = outcomeList.outcomes or {}

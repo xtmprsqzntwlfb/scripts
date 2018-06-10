@@ -46,7 +46,7 @@ local eventful = require 'plugins.eventful'
 local syndromeUtil = require 'syndrome-util'
 local utils = require 'utils'
 
-reactionHooks = reactionHooks or {} --as:{reactionName:__arg,syndrome:__arg,allowNonworkerTargets:__arg,allowMultipleTargets:__arg,resetPolicy:__arg,command:__arg}[][]
+reactionHooks = reactionHooks or {} --as:{_type:table,_array:{_type:table,_array:{_type:table,reactionName:__arg,syndrome:__arg,allowNonworkerTargets:__arg,allowMultipleTargets:__arg,resetPolicy:__arg,command:__arg}}}
 
 eventful.enableEvent(eventful.eventType.UNLOAD,1)
 eventful.onUnload.reactionTrigger = function()
@@ -97,7 +97,7 @@ function getWorkerAndBuilding(job)
 end
 
 local function processCommand(job, worker, target, building, command)
- local result = {}
+ local result = {} --as:string[]
  for _,arg in ipairs(command) do
   if arg == '\\WORKER_ID' then
    table.insert(result,''..worker.id)
@@ -155,7 +155,7 @@ eventful.onJobCompleted.reactionTrigger = function(job)
   end
   if action.syndrome then
    local syndrome = findSyndrome(action.syndrome)
-   if syndome then
+   if syndrome then
     didSomething = syndromeUtil.infectWithSyndromeIfValidTarget(worker, syndrome, action.resetPolicy) or didSomething
    end
   end

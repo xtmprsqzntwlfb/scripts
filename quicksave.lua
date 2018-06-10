@@ -8,8 +8,9 @@ normally used in seasonal auto-save.
 
 ]====]
 
-gui = require("gui")
+local gui = require("gui")
 
+--luacheck: defclass={run:bool}
 QuicksaveOverlay = defclass(QuicksaveOverlay, gui.Screen)
 
 function QuicksaveOverlay:render()

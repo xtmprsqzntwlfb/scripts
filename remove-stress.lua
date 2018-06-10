@@ -19,7 +19,7 @@ function removeStress(unit)
     end
 end
 
-validArgs = utils.invert({
+local validArgs = utils.invert({
     'help',
     'all'
 })

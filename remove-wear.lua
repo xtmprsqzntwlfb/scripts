@@ -21,7 +21,7 @@ if args[1] == 'help' then
 elseif args[1] == 'all' then
  local count = 0;
  for _,item in ipairs(df.global.world.items.all) do
-  if (item.wear > 0) then
+  if (item.wear > 0) then --hint:df.item_actual
    item:setWear(0)
    count = count+1
   end
@@ -29,7 +29,7 @@ elseif args[1] == 'all' then
  print('remove-wear removed wear from '..count..' objects')
 else
  local argIndex = 1
- local isCompleted = {}
+ local isCompleted = {} --as:bool[]
  for i,x in ipairs(args) do
   args[i] = tonumber(x)
  end

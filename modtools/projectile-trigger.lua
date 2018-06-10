@@ -35,16 +35,16 @@ eventful.onUnload.projectileTrigger = function()
 end
 
 function processTrigger(args)
- local command2 = {}
+ local command2 = {} --as:string[]
  for _,arg in ipairs(args.command) do
   if arg == '\\LOCATION' then
-   table.insert(command2,args.pos.x)
-   table.insert(command2,args.pos.y)
-   table.insert(command2,args.pos.z)
+   table.insert(command2,tostring(args.pos.x))
+   table.insert(command2,tostring(args.pos.y))
+   table.insert(command2,tostring(args.pos.z))
   elseif arg == '\\PROJECTILE_ID' then
-   table.insert(command2,args.projectile.id)
+   table.insert(command2,tostring(args.projectile.id))
   elseif arg == '\\FIRER_ID' then
-   table.insert(command2,args.projectile.firer.id)
+   table.insert(command2,tostring(args.projectile.firer.id))
   elseif string.sub(arg,1,1) == '\\' then
    table.insert(command2,string.sub(arg,2))
   else

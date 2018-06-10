@@ -30,10 +30,10 @@ function brainwash_unit(unit)
     local prefcount = #(unit.status.current_soul.preferences)
     print ("Before, unit "..dfhack.TranslateName(dfhack.units.getVisibleName(unit)).." has "..prefcount.." preferences")
 
-    utils = require 'utils'
+    local utils = require 'utils'
     -- below populates an array with all creature names and id's, used for 'detests...'
-    rtbl={}
-    vec=df.global.world.raws.creatures.all
+    local rtbl={} --as:number[]
+    local vec=df.global.world.raws.creatures.all
     for k=0,#vec-1 do
             local name=vec[k].creature_id
             rtbl[name]=k
@@ -73,7 +73,7 @@ function brainwash_unit(unit)
 end
 -- ---------------------------------------------------------------------------
 function clear_preferences(v)
-    unit=v
+    local unit=v
 
     local prefs=unit.status.current_soul.preferences
     for index,pref in ipairs(prefs) do

@@ -85,7 +85,7 @@ local utils=require 'utils'
 function createUnit(...)
   local old_gametype = df.global.gametype
   local old_mode = df.global.ui.main.mode
-  local old_popups = {}
+  local old_popups = {} --as:df.popup_message[]
   for _, popup in pairs(df.global.world.status.popups) do
     table.insert(old_popups, popup)
   end
@@ -144,8 +144,8 @@ function createUnitInner(race_id, caste_id, location, entityRawName)
   local spawnScreen = dfhack.gui.getCurViewscreen()
   if dfhack.world.isArena() then
     -- Just modify the current screen in arena mode (#994)
-    spawnScreen.race:insert(0, race_id)
-    spawnScreen.caste:insert(0, caste_id)
+    spawnScreen.race:insert(0, race_id) --hint:df.viewscreen_layer_arena_creaturest
+    spawnScreen.caste:insert(0, caste_id) --hint:df.viewscreen_layer_arena_creaturest
   end
   gui.simulateInput(spawnScreen, 'SELECT')
 
@@ -175,6 +175,7 @@ end
 --u.population_id = df.historical_entity.find(df.global.ui.civ_id).populations[0]
 
 -- Picking a caste or gender at random
+--luacheck: in=number
 function getRandomCasteId(race_id)
   local cr = df.creature_raw.find(race_id)
   local caste_id, casteMax
@@ -302,8 +303,9 @@ function createNemesis(trgunit,civ_id,group_id)
 
   nem.save_file_id=-1
 
+  local he = nil
   if civ_id ~= -1 then
-    local he=df.historical_entity.find(civ_id)
+    he=df.historical_entity.find(civ_id)
     he.nemesis_ids:insert("#",id)
     he.nemesis:insert("#",nem)
     allocateIds(nem,he)
@@ -350,7 +352,7 @@ function domesticate(uid, group_id)
 
     -- And make them tame (from Dirst)
     u.flags1.tame = true
-    u.training_level = 7
+    u.training_level = df.animal_training_level.Domesticated
   end
 end
 
@@ -376,6 +378,7 @@ function wild(uid)
   end
 end
 
+--luacheck: in=number,string
 function nameUnit(id, entityRawName)
   --pick a random appropriate name
   --choose three random words in the appropriate things
@@ -457,7 +460,7 @@ function setAgeProfession(unit)
   end
 end
 
-validArgs = utils.invert({
+local validArgs = utils.invert({
   'help',
   'race',
   'caste',
@@ -593,8 +596,8 @@ setAgeProfession(u)
 
 if args.flagSet or args.flagClear then
   local u = df.unit.find(unitId)
-  local flagsToSet = {}
-  local flagsToClear = {}
+  local flagsToSet = {} --as:bool[]
+  local flagsToClear = {} --as:bool[]
   for _,v in ipairs(args.flagSet or {}) do
     flagsToSet[v] = true
   end

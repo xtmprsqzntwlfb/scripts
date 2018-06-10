@@ -29,7 +29,7 @@ local eventful = require 'plugins.eventful'
 local utils = require 'utils'
 
 --TODO: onUnload
-productHooks = productHooks or {} --as:{clear:__arg,reactionName:__arg,command:__arg}[][]
+productHooks = productHooks or {} --as:{_type:table,_array:{_type:table,_array:{_type:table,clear:__arg,reactionName:__arg,command:__arg}}}
 
 eventful.enableEvent(eventful.eventType.UNLOAD,1)
 eventful.onUnload.reactionProductTrigger = function()
@@ -40,7 +40,7 @@ end
 --productHooks.after = productHooks.after or {}
 
 local function processArgs(args, reaction, reaction_product, unit, input_items, input_reagents, output_items, buildingId)
- local result = {}
+ local result = {} --as:string[]
  for _,arg in ipairs(args) do
   if arg == '\\WORKER_ID' then
    table.insert(result,tostring(unit.id))

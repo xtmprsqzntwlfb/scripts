@@ -107,7 +107,7 @@ local function get_screen(class, prompt)
     end
 
     while true do
-        local cs = dfhack.gui.getCurViewscreen(true)
+        local cs = dfhack.gui.getCurViewscreen(true) --as:class
         if not df.is_instance(class, cs) then
             print('Please navigate to '..prompt)
             if not prompt_proceed() then
@@ -165,12 +165,11 @@ local function zoomed_searcher(startn, end_or_sz, bidirectional)
     end
 end
 
-local finder_searches = {}
+local finder_searches = {} --as:string[]
 local function exec_finder(finder, names, validators)
-    local names = names --as:string[]
     local validators = validators --as:{_type:function,_node:bool}[]
-    if type(names) ~= 'table' then --luacheck: skip
-        names = { names }
+    if type(names) ~= 'table' then
+        names = { names } --luacheck: retype
     end
     if type(validators) ~= 'table' then --luacheck: skip
         validators = { validators }
@@ -261,7 +260,7 @@ local function dwarfmode_to_top()
         return false
     end
 
-    local screen = screen_dwarfmode() --as:df.viewscreen_dwarfmodest
+    local screen = screen_dwarfmode()
     if not df.isvalid(screen) then
         return false
     end
@@ -1077,7 +1076,7 @@ end
 --
 
 local function building_item_list_count()
-    return #df.global.world.selected_building.contained_items
+    return #df.global.world.selected_building.contained_items --hint:df.building_actual
 end
 
 local function find_ui_building_item_cursor()
@@ -1467,6 +1466,7 @@ function stop_autosave()
     end
 end
 
+--luacheck: in=number,df.viewscreen_dwarfmodest
 function step_n_frames(cnt, feed)
     local world = df.global.world
     local ctick = world.frame_counter
@@ -1797,8 +1797,8 @@ end
 
 local function exec_finder_so(gname, seq, _depends)
     local depends = {} --as:number[]
-    for k, v in pairs(_depends or {}) do
-        local v = v --as:number
+    local _depends = _depends or {} --as:number[]
+    for k, v in pairs(_depends) do
         if k:find('standing_orders_') ~= 1 then
             k = 'standing_orders_' .. k
         end

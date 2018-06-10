@@ -14,9 +14,8 @@ local doall
 if args[1]=="-a" or args[1]=="--all" then
     doall=true
 end
-local build,items
-items={}
-build=dfhack.buildings.findAtTile(pos.x,pos.y,pos.z)
+local items={} --as:df.item[]
+local build=dfhack.buildings.findAtTile(pos.x,pos.y,pos.z)
 if not df.building_tablest:is_instance(build) then
     error("No table found at cursor")
 end

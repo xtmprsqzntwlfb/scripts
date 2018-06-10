@@ -122,7 +122,7 @@ if args.setPrevRace then
 end
 transform(unit,raceIndex,caste,args.setPrevRace)
 
-local inventoryItems = {}
+local inventoryItems = {} --as:df.unit_inventory_item[]
 
 local function getInventory()
  local result = {}
