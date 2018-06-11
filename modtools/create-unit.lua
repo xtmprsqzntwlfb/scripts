@@ -561,7 +561,6 @@ end
 
 local u = df.unit.find(unitId)
 u.counters.soldier_mood_countdown = -1
-u.counters.death_cause = -1
 u.enemy.unk_450 = -1
 u.enemy.unk_454 = -1
 u.enemy.army_controller_id = -1

@@ -415,7 +415,7 @@ function ChangeBuildingAdv(typ, subtyp, custom, category, add, key)
         if tonumber(key) == nil then
             key = df.interface_key[key] --luacheck: retype
         else
-            key = tonumber(key)
+            key = tonumber(key) --luacheck: retype
         end
     end
     key = key or 0

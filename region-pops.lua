@@ -39,7 +39,7 @@ local is_plant_map = {
 }
 
 function enum_populations()
-    local stat_table = { --as:{plants:{_array:{_type:table,token:string,id:number,records:'df.local_population[]',count:number,known_count:number,known:bool,infinite:bool}},creatures:{_array:{_type:table,token:string,id:number,records:'df.local_population[]',count:number,known_count:number,known:bool,infinite:bool}},any:{_array:{_type:table,token:string,id:number,records:'df.local_population[]',count:number,known_count:number,known:bool,infinite:bool}}}
+    local stat_table = { --as:{plants:{_array:{_type:table,obj:df.plant_raw,token:string,id:number,records:'df.local_population[]',count:number,known_count:number,known:bool,infinite:bool}},creatures:{_array:{_type:table,obj:df.creature_raw,token:string,id:number,records:'df.local_population[]',count:number,known_count:number,known:bool,infinite:bool}},any:{_array:{_type:table,token:string,id:number,records:'df.local_population[]',count:number,known_count:number,known:bool,infinite:bool}}}
         plants = {},
         creatures = {},
         any = {}

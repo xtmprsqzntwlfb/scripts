@@ -11,7 +11,12 @@ Display DF version information about the current save
 local function dummy() return nil end
 
 function has_field(tbl, field)
-    return (pcall(function() assert(tbl[field] ~= nil) end))
+    for k in pairs(tbl) do
+        if k == field then
+            return true
+        end
+    end
+    return false
 end
 
 --luacheck: global

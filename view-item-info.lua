@@ -28,6 +28,7 @@ function isInList(list, item, helper)
             return true
         end
     end
+    return false
 end
 
 if dfhack_flags and dfhack_flags.enable then

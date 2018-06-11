@@ -31,6 +31,8 @@ Arguments:
 
 ]====]
 
+--luacheck-flags: strictsubtype
+
 local utils = require 'utils'
 local ms = require 'memscan'
 local gui = require 'gui'
@@ -101,20 +103,20 @@ local function get_screen(class, prompt)
     if not is_known('gview') then
         print('Please navigate to '..prompt)
         if not prompt_proceed() then
-            return nil
+            return nil, false
         end
-        return true
+        return nil, true
     end
 
     while true do
-        local cs = dfhack.gui.getCurViewscreen(true) --as:class
+        local cs = dfhack.gui.getCurViewscreen(true)
         if not df.is_instance(class, cs) then
             print('Please navigate to '..prompt)
             if not prompt_proceed() then
-                return nil
+                return nil, false
             end
         else
-            return cs
+            return cs, true
         end
     end
 end
@@ -380,7 +382,8 @@ end
 --
 
 local function find_cursor()
-    if not screen_title() then
+    local _, ok = screen_title()
+    if not ok then
         return false
     end
 

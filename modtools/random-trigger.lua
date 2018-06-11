@@ -104,7 +104,7 @@ local function triggerEvent(outcomeListName)
  --print ('r = ' .. r)
  for i,outcome in ipairs(outcomeList.outcomes) do
   sum = sum + outcome.weight
-  if sum > r then
+  if sum > r then --luacheck: skip
    local temp = outcome.command
    --print('triggering outcome ' .. i .. ': "' .. table.concat(temp, ' ') .. '"')
    --dfhack.run_command(table.unpack(temp))

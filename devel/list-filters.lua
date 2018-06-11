@@ -13,8 +13,8 @@ local utils = require 'utils'
 local buildings = require 'dfhack.buildings'
 
 local function name_enum(tgt,name,ename,enum)
-    if tgt[name] ~= nil then
-        tgt[name] = ename..'.'..enum[tgt[name]]
+    if type(tgt[name]) == 'number' then
+        tgt[name] = ename..'.'..enum[tgt[name]] --luacheck: retype
     end
 end
 
