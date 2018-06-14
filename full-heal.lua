@@ -25,7 +25,7 @@ the corpse - creepy!
 
 local utils = require('utils')
 
-validArgs = validArgs or utils.invert({
+local validArgs = utils.invert({
     'r',
     'help',
     'unit',
