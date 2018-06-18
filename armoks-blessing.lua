@@ -13,6 +13,7 @@ Without arguments, all attributes, age & personalities are adjusted.
 Arguments allow for skills to be adjusted as well.
 
 ]====]
+local utils = require 'utils'
 function rejuvenate(unit)
     if unit==nil then
         print ("No unit available!  Aborting with extreme prejudice.")
@@ -51,18 +52,14 @@ function elevate_attributes(unit)
         return
     end
 
-    local ok,f,t,k = pcall(pairs,unit.status.current_soul.mental_attrs)
-    if ok then
-        for k,v in f,t,k do
+    if unit.status.current_soul then
+        for k,v in pairs(unit.status.current_soul.mental_attrs) do
             v.value=v.max_value
         end
     end
 
-    local ok,f,t,k = pcall(pairs,unit.body.physical_attrs)
-    if ok then
-        for k,v in f,t,k do
-            v.value=v.max_value
-        end
+    for k,v in pairs(unit.body.physical_attrs) do
+        v.value=v.max_value
     end
 end
 -- ---------------------------------------------------------------------------
@@ -95,7 +92,6 @@ function make_legendary(skillname,unit)
     end
 
     if skillnamenoun ~= nil then
-        utils = require 'utils'
         skillnum = df.job_skill[skillname]
         utils.insert_or_update(unit.status.current_soul.skills, { new = true, id = skillnum, rating = 20 }, 'id')
         print (unit.name.first_name.." is now a Legendary "..skillnamenoun)
@@ -114,7 +110,6 @@ function BreathOfArmok(unit)
     local i
 
     local count_max = count_this(df.job_skill)
-    utils = require 'utils'
     for i=0, count_max do
         utils.insert_or_update(unit.status.current_soul.skills, { new = true, id = i, rating = 20 }, 'id')
     end
@@ -122,13 +117,12 @@ function BreathOfArmok(unit)
 end
 -- ---------------------------------------------------------------------------
 function LegendaryByClass(skilltype,v)
-    unit=v
+    local unit=v
     if unit==nil then
         print ("No unit available!  Aborting with extreme prejudice.")
         return
     end
 
-    utils = require 'utils'
     local i
     local skillclass
     local count_max = count_this(df.job_skill)
@@ -182,7 +176,8 @@ end
 -- ---------------------------------------------------------------------------
 -- main script operation starts here
 -- ---------------------------------------------------------------------------
-local opt = ...
+local args = {...}
+local opt = args[1]
 local skillname
 
 if opt then

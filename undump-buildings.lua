@@ -14,7 +14,7 @@ function undump_buildings()
         local building = buildings[i]
         -- Zones and stockpiles don't have the contained_items field.
         if df.building_actual:is_instance(building) then
-            local items = building.contained_items
+            local items = building.contained_items --hint:df.building_actual
             for j = 0, #items - 1 do
                 local contained = items[j]
                 if contained.use_mode == 2 and contained.item.flags.dump then

@@ -41,24 +41,24 @@ function adjust(dwarves, callback)
     end
 end
 
-scr = dfhack.gui.getCurViewscreen()
+local scr = dfhack.gui.getCurViewscreen() --as:df.viewscreen_setupdwarfgamest
 if dfhack.gui.getCurFocus() ~= 'setupdwarfgame' or scr.show_play_now == 1 then
     qerror('Must be called on the "Prepare carefully" screen')
 end
 
-dwarf_info = scr.dwarf_info
-dwarves = dwarf_info
-selected_dwarf = {[0] = scr.dwarf_info[scr.dwarf_cursor]}
+local dwarf_info = scr.dwarf_info
+local dwarves = dwarf_info
+local selected_dwarf = {[0] = scr.dwarf_info[scr.dwarf_cursor]} --as:df.setup_character_info[]
 
-args = {...}
+local args = {...}
 if args[1] == 'points' then
-    points = tonumber(args[2])
+    local points = tonumber(args[2])
     if points == nil then
         err('Invalid points')
     end
     if args[3] ~= 'all' then dwarves = selected_dwarf end
     adjust(dwarves, function(dwf)
-        dwf.levels_remaining = points
+        dwf.unk_28c = points
     end)
 elseif args[1] == 'max' then
     if args[2] ~= 'all' then dwarves = selected_dwarf end

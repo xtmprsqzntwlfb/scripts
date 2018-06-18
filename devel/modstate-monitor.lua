@@ -13,7 +13,7 @@ Display changes in key modifier state, ie Ctrl/Alt/Shift.
 
 VERSION = '0.1'
 
-if active == nil then active = false end
+active = active or false
 
 if dfhack.internal.getModstate == nil or dfhack.internal.getModifiers == nil then
     qerror('Required internal functions are missing')
@@ -31,6 +31,7 @@ function set_timeout()
     dfhack.timeout(1, 'frames', check)
 end
 
+last_msg = last_msg or nil --as:string
 function log(s, color)
     -- prevent duplicate output
     if s ~= last_msg then
@@ -40,6 +41,7 @@ function log(s, color)
     end
 end
 
+last_modstate = last_modstate or nil --as:number
 function check()
     local msg = ''
     local modstate = dfhack.internal.getModstate()
@@ -53,7 +55,7 @@ function check()
     if active then set_timeout() end
 end
 
-args = {...}
+local args = {...}
 if dfhack_flags and dfhack_flags.enable then
     table.insert(args, dfhack_flags.enable_state and 'enable' or 'disable')
 end

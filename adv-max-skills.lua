@@ -11,7 +11,7 @@ if dfhack.gui.getCurFocus() ~= 'setupadventure' then
     qerror('Must be called on adventure mode setup screen')
 end
 
-adv = dfhack.gui.getCurViewscreen().adventurer
+local adv = dfhack.gui.getCurViewscreen().adventurer --hint:df.viewscreen_setupadventurest
 for k in pairs(adv.skills) do
     adv.skills[k] = df.skill_rating.Legendary5
 end

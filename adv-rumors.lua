@@ -28,9 +28,9 @@ Improves the "Bring up specific incident or rumor" menu in Adventure mode.
 --      shortenString = will further shorten the line to = slew "XYZ" ( "n time" ago in " Region")
 --=======================
 
-utils = require "utils"
+local utils = require "utils"
 
-names_blacklist = utils.invert{"a", "an", "you", "attacked", "slew", "was", "slain", "by"}
+local names_blacklist = utils.invert{"a", "an", "you", "attacked", "slew", "was", "slain", "by"}
 
 function condenseChoiceTitle(choice)
     while #choice.title > 1 do
@@ -46,10 +46,10 @@ function addKeyword(choice, keyword)
 end
 
 function rumorUpdate()
-    improveReadability = true
-    addKeywordSlew = true
-    shortenString = true
-    addKeywordNames = true
+    local improveReadability = true
+    local addKeywordSlew = true
+    local shortenString = true
+    local addKeywordNames = true
 
     for i, choice in ipairs(df.global.ui_advmode.conversation.choices) do
         if choice.choice.type == df.talk_choice_type.SummarizeConflict then

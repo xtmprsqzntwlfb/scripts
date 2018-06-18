@@ -27,10 +27,10 @@ Usage:
 local utils = require 'utils'
 
 local function sort_keys(tab)
-    local kt = {}
+    local kt = {} --as:string[]
     for k,v in pairs(tab) do table.insert(kt,k) end
     table.sort(kt)
-    return ipairs(kt)
+    return kt
 end
 
 local is_plant_map = {
@@ -39,29 +39,13 @@ local is_plant_map = {
 }
 
 function enum_populations()
-    local stat_table = {
+    local stat_table = { --as:{plants:{_array:{_type:table,obj:df.plant_raw,token:string,id:number,records:'df.local_population[]',count:number,known_count:number,known:bool,infinite:bool}},creatures:{_array:{_type:table,obj:df.creature_raw,token:string,id:number,records:'df.local_population[]',count:number,known_count:number,known:bool,infinite:bool}},any:{_array:{_type:table,token:string,id:number,records:'df.local_population[]',count:number,known_count:number,known:bool,infinite:bool}}}
         plants = {},
         creatures = {},
         any = {}
     }
 
-    for i,v in ipairs(df.global.world.populations) do
-        local typeid = df.world_population_type[v.type]
-        local is_plant = is_plant_map[typeid]
-        local id, obj, otable, idtoken
-
-        if is_plant then
-            id = v.plant
-            obj = df.plant_raw.find(id)
-            otable = stat_table.plants
-            idtoken = obj.id
-        else
-            id = v.race
-            obj = df.creature_raw.find(id)
-            otable = stat_table.creatures
-            idtoken = obj.creature_id
-        end
-
+    local function add_entry(v, id, obj, otable, idtoken)
         local entry = otable[idtoken]
         if not entry then
             entry = {
@@ -86,16 +70,31 @@ function enum_populations()
         end
     end
 
+    for i,v in ipairs(df.global.world.populations) do
+        local typeid = df.world_population_type[v.type]
+        local is_plant = is_plant_map[typeid]
+
+        if is_plant then
+            local id = v.plant
+            local obj = df.plant_raw.find(id)
+            add_entry(v, id, obj, stat_table.plants, obj.id)
+        else
+            local id = v.race
+            local obj = df.creature_raw.find(id)
+            add_entry(v, id, obj, stat_table.creatures, obj.creature_id)
+        end
+    end
+
     return stat_table
 end
 
 function list_poptable(entries, all, pattern)
-    for _,k in sort_keys(entries) do
+    for _,k in ipairs(sort_keys(entries)) do
         local entry = entries[k]
         if (all or entry.known) and (not pattern or string.match(k,pattern)) then
-            local count = entry.known_count
+            local count = tostring(entry.known_count)
             if all then
-                count = entry.count
+                count = tostring(entry.count)
             end
             if entry.infinite then
                 count = 'innumerable'

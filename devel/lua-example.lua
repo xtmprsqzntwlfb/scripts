@@ -8,7 +8,8 @@ been called.  Useful for testing environment persistence.
 
 ]====]
 
-run_count = (run_count or 0) + 1
+run_count = run_count or 0
+run_count = run_count + 1
 
 print('Arguments: ',...)
 print('Command called '..run_count..' times.')

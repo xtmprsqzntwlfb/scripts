@@ -186,59 +186,60 @@ ticker. See the "Command Usage" section.
 
 local utils = require "utils"
 
-local wshop_type_to_id = {
-    [df.workshop_type.Carpenters] = "CARPENTERS",
-    [df.workshop_type.Farmers] = "FARMERS",
-    [df.workshop_type.Masons] = "MASONS",
-    [df.workshop_type.Craftsdwarfs] = "CRAFTSDWARFS",
-    [df.workshop_type.Jewelers] = "JEWELERS",
-    [df.workshop_type.MetalsmithsForge] = "METALSMITHSFORGE",
-    [df.workshop_type.MagmaForge] = "MAGMAFORGE",
-    [df.workshop_type.Bowyers] = "BOWYERS",
-    [df.workshop_type.Mechanics] = "MECHANICS",
-    [df.workshop_type.Siege] = "SIEGE",
-    [df.workshop_type.Butchers] = "BUTCHERS",
-    [df.workshop_type.Leatherworks] = "LEATHERWORKS",
-    [df.workshop_type.Tanners] = "TANNERS",
-    [df.workshop_type.Clothiers] = "CLOTHIERS",
-    [df.workshop_type.Fishery] = "FISHERY",
-    [df.workshop_type.Still] = "STILL",
-    [df.workshop_type.Loom] = "LOOM",
-    [df.workshop_type.Quern] = "QUERN",
-    [df.workshop_type.Kennels] = "KENNELS",
-    [df.workshop_type.Ashery] = "ASHERY",
-    [df.workshop_type.Kitchen] = "KITCHEN",
-    [df.workshop_type.Dyers] = "DYERS",
-    [df.workshop_type.Tool] = "TOOL",
-    [df.workshop_type.Millstone] = "MILLSTONE",
+local wshop_id_to_type = {
+    CARPENTERS = df.workshop_type.Carpenters,
+    FARMERS = df.workshop_type.Farmers,
+    MASONS = df.workshop_type.Masons,
+    CRAFTSDWARFS = df.workshop_type.Craftsdwarfs,
+    JEWELERS = df.workshop_type.Jewelers,
+    METALSMITHSFORGE = df.workshop_type.MetalsmithsForge,
+    MAGMAFORGE = df.workshop_type.MagmaForge,
+    BOWYERS = df.workshop_type.Bowyers,
+    MECHANICS = df.workshop_type.Mechanics,
+    SIEGE = df.workshop_type.Siege,
+    BUTCHERS = df.workshop_type.Butchers,
+    LEATHERWORKS = df.workshop_type.Leatherworks,
+    TANNERS = df.workshop_type.Tanners,
+    CLOTHIERS = df.workshop_type.Clothiers,
+    FISHERY = df.workshop_type.Fishery,
+    STILL = df.workshop_type.Still,
+    LOOM = df.workshop_type.Loom,
+    QUERN = df.workshop_type.Quern,
+    KENNELS = df.workshop_type.Kennels,
+    ASHERY = df.workshop_type.Ashery,
+    KITCHEN = df.workshop_type.Kitchen,
+    DYERS = df.workshop_type.Dyers,
+    TOOL = df.workshop_type.Tool,
+    MILLSTONE = df.workshop_type.Millstone,
 }
-local wshop_id_to_type = utils.invert(wshop_type_to_id)
+local wshop_type_to_id = utils.invert(wshop_id_to_type)
 
-local furnace_type_to_id = {
-    [df.furnace_type.WoodFurnace] = "WOOD_FURNACE",
-    [df.furnace_type.Smelter] = "SMELTER",
-    [df.furnace_type.GlassFurnace] = "GLASS_FURNACE",
-    [df.furnace_type.MagmaSmelter] = "MAGMA_SMELTER",
-    [df.furnace_type.MagmaGlassFurnace] = "MAGMA_GLASS_FURNACE",
-    [df.furnace_type.MagmaKiln] = "MAGMA_KILN",
-    [df.furnace_type.Kiln] = "KILN",
+local furnace_id_to_type = {
+    WOOD_FURNACE = df.furnace_type.WoodFurnace,
+    SMELTER = df.furnace_type.Smelter,
+    GLASS_FURNACE = df.furnace_type.GlassFurnace,
+    MAGMA_SMELTER = df.furnace_type.MagmaSmelter,
+    MAGMA_GLASS_FURNACE = df.furnace_type.MagmaGlassFurnace,
+    MAGMA_KILN = df.furnace_type.MagmaKiln,
+    KILN = df.furnace_type.Kiln,
 }
-local furnace_id_to_type = utils.invert(furnace_type_to_id)
+local furnace_type_to_id = utils.invert(furnace_id_to_type)
 
 -- GetWShopID returns a workshop or furnace's string ID based on it's numeric ID triplet.
 -- This string ID *should* match what is expected by eventful for hardcoded buildings.
+--luacheck: in=df.building_type,number,number
 function GetWShopID(btype, bsubtype, bcustom)
     if btype == df.building_type.Workshop then
         if wshop_type_to_id[bsubtype] ~= nil then
             return wshop_type_to_id[bsubtype]
         else
-            return df.building_def_workshopst.find(bcustom).code
+            return df.building_def.find(bcustom).code
         end
     elseif btype == df.building_type.Furnace then
         if furnace_type_to_id[bsubtype] ~= nil then
             return furnace_type_to_id[bsubtype]
         else
-            return df.building_def_furnacest.find(bcustom).code
+            return df.building_def.find(bcustom).code
         end
     end
 end
@@ -247,6 +248,7 @@ end
 -- The passed in ID should be the building's string identifier, it makes
 -- no difference if it is a custom building or a hardcoded one.
 -- The return table is structured like so: `{type, subtype, custom}`
+--luacheck: in=string out={_type:table,type:df.building_type,subtype:number,custom:number}
 function GetWShopType(id)
     if wshop_id_to_type[id] ~= nil then
         -- Hardcoded workshop
@@ -268,7 +270,7 @@ function GetWShopType(id)
             if def.code == id then
                 local typ = df.building_type.Furnace
                 local styp = df.furnace_type.Custom
-                if getmetatable(def) == "building_def_workshopst" then
+                if df.building_def_workshopst:is_instance(def) then --luacheck: skip
                     typ = df.building_type.Workshop
                     styp = df.workshop_type.Custom
                 end
@@ -322,10 +324,11 @@ local category_name_to_id = {
         },
     }
 ]]
-stuffToChange = stuffToChange or {}
+stuffToChange = stuffToChange or {} --as:{_type:table,category:number,add:bool,key:df.interface_key,id:{_type:table,type:df.building_type,subtype:number,custom:number}}[]
 
 -- Returns true if DF would normally allow you to build a workshop or furnace.
 -- Use this if you want to change a building, but only if it is permitted in the current entity.
+--luacheck: in=string out=bool
 function IsEntityPermitted(id)
     local wshop = GetWShopType(id)
 
@@ -394,13 +397,6 @@ function ChangeBuilding(id, category, add, key)
         qerror("ChangeBuilding: Invalid workshop ID: "..id)
     end
 
-    if tonumber(key) == nil then
-        key = df.interface_key[key]
-    end
-    if key == nil then
-        key = 0
-    end
-
     ChangeBuildingAdv(wshop.type, wshop.subtype, wshop.custom, category, add, key)
 end
 
@@ -415,12 +411,14 @@ function ChangeBuildingAdv(typ, subtyp, custom, category, add, key)
         end
     end
 
-    if tonumber(key) == nil then
-        key = df.interface_key[key]
+    if type(key) == 'string' then
+        if tonumber(key) == nil then
+            key = df.interface_key[key] --luacheck: retype
+        else
+            key = tonumber(key) --luacheck: retype
+        end
     end
-    if key == nil then
-        key = 0
-    end
+    key = key or 0
 
     table.insert(stuffToChange, {
         category = cat,
@@ -444,13 +442,13 @@ if not dfhack.isWorldLoaded() then
     return
 end
 
-args = {...}
+local args = {...}
 if dfhack_flags and dfhack_flags.enable then
     table.insert(args, dfhack_flags.enable_state and 'enable' or 'disable')
 end
 
 tickerOn = tickerOn or false
-tickerStart = false
+local tickerStart = false
 
 if #args >= 1 then
     if args[1] == 'start' or args[1] == 'enable' then
@@ -506,14 +504,12 @@ local function checkSidebar()
     -- Changes made here do not persist, they need to be made every time the side bar is shown.
     -- Will just deleting stuff cause a memory leak? (probably, but how can it be avoided?)
 
-    local stufftoremove = {}
-    local stufftoadd = {}
+    local stufftoremove = {} --as:number[]
+    local stufftoadd = {} --as:stuffToChange
     for i, btn in ipairs(sidebar.choices_all) do
-        if getmetatable(btn) == "interface_button_construction_building_selectorst" then
+        if df.interface_button_construction_building_selectorst:is_instance(btn) then
             for _, change in ipairs(stuffToChange) do
-                if not change.add and sidebar.category_id == change.category and
-                btn.building_type == change.id.type and btn.building_subtype == change.id.subtype and
-                btn.custom_type == change.id.custom then
+                if not change.add and sidebar.category_id == change.category and btn.building_type == change.id.type and btn.building_subtype == change.id.subtype and btn.custom_type == change.id.custom then --hint:df.interface_button_construction_building_selectorst
                     table.insert(stufftoremove, i)
                 end
             end

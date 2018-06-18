@@ -14,7 +14,7 @@ local globals = df.global
 local global_addr = dfhack.internal.getAddress
 local os_type = dfhack.getOSType()
 local rdelta = dfhack.internal.getRebaseDelta()
-local lines = {}
+local lines = {} --as:string[]
 local complete = true
 
 local function header(name)
@@ -467,6 +467,7 @@ end
 
 -- Flags
 local function write_flags(name,flag_array)
+    local flag_array = flag_array --as:{1:string,2:'number[]'}[]
     out:write('\n')
     out:write('['..name..']\n')
     out:write('size='..#flag_array..'\n')

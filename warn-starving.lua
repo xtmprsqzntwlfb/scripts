@@ -13,9 +13,9 @@ Use ``warn-starving all`` to display a list of all problematic units.
 
 ]====]
 
-starvingUnits = starvingUnits or {}
-dehydratedUnits = dehydratedUnits or {}
-sleepyUnits = sleepyUnits or {}
+starvingUnits = starvingUnits or {} --as:bool[]
+dehydratedUnits = dehydratedUnits or {} --as:bool[]
+sleepyUnits = sleepyUnits or {} --as:bool[]
 
 function clear()
     starvingUnits = {}
@@ -116,7 +116,7 @@ local function checkVariable(var, limit, description, map, unit)
 end
 
 function doCheck()
-    local messages = {}
+    local messages = {} --as:string[]
     for i=#units-1, 0, -1 do
         local unit = units[i]
         local rraw = findRaceCaste(unit)

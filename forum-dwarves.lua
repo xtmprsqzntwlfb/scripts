@@ -68,7 +68,7 @@ local colors_css = {
  [15] = 'white'
 }
 
-local scrn = dfhack.gui.getCurViewscreen()
+local scrn = dfhack.gui.getCurViewscreen() --as:df.viewscreen_textviewerst
 local flerb = dfhack.gui.getFocusString(scrn)
 
 local function format_for_forum(strin)

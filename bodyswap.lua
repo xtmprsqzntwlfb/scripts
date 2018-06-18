@@ -6,7 +6,7 @@
 --@ module = true
 
 local utils = require 'utils'
-validArgs = utils.invert({
+local validArgs = utils.invert({
 'unit',
 'help'
 })
@@ -94,7 +94,7 @@ function swapAdvUnit(newUnit)
   if activeUnits[0] == oldUnit then
     oldUnitIndex = 0
   else -- unlikely; this is just in case
-    for i,u in pairs(activeUnits) do
+    for i,u in ipairs(activeUnits) do
       if u == oldUnit then
         oldUnitIndex = i
         break
@@ -102,7 +102,7 @@ function swapAdvUnit(newUnit)
     end
   end
   local newUnitIndex
-  for i,u in pairs(activeUnits) do
+  for i,u in ipairs(activeUnits) do
     if u == newUnit then
       newUnitIndex = i
       break

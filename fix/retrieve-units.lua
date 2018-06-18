@@ -23,7 +23,7 @@ such as the following:
 
 ]====]
 
-utils = require('utils')
+local utils = require('utils')
 
 function shouldRetrieve(unit)
     if unit.flags1.incoming then

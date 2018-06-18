@@ -5,7 +5,7 @@ devel/check-release
 Basic checks for release readiness
 ]====]
 
-ok = true
+local ok = true
 function err(s)
     dfhack.printerr(s)
     ok = false
@@ -16,9 +16,9 @@ function warn(s)
     dfhack.color(nil)
 end
 
-dfhack_ver = dfhack.getDFHackVersion()
-git_desc = dfhack.getGitDescription()
-git_commit = dfhack.getGitCommit()
+local dfhack_ver = dfhack.getDFHackVersion()
+local git_desc = dfhack.getGitDescription()
+local git_commit = dfhack.getGitCommit()
 if not dfhack.isRelease() then
     err('This build is not tagged as a release')
     print[[
@@ -27,7 +27,7 @@ Try running `git fetch origin --tags` in the DFHack source tree.
 ]]
 end
 
-expected_git_desc = ('%s-0-g%s'):format(dfhack_ver, git_commit:sub(1, 8))
+local expected_git_desc = ('%s-0-g%s'):format(dfhack_ver, git_commit:sub(1, 8))
 if git_desc:sub(1, #expected_git_desc) ~= expected_git_desc then
     err(([[Bad git description:
 Expected %s, got %s]]):format(expected_git_desc, git_desc))

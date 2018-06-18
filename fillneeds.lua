@@ -11,7 +11,8 @@ Use ``-all`` to apply to all units on the map.
 
 ]====]
 local utils = require('utils')
-local args = utils.processArgs({...})
+local validArgs = utils.invert({'all', 'unit'})
+local args = utils.processArgs({...}, validArgs)
 
 function satisfyNeeds(unit)
     if not unit.status.current_soul then

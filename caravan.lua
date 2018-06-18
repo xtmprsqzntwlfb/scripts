@@ -31,21 +31,21 @@ INTERESTING_FLAGS = {
     seized = 'Goods seized',
     offended = 'Offended'
 }
-caravans = df.global.ui.caravans
+local caravans = df.global.ui.caravans
 
-function caravans_from_ids(ids)
+local function caravans_from_ids(ids)
     if not ids or #ids == 0 then
-        return pairs(caravans)
+        return caravans
     end
-    local i = 0
-    return function()
-        i = i + 1
-        local id = tonumber(ids[i])
+
+    local c = {} --as:df.caravan_state[]
+    for _,id in ipairs(ids) do
+        local id = tonumber(id)
         if id then
-            return id, caravans[id]
+            c[id] = caravans[id]
         end
-        return nil
     end
+    return c
 end
 
 function bring_back(car)
@@ -54,9 +54,7 @@ function bring_back(car)
     end
 end
 
-commands = {}
-
-function commands.list()
+local function list()
     for id, car in pairs(caravans) do
         print(dfhack.df2console(('%d: %s caravan from %s'):format(
             id,
@@ -73,32 +71,42 @@ function commands.list()
     end
 end
 
-function commands.extend(days, ...)
-    days = tonumber(days or 7) or qerror('invalid number of days: ' .. days)
-    for id, car in caravans_from_ids{...} do
+local function extend(days, ...)
+    days = tonumber(days or 7) or qerror('invalid number of days: ' .. days) --luacheck: retype
+    for id, car in pairs(caravans_from_ids{...}) do
         car.time_remaining = car.time_remaining + (days * 120)
         bring_back(car)
     end
 end
 
-function commands.happy(...)
-    for id, car in caravans_from_ids{...} do
+local function happy(...)
+    for id, car in pairs(caravans_from_ids{...}) do
         -- all flags default to false
         car.flags.whole = 0
         bring_back(car)
     end
 end
 
-function commands.leave(...)
-    for id, car in caravans_from_ids{...} do
+local function leave(...)
+    for id, car in pairs(caravans_from_ids{...}) do
         car.trade_state = df.caravan_state.T_trade_state.Leaving
     end
 end
 
 function main(...)
-    args = {...}
-    command = table.remove(args, 1)
-    commands[command](table.unpack(args))
+    local args = {...}
+    local command = table.remove(args, 1)
+    if command == "list" then
+        list(table.unpack(args))
+    elseif command == "extend" then
+        extend(table.unpack(args))
+    elseif command == "happy" then
+        happy(table.unpack(args))
+    elseif command == "leave" then
+        leave(table.unpack(args))
+    else
+        qerror("No such command: "..command)
+    end
 end
 
 if not dfhack_flags.module then

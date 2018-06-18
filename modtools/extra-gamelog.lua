@@ -8,8 +8,9 @@ This is useful for tools like :forums:`Soundsense <106497>`.
 
 ]====]
 
-msg = dfhack.gui.writeToGamelog
+local msg = dfhack.gui.writeToGamelog
 
+--luacheck: in=number
 function log_on_load(op)
     if op ~= SC_WORLD_LOADED then return end
 
@@ -52,8 +53,8 @@ function log_on_load(op)
 end
 
 
-old_expedition_leader = nil
-old_mayor = nil
+local old_expedition_leader = nil
+local old_mayor = nil
 function log_nobles()
     local expedition_leader = nil
     local mayor = nil
@@ -94,7 +95,7 @@ function log_nobles()
     old_expedition_leader = expedition_leader
 end
 
-siege = false
+local siege = false
 function log_siege()
     local function cur_siege()
         for _, unit in ipairs(df.global.world.units.active) do
@@ -151,19 +152,19 @@ local furnaceTypes = {
     "Custom Furnace",
     }
 
-buildStates = {}
+local buildStates = {} --as:bool[]
 
 function log_buildings()
     for _, building in ipairs(df.global.world.buildings.all) do
-        if getmetatable(building) == "building_workshopst" or getmetatable(building) == "building_furnacest" then
+        if df.building_workshopst:is_instance(building) or df.building_furnacest:is_instance(building) then
             buildStates[building.id] = buildStates[building.id] or building.flags.exists
             if buildStates[building.id] ~= building.flags.exists then
                 buildStates[building.id] = building.flags.exists
                 if building.flags.exists then
-                    if getmetatable(building) == "building_workshopst" then
-                        msg(workshopTypes[building.type].." was built.")
-                    elseif getmetatable(building) == "building_furnacest" then
-                        msg(furnaceTypes[building.type].." was built.")
+                    if df.building_workshopst:is_instance(building) then
+                        msg(workshopTypes[building.type].." was built.") --hint:df.building_workshopst
+                    elseif df.building_furnacest:is_instance(building) then
+                        msg(furnaceTypes[building.type].." was built.") --hint:df.building_furnacest
                     end
                 end
             end
@@ -178,7 +179,7 @@ local function event_loop()
     if extra_gamelog_enabled then dfhack.timeout(50, 'ticks', event_loop) end
 end
 
-extra_gamelog_enabled = false
+local extra_gamelog_enabled = false
 local args = {...}
 if args[1] == 'disable' then
     dfhack.onStateChange[_ENV] = nil

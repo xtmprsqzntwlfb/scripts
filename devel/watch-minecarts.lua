@@ -9,7 +9,8 @@ Usage:  ``devel/watch-minecarts start|stop``
 
 ]====]
 
-last_stats = last_stats or {}
+last_stats = last_stats or {} --as:number[][]
+timeout_id = timeout_id or nil --as:number
 
 function compare_one(vehicle)
     local last = last_stats[vehicle.id]

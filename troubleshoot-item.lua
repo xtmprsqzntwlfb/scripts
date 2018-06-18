@@ -28,8 +28,9 @@ function coord_to_str(coord)
 end
 
 function troubleshoot_item(item, out)
+    local outstr = nil --as:string
     if out == nil then
-        local outstr = ''
+        outstr = ''
         out = function(s) outstr = outstr .. s .. '\n' end
     end
     local function warn(s) out('WARNING: ' .. s) end
@@ -76,7 +77,7 @@ end
 
 
 function main(args)
-    item = dfhack.gui.getSelectedItem(true)
+    local item = dfhack.gui.getSelectedItem(true)
     if item then
         troubleshoot_item(item, print)
     else

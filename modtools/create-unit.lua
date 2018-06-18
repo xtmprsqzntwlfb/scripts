@@ -652,4 +652,3 @@ for n = 1,spawnNumber do
     dfhack.units.setNickname(df.unit.find(unitId), args.nick)
   end
 end
-

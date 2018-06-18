@@ -2,7 +2,7 @@
 -- Based on "dismissmerchants" by PatrikLundell:
 -- http://www.bay12forums.com/smf/index.php?topic=159297.msg7257447#msg7257447
 
-help = [====[
+local help = [====[
 
 fix/stuck-merchants
 ===================

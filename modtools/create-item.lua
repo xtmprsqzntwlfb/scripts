@@ -34,7 +34,7 @@ Arguments::
 ]====]
 local utils = require 'utils'
 
-validArgs = utils.invert({
+local validArgs = utils.invert({
  'help',
  'creator',
  'material',
@@ -46,7 +46,7 @@ validArgs = utils.invert({
  'quality'
 })
 
-organicTypes = utils.invert({
+local organicTypes = utils.invert({
  df.item_type.REMAINS,
  df.item_type.FISH,
  df.item_type.FISH_RAW,
@@ -55,7 +55,7 @@ organicTypes = utils.invert({
  df.item_type.EGG,
 })
 
-badTypes = utils.invert({
+local badTypes = utils.invert({
  df.item_type.CORPSE,
  df.item_type.CORPSEPIECE,
  df.item_type.FOOD,

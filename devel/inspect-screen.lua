@@ -50,7 +50,7 @@ function InspectScreen:onRenderBody(dc)
         local info = self.cursor_pen
         dc:string('CH: '):char(info.ch, FG_PEN):char(info.ch, BG_PEN):string(' '):string(''..info.ch,TXT_PEN):newline()
         local fgcolor = info.fg
-        local fgstr = info.fg
+        local fgstr = tostring(info.fg)
         if info.bold then
             fgcolor = (fgcolor+8)%16
             fgstr = fgstr..'+8'

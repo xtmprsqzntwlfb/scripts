@@ -30,13 +30,13 @@ local cmd = args[1]
 
 env = env or utils.df_shortcut_env()
 
-if cmd=="--file" or cmd=="-f" then
+if cmd=="--file" or cmd=="-f" then --luacheck: skip
     local f,err=loadfile (args[2])
     if f==nil then
         qerror(err)
     end
     dfhack.safecall(f,table.unpack(args,3))
-elseif cmd=="--save" or cmd=="-s" then
+elseif cmd=="--save" or cmd=="-s" then --luacheck: skip
     if df.global.world.cur_savegame.save_dir=="" then
         qerror("Savefile not loaded")
     end
@@ -47,7 +47,7 @@ elseif cmd=="--save" or cmd=="-s" then
         qerror(err)
     end
     dfhack.safecall(f,table.unpack(args,3))
-elseif cmd~=nil then
+elseif cmd~=nil then --luacheck: skip
     -- Support some of the prefixes allowed by dfhack.interpreter
     local prefix
     if string.match(cmd, "^[~@!]") then

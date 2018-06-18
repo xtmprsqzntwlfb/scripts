@@ -33,6 +33,7 @@ function getCursorPos()
         return copyall(g_cursor)
     end
 end
+--luacheck: skip
 function falloff(color,sqDist,maxdist)
     local v1=1/(sqDist/maxdist+1)
     local v2=v1-1/(1+maxdist*maxdist)
@@ -44,15 +45,16 @@ return {r=math.max(c1.r,c2.r),
         g=math.max(c1.g,c2.g),
         b=math.max(c1.b,c2.b)}
 end
+--luacheck: defclass={precalc:'{r:number,g:number,b:number}[]',lightMap:'{r:number,g:number,b:number}[]',fovs:'{_type:table,pos:{x:number,y:number},radius:number,color:{r:number,g:number,b:number}}[]'}
 LightOverlay=defclass(LightOverlay,guidm.DwarfOverlay)
 LightOverlay.ATTRS {
-    lightMap={},
     dynamic=true,
     dirty=false,
 }
 function LightOverlay:init(args)
-
-    self.tick=df.global.cur_year_tick_advmode
+    self.precalc = {}
+    self.lightMap = {}
+    self.tick = df.global.cur_year_tick_advmode
 end
 
 function lightPassable(shape)
@@ -174,6 +176,7 @@ function LightOverlay:placeLightFov(pos,radius,color)
     self.lightMap[tile]=ncol
     table.insert(self.fovs,{pos=pos,radius=radius,color=color})
 end
+--luacheck: skip
 function LightOverlay:placeLightFov2(pos,radius,color,f,rays)
     f=f or falloff
     local raycount=rays or 25
@@ -213,6 +216,7 @@ function LightOverlay:placeLightFov2(pos,radius,color,f,rays)
         end
     end
 end
+--luacheck: skip
 function LightOverlay:placeLight(pos,radius,color,f)
     f=f or falloff
     local vp=self:getViewport()

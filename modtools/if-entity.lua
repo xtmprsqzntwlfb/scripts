@@ -34,7 +34,7 @@ Example:
 
 local utils = require 'utils'
 
-validArgs = utils.invert({
+local validArgs = utils.invert({
     'help',
     'id',
     'cmd',

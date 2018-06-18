@@ -42,7 +42,7 @@ function equipItem(unit, item, bodyPart, mode)
 
 end
 
-validArgs = utils.invert({
+local validArgs = utils.invert({
   'help',
   'unit',
   'item',
@@ -94,7 +94,7 @@ if not part then
 end
 
 local mode = args.mode
-mode = df.unit_inventory_item.T_mode[mode]
+mode = df.unit_inventory_item.T_mode[mode] --luacheck: retype
 
 equipItem(unit, item, partId, mode)
 

@@ -7,7 +7,7 @@ A hotkey-friendly teleport that places your adventurer where your cursor is.
 
 ]====]
 
-teleport = reqscript("teleport").teleport
+local teleport = reqscript("teleport").teleport
 
 function flashstep()
     local unit = df.global.world.units.active[0]

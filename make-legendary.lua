@@ -30,7 +30,7 @@ end
 
 function make_legendary(skillname)
     local skillnamenoun,skillnum
-    unit=dfhack.gui.getSelectedUnit()
+    local unit=dfhack.gui.getSelectedUnit()
 
     if unit==nil then
         print ("No unit under cursor!  Aborting with extreme prejudice.")
@@ -45,7 +45,7 @@ function make_legendary(skillname)
     end
 
     if skillnamenoun ~= nil then
-        utils = require 'utils'
+        local utils = require 'utils'
         skillnum = df.job_skill[skillname]
         utils.insert_or_update(unit.status.current_soul.skills, { new = true, id = skillnum, rating = 20 }, 'id')
         print (getName(unit) .. " is now a Legendary "..skillnamenoun)
@@ -65,14 +65,14 @@ function PrintSkillList()
 end
 
 function BreathOfArmok()
-    unit=dfhack.gui.getSelectedUnit()
+    local unit=dfhack.gui.getSelectedUnit()
     if unit==nil then
         print ("No unit under cursor!  Aborting with extreme prejudice.")
         return
     end
     local i
     local count_max = count_this(df.job_skill)
-    utils = require 'utils'
+    local utils = require 'utils'
     for i=0, count_max do
         utils.insert_or_update(unit.status.current_soul.skills, { new = true, id = i, rating = 20 }, 'id')
     end
@@ -80,13 +80,13 @@ function BreathOfArmok()
 end
 
 function LegendaryByClass(skilltype)
-    unit=dfhack.gui.getSelectedUnit()
+    local unit=dfhack.gui.getSelectedUnit()
     if unit==nil then
         print ("No unit under cursor!  Aborting with extreme prejudice.")
         return
     end
 
-    utils = require 'utils'
+    local utils = require 'utils'
     local i
     local skillclass
     local count_max = count_this(df.job_skill)

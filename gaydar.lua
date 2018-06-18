@@ -24,7 +24,7 @@ Orientation filters:
 ]====]
 local utils = require('utils')
 
-validArgs = utils.invert({
+local validArgs = utils.invert({
   'all',
   'citizens',
   'named',
@@ -109,7 +109,7 @@ local function nameOrSpeciesAndNumber(unit)
  end
 end
 
-local orientations={}
+local orientations={} --as:string[]
 
 if args.citizens then
  for k,v in ipairs(df.global.world.units.active) do

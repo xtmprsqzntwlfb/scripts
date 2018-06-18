@@ -6,13 +6,13 @@ devel/clear-script-env
 Clears the environment of the specified lua script(s).
 
 ]====]
-args = {...}
+local args = {...}
 if #args < 1 then qerror("script name(s) required") end
 for _, name in pairs(args) do
     local file = dfhack.findScript(name)
     if file then
         local script = dfhack.internal.scripts[file]
-        if script then
+        if script then --luacheck: skip
             local env = script.env
             while next(env) do
                 env[next(env)] = nil

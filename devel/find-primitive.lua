@@ -20,12 +20,13 @@ Use ``devel/find-primitive help`` for a list of valid data types.
 
 ]====]
 
-ms = require('memscan')
+local ms = require('memscan')
 
-searcher = ms.DiffSearcher.new(ms.get_data_segment())
-values = {...}
-data_type = table.remove(values, 1)
+local searcher = ms.DiffSearcher.new(ms.get_data_segment())
+local values = {...}
+local data_type = table.remove(values, 1)
 
+--luacheck: out=bool skip
 function is_valid_data_type(t)
     return getmetatable(searcher.area[t]) == ms.CheckedArray
 end
@@ -43,7 +44,7 @@ if data_type == 'help' or not is_valid_data_type(data_type) then
     return
 end
 
-addr = searcher:find_menu_cursor(
+local addr = searcher:find_menu_cursor(
     'Adjust the value of the variable so that it matches the message given, then press enter.',
     data_type,
     values

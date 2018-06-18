@@ -17,6 +17,8 @@ Usage:  ``emigration enable|disable``
 
 ]====]
 
+enabled = enabled or false
+
 local args = {...}
 if args[1] == "enable" then
     enabled = true
@@ -88,8 +90,8 @@ function checkForDeserters(method,civ_id)
 end
 
 function checkmigrationnow()
-    local merchant_civ_ids = {}
-    local diplomat_civ_ids = {}
+    local merchant_civ_ids = {} --as:number[]
+    local diplomat_civ_ids = {} --as:number[]
     local allUnits = df.global.world.units.active
     for i=0, #allUnits-1 do
         local unit = allUnits[i]

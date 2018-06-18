@@ -27,7 +27,7 @@ for pos_id,v in pairs(my_entity.positions.assignments) do
         local oldfig=df.historical_figure.find(old_id)
 
         for k,v in pairs(oldfig.entity_links) do
-            if df.histfig_entity_link_positionst:is_instance(v) and v.assignment_id==pos_id and v.entity_id==df.global.ui.civ_id then
+            if df.histfig_entity_link_positionst:is_instance(v) and v.assignment_id==pos_id and v.entity_id==df.global.ui.civ_id then --hint:df.histfig_entity_link_positionst
                 oldfig.entity_links:erase(k)
                 break
             end

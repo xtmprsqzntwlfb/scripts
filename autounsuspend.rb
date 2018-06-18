@@ -18,6 +18,8 @@ class AutoUnsuspend
         count = 0
         df.world.jobs.list.each { |job|
             if job.job_type == :ConstructBuilding and job.flags.suspend and df.map_tile_at(job).designation.flow_size <= 1
+                # skip planned buildings
+                next if job.job_items.length == 1 and job.job_items[0].item_type == :NONE
                 job.flags.suspend = false
                 count += 1
             end

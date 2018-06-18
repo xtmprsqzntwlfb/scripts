@@ -21,7 +21,7 @@ and ``colonies convert TERMITE`` ends your beekeeping industry.
 ]====]
 
 function findVermin(target_verm)
-    for k,v in pairs(df.global.world.raws.creatures.all) do
+    for k,v in ipairs(df.global.world.raws.creatures.all) do
         if v.creature_id == target_verm then
             return k
         end
@@ -31,7 +31,7 @@ end
 
 function list_colonies()
     for idx, col in pairs(df.global.world.vermin.colonies) do
-        race = df.global.world.raws.creatures.all[col.race].creature_id
+        local race = df.global.world.raws.creatures.all[col.race].creature_id
         print(race..'    at  '..col.pos.x..', '..col.pos.y..', '..col.pos.z)
     end
 end

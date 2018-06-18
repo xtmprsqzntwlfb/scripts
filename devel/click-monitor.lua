@@ -13,7 +13,7 @@ Usage: ``devel/click-monitor start|stop``
 
 VERSION = '0.2'
 
-if active == nil then active = false end
+active = active or false
 
 function usage()
     print [[
@@ -27,6 +27,8 @@ function set_timeout()
     dfhack.timeout(1, 'frames', check_click)
 end
 
+last_msg = last_msg or ''
+
 function log(s, color)
     -- prevent duplicate output
     if s ~= last_msg then
@@ -36,12 +38,14 @@ function log(s, color)
     end
 end
 
+--luacheck: in=none
 function check_click()
     local s = ''
     local color = COLOR_RESET
     for _, attr in pairs({'mouse_lbut', 'mouse_rbut', 'mouse_lbut_down',
         'mouse_rbut_down', 'mouse_lbut_lift', 'mouse_rbut_lift'}) do
-        if df.global.enabler[attr] ~= 0 then
+        local enabler = df.global.enabler --as:number[]
+        if enabler[attr] ~= 0 then
             s = s .. '[' .. attr:sub(7) .. ']  '
         end
     end
@@ -58,7 +62,7 @@ function check_click()
     if active then set_timeout() end
 end
 
-args = {...}
+local args = {...}
 if dfhack_flags and dfhack_flags.enable then
     table.insert(args, dfhack_flags.enable_state and 'enable' or 'disable')
 end

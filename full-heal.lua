@@ -25,7 +25,7 @@ the corpse - creepy!
 
 local utils = require('utils')
 
-validArgs = utils.invert({
+local validArgs = utils.invert({
     'r',
     'help',
     'unit',
@@ -40,10 +40,11 @@ if args.help then
 end
 
 local item = dfhack.gui.getSelectedItem(true)
+local unit
 if args.unit then
     unit = df.unit.find(tonumber(args.unit))
 elseif df.item_corpsest:is_instance(item) then
-    unit = df.unit.find(item.unit_id)
+    unit = df.unit.find(item.unit_id) --hint:df.item_corpsest
 else
     unit = dfhack.gui.getSelectedUnit()
 end
@@ -63,7 +64,7 @@ if unit then
         unit.flags2.killed = false
         unit.flags3.ghostly = false
         if not args.keep_corpse then
-            for _, corpse in ipairs(df.global.world.items.other.CORPSE) do
+            for _, corpse in ipairs(df.global.world.items.other.CORPSE) do --as:df.item_body_component
                 if corpse.unit_id == unit.id then
                     corpse.flags.garbage_collect = true
                     corpse.flags.forbid = true
@@ -216,7 +217,7 @@ if unit then
     while job_link do
       local doctor_job = job_link.item
       if doctor_job then
-        local patientRef = dfhack.job.getGeneralRef(doctor_job, df.general_ref_type['UNIT_PATIENT'])
+        local patientRef = dfhack.job.getGeneralRef(doctor_job, df.general_ref_type['UNIT_PATIENT']) --as:df.general_ref_unit_patientst
         if patientRef and patientRef.unit_id == unit.id then
           patientRef.unit_id = -1 -- causes active healthcare job to be cancelled, generating a job cancellation announcement indicating the lack of a patient
           break
