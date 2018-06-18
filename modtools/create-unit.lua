@@ -10,6 +10,9 @@
 --   sets baby/child profession and mood for creatures of the appropriate age where relevant
 --   properly assigns civ_id to historical_figure to eliminate a number of hostility issues
 --   removes the arena-generated string of numbers from the first name of units
+--   added 'quantity' arg for spawning multiple creatures simultaneously
+--   creature caste is now randomly selected if left unspecified
+
 --[[
   TODO
     confirm body size is computed appropriately for different ages / life stages
@@ -36,6 +39,7 @@ Creates a unit.  Usage::
             HUMAN
     -caste casteName
         specify the caste of the unit to be created
+        if not specified, the caste is randomly selected
         examples:
             MALE
             FEMALE
@@ -54,14 +58,20 @@ Creates a unit.  Usage::
         Can be used instead of -civId \\LOCAL and -groupId \\LOCAL
     -name entityRawName
         set the unit's name to be a random name appropriate for the
-        given entity.  examples:
+        given entity
+        examples:
             MOUNTAIN
+            EVIL
     -nick nickname
         set the unit's nickname directly
     -location [ x y z ]
         create the unit at the specified coordinates
     -age howOld
         set the birth date of the unit by current age
+        chosen randomly if not specified
+    -quantity howMany
+        replace "howMany" with the number of creatures you want to create
+        defaults to 1 if not specified
     -flagSet [ flag1 flag2 ... ]
         set the specified unit flags in the new unit to true
         flags may be selected from df.unit_flags1, df.unit_flags2,
@@ -85,7 +95,7 @@ local utils=require 'utils'
 function createUnit(...)
   local old_gametype = df.global.gametype
   local old_mode = df.global.ui.main.mode
-  local old_popups = {} --as:df.popup_message[]
+  local old_popups = {}
   for _, popup in pairs(df.global.world.status.popups) do
     table.insert(old_popups, popup)
   end
@@ -144,8 +154,8 @@ function createUnitInner(race_id, caste_id, location, entityRawName)
   local spawnScreen = dfhack.gui.getCurViewscreen()
   if dfhack.world.isArena() then
     -- Just modify the current screen in arena mode (#994)
-    spawnScreen.race:insert(0, race_id) --hint:df.viewscreen_layer_arena_creaturest
-    spawnScreen.caste:insert(0, caste_id) --hint:df.viewscreen_layer_arena_creaturest
+    spawnScreen.race:insert(0, race_id)
+    spawnScreen.caste:insert(0, caste_id)
   end
   gui.simulateInput(spawnScreen, 'SELECT')
 
@@ -175,12 +185,8 @@ end
 --u.population_id = df.historical_entity.find(df.global.ui.civ_id).populations[0]
 
 -- Picking a caste or gender at random
---luacheck: in=number
-function getRandomCasteId(race_id)
-  local cr = df.creature_raw.find(race_id)
-  local caste_id, casteMax
-
-  casteMax = #cr.caste - 1
+function getRandomCasteId(race)
+  local casteMax = #race.caste - 1
 
   if casteMax > 0 then
     return math.random(0, casteMax)
@@ -303,9 +309,8 @@ function createNemesis(trgunit,civ_id,group_id)
 
   nem.save_file_id=-1
 
-  local he = nil
   if civ_id ~= -1 then
-    he=df.historical_entity.find(civ_id)
+    local he=df.historical_entity.find(civ_id)
     he.nemesis_ids:insert("#",id)
     he.nemesis:insert("#",nem)
     allocateIds(nem,he)
@@ -318,7 +323,7 @@ function createNemesis(trgunit,civ_id,group_id)
       he_group.nemesis_ids:insert("#",id)
       he_group.nemesis:insert("#",nem)
   end
-  nem.figure=createFigure(trgunit,he,he_group)
+  nem.figure = trgunit.hist_figure_id ~= -1 and df.historical_figure.find(trgunit.hist_figure_id) or createFigure(trgunit,he,he_group) -- the histfig check is there just in case this function is called by another script to create nemesis data for a historical figure which somehow lacks it
   return nem
 end
 
@@ -352,7 +357,7 @@ function domesticate(uid, group_id)
 
     -- And make them tame (from Dirst)
     u.flags1.tame = true
-    u.training_level = df.animal_training_level.Domesticated
+    u.training_level = 7
   end
 end
 
@@ -378,7 +383,6 @@ function wild(uid)
   end
 end
 
---luacheck: in=number,string
 function nameUnit(id, entityRawName)
   --pick a random appropriate name
   --choose three random words in the appropriate things
@@ -460,7 +464,7 @@ function setAgeProfession(unit)
   end
 end
 
-local validArgs = utils.invert({
+validArgs = utils.invert({
   'help',
   'race',
   'caste',
@@ -473,7 +477,8 @@ local validArgs = utils.invert({
   'nick',
   'location',
   'age',
-  'setUnitToFort' -- added by amostubal to get past an issue with \\LOCAL
+  'setUnitToFort', -- added by amostubal to get past an issue with \\LOCAL
+  'quantity'
 })
 
 if moduleMode then
@@ -490,8 +495,8 @@ local race
 local raceIndex
 local casteIndex
 
-if not args.race or not args.caste then
-  error 'Specfiy a race and caste for the new unit.'
+if not args.race then
+  qerror('Specify a race for the new unit.')
 end
 
 --find race
@@ -504,25 +509,27 @@ for i,v in ipairs(df.global.world.raws.creatures.all) do
 end
 
 if not race then
-  error 'Invalid race.'
+  qerror('Invalid race: '..args.race)
 end
 
-for i,v in ipairs(race.caste) do
-  if v.caste_id == args.caste then
-    casteIndex = i
-    break
+if args.caste then -- if args.caste is omitted, casteIndex is randomly selected within the spawn loop below
+  for i,v in ipairs(race.caste) do
+    if v.caste_id == args.caste then
+      casteIndex = i
+      break
+    end
   end
-end
 
-if not casteIndex then
-  error 'Invalid caste.'
+  if not casteIndex then
+    qerror('Invalid caste: '..args.caste)
+  end
 end
 
 local age
 if args.age then
   age = tonumber(args.age)
   if not age and not age == 0 then
-      error('Invalid age: ' .. args.age)
+    qerror('Invalid age: ' .. args.age)
   end
 end
 
@@ -546,87 +553,102 @@ if args.setUnitToFort then
   group_id = df.global.ui.group_id
 end
 
-local unitId
-if civ_id == -1 then
+local spawnNumber = 1
+if args.quantity then
+  spawnNumber = tonumber(args.quantity)
+  if not spawnNumber or spawnNumber < 1 then
+    qerror('Invalid spawn quantity: '..args.quantity)
+  end
+end
+
+for n = 1,spawnNumber do
+
+  if not args.caste then -- randomly select caste each time
+    casteIndex = getRandomCasteId(race)
+  end
+
+  local unitId
+  if civ_id == -1 then
     unitId = createUnit(raceIndex, casteIndex, args.location, args.name)
   else
     unitId = createUnitInCiv(raceIndex, casteIndex, civ_id, group_id, args.location, args.name)
-end
+  end
 
-if args.domesticate then
-  domesticate(unitId, group_id)
- else
-  wild(unitId)
-end
+  if args.domesticate then
+    domesticate(unitId, group_id)
+  else
+    wild(unitId)
+  end
 
-local u = df.unit.find(unitId)
-u.counters.soldier_mood_countdown = -1
-u.enemy.unk_450 = -1
-u.enemy.unk_454 = -1
-u.enemy.army_controller_id = -1
+  local u = df.unit.find(unitId)
+  u.counters.soldier_mood_countdown = -1
+  u.counters.death_cause = -1
+  u.enemy.unk_450 = -1
+  u.enemy.unk_454 = -1
+  u.enemy.army_controller_id = -1
 
 --these flags are an educated guess of how to get the game to compute sizes correctly: use -flagSet and -flagClear arguments to override or supplement
-u.flags2.calculated_nerves = false
-u.flags2.calculated_bodyparts = false
-u.flags3.body_part_relsize_computed = false
-u.flags3.size_modifier_computed = false
-u.flags3.compute_health = true
-u.flags3.weight_computed = false
+  u.flags2.calculated_nerves = false
+  u.flags2.calculated_bodyparts = false
+  u.flags3.body_part_relsize_computed = false
+  u.flags3.size_modifier_computed = false
+  u.flags3.compute_health = true
+  u.flags3.weight_computed = false
 
-if age or age == 0 then
-  if age == 0 then
-    u.birth_time = df.global.cur_year_tick
-  end
-  local u = df.unit.find(unitId)
-  local oldYearDelta = u.old_year - u.birth_year
-  u.birth_year = df.global.cur_year - age
-  if u.old_year ~= -1 then
-    u.old_year = u.birth_year + oldYearDelta
-  end
-  if u.flags1.important_historical_figure == true and u.flags2.important_historical_figure == true then
-    local hf = df.historical_figure.find(u.hist_figure_id)
-    hf.born_year = u.birth_year
-    hf.born_seconds = u.birth_time
-    hf.old_year = u.old_year
-    hf.old_seconds = u.old_time
-  end
-end
-setAgeProfession(u)
-
-if args.flagSet or args.flagClear then
-  local u = df.unit.find(unitId)
-  local flagsToSet = {} --as:bool[]
-  local flagsToClear = {} --as:bool[]
-  for _,v in ipairs(args.flagSet or {}) do
-    flagsToSet[v] = true
-  end
-  for _,v in ipairs(args.flagClear or {}) do
-    flagsToClear[v] = true
-  end
-  for _,k in ipairs(df.unit_flags1) do
-    if flagsToSet[k] then
-      u.flags1[k] = true;
-    elseif flagsToClear[k] then
-      u.flags1[k] = false;
+  if age or age == 0 then
+    if age == 0 then
+      u.birth_time = df.global.cur_year_tick
+    end
+    local u = df.unit.find(unitId)
+    local oldYearDelta = u.old_year - u.birth_year
+    u.birth_year = df.global.cur_year - age
+    if u.old_year ~= -1 then
+      u.old_year = u.birth_year + oldYearDelta
+    end
+    if u.flags1.important_historical_figure == true and u.flags2.important_historical_figure == true then
+      local hf = df.historical_figure.find(u.hist_figure_id)
+      hf.born_year = u.birth_year
+      hf.born_seconds = u.birth_time
+      hf.old_year = u.old_year
+      hf.old_seconds = u.old_time
     end
   end
-  for _,k in ipairs(df.unit_flags2) do
-    if flagsToSet[k] then
-      u.flags2[k] = true;
-    elseif flagsToClear[k] then
-      u.flags2[k] = false;
+  setAgeProfession(u)
+
+  if args.flagSet or args.flagClear then
+    local u = df.unit.find(unitId)
+    local flagsToSet = {}
+    local flagsToClear = {}
+    for _,v in ipairs(args.flagSet or {}) do
+      flagsToSet[v] = true
+    end
+    for _,v in ipairs(args.flagClear or {}) do
+      flagsToClear[v] = true
+    end
+    for _,k in ipairs(df.unit_flags1) do
+      if flagsToSet[k] then
+        u.flags1[k] = true;
+      elseif flagsToClear[k] then
+        u.flags1[k] = false;
+      end
+    end
+    for _,k in ipairs(df.unit_flags2) do
+      if flagsToSet[k] then
+        u.flags2[k] = true;
+      elseif flagsToClear[k] then
+        u.flags2[k] = false;
+      end
+    end
+    for _,k in ipairs(df.unit_flags3) do
+      if flagsToSet[k] then
+        u.flags3[k] = true;
+      elseif flagsToClear[k] then
+        u.flags3[k] = false;
+      end
     end
   end
-  for _,k in ipairs(df.unit_flags3) do
-    if flagsToSet[k] then
-      u.flags3[k] = true;
-    elseif flagsToClear[k] then
-      u.flags3[k] = false;
-    end
+
+  if args.nick and type(args.nick) == 'string' then
+    dfhack.units.setNickname(df.unit.find(unitId), args.nick)
   end
 end
-
-if args.nick and type(args.nick) == 'string' then
-  dfhack.units.setNickname(df.unit.find(unitId), args.nick)
-end
-
