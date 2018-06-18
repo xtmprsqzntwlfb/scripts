@@ -66,7 +66,7 @@ function canLeave(unit)
     
     return dfhack.units.isOwnRace(unit) and  --  Doubtful check. naturalized citizens
            dfhack.units.isOwnCiv(unit) and   --  might also want to leave.
-           not dfhack.units.isActive(unit) and
+           dfhack.units.isActive(unit) and
            not dfhack.units.isOpposedToLife(unit) and
            not unit.flags1.merchant and
            not unit.flags1.diplomat and
