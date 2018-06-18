@@ -489,7 +489,7 @@ write_flags('invalid_flags_1', {
     { 'an invader or hostile', { df.unit_flags1.invader_origin } },
     { 'resident, invader or ambusher', { df.unit_flags1.hidden_ambusher, df.unit_flags1.invades } },
     { 'part of a merchant caravan', { df.unit_flags1.forest } },
-    { 'Inactive, currently not in play', { df.unit_flags1.dead } },
+    { 'inactive, currently not in play', { df.unit_flags1.dead } },
     { 'marauder', { df.unit_flags1.marauder } }
 });
 write_flags ('invalid_flags_2', {
