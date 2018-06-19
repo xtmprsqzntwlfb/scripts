@@ -19,23 +19,32 @@ def display_death_event(e)
 end
 
 def display_death_unit(u)
-    death_info = u.counters.death_tg
-    killer = death_info.killer_tg if death_info
-
     str = "The #{u.race_tg.name[0]}"
     str << " #{u.name}" if u.name.has_name
-    str << " died"
-    str << " in year #{death_info.event_year}" if death_info
-    str << " (cause: #{u.counters.death_cause.to_s.downcase})," if u.counters.death_cause != -1
-    str << " killed by the #{killer.race_tg.name[0]} #{killer.name}" if killer
+    
+    if not u.flags2.killed and not u.flags3.ghostly
+        str << " is not dead yet !"
+        
+        puts str.chomp(',')
+    else
+        death_info = u.counters.death_tg
+        killer = death_info.killer_tg if death_info
 
-    puts str.chomp(',') + '.'
+        str << " died" if !u.flags2.slaughter
+        str << " was slaughtered" if u.flags2.slaughter
+        
+        str << " in year #{death_info.event_year}" if death_info
+        str << " (cause: #{u.counters.death_cause.to_s.downcase})," if u.counters.death_cause != -1
+        str << " killed by the #{killer.race_tg.name[0]} #{killer.name}" if killer
+
+        puts str.chomp(',') + '.'
+    end
 end
 
 item = df.item_find(:selected)
 unit = df.unit_find(:selected)
 
-if !item or !item.kind_of?(DFHack::ItemBodyComponent)
+if !unit and (!item or !item.kind_of?(DFHack::ItemBodyComponent))
     item = df.world.items.other[:ANY_CORPSE].find { |i| df.at_cursor?(i) }
 end
 
@@ -52,13 +61,13 @@ elsif hf == -1
     if unit ||= item.unit_tg
         display_death_unit(unit)
     else
-        puts "Not a historical figure, cannot death find info"
+        puts "Not a historical figure, cannot find death info"
     end
 
 else
     histfig = df.world.history.figures.binsearch(hf)
     unit = histfig ? df.unit_find(histfig.unit_id) : nil
-    if unit and not unit.flags1.dead and not unit.flags3.ghostly
+    if unit and not unit.flags2.killed and not unit.flags3.ghostly
         puts "#{unit.name} is not dead yet !"
 
     else
