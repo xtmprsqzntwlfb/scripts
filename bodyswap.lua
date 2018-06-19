@@ -16,11 +16,11 @@ local usage = [====[
 
 bodyswap
 ========
-This script allows the player to gain control over a new unit in adventurer mode
-whilst simultaneously loosing control over their current character.
+This script allows the player to take direct control of any unit present in
+adventure mode whilst losing control of their current adventurer.
 
 To specify the target unit, simply select it in the user interface,
-such as by opening the unit's status screen or viewing its description
+such as by opening the unit's status screen or viewing its description,
 and enter "bodyswap" in the DFHack console.
 
 Alternatively, the target unit can be specified by its unit id as shown below.
@@ -51,9 +51,6 @@ end
 function setOldAdvNemFlags(nem)
   nem.flags.ACTIVE_ADVENTURER = false
   nem.flags.RETIRED_ADVENTURER = true
-  nem.unit.idle_area.x = nem.unit.pos.x
-  nem.unit.idle_area.y = nem.unit.pos.y
-  nem.unit.idle_area.z = nem.unit.pos.z
 end
 
 function clearNemesisFromLinkedSites(nem)
@@ -84,7 +81,8 @@ function swapAdvUnit(newUnit)
     qerror('Target unit not specified!')
   end
 
-  local oldUnit = df.nemesis_record.find(df.global.ui_advmode.player_id).unit
+  local oldNem = df.nemesis_record.find(df.global.ui_advmode.player_id)
+  local oldUnit = oldNem.unit
   if newUnit == oldUnit then
     return
   end
@@ -113,19 +111,18 @@ function swapAdvUnit(newUnit)
     qerror("Target unit index not found!")
   end
 
+  local newNem = dfhack.units.getNemesis(newUnit) or createNemesis(newUnit)
+  if not newNem then
+    qerror("Failed to obtain target nemesis!")
+  end
+
+  setOldAdvNemFlags(oldNem)
+  setNewAdvNemFlags(newNem)
+  clearNemesisFromLinkedSites(newNem)
+  df.global.ui_advmode.player_id = newNem.id
   activeUnits[newUnitIndex] = oldUnit
   activeUnits[oldUnitIndex] = newUnit
-
-  local newNem = dfhack.units.getNemesis(newUnit) or createNemesis(newUnit)
-  if newNem then
-    local oldNem = dfhack.units.getNemesis(oldUnit)
-    if oldNem then
-      setOldAdvNemFlags(oldNem)
-    end
-    setNewAdvNemFlags(newNem)
-    clearNemesisFromLinkedSites(newNem)
-    df.global.ui_advmode.player_id = newNem.id
-  end
+  oldUnit.idle_area:assign(oldUnit.pos)
 end
 
 if not dfhack_flags.module then
