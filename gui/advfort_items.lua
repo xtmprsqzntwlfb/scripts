@@ -89,8 +89,8 @@ function jobitemEditor:init(args)
     end
 end
 function jobitemEditor:get_slot()
-    local idx,choice=self.subviews.itemList:getSelected()
-    return choice
+    local idx=self.subviews.itemList:getSelected()
+    return self.slots[idx]
 end
 function jobitemEditor:can_add()
     local slot=self:get_slot()

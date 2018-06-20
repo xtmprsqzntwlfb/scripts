@@ -228,9 +228,8 @@ function CivBox:update_choices()
             table.insert(choices,{text=text,raw=v,num=i})
         end
     end
-    self.choices=choices
     if self.subviews.list then
-        self.subviews.list:setChoices(self.choices)
+        self.subviews.list:setChoices(choices)
     end
 end
 function CivBox:update_race_filter(id)
@@ -546,7 +545,6 @@ function editor_wounds:update_wounds()
         table.insert(ret,{text=format_wound(i, v,self.target_unit),wound=v})
     end
     self.subviews.wounds:setChoices(ret)
-    self.wound_list=ret
 end
 function editor_wounds:dirty_unit()
     self.target_unit.flags2={calculated_nerves=false,calculated_bodyparts=false,calculated_insulation=false}
