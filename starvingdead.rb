@@ -32,7 +32,7 @@ class StarvingDead
 
         @undead_count = 0
         df.world.units.active.each { |u|
-            if (u.enemy.undead and not u.flags1.dead)
+            if (u.enemy.undead and not u.flags1.inactive)
                 @undead_count += 1
                 if (u.curse.time_on_site > month_length * @threshold)
                     u.body.physical_attrs.each { |att|
@@ -41,7 +41,7 @@ class StarvingDead
                 end
 
                 if (u.curse.time_on_site > month_length * @die_threshold)
-                    u.flags1.dead = true
+                    u.flags1.inactive = true
                     u.curse.rem_tags2.FIT_FOR_ANIMATION = true
                 end
             end

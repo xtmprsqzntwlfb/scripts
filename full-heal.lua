@@ -60,7 +60,7 @@ if unit then
             unit.flags2.slaughter = false
             unit.flags3.scuttle = false
         end
-        unit.flags1.dead = false
+        unit.flags1.inactive = false
         unit.flags2.killed = false
         unit.flags3.ghostly = false
         if not args.keep_corpse then

@@ -64,7 +64,7 @@ end
 
 checkunit = lambda { |u|
     (u.body.blood_count != 0 or u.body.blood_max == 0) and
-    not u.flags1.dead and
+    not u.flags1.inactive and
     not u.flags1.caged and not u.flags1.chained and
     #not u.flags1.hidden_in_ambush and
     not df.map_designation_at(u).hidden
