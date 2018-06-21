@@ -57,7 +57,7 @@ num_set = 0
 
 set_adaptation_value = lambda { |u,v|
     next if !df.unit_iscitizen(u)
-    next if u.flags1.dead
+    next if u.flags2.killed
     u.status.misc_traits.each { |t|
         if t.id == :CaveAdapt
             # TBD: expose the color_ostream console and color values of
