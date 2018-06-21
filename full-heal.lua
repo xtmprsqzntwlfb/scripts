@@ -188,7 +188,7 @@ if unit then
       --print("Clearing historical wounds...")
       histFig.info.wounds = nil
     end
-    
+
     local health = unit.health
     if health then
       for i = 0, #health.flags-1,1 do

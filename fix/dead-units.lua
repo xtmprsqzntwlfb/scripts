@@ -10,8 +10,8 @@ to around 3000 units, and this script reduces it back.
 ]====]
 local units = df.global.world.units.active
 local count = 0
-local month = 1200 * 28
-local year = month * 12
+local MONTH = 1200 * 28
+local YEAR = MONTH * 12
 
 for i=#units-1,0,-1 do
     local unit = units[i]
@@ -25,18 +25,20 @@ for i=#units-1,0,-1 do
                not (dfhack.units.isMerchant(unit) or dfhack.units.isDiplomat(unit)) then
             remove = true
         end
-        if remove and unit.counters.death_id ~= -1 then  --  Keep recent deaths around for a month before culling them. It's annoying to have that
-                                                         --  rampaging FB just be gone from both the other and dead lists, and you may want to keep
-                                                         --  killed wildlife around for a while too.
-                                                         --  We don't have a time of death for slaughtered units, so they go the first time.
-          local incident = df.incident.find(unit.counters.death_id)
-          if incident then
-            local incident_time = incident.event_year * year + incident.event_time
-            local now = df.global.cur_year * year + df.global.cur_year_tick
-            if now - incident_time < month then
-              remove = false  --  Wait a while before culling it.
+        if remove and unit.counters.death_id ~= -1 then
+            --  Keep recent deaths around for a month before culling them. It's
+            --  annoying to have that rampaging FB just be gone from both the
+            --  other and dead lists, and you may want to keep killed wildlife
+            --  around for a while too. We don't have a time of death for
+            --  slaughtered units, so they go the first time.
+            local incident = df.incident.find(unit.counters.death_id)
+            if incident then
+                local incident_time = incident.event_year * YEAR + incident.event_time
+                local now = df.global.cur_year * YEAR + df.global.cur_year_tick
+                if now - incident_time < MONTH then
+                    remove = false  --  Wait a while before culling it.
+                end
             end
-          end
         end
         if remove then
             count = count + 1
