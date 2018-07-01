@@ -72,7 +72,7 @@ planfile.each_line { |l|
     next if l == ''
     tiles << l.split(/[;,]/).map { |t|
         t = t.strip
-        (t[0] == ?") ? t[1..-2] : t
+        (t[0] == '"') ? t[1..-2] : t
     }
 }
 

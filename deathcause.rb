@@ -21,10 +21,10 @@ end
 def display_death_unit(u)
     str = "The #{u.race_tg.name[0]}"
     str << " #{u.name}" if u.name.has_name
-    
+
     if not u.flags2.killed and not u.flags3.ghostly
         str << " is not dead yet !"
-        
+
         puts str.chomp(',')
     else
         death_info = u.counters.death_tg
@@ -32,7 +32,7 @@ def display_death_unit(u)
 
         str << " died" if !u.flags2.slaughter
         str << " was slaughtered" if u.flags2.slaughter
-        
+
         str << " in year #{death_info.event_year}" if death_info
         str << " (cause: #{u.counters.death_cause.to_s.downcase})," if u.counters.death_cause != -1
         str << " killed by the #{killer.race_tg.name[0]} #{killer.name}" if killer
