@@ -14,6 +14,10 @@ Applies to the selected unit, or use ``remove-stress -all`` to apply to all unit
 local utils = require 'utils'
 
 function removeStress(unit)
+    if unit.counters.soldier_mood > df.unit.T_counters.T_soldier_mood.Enraged then
+        -- Tantrum, Depressed, or Oblivious
+        unit.counters.soldier_mood = df.unit.T_counters.T_soldier_mood.None
+    end
     if unit.status.current_soul then
         unit.status.current_soul.personality.stress_level = -1000000
     end
