@@ -55,6 +55,8 @@ end
 
 offset = [0, 0]
 tiles = []
+max_x = 0
+max_y = 0
 planfile.each_line { |l|
     if l =~ /#.*start\s*\(\s*(-?\d+)\s*[,;]\s*(-?\d+)/
         raise "Error: multiple start() comments" if offset != [0, 0]
@@ -70,10 +72,14 @@ planfile.each_line { |l|
 
     l = l.chomp.sub(/#.*/, '')
     next if l == ''
+    x = 0
     tiles << l.split(/[;,]/).map { |t|
         t = t.strip
+        x = x + 1
+        max_x = x if x > max_x and not t.empty?
         (t[0] == '"') ? t[1..-2] : t
     }
+    max_y = max_y + 1
 }
 
 x = df.cursor.x - offset[0]
@@ -81,9 +87,21 @@ y = df.cursor.y - offset[1]
 z = df.cursor.z
 starty = y - 1
 
+map = df.world.map
+
+if x < 0 or y < 0 or x+max_x >= map.x_count or y+max_y >= map.y_count
+    max_x = max_x + x + 1
+    max_y = max_y + y + 1
+    raise "Position would designate outside map limits. Selected limits are from (#{x+1}, #{y+1}) to (#{max_x},#{max_y})"
+end
+
 tiles.each { |line|
     next if line.empty? or line == ['']
     line.each { |tile|
+        if tile.empty?
+            x += 1
+            next
+        end
         t = df.map_tile_at(x, y, z)
         s = t.shape_basic
         case tile
