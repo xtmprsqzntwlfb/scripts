@@ -10,20 +10,23 @@ getting old, or there are too many babies around...
 ]====]
 
 function rejuvenate()
-    local current_year,newbirthyear
-    local unit=dfhack.gui.getSelectedUnit()
+    local current_year, newbirthyear
+    local unit = dfhack.gui.getSelectedUnit()
 
-    if unit==nil then print ("No unit under cursor!  Aborting.") return end
+    if unit==nil then
+        qerror("No unit under cursor!  Aborting.")
+    end
 
-    current_year=df.global.cur_year
-    newbirthyear=current_year - 20
+    current_year = df.global.cur_year
+    newbirthyear = current_year - 20
     if unit.birth_year < newbirthyear then
-        unit.birth_year=newbirthyear
+        unit.birth_year = newbirthyear
     end
-    if unit.old_year < current_year+100 then
-        unit.old_year=current_year+100
+    if unit.old_year < current_year + 100 then
+        unit.old_year = current_year + 100
     end
-    print (dfhack.TranslateName(dfhack.units.getVisibleName(unit)).." is now 20 years old and will live at least 100 years")
+    print(dfhack.df2console(dfhack.TranslateName(dfhack.units.getVisibleName(unit))) ..
+        " is now 20 years old and will live at least 100 years")
 
 end
 
