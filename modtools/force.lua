@@ -49,7 +49,7 @@ local validArgs = utils.invert({
 })
 
 local args = utils.processArgs({...}, validArgs)
-if #args == 0 or args.help then
+if args.help then
  print(help)
  print('force: -eventType [Megabeast, Migrants, Caravan, Diplomat, WildlifeCurious, WildlifeMischievous, WildlifeFlier, NightCreature] -civ [player,ENTITY_ID]')
  return
