@@ -17,6 +17,11 @@ case. Must be in look or talk mode to issue command on tile.
 * follow - rejoin the party after "wait"
 * leave - remove from party (can be rejoined by talking)
 
+Can be called with '-c' flag to display "cheating" commands.
+
+* patch up - fully heals the companion
+* get in - rides e.g. minecart at cursor. Bit buggy as unit will teleport to the item when e.g. pushing it.
+
 ]====]
 
 local gui = require 'gui'
@@ -371,18 +376,10 @@ end},
 
 }
 local cheats={
-{name="Patch up",f=function (unit_list)
-    local dft=require("plugins.dfusion.tools")
+{name="patch up",f=function (unit_list)
     for k,v in pairs(unit_list) do
-        dft.healunit(v)
+        dfhack.run_script('full-heal','-unit',v.id)
      end
-    return true
-end},
-{name="Power up",f=function (unit_list)
-    local dft=require("plugins.dfusion.tools")
-    for k,d in pairs(unit_list) do
-        dft.powerup(d)
-    end
     return true
 end},
 {name="get in",f=function (unit_list,pos)
@@ -390,13 +387,14 @@ end},
         return false
     end
     adv=df.global.world.units.active[0]
-    item=getItemsAtPos(getxyz())[1]
+    item=GetItemsAtPos(df.global.cursor)[1]
     print(item.id)
     for k,v in pairs(unit_list) do
         v.riding_item_id=item.id
         local ref=df.general_ref_unit_riderst:new()
         ref.unit_id=v.id
         item.general_refs:insert("#",ref)
+        item.flags2.has_rider=true
     end
     return true
 end},
