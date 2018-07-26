@@ -222,14 +222,31 @@ function FilterBySize(items,race_id) --TODO add logic for compatible races
     end
     return ret
 end
---local companions=??
+
+function move_unit( unit,tx,ty,tz ) --copied from http/commands.lua with minor modifications
+    unit.idle_area.x=tx
+    unit.idle_area.y=ty
+    unit.idle_area.z=tz
+
+    unit.idle_area_type=df.unit_station_type.Commander
+    unit.idle_area_threshold=0
+    unit.follow_distance=50
+    --invalidate old path
+    unit.path.dest={x=unit.idle_area.x,y=unit.idle_area.y,z=unit.idle_area.z}
+    unit.path.goal=df.unit_path_goal.SeekStation
+    unit.path.path.x:resize(0)
+    unit.path.path.y:resize(0)
+    unit.path.path.z:resize(0)
+    return true
+end
+
 local orders={
 {name="move",f=function (unit_list,pos)
     if not CheckCursor(pos) then
         return false
     end
     for k,v in pairs(unit_list) do
-        v.path.dest:assign(pos)
+        move_unit(v,pos.x,pos.y,pos.z)
     end
 
     return true
@@ -476,13 +493,14 @@ function CompanionUi:onRenderBody( dc)
     end
     dc:pen(COLOR_GREY)
     local w,h=self:getWindowSize()
+    local w2=math.floor(w/2)
     local char_A=string.byte('A')-1
     for k,v in ipairs(orders) do
-        dc:seek(w/2,k):string(string.char(k+char_A)..". "):string(v.name);
+        dc:seek(w2,k):string(string.char(k+char_A)..". "):string(v.name);
     end
     if is_cheat then
         for k,v in ipairs(cheats) do
-            dc:seek(w/2,k+#orders):string(string.char(k+#orders+char_A)..". "):string(v.name);
+            dc:seek(w2,k+#orders):string(string.char(k+#orders+char_A)..". "):string(v.name);
         end
     end
 end
