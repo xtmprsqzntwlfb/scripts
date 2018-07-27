@@ -228,6 +228,7 @@ address('quality',df.item_crafted,'quality')
 
 header('item_subtype_offsets')
 address('sub_type',df.itemdef,'subtype')
+address('base_flags',df.itemdef,'base_flags')
 address('name',df.itemdef_armorst,'name')
 address('name_plural',df.itemdef_armorst,'name_plural')
 address('adjective',df.itemdef_armorst,'name_preplural')
