@@ -3,8 +3,8 @@
 
 gui/companion-order
 ===================
-A script to issue orders for companions. Select companions with lower case chars, issue orders with upper
-case. Must be in look or talk mode to issue command on tile.
+A script to issue orders for companions. Select companions with lower case chars (green when selected), issue orders with upper
+case. Must be in look or talk mode to issue command on tile (e.g. move/equip/pick-up).
 
 .. image:: /docs/images/companion-order.png
 
@@ -399,7 +399,7 @@ end},
     return true
 end},
 }
---[[ todo: add cheats...]]--
+
 function getCompanions(unit)
     unit=unit or df.global.world.units.active[0]
     local t_nem=dfhack.units.getNemesis(unit)
