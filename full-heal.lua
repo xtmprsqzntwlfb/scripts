@@ -53,7 +53,7 @@ end
 
 function isCitizen(unit)
 -- required as dfhack.units.isCitizen() returns false for dead units
-    local hf = unit.hist_figure_id ~= 1 and df.historical_figure.find(unit.hist_figure_id)
+    local hf = unit.hist_figure_id ~= -1 and df.historical_figure.find(unit.hist_figure_id)
     if not hf then
         return false
     end
