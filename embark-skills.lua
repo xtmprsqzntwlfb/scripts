@@ -58,7 +58,7 @@ if args[1] == 'points' then
     end
     if args[3] ~= 'all' then dwarves = selected_dwarf end
     adjust(dwarves, function(dwf)
-        dwf.unk_28c = points
+        dwf.skill_points_remaining = points
     end)
 elseif args[1] == 'max' then
     if args[2] ~= 'all' then dwarves = selected_dwarf end
