@@ -41,7 +41,6 @@ end
 Pathable = defclass(Pathable, guidm.MenuOverlay)
 
 function Pathable:onAboutToShow(parent)
-    Pathable.super.onAboutToShow(self, parent)
     if df.global.cursor.x == -30000 then
         if df.global.ui.main.mode == df.ui_sidebar_mode.Default then
             parent:feed_key(df.interface_key.D_LOOK)
@@ -49,6 +48,7 @@ function Pathable:onAboutToShow(parent)
             qerror("Unsupported UI mode - needs a cursor")
         end
     end
+    Pathable.super.onAboutToShow(self, parent)
 end
 
 function Pathable:onRenderBody(p)
