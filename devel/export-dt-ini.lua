@@ -123,6 +123,8 @@ address('events_vector',globals,'world','history','events')
 address('historical_figures_vector',globals,'world','history','figures')
 address('world_site_type',df.world_site,'type')
 address('active_sites_vector',df.world_data,'active_site')
+address('gview',globals,'gview')
+value('viewscreen_setupdwarfgame_vtable',dfhack.internal.getVTable('viewscreen_setupdwarfgamest'))
 
 header('offsets')
 address('word_table',df.language_translation,'words')
@@ -226,6 +228,7 @@ address('quality',df.item_crafted,'quality')
 
 header('item_subtype_offsets')
 address('sub_type',df.itemdef,'subtype')
+address('base_flags',df.itemdef,'base_flags')
 address('name',df.itemdef_armorst,'name')
 address('name_plural',df.itemdef_armorst,'name_plural')
 address('adjective',df.itemdef_armorst,'name_preplural')
@@ -445,6 +448,11 @@ address('perf_histfig',df.activity_event_performancest.T_participant_actions,'hi
 
 header('art_offsets')
 address('name',df.poetic_form,'name')
+
+header('viewscreen_offsets')
+address('view',df.interfacest,'view')
+address('child',df.viewscreen,'child')
+address('setupdwarfgame_units',df.viewscreen_setupdwarfgamest,'units')
 
 -- Final creation of the file
 
