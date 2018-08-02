@@ -32,8 +32,8 @@ end
 local fn_env = copyall(math)
 
 fn_env.rng = rng
-fn_env.apow = function(x,y) return math.pow(math.abs(x),y) end
-fn_env.spow = function(x,y) return x*math.pow(math.abs(x),y-1) end
+fn_env.apow = function(x,y) return math.abs(x) ^ y end
+fn_env.spow = function(x,y) return x*(math.abs(x)^(y-1)) end
 
 -- Noise functions are referenced from expressions
 -- as variables of form like "x3a", where:
@@ -101,7 +101,7 @@ local function mkexpr(expr)
 
     for var,info in pairs(vars) do
         local fn = '_fn_'..info.octave..'_'..info.id
-        local mul = math.pow(2,info.octave)
+        local mul = 2 ^ info.octave
         mul = math.min(48*4, mul)
         code = code .. '    local '..var
                     .. ' = _fn_'..info.octave..'_'..info.id
