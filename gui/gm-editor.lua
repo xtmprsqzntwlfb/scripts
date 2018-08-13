@@ -313,7 +313,7 @@ function GmEditorUi:openReinterpret(key)
     local trg=self:currentTarget()
     dialog.showInputPrompt(tostring(trg_key),"Enter new type:",COLOR_WHITE,
                 "",function(choice)
-                    local ntype=df[tp]
+                    local ntype=df[choice]
                     self:pushTarget(df.reinterpret_cast(ntype,trg.target[key]))
                 end)
 end
