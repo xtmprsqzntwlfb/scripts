@@ -6,11 +6,188 @@ armoks-blessing
 ===============
 Runs the equivalent of `rejuvenate`, `elevate-physical`, `elevate-mental`, and
 `brainwash` on all dwarves currently on the map.  This is an extreme change,
-which sets every stat to an ideal - legendary skills, great traits, and
-easy-to-satisfy preferences.
+which sets every stat and trait to an ideal easy-to-satisfy preference.
 
-Without arguments, all attributes, age & personalities are adjusted.
-Arguments allow for skills to be adjusted as well.
+Without providing arguments, only attributes, age, and personalities will be adjusted.
+Adding arguments allows for skills or classes to be adjusted to legendary (maximum).
+
+Arguments::
+    list
+        Prints list of all skills
+        example:
+            armoks-blessing list
+
+    classes
+        Prints list of all classes
+        example:
+            armoks-blessing classes
+
+    all
+        Set all skills, for all Dwarves, to legendary
+        example:
+            armoks-blessing all
+
+    <skill name>
+        Set a specific skill, for all Dwarves, to legendary
+        example:
+            armoks-blessing RANGED_COMBAT
+                All Dwarves become a Legendary Archer
+
+    <class name>
+        Set a specific class (group of skills), for all Dwarves, to legendary
+        example:
+            armoks-blessing Medical
+                All Dwarves will have all medical related skills set to legendary
+
+List of Skills::
+    ALCHEMY for Alchemy
+    SNEAK for Ambush
+    ANIMALCARE for Animal Caretaking
+    DISSECT_VERMIN for Animal Dissection
+    ANIMALTRAIN for Animal Training
+    APPRAISAL for Appraisal
+    RANGED_COMBAT for Archery
+    ARMOR for Armor
+    FORGE_ARMOR for Armorsmithing
+    ASTRONOMY for Astronomy
+    AXE for Axe
+    BALANCE for Balance
+    BEEKEEPING for Beekeeping
+    BITE for Biting
+    BLOWGUN for Blowgun
+    BONECARVE for Bone Carving
+    SET_BONE for Bone Setting
+    BOOKBINDING for Bookbinding
+    BOW for Bow
+    BOWYER for Bowmaking
+    BREWING for Brewing
+    DESIGNBUILDING for Building Design
+    BUTCHER for Butchery
+    CARPENTRY for Carpentry
+    CHEESEMAKING for Cheese Making
+    CHEMISTRY for Chemistry
+    CLIMBING for Climbing
+    CLOTHESMAKING for Clothes Making
+    COMEDY for Comedy
+    CONCENTRATION for Concentration
+    CONSOLE for Consoling
+    CONVERSATION for Conversation
+    COOK for Cooking
+    COORDINATION for Coordination
+    CRITICAL_THINKING for Critical Thinking
+    CROSSBOW for Crossbow
+    CRUTCH_WALK for Crutch-walking
+    DANCE for Dance
+    DIAGNOSE for Diagnostics
+    DISCIPLINE for Discipline
+    DODGING for Dodging
+    DYER for Dyeing
+    DETAILSTONE for Engraving
+    MELEE_COMBAT for Fighting
+    PROCESSFISH for Fish Cleaning
+    DISSECT_FISH for Fish Dissection
+    FISH for Fishing
+    FLATTERY for Flattery
+    FLUID_ENGINEER for Fluid Engineer
+    SMELT for Furnace Operation
+    GELD for Gelding
+    CUTGEM for Gem Cutting
+    ENCRUSTGEM for Gem Setting
+    GEOGRAPHY for Geography
+    GLASSMAKER for Glassmaking
+    GLAZING for Glazing
+    PLANT for Growing
+    HAMMER for Hammer
+    HERBALISM for Herbalism
+    INTIMIDATION for Intimidation
+    JUDGING_INTENT for Judging Intent
+    PLAY_KEYBOARD_INSTRUMENT for Keyboard Instrument
+    STANCE_STRIKE for Kicking
+    KNAPPING for Knapping
+    DAGGER for Knife
+    WHIP for Lash
+    LEADERSHIP for Leadership
+    LEATHERWORK for Leatherworkering
+    LOGIC for Logic
+    LYE_MAKING for Lye Making
+    LYING for Lying
+    MACE for Mace
+    MECHANICS for Machinery
+    MASONRY for Masonry
+    MATHEMATICS for Mathematics
+    METALCRAFT for Metal Crafting
+    FORGE_FURNITURE for Metalsmithing
+    MILITARY_TACTICS for Military Tactics
+    MILK for Milking
+    MILLING for Milling
+    MINING for Mining
+    MISC_WEAPON for Misc. Object
+    MAKE_MUSIC for Music
+    MAGIC_NATURE for Nature
+    NEGOTIATION for Negotiation
+    SITUATIONAL_AWARENESS for Observation
+    OPTICS_ENGINEER for Optics Engineer
+    ORGANIZATION for Organization
+    PACIFY for Pacification
+    PAPERMAKING for Papermaking
+    PLAY_PERCUSSION_INSTRUMENT for Percussion Instrument
+    PERSUASION for Persuasion
+    PIKE for Pike
+    POETRY for Poetry
+    POTASH_MAKING for Potash Making
+    POTTERY for Pottery
+    PRESSING for Pressing
+    PROSE for Prose
+    OPERATE_PUMP for Pump Operation
+    READING for Reading
+    RECORD_KEEPING for Record Keeping
+    SHEARING for Shearing
+    SHIELD for Shield
+    SIEGECRAFT for Siege Engineering
+    SIEGEOPERATE for Siege Operation
+    SING_MUSIC for Singing
+    SOAP_MAKING for Soap Making
+    SPEAKING for Speaking
+    SPEAR for Spear
+    SPINNING for Spinning
+    STONECRAFT for Stone Crafting
+    EXTRACT_STRAND for Strand Extraction
+    GRASP_STRIKE for Striking
+    PLAY_STRINGED_INSTRUMENT for Stringed Instrument
+    KNOWLEDGE_ACQUISITION for Studying
+    SURGERY for Surgery
+    SUTURE for Suturing
+    SWIMMING for Swimming
+    SWORD for Sword
+    TANNER for Tanning
+    TEACHING for Teaching
+    PROCESSPLANTS for Threshing
+    THROW for Throwing
+    TRACKING for Tracking
+    TRAPPING for Trapping
+    WAX_WORKING for Wax Working
+    FORGE_WEAPON for Weaponsmithing
+    WEAVING for Weaving
+    PLAY_WIND_INSTRUMENT for Wind Instrument
+    WOOD_BURNING for Wood Burning
+    WOODCRAFT for Wood Crafting
+    WOODCUTTING for Wood Cutting
+    DRESS_WOUNDS for Wound Dressing
+    WRESTLING for Wrestling
+    WRITING for Writing
+
+List of Classes::
+    Normal
+    Medical
+    Personal
+    Social
+    Cultural
+    MilitaryWeapon
+    MilitaryUnarmed
+    MilitaryAttack
+    MilitaryDefense
+    MilitaryMisc
+
 
 ]====]
 local utils = require 'utils'
