@@ -17,7 +17,7 @@ Arguments:
    Prints list of all skills
 
 - ``classes``
-   Prints list of all classes 
+   Prints list of all classes
 
 - ``all``
    Set all skills, for all Dwarves, to legendary
