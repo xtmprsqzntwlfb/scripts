@@ -13,22 +13,22 @@ Adding arguments allows for skills or classes to be adjusted to legendary (maxim
 
 Arguments:
 
-- `list`
+- list
    Prints list of all skills
 
    example: `armoks-blessing list`
 
-- `classes`
+- classes
    Prints list of all classes 
 
    example: `armoks-blessing classes`
 
-- `all`
+- all
    Set all skills, for all Dwarves, to legendary
 
    example: `armoks-blessing all`
 
-- `<skill name>`
+- <skill name>
    Set a specific skill, for all Dwarves, to legendary
 
    example: `armoks-blessing RANGED_COMBAT`
@@ -36,7 +36,7 @@ Arguments:
    All Dwarves become a Legendary Archer
 
 
-- `<class name>`
+- <class name>
    Set a specific class (group of skills), for all Dwarves, to legendary
 
    example: `armoks-blessing Medical`
