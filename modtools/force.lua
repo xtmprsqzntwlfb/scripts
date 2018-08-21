@@ -12,7 +12,7 @@ Usage::
     -eventType event
         specify the type of the event to trigger
         examples:
-            MegaBeast
+            Megabeast
             Migrants
             Caravan
             Diplomat
