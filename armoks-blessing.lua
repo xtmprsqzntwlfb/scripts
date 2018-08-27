@@ -186,7 +186,7 @@ function adjust_all_dwarves(skillname)
             elevate_attributes(v)
             rejuvenate(v)
             if skillname then
-                if skillname=="Normal" or skillname=="Medical" or skillname=="Personal" or skillname=="Social" or skillname=="Cultural" or skillname=="MilitaryWeapon" or skillname=="MilitaryUnarmed" or skillname=="MilitaryAttack" or skillname=="MilitaryDefense" or skillname=="MilitaryMisc" then
+                if df.job_skill_class[skillname] then
                     LegendaryByClass(skillname,v)
                 elseif skillname=="all" then
                     BreathOfArmok(v)
