@@ -5,9 +5,9 @@ growcrops
 =========
 Instantly grow seeds inside farming plots.
 
-With no argument, this command list the various seed types currently in
-use in your farming plots. With a seed type, the script will grow 100 of
-these seeds, ready to be harvested. Set the number with a 2nd argument.
+With no argument, this command list the various seed types
+currently in use in your farming plots. With a seed type,
+the script will grow specified seeds, ready to be harvested.
 
 Arguments:
 
@@ -23,8 +23,8 @@ Arguments:
 
 Example:
 
-- Grow 40 plump helmet spawn:
-   ``growcrops plump 40``
+- Grow plump helmet spawn:
+   ``growcrops plump``
 
 =end
 
@@ -37,7 +37,7 @@ def cacheCropRaws()
             @raws_crop_growdur[idx] = p.growdur # Grow Duration
         }
     end
-end 
+end
 
 # create a list of available crops to grow, from seeds
 def buildSeedList()
@@ -45,7 +45,6 @@ def buildSeedList()
         next if not seed.flags.in_building # skip if seed in building
         next if not seed.general_refs.find { |ref| ref._rtti_classname == :general_ref_building_holderst } # skip if seed in depot
         next if seed.grow_counter >= @raws_crop_growdur[seed.mat_index]
-        
         # add to list of potential crops to grow
         @inventory[seed.mat_index] += 1
     }
@@ -79,12 +78,10 @@ def growCrop(material)
     puts "Grown #{count} #{mat}"
 end
 
-# = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
-# = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
+# = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+# = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-material = $script_args[0]          # (1st arg) Grow which crop
-count_max = $script_args[1].to_i    # (2nd arg) Maximum to grow
-count_max = 100 if count_max == 0   # if max wasn't supplied, grow up to 100 crops
+material = $script_args[0]          # Grow which crop
 @inventory = Hash.new(0)            # a list of available crops to grow, from seeds
 @raws_crop_name ||= {}
 @raws_crop_growdur ||= {}
