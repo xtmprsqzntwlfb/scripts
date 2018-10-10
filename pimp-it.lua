@@ -97,6 +97,7 @@ function twofield_compare(t,v1,v2,f1,f2,cmp1,cmp2)
     return c1
 end
 
+--sorted pairs
 function spairs(t, cmp)
     -- collect the keys
     local keys = {}
@@ -110,6 +111,23 @@ function spairs(t, cmp)
     local i = 0
     return function()
         i = i + 1
+        if keys[i] then
+            return keys[i], t[keys[i]]
+        end
+    end
+end
+
+--random pairs
+function rpairs(t, gen)
+    -- collect the keys
+    local keys = {}
+    for k,v in pairs(t) do
+        table.insert(keys,k)
+    end
+    
+    -- return the iterator function
+    return function()
+        local i = gen:next()
         if keys[i] then
             return keys[i], t[keys[i]]
         end
@@ -217,7 +235,7 @@ function GetRandomTableEntry(gen, t)
 end
 
 local attrib_seq = rng.num_sequence:new(1,TableLength(dorf_tables.attrib_levels))
-function GetRandomAttribLevel()
+function GetRandomAttribLevel() --returns a randomly generated value for assigning to an attribute
     local gen = rng.crng:new(engineID,false,attrib_seq)
     gen:shuffle()
     while true do
@@ -368,16 +386,26 @@ function ApplyJob(dwf, jobName) --job = dorf_jobs[X]
     
     -- Apply required professions
     local bAlreadySetProf2 = false
-    for i, prof in pairs(job.req) do
+    local job_req_sequence = rng.num_sequence:new(1,ArrayLength(job.req))
+    local gen = rng.crng:new(engineID,false,job_req_sequence)
+    --two required professions are set as the professional titles for a dwarf [prof1, prof2]
+    --so when more than 2 are required it is necessary to randomize the iteration of their application to a dwarf
+    --this is done with rpairs and the above RNG code
+    gen:shuffle()
+    job_req_sequence:add(0) --adding an out of bounds key (ie. 0) to ensure rpairs won't keep going forever
+    --[note it is added after shuffling]
+    local i = 0
+    for _, prof in rpairs(job.req, gen) do
         --> Set Profession(s) (by #)
+        i = i + 1 --since the key can't tell us what iteration we're on
         if i == 1 then
             dwf.profession = df.profession[prof]
         elseif i == 2 then
             bAlreadySetProf2 = true
             dwf.profession2 = df.profession[prof]
         end
-        --These are required professions and were checked before running ApplyJob
-        ApplyProfession(dwf, prof, 12, 17)
+        --These are required professions for this job class
+        ApplyProfession(dwf, prof, 11, 17)
     end
         
     -- Loop tertiary professions
