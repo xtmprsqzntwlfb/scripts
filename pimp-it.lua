@@ -1,3 +1,4 @@
+print("v1.1")
 utils ={}
 utils = require('utils')
 json = require('json')
@@ -35,21 +36,46 @@ if args.select and args.select == 'pimped' then
     end
 end
 
+--[[--
+The persistent data contains information on current allocations
+
+FileData: {
+    Dwarves : {
+        id : {
+            job : dorf_table.dorf_jobs[job],
+            professions : [
+                dorf_table.professions[prof],
+            ]
+        },
+    },
+    dorf_table.dorf_jobs[job] : {
+        count : int,
+        profs : {
+            dorf_table.professions[prof] : {
+                count : int,
+                p : float  --intended ratio of profession in job
+            },
+        }
+    }
+}
+--]]--
 function LoadPersistentData()
     local gamePath = dfhack.getDFPath()
     local fortName = dfhack.TranslateName(df.world_site.find(df.global.ui.site_id).name)
     local savePath = dfhack.getSavePath()
     local fileName = fortName .. ".json.dat"
-    local cur = json.open(gamePath .. "/data/save/current/" .. fileName)
-    local saved = json.open(savePath .. "/" .. fileName)
+    local file_cur = gamePath .. "/data/save/current/" .. fileName
+    local file_sav = savePath .. "/" .. fileName
+    local cur = json.open(file_cur)
+    local saved = json.open(file_sav)
     if saved.exists == true and cur.exists == false then
-        print("Previous session save data found.")
+        print("Previous session save data found. [" .. file_sav .. "]")
         cur.data = saved.data
     elseif saved.exists == false then
         print("No session data found. All dwarves will be treated as non-pimped.")
         --saved:write()
     elseif cur.exists == true then
-        print("Existing session data found.")
+        print("Existing session data found. [" .. file_cur .. "]")
     end
     PimpData = cur.data
 end
@@ -386,7 +412,10 @@ function ApplyJob(dwf, jobName) --job = dorf_jobs[X]
     
     -- Apply required professions
     local bAlreadySetProf2 = false
-    local job_req_sequence = rng.num_sequence:new(1,ArrayLength(job.req))
+    local job_req_sequence = rng.num_sequence:new()
+    for i=1,ArrayLength(job.req) do
+        job_req_sequence:add(i)
+    end
     local gen = rng.crng:new(engineID,false,job_req_sequence)
     --two required professions are set as the professional titles for a dwarf [prof1, prof2]
     --so when more than 2 are required it is necessary to randomize the iteration of their application to a dwarf
@@ -663,11 +692,6 @@ function isDwarfEmployed(dwf)
     return dwf.custom_profession ~= ""
 end
 
---Returns true if the DWARF has a custom_profession but isn't pimped
-function isDwarfEmployed(dwf)
-    return dwf.custom_profession ~= ""
-end
-
 --Returns true if the DWARF is in the DwarvesData table
 function isDwarfPimped(dwf)
     local id = tostring(dwf.id)
@@ -675,7 +699,7 @@ function isDwarfPimped(dwf)
     return pimp ~= nil
 end
 
---Returns true if the DWARF is a drunk with no job
+--Returns true if the DWARF is not not in the DwarvesData table
 function isDwarfUnpimped(dwf)
     return (not isDwarfPimped(dwf))
 end
@@ -759,33 +783,30 @@ end
 
 function Prepare()
     print("Loading persistent data..")
+    --Load /current/fort.json.dat or /world/fort.json.dat
     LoadPersistentData()
     if not PimpData.Dwarves then
         PimpData.Dwarves = {}
     end
     DwarvesData = PimpData.Dwarves
 
+    --[[ We need to validate the persistent data/
+        Perhaps I/you/we updated the dorf_tables, so we should check.]]
     --Initialize PimpData
-    for jobName, job in pairs(cloned.jobs) do
-        PrepareDistribution(jobName)
+    for jobName, job in pairs(cloned.jobs) do --should be looping the distribution table instead (probably a major refactor needed)
+        PrepareDistributionMax(jobName)
         if not PimpData[jobName] then
             PimpData[jobName] = {}
             PimpData[jobName].count = 0
             PimpData[jobName].profs = {}
         end
-        if PimpData[jobName].count == nil then
-            PimpData[jobName].count = 0
-        end
         for prof, p in pairs(job) do
             if tonumber(p) then
                 if not PimpData[jobName].profs[prof] then
-                    --print("making " .. prof .. " in " .. jobName .. "'s table: " .. PimpData[jobName])
                     PimpData[jobName].profs[prof] = {}
-                    PimpData[jobName].profs[prof].p = p
                     PimpData[jobName].profs[prof].count = 0
-                else
-                    PimpData[jobName].profs[prof].p = p
                 end
+                PimpData[jobName].profs[prof].p = p
             end
         end
     end
@@ -808,25 +829,25 @@ function Prepare()
     print("Data load complete.")
 end
 
-function PrepareDistribution(jobName)
+function PrepareDistributionMax(jobName)
     local jd = cloned.distributions[jobName]
     if not jd then
         error("Job distribution not found. Job: " .. jobName)
+    elseif jd.max ~= nil then
+        error("job distribution max is not nil - " .. jobName)
     end
-    if jd.max == nil then
-        local IndexMax = 0
-        for i, v in pairs(cloned.distributions.Thresholds) do
-            if work_force >= v then
-                IndexMax = i
-            end
+    local IndexMax = 0
+    for i, v in pairs(cloned.distributions.Thresholds) do
+        if work_force >= v then
+            IndexMax = i
         end
-        --print(cloned.distributions.Thresholds[IndexMax])
-        local max = 0
-        for i=1, IndexMax do
-            max = max + jd[i]
-        end 
-        jd.max = max
     end
+    --print(cloned.distributions.Thresholds[IndexMax])
+    local max = 0
+    for i=1, IndexMax do
+        max = max + jd[i]
+    end 
+    jd.max = max
 end
 
 function SelectDwarf(dwf)
@@ -847,7 +868,7 @@ function ShowHelp()
     print("    employed    - selects dwarves with custom professions. Excludes pimped dwarves.")
     print("    pimped      - selects dwarves based on session data. Dwarves who have been pimped, should be listed in this data.")
     print("    unpimped    - selects any dwarves that don't appear in session data.")
-    print("    protected   - selects any dwarves which use protection signals in their name or profession. (ie. {'_', 'c', 'j', 'p'})")
+    print("    protected   - selects any dwarves which use protection signals in their name or profession. (ie. {'.', 'c', 'j', 'p'})")
     print("    unprotected - selects any dwarves which don't use protection signals in their name or profession.")
     print("    drunks      - selects any dwarves which are currently zeroed, or were originally drunks as their profession.")
     print("    jobs        - selects any dwarves with the listed job types. This will only match with custom professions, or pimped dwarves (for pimped dorfs see: dorf_jobs in dorf_tables.lua).")
