@@ -1,4 +1,6 @@
 --local _ENV = mkmodule('dorf_tables')
+
+-- p denotes probability, always.
 local O = 0
 job_distributions = {
     Thresholds      = { 7,  14, 21, 28, 30, 35, 42, 49, 56, 63, 70, 77, 80, 110, 1000 }, --Don't touch unless you wanna recalculate the distributions,
@@ -27,8 +29,33 @@ job_distributions = {
 
     Engineer        = { O,  O,  O,  O,  O,  1,  O,  1,  O,  1,  O,  O,  1,  1,   O;   cur = 0; max = nil } 
 }
+--[[
+Stat Rolling:
+    ->Loop dorf attributes (physical/mental)
+        ->Loop attrib_levels randomly selecting elements
+            -Roll(p) to apply the element
+             *Apply element to attribute,
+             *or don't.
+        <-End Loop
+    <-End Loop
+    
+    ->Loop dorf_profs.<prof>.types{}
+        -Apply attribs{}
+        -Apply skills{}
+    <-End Loop
 
-attrib_levels = {
+    ->Loop dorf_types
+        -Roll(p) to apply type
+         *Apply type,
+         *or don't.
+    <-End Loop
+
+    This procedure allows low rolls to be improved. High rolls cannot be replaced, except by even higher rolls.
+--]]
+
+
+--probability is used for generating all dwarf stats, some jobs include dorf_types which will upgrade particular stats
+attrib_levels = { -- prob,      avg,    std deviation
     incompetent =   {p=0.01,    100,    20},
     verybad =       {p=0.02,    250,    25},
     bad =           {p=0.04,    450,    30},
@@ -41,18 +68,29 @@ attrib_levels = {
     unbelievable =  {p=0.01,    4829,   42}
 }
 
-dorf_jobs = { --max -> max professions(ie. tertiary professions)
+--[[
+dorf_jobs = {
+    job = {
+        required_professions, max_tertiary_professions,
+        tertiary_professions,
+        dorf_types
+    }
+    The value associated with the tertiary professions is both an enforced ratio maximum for a given job,
+    and also the probability that the profession will be applied during the algorithm's execution.
+}
+--]]
+dorf_jobs = {
     _Grunt = {
         req={'RECRUIT'}, max={1988},
-        HERBALIST=0.75,
+        HERBALIST=0.4,
         types={'strong2','strong2','fast3','spaceaware3','soldier','fighter','social'}},
     Miner = {
         req={'MINER'}, max={1},
-        BREWER=0.2, STONEWORKER=0.12, ENGRAVER=0.4, 
+        BREWER=0.2, STONEWORKER=0.12, ENGRAVER=0.333, 
         types={'spaceaware3','strong3','fast3','resilient2','social'}},
     Admin = {
         req={'ADMINISTRATOR'}, max={1},
-        TRADER=0.66, CLERK=0.7,
+        TRADER=0.5, CLERK=0.5,
         types={'genius3','intuitive3','resilient2','leader','adaptable','fighter','social'}},
     General = {
         req={'RECRUIT','SIEGE_OPERATOR','SIEGE_ENGINEER'}, max={2},
@@ -100,7 +138,7 @@ dorf_jobs = { --max -> max professions(ie. tertiary professions)
         BONE_CARVER=0.66, POTTER=0.75,
         types={'fast3','buff','creative2','social','artistic'}},
     Jeweler = {
-        req={'JEWELER','GEM_CUTTER','GEM_SETTER'}, max={1988}
+        req={'JEWELER','GEM_CUTTER','GEM_SETTER'}, max={1988},
         types={'creative2','intuitive2','spaceaware2','genius1','artistic'}},
     Textileworker = {
         req={'WEAVER','SPINNER','CLOTHIER'}, max={3},
@@ -167,7 +205,7 @@ professions = {
     --Agriculture
     POTASH_MAKER =      { skills = {POTASH_MAKING=3} },
     PLANTER =           { skills = {PLANT=4, POTASH_MAKING=2} },
-    FARMER =            { skills = {PLANT=3, MILLING=3, HERBALISM=2, POTASH_MAKER=1} },
+    FARMER =            { skills = {PLANT=3, MILLING=3, HERBALISM=2, POTASH_MAKING=1} },
     MILLER =            { skills = {MILLING=3} },
     HERBALIST =         { skills = {HERBALISM=3} },
     THRESHER =          { skills = {PROCESSPLANTS=3} },
@@ -195,7 +233,7 @@ professions = {
 --War
     SIEGE_ENGINEER =    { skills = {SIEGECRAFT=3, SIEGEOPERATE=1} },
     SIEGE_OPERATOR =    { skills = {SIEGEOPERATE=3} },
-    PUMP_OPERATOR =     { skills = {OPERATE_PUMP=3} }
+    PUMP_OPERATOR =     { skills = {OPERATE_PUMP=3} },
 
 --Other
     BREWER =            { skills = {BREWING=3} },
@@ -213,7 +251,7 @@ professions = {
 
     BONE_CARVER =       { skills = {BONECARVE=3} },
     POTTER =            { skills = {POTTERY=3} },
-    GLAZER =            { skills = {GLAZING=3} },
+    GLAZER =            { skills = {GLAZING=3} }
 
 
 --[[
@@ -230,29 +268,7 @@ professions = {
 --]]
 }
 
---[[
-Stat Rolling:
-    ->Loop dorf attributes (physical/mental)
-        ->Loop attrib_levels randomly selecting elements
-            -Roll(p) to apply the element
-             *Apply element to attribute,
-             *or don't.
-        <-End Loop
-    <-End Loop
-    
-    ->Loop dorf_profs.<prof>.types{}
-        -Apply attribs{}
-        -Apply skills{}
-    <-End Loop
-
-    ->Loop dorf_types
-        -Roll(p) to apply type
-         *Apply type,
-         *or don't.
-    <-End Loop
-
-    This procedure allows low rolls to be improved. High rolls cannot be replaced, except by even higher rolls.
---]]
+--probability is used for randomly applying types to any and all dwarves
 dorf_types = {
     resilient1 = {
         p = 0.2,
