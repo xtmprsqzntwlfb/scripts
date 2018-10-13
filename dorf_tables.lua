@@ -4,7 +4,7 @@
 local help = [====[
 
 dorf_tables
-=========
+===========
 Data tables for pimp-it.lua.
 
 Usage: load inside secondary script (pimp-it.lua)
