@@ -14,7 +14,7 @@ Usage: ``pimp-it -help`` or ``pimp-it -select <sel-opt> -<command> <args>``
 :help:               Highly detailed help documentation.
 :select <option>:    Indicates the next parameter will be indicate which dwarves to select
 
-~~~~~~~~~~~~
+#~~~~~~~~~~#
  select options:
    (protected is the only option which will select PROTECTED dwarves)
     all         - selects all dwarves.
@@ -29,7 +29,7 @@ Usage: ``pimp-it -help`` or ``pimp-it -select <sel-opt> -<command> <args>``
     drunks      - selects any dwarves which are currently zeroed, or were originally drunks as their profession.
     jobs        - selects any dwarves with the listed job types. This will only match with custom professions, or pimped dwarves (for pimped dorfs see: dorf_jobs in dorf_tables.lua).
                 - usage `-select [ jobs job1 job2 etc. ]` eg. `-select [ jobs Miner Trader ]`
-~~~~~~~~~~~~
+#~~~~~~~~~~#
 Commands will run on the selected dwarves
  available commands:
     clear              - zeroes selected dwarves. No attributes, no labours. Assigns 'DRUNK' profession.
