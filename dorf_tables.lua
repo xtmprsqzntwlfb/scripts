@@ -2,11 +2,13 @@
 -- usage: loaded by pimp-it.lua
 -- by josh cooper(cppcooper) [created: 12-2017 | last edited: 10-2018]
 local help = [====[
+
 dorf_tables
 =========
 Data tables for pimp-it.lua.
 
 Usage: load inside secondary script (pimp-it.lua)
+
 ]====]
 --local _ENV = mkmodule('dorf_tables')
 
@@ -37,7 +39,7 @@ job_distributions = {
     Fisher          = { O,  O,  1,  O,  O,  O,  O,  O,  1,  O,  O,  O,  O,  O,   O;   cur = 0; max = nil },
     Butcher         = { O,  O,  O,  O,  O,  1,  O,  O,  O,  O,  O,  O,  O,  O,   O;   cur = 0; max = nil },
 
-    Engineer        = { O,  O,  O,  O,  O,  1,  O,  1,  O,  1,  O,  O,  1,  1,   O;   cur = 0; max = nil } 
+    Engineer        = { O,  O,  O,  O,  O,  1,  O,  1,  O,  1,  O,  O,  1,  1,   O;   cur = 0; max = nil }
 }
 --[[
 Stat Rolling:
@@ -96,7 +98,7 @@ dorf_jobs = {
         types={'strong2','strong2','fast3','spaceaware3','soldier','fighter','social'}},
     Miner = {
         req={'MINER'}, max={1},
-        BREWER=0.2, STONEWORKER=0.12, ENGRAVER=0.333, 
+        BREWER=0.2, STONEWORKER=0.12, ENGRAVER=0.333,
         types={'spaceaware3','strong3','fast3','resilient2','social'}},
     Admin = {
         req={'ADMINISTRATOR'}, max={1},

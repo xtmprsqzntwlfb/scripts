@@ -1,10 +1,11 @@
 -- pimp your dwarves, make your life easier in managing labours
 -- written by josh cooper(cppcooper) [created: 12-2017 | last edited: 10-2018]
 local help = [====[
+
+pimp-it
+=======
 usage: pimp-it [-help|-select]
                -select <sel-opt> -<command> <args>
-============
-pimp-it script
 ~~~~~~~~~~~~
 To use this script, you need to select a subset of your dwarves. Then run commands on those dwarves.
 Examples:
@@ -46,6 +47,7 @@ Commands will run on the selected dwarves
       debug - enables debugging print lines
 
 No dorfs were harmed in the building of this help screen.
+
 ]====]
 
 print("v1.1")
