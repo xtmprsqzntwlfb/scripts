@@ -1,3 +1,13 @@
+-- dorf_tables has job distribution configurations, random number information for attributes generation, job configurations, profession configurations, dorf type configurations
+-- usage: loaded by pimp-it.lua
+-- by josh cooper(cppcooper) [created: 12-2017 | last edited: 10-2018]
+local help = [====[
+dorf_tables
+=========
+Data tables for pimp-it.lua.
+
+Usage: load inside secondary script (pimp-it.lua)
+]====]
 --local _ENV = mkmodule('dorf_tables')
 
 -- p denotes probability, always.
