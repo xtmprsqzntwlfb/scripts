@@ -1,18 +1,19 @@
--- pimp your dwarves, make your life easier in managing labours
+-- Optimize dwarves for fort-mode work. Pimp your dwarves, make your life easier in managing labours.
 -- written by josh cooper(cppcooper) [created: 12-2017 | last edited: 10-2018]
-local help = [====[
-
+--[====[
 pimp-it
 =======
-usage: pimp-it [-help|-select]
-               -select <sel-opt> -<command> <args>
-~~~~~~~~~~~~
-To use this script, you need to select a subset of your dwarves. Then run commands on those dwarves.
-Examples:
-  [DFHack]# pimp-it -select [ jobs Trader Miner Leader Warden ] -applytype adaptable
-  [DFHack]# pimp-it -select all -clear -pimpem
-  [DFHack]# pimp-it -select pimped -reroll
-  [DFHack]# pimp-it -select named -reroll inclusive -applyprofession RECRUIT
+Optimize dwarves for fort-mode work.
+The core function takes dwarves and allocates a "dorf_job" to each dwarf.
+This decision takes into account current counts for each dorf_job, in
+relation to how many should be allocated based on the working population
+size.
+
+Usage: ``pimp-it -help`` or ``pimp-it -select <sel-opt> -<command> <args>``
+
+:help:               Highly detailed help documentation.
+:select <option>:    Indicates the next parameter will be indicate which dwarves to select
+
 ~~~~~~~~~~~~
  select options:
    (protected is the only option which will select PROTECTED dwarves)
@@ -41,12 +42,6 @@ Commands will run on the selected dwarves
                        - see professions table in dorf_tables.lua for available professions.
     applytypes         - applies the listed types to the selected dwarves. list format: `[ type1 type2 typen ]` brackets and types all separated by spaces.
                        - see dorf_types table in dorf_tables.lua for available types.
-~~~~~~~~~~~~
-    Other Arguments:
-      help - displays this help information.
-      debug - enables debugging print lines
-
-No dorfs were harmed in the building of this help screen.
 
 ]====]
 
@@ -908,7 +903,53 @@ function SelectDwarf(dwf)
 end
 
 function ShowHelp()
-    print(help)
+    print([====[
+usage: pimp-it [-help|-select]
+               -select <sel-opt> -<command> <args>
+============
+pimp-it script
+~~~~~~~~~~~~
+To use this script, you need to select a subset of your dwarves. Then run commands on those dwarves.
+Examples:
+  [DFHack]# pimp-it -select [ jobs Trader Miner Leader Warden ] -applytype adaptable
+  [DFHack]# pimp-it -select all -clear -pimpem
+  [DFHack]# pimp-it -select pimped -reroll
+  [DFHack]# pimp-it -select named -reroll inclusive -applyprofession RECRUIT
+~~~~~~~~~~~~
+ select options:
+   (protected is the only option which will select PROTECTED dwarves)
+    all         - selects all dwarves.
+    highlighted - selects only the in-game highlighted dwarf (from any screen).
+    named       - selects dwarves with user-given names.
+    unnamed     - selects dwarves without user-given names.
+    employed    - selects dwarves with custom professions. Excludes pimped dwarves.
+    pimped      - selects dwarves based on session data. Dwarves who have been pimped, should be listed in this data.
+    unpimped    - selects any dwarves that don't appear in session data.
+    protected   - selects any dwarves which use protection signals in their name or profession. (ie. {'.', 'c', 'j', 'p'})
+    unprotected - selects any dwarves which don't use protection signals in their name or profession.
+    drunks      - selects any dwarves which are currently zeroed, or were originally drunks as their profession.
+    jobs        - selects any dwarves with the listed job types. This will only match with custom professions, or pimped dwarves (for pimped dorfs see: dorf_jobs in dorf_tables.lua).
+                - usage `-select [ jobs job1 job2 etc. ]` eg. `-select [ jobs Miner Trader ]`
+~~~~~~~~~~~~
+Commands will run on the selected dwarves
+ available commands:
+    clear              - zeroes selected dwarves. No attributes, no labours. Assigns 'DRUNK' profession.
+    reroll <inclusive> - zeroes selected dwarves, then rerolls that dwarf based on its job. Ignores dwarves with unlisted jobs.
+                       - optional argument: inclusive. Only performs the reroll, will no zero the dwarf first. Benefit: stats can only go higher, not lower.
+    pimpem             - performs a job search for unpimped dwarves. Each dwarf will be found a job according to the job_distribution table in dorf_tables.lua
+    applyjobs          - applies the listed jobs to the selected dwarves. list format: `[ job1 job2 jobn ]` brackets and jobs all separated by spaces.
+                       - see dorf_jobs table in dorf_tables.lua for available jobs.")
+    applyprofessions   - applies the listed professions to the selected dwarves. list format: `[ prof1 prof2 profn ]` brackets and professions all separated by spaces.
+                       - see professions table in dorf_tables.lua for available professions.
+    applytypes         - applies the listed types to the selected dwarves. list format: `[ type1 type2 typen ]` brackets and types all separated by spaces.
+                       - see dorf_types table in dorf_tables.lua for available types.
+~~~~~~~~~~~~
+    Other Arguments:
+      help - displays this help information.
+      debug - enables debugging print lines
+
+No dorfs were harmed in the building of this help screen.
+]====])
 end
 
 function ShowHint()
