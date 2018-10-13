@@ -377,7 +377,7 @@ function ApplyType(dwf, dorf_type)
     assert(type, "Invalid dorf type.")
     for attribute, atr_lvl in pairs(type.attribs) do
         if args.debug and tonumber(args.debug) >= 3 then print(attribute, atr_lvl[1]) end
-        if 
+        if
         attribute == 'STRENGTH' or
         attribute == 'AGILITY' or
         attribute == 'TOUGHNESS' or
@@ -386,7 +386,7 @@ function ApplyType(dwf, dorf_type)
         attribute == 'DISEASE_RESISTANCE'
         then
             GenerateStatValue(dwf.body.physical_attrs[attribute], atr_lvl[1])
-        elseif 
+        elseif
         attribute == 'ANALYTICAL_ABILITY' or
         attribute == 'FOCUS' or
         attribute == 'WILLPOWER' or
@@ -495,13 +495,13 @@ function ApplyJob(dwf, jobName) --job = dorf_jobs[X]
     local points = 11
     local base_dec = 11 / job.max[1]
     local total = 0
-    for prof, t in spairs(PimpData[jobName].profs, 
+    for prof, t in spairs(PimpData[jobName].profs,
     function(a,b)
-        return twofield_compare(PimpData[jobName].profs, 
+        return twofield_compare(PimpData[jobName].profs,
         a, b, 'count', 'p',
-        function(f1,f2) return safecompare(f1,f2) end, 
-        function(f1,f2) return safecompare(f2,f1) end) 
-    end) 
+        function(f1,f2) return safecompare(f1,f2) end,
+        function(f1,f2) return safecompare(f2,f1) end)
+    end)
     do--]]
         if total < job.max[1] then
             local ratio = job[prof]
@@ -571,13 +571,13 @@ function FindJob(dwf, recursive)
     if isDwarfPimped(dwf) then
         return false
     end
-    for jobName, jd in spairs(cloned.distributions, 
+    for jobName, jd in spairs(cloned.distributions,
     function(a,b)
-        return twofield_compare(cloned.distributions, 
+        return twofield_compare(cloned.distributions,
         a, b, 'cur', 'max',
-        function(a,b) return safecompare(a,b) end, 
-        function(a,b) return safecompare(b,a) end) 
-   end) 
+        function(a,b) return safecompare(a,b) end,
+        function(a,b) return safecompare(b,a) end)
+   end)
     do
         if args.debug and tonumber(args.debug) >= 4 then print("FindJob() ", jobName) end
         local job = cloned.jobs[jobName]
@@ -613,13 +613,13 @@ function TrySecondPassExpansion() --Tries to expand distribution maximums
         end
 
         local delta = 0
-        for jobName, jd in spairs(cloned.distributions, 
+        for jobName, jd in spairs(cloned.distributions,
         function(a,b)
-            return twofield_compare(cloned.distributions, 
+            return twofield_compare(cloned.distributions,
             a, b, 'max', 'cur',
-            function(a,b) return safecompare(a,b) end, 
-            function(a,b) return safecompare(a,b) end) 
-        end) 
+            function(a,b) return safecompare(a,b) end,
+            function(a,b) return safecompare(a,b) end)
+        end)
         do
             if cloned.jobs[jobName] then
                 if (curTotal + delta) < work_force then
@@ -898,7 +898,7 @@ function PrepareDistributionMax(jobName)
     local max = 0
     for i=1, IndexMax do
         max = max + jd[i]
-    end 
+    end
     jd.max = max
 end
 
@@ -1010,7 +1010,7 @@ elseif args.select and (args.debug or args.clear or args.pimpem or args.reroll o
                     end
                 end
                 affected = affected < temp and temp or affected
-            end    
+            end
             print(affected .. " dwarves affected.")
 
             if args.debug and tonumber(args.debug) >= 1 then
