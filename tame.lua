@@ -5,7 +5,7 @@ tame
 ====
 Tame and train animals.
 
-Usage: `tame -read` OR `tame -set <level>`
+Usage: ``tame -read`` OR ``tame -set <level>``
 
 :0: semi-wild
 :1: trained
