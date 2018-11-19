@@ -22,7 +22,7 @@ Options:
 local map_features = df.global.world.features.map_features
 
 function toggle_feature(idx, discovered)
-    idx = tonumber(idx)
+    idx = tonumber(idx) --luacheck: retype
     if idx < 0 or idx >= #map_features then
         qerror('Invalid feature ID')
     end
@@ -33,10 +33,20 @@ function list_features()
     local name = df.new('string')
     for idx, feat in ipairs(map_features) do
         local tags = ''
-        for _, t in pairs({'water', 'magma', 'subterranean', 'chasm', 'layer'}) do
-            if feat['is' .. t:sub(1, 1):upper() .. t:sub(2)](feat) then
-                tags = tags .. (' [%s]'):format(t)
-            end
+        if feat:isWater() then
+            tags = tags .. ' [water]'
+        end
+        if feat:isMagma() then
+            tags = tags .. ' [magma]'
+        end
+        if feat:isSubterranean() then
+            tags = tags .. ' [subterranean]'
+        end
+        if feat:isChasm() then
+            tags = tags .. ' [chasm]'
+        end
+        if feat:isLayer() then
+            tags = tags .. ' [layer]'
         end
         feat:getName(name)
         print(('Feature #%i is %s: "%s", type %s%s'):format(

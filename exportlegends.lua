@@ -20,8 +20,10 @@ Options:
 
 ]====]
 
-gui = require 'gui'
-script = require 'gui.script'
+--luacheck-flags: strictsubtype
+
+local gui = require 'gui'
+local script = require 'gui.script'
 local args = {...}
 local vs = dfhack.gui.getCurViewscreen()
 
@@ -57,8 +59,8 @@ function getItemSubTypeName(itemType, subType)
     end
 end
 
-function table.contains(table, element)
-    for _, value in pairs(table) do
+function table:contains(element)
+    for _, value in pairs(self) do
         if value == element then
             return true
         end
@@ -66,8 +68,8 @@ function table.contains(table, element)
     return false
 end
 
-function table.containskey(table, key)
-    for value, _ in pairs(table) do
+function table:containskey(key)
+    for value, _ in pairs(self) do
         if value == key then
             return true
         end
@@ -75,6 +77,7 @@ function table.containskey(table, key)
     return false
 end
 
+--luacheck: skip
 function progress_ipairs(vector, desc, interval)
     desc = desc or 'item'
     interval = interval or 10000
@@ -89,7 +92,7 @@ end
 
 -- wrapper that returns "unknown N" for df.enum_type[BAD_VALUE],
 -- instead of returning nil or causing an error
-df_enums = {}
+local df_enums = {} --as:df
 setmetatable(df_enums, {
     __index = function(self, enum)
         if not df[enum] or df[enum]._kind ~= 'enum-type' then
@@ -187,11 +190,11 @@ function export_more_legends_xml()
                             file:write("\t\t\t\t<name>"..dfhack.df2utf(dfhack.TranslateName(buildingV.name, 1)).."</name>\n")
                             file:write("\t\t\t\t<name2>"..dfhack.df2utf(dfhack.TranslateName(buildingV.name)).."</name2>\n")
                         end
-                        if (buildingV:getType() == df.abstract_building_type.TEMPLE) then
+                        if df.abstract_building_templest:is_instance(buildingV) then
                             file:write("\t\t\t\t<deity>"..buildingV.deity.."</deity>\n")
                             file:write("\t\t\t\t<religion>"..buildingV.religion.."</religion>\n")
                         end
-                        if (buildingV:getType() == df.abstract_building_type.DUNGEON) then
+                        if df.abstract_building_dungeonst:is_instance(buildingV) then
                             file:write("\t\t\t\t<dungeon_type>"..buildingV.dungeon_type.."</dungeon_type>\n")
                         end
                         for inhabitabntK,inhabitabntV in pairs(buildingV.inhabitants) do
@@ -226,17 +229,18 @@ function export_more_legends_xml()
     for artifactK, artifactV in progress_ipairs(df.global.world.artifacts.all, 'artifact') do
         file:write("\t<artifact>\n")
         file:write("\t\t<id>"..artifactV.id.."</id>\n")
-        if (artifactV.item:getType() ~= -1) then
-            file:write("\t\t<item_type>"..tostring(df_enums.item_type[artifactV.item:getType()]):lower().."</item_type>\n")
-            if (artifactV.item:getSubtype() ~= -1) then
-                file:write("\t\t<item_subtype>"..artifactV.item.subtype.name.."</item_subtype>\n")
+        local item = artifactV.item
+        if df.item_constructed:is_instance(item) then
+            file:write("\t\t<item_type>"..tostring(df_enums.item_type[item:getType()]):lower().."</item_type>\n")
+            if (item:getSubtype() ~= -1) then --luacheck: skip
+                file:write("\t\t<item_subtype>"..item.subtype.name.."</item_subtype>\n")
             end
-            for improvementK,impovementV in pairs(artifactV.item.improvements) do
-                if impovementV:getType() == df.improvement_type.WRITING then
+            for improvementK,impovementV in pairs(item.improvements) do
+                if df.itemimprovement_writingst:is_instance(impovementV) then
                     for writingk,writingV in pairs(impovementV.contents) do
                         file:write("\t\t<writing>"..writingV.."</writing>\n")
                     end
-                elseif impovementV:getType() == df.improvement_type.PAGES then
+                elseif df.itemimprovement_pagesst:is_instance(impovementV) then
                     file:write("\t\t<page_count>"..impovementV.count.."</page_count>\n")
                     for writingk,writingV in pairs(impovementV.contents) do
                         file:write("\t\t<writing>"..writingV.."</writing>\n")
@@ -244,11 +248,11 @@ function export_more_legends_xml()
                 end
             end
         end
-        if (table.containskey(artifactV.item,"description")) then
-            file:write("\t\t<item_description>"..dfhack.df2utf(artifactV.item.description:lower()).."</item_description>\n")
+        if (table.containskey(item,"description")) then
+            file:write("\t\t<item_description>"..dfhack.df2utf(item.description:lower()).."</item_description>\n")
         end
-        if artifactV.item:getMaterial() ~= -1 then
-            file:write("\t\t<mat>"..dfhack.matinfo.toString(dfhack.matinfo.decode(artifactV.item:getMaterial(), artifactV.item:getMaterialIndex())).."</mat>\n")
+        if item:getMaterial() ~= -1 then
+            file:write("\t\t<mat>"..dfhack.matinfo.toString(dfhack.matinfo.decode(item:getMaterial(), item:getMaterialIndex())).."</mat>\n")
         end
         file:write("\t</artifact>\n")
     end
@@ -374,59 +378,59 @@ function export_more_legends_xml()
 
     file:write("<historical_events>\n")
     for ID, event in progress_ipairs(df.global.world.history.events, 'event') do
-        if event:getType() == df.history_event_type.ADD_HF_ENTITY_LINK
-              or event:getType() == df.history_event_type.ADD_HF_SITE_LINK
-              or event:getType() == df.history_event_type.ADD_HF_HF_LINK
-              or event:getType() == df.history_event_type.ADD_HF_ENTITY_LINK
-              or event:getType() == df.history_event_type.TOPICAGREEMENT_CONCLUDED
-              or event:getType() == df.history_event_type.TOPICAGREEMENT_REJECTED
-              or event:getType() == df.history_event_type.TOPICAGREEMENT_MADE
-              or event:getType() == df.history_event_type.BODY_ABUSED
-              or event:getType() == df.history_event_type.CHANGE_CREATURE_TYPE
-              or event:getType() == df.history_event_type.CHANGE_HF_JOB
-              or event:getType() == df.history_event_type.CHANGE_HF_STATE
-              or event:getType() == df.history_event_type.CREATED_BUILDING
-              or event:getType() == df.history_event_type.CREATURE_DEVOURED
-              or event:getType() == df.history_event_type.HF_DOES_INTERACTION
-              or event:getType() == df.history_event_type.HF_LEARNS_SECRET
-              or event:getType() == df.history_event_type.HIST_FIGURE_NEW_PET
-              or event:getType() == df.history_event_type.HIST_FIGURE_REACH_SUMMIT
-              or event:getType() == df.history_event_type.ITEM_STOLEN
-              or event:getType() == df.history_event_type.REMOVE_HF_ENTITY_LINK
-              or event:getType() == df.history_event_type.REMOVE_HF_SITE_LINK
-              or event:getType() == df.history_event_type.REPLACED_BUILDING
-              or event:getType() == df.history_event_type.MASTERPIECE_CREATED_ARCH_DESIGN
-              or event:getType() == df.history_event_type.MASTERPIECE_CREATED_DYE_ITEM
-              or event:getType() == df.history_event_type.MASTERPIECE_CREATED_ARCH_CONSTRUCT
-              or event:getType() == df.history_event_type.MASTERPIECE_CREATED_ITEM
-              or event:getType() == df.history_event_type.MASTERPIECE_CREATED_ITEM_IMPROVEMENT
-              or event:getType() == df.history_event_type.MASTERPIECE_CREATED_FOOD
-              or event:getType() == df.history_event_type.MASTERPIECE_CREATED_ENGRAVING
-              or event:getType() == df.history_event_type.MASTERPIECE_LOST
-              or event:getType() == df.history_event_type.ENTITY_ACTION
-              or event:getType() == df.history_event_type.HF_ACT_ON_BUILDING
-              or event:getType() == df.history_event_type.ARTIFACT_CREATED
-              or event:getType() == df.history_event_type.ASSUME_IDENTITY
-              or event:getType() == df.history_event_type.CREATE_ENTITY_POSITION
-              or event:getType() == df.history_event_type.DIPLOMAT_LOST
-              or event:getType() == df.history_event_type.MERCHANT
-              or event:getType() == df.history_event_type.WAR_PEACE_ACCEPTED
-              or event:getType() == df.history_event_type.WAR_PEACE_REJECTED
-              or event:getType() == df.history_event_type.HIST_FIGURE_WOUNDED
-              or event:getType() == df.history_event_type.HIST_FIGURE_DIED
+        if df.history_event_add_hf_entity_linkst:is_instance(event)
+              or df.history_event_add_hf_site_linkst:is_instance(event)
+              or df.history_event_add_hf_hf_linkst:is_instance(event)
+              or df.history_event_add_hf_entity_linkst:is_instance(event)
+              or df.history_event_topicagreement_concludedst:is_instance(event)
+              or df.history_event_topicagreement_rejectedst:is_instance(event)
+              or df.history_event_topicagreement_madest:is_instance(event)
+              or df.history_event_body_abusedst:is_instance(event)
+              or df.history_event_change_creature_typest:is_instance(event)
+              or df.history_event_change_hf_jobst:is_instance(event)
+              or df.history_event_change_hf_statest:is_instance(event)
+              or df.history_event_created_buildingst:is_instance(event)
+              or df.history_event_creature_devouredst:is_instance(event)
+              or df.history_event_hf_does_interactionst:is_instance(event)
+              or df.history_event_hf_learns_secretst:is_instance(event)
+              or df.history_event_hist_figure_new_petst:is_instance(event)
+              or df.history_event_hist_figure_reach_summitst:is_instance(event)
+              or df.history_event_item_stolenst:is_instance(event)
+              or df.history_event_remove_hf_entity_linkst:is_instance(event)
+              or df.history_event_remove_hf_site_linkst:is_instance(event)
+              or df.history_event_replaced_buildingst:is_instance(event)
+              or df.history_event_masterpiece_created_arch_designst:is_instance(event)
+              or df.history_event_masterpiece_created_dye_itemst:is_instance(event)
+              or df.history_event_masterpiece_created_arch_constructst:is_instance(event)
+              or df.history_event_masterpiece_created_itemst:is_instance(event)
+              or df.history_event_masterpiece_created_item_improvementst:is_instance(event)
+              or df.history_event_masterpiece_created_foodst:is_instance(event)
+              or df.history_event_masterpiece_created_engravingst:is_instance(event)
+              or df.history_event_masterpiece_lostst:is_instance(event)
+              or df.history_event_entity_actionst:is_instance(event)
+              or df.history_event_hf_act_on_buildingst:is_instance(event)
+              or df.history_event_artifact_createdst:is_instance(event)
+              or df.history_event_assume_identityst:is_instance(event)
+              or df.history_event_create_entity_positionst:is_instance(event)
+              or df.history_event_diplomat_lostst:is_instance(event)
+              or df.history_event_merchantst:is_instance(event)
+              or df.history_event_war_peace_acceptedst:is_instance(event)
+              or df.history_event_war_peace_rejectedst:is_instance(event)
+              or df.history_event_hist_figure_woundedst:is_instance(event)
+              or df.history_event_hist_figure_diedst:is_instance(event)
                 then
             file:write("\t<historical_event>\n")
             file:write("\t\t<id>"..event.id.."</id>\n")
             file:write("\t\t<type>"..tostring(df_enums.history_event_type[event:getType()]):lower().."</type>\n")
             for k,v in pairs(event) do
                 if k == "year" or k == "seconds" or k == "flags" or k == "id"
-                    or (k == "region" and event:getType() ~= df.history_event_type.HF_DOES_INTERACTION)
+                    or (k == "region" and not df.history_event_hf_does_interactionst:is_instance(event))
                     or k == "region_pos" or k == "layer" or k == "feature_layer" or k == "subregion"
                     or k == "anon_1" or k == "anon_2" or k == "flags2" or k == "unk1" then
 
-                elseif event:getType() == df.history_event_type.ADD_HF_ENTITY_LINK and k == "link_type" then
+                elseif df.history_event_add_hf_entity_linkst:is_instance(event) and k == "link_type" then
                     file:write("\t\t<"..k..">"..df_enums.histfig_entity_link_type[v]:lower().."</"..k..">\n")
-                elseif event:getType() == df.history_event_type.ADD_HF_ENTITY_LINK and k == "position_id" then
+                elseif df.history_event_add_hf_entity_linkst:is_instance(event) and k == "position_id" then
                     local entity = df.historical_entity.find(event.civ)
                     if (entity ~= nil and event.civ > -1 and v > -1) then
                         for entitypositionsK, entityPositionsV in ipairs(entity.positions.own) do
@@ -438,7 +442,7 @@ function export_more_legends_xml()
                     else
                         file:write("\t\t<position>-1</position>\n")
                     end
-                elseif event:getType() == df.history_event_type.CREATE_ENTITY_POSITION and k == "position" then
+                elseif df.history_event_create_entity_positionst:is_instance(event) and k == "position" then
                     local entity = df.historical_entity.find(event.site_civ)
                     if (entity ~= nil and v > -1) then
                         for entitypositionsK, entityPositionsV in ipairs(entity.positions.own) do
@@ -450,9 +454,9 @@ function export_more_legends_xml()
                     else
                         file:write("\t\t<position>-1</position>\n")
                     end
-                elseif event:getType() == df.history_event_type.REMOVE_HF_ENTITY_LINK and k == "link_type" then
+                elseif df.history_event_remove_hf_entity_linkst:is_instance(event) and k == "link_type" then
                     file:write("\t\t<"..k..">"..df_enums.histfig_entity_link_type[v]:lower().."</"..k..">\n")
-                elseif event:getType() == df.history_event_type.REMOVE_HF_ENTITY_LINK and k == "position_id" then
+                elseif df.history_event_remove_hf_entity_linkst:is_instance(event) and k == "position_id" then
                     local entity = df.historical_entity.find(event.civ)
                     if (entity ~= nil and event.civ > -1 and v > -1) then
                         for entitypositionsK, entityPositionsV in ipairs(entity.positions.own) do
@@ -464,32 +468,32 @@ function export_more_legends_xml()
                     else
                         file:write("\t\t<position>-1</position>\n")
                     end
-                elseif event:getType() == df.history_event_type.ADD_HF_HF_LINK and k == "type" then
+                elseif df.history_event_add_hf_hf_linkst:is_instance(event) and k == "type" then
                     file:write("\t\t<link_type>"..df_enums.histfig_hf_link_type[v]:lower().."</link_type>\n")
-                elseif event:getType() == df.history_event_type.ADD_HF_SITE_LINK and k == "type" then
+                elseif df.history_event_add_hf_site_linkst:is_instance(event) and k == "type" then
                     file:write("\t\t<link_type>"..df_enums.histfig_site_link_type[v]:lower().."</link_type>\n")
-                elseif event:getType() == df.history_event_type.REMOVE_HF_SITE_LINK and k == "type" then
+                elseif df.history_event_remove_hf_site_linkst:is_instance(event) and k == "type" then
                     file:write("\t\t<link_type>"..df_enums.histfig_site_link_type[v]:lower().."</link_type>\n")
-                elseif (event:getType() == df.history_event_type.ITEM_STOLEN or
-                        event:getType() == df.history_event_type.MASTERPIECE_CREATED_ITEM or
-                        event:getType() == df.history_event_type.MASTERPIECE_CREATED_ITEM_IMPROVEMENT or
-                        event:getType() == df.history_event_type.MASTERPIECE_CREATED_DYE_ITEM
+                elseif (df.history_event_item_stolenst:is_instance(event) or
+                        df.history_event_masterpiece_created_itemst:is_instance(event) or
+                        df.history_event_masterpiece_created_item_improvementst:is_instance(event) or
+                        df.history_event_masterpiece_created_dye_itemst:is_instance(event)
                         ) and k == "item_type" then
                     file:write("\t\t<item_type>"..df_enums.item_type[v]:lower().."</item_type>\n")
-                elseif (event:getType() == df.history_event_type.ITEM_STOLEN or
-                        event:getType() == df.history_event_type.MASTERPIECE_CREATED_ITEM or
-                        event:getType() == df.history_event_type.MASTERPIECE_CREATED_ITEM_IMPROVEMENT or
-                        event:getType() == df.history_event_type.MASTERPIECE_CREATED_DYE_ITEM
+                elseif (df.history_event_item_stolenst:is_instance(event) or
+                        df.history_event_masterpiece_created_itemst:is_instance(event) or
+                        df.history_event_masterpiece_created_item_improvementst:is_instance(event) or
+                        df.history_event_masterpiece_created_dye_itemst:is_instance(event)
                         ) and k == "item_subtype" then
                     --if event.item_type > -1 and v > -1 then
                         file:write("\t\t<"..k..">"..getItemSubTypeName(event.item_type,v).."</"..k..">\n")
                     --end
-                    elseif event:getType() == df.history_event_type.MASTERPIECE_CREATED_FOOD and k == "item_subtype" then
+                    elseif df.history_event_masterpiece_created_foodst:is_instance(event) and k == "item_subtype" then
                         --if event.item_type > -1 and v > -1 then
                             file:write("\t\t<item_type>food</item_type>\n")
                             file:write("\t\t<"..k..">"..getItemSubTypeName(df.item_type.FOOD,v).."</"..k..">\n")
                         --end
-                elseif event:getType() == df.history_event_type.ITEM_STOLEN and k == "mattype" then
+                elseif df.history_event_item_stolenst:is_instance(event) and k == "mattype" then
                     if (v > -1) then
                         if (dfhack.matinfo.decode(event.mattype, event.matindex) == nil) then
                             file:write("\t\t<mattype>"..event.mattype.."</mattype>\n")
@@ -498,10 +502,10 @@ function export_more_legends_xml()
                             file:write("\t\t<mat>"..dfhack.matinfo.toString(dfhack.matinfo.decode(event.mattype, event.matindex)).."</mat>\n")
                         end
                     end
-                elseif (event:getType() == df.history_event_type.MASTERPIECE_CREATED_ITEM or
-                        event:getType() == df.history_event_type.MASTERPIECE_CREATED_ITEM_IMPROVEMENT or
-                        event:getType() == df.history_event_type.MASTERPIECE_CREATED_FOOD or
-                        event:getType() == df.history_event_type.MASTERPIECE_CREATED_DYE_ITEM
+                elseif (df.history_event_masterpiece_created_itemst:is_instance(event) or
+                        df.history_event_masterpiece_created_item_improvementst:is_instance(event) or
+                        df.history_event_masterpiece_created_foodst:is_instance(event) or
+                        df.history_event_masterpiece_created_dye_itemst:is_instance(event)
                         ) and k == "mat_type" then
                     if (v > -1) then
                         if (dfhack.matinfo.decode(event.mat_type, event.mat_index) == nil) then
@@ -511,7 +515,7 @@ function export_more_legends_xml()
                             file:write("\t\t<mat>"..dfhack.matinfo.toString(dfhack.matinfo.decode(event.mat_type, event.mat_index)).."</mat>\n")
                         end
                     end
-                elseif event:getType() == df.history_event_type.MASTERPIECE_CREATED_ITEM_IMPROVEMENT and k == "imp_mat_type" then
+                elseif df.history_event_masterpiece_created_item_improvementst:is_instance(event) and k == "imp_mat_type" then
                     if (v > -1) then
                         if (dfhack.matinfo.decode(event.imp_mat_type, event.imp_mat_index) == nil) then
                             file:write("\t\t<imp_mat_type>"..event.imp_mat_type.."</imp_mat_type>\n")
@@ -520,7 +524,7 @@ function export_more_legends_xml()
                             file:write("\t\t<imp_mat>"..dfhack.matinfo.toString(dfhack.matinfo.decode(event.imp_mat_type, event.imp_mat_index)).."</imp_mat>\n")
                         end
                     end
-                elseif event:getType() == df.history_event_type.MASTERPIECE_CREATED_DYE_ITEM and k == "dye_mat_type" then
+                elseif df.history_event_masterpiece_created_dye_itemst:is_instance(event) and k == "dye_mat_type" then
                     if (v > -1) then
                         if (dfhack.matinfo.decode(event.dye_mat_type, event.dye_mat_index) == nil) then
                             file:write("\t\t<dye_mat_type>"..event.dye_mat_type.."</dye_mat_type>\n")
@@ -530,36 +534,36 @@ function export_more_legends_xml()
                         end
                     end
 
-                elseif event:getType() == df.history_event_type.ITEM_STOLEN and k == "matindex" then
+                elseif df.history_event_item_stolenst:is_instance(event) and k == "matindex" then
                     --skip
-                elseif event:getType() == df.history_event_type.ITEM_STOLEN and k == "item" and v == -1 then
+                elseif df.history_event_item_stolenst:is_instance(event) and k == "item" and v == -1 then
                     --skip
-                elseif (event:getType() == df.history_event_type.MASTERPIECE_CREATED_ITEM or
-                        event:getType() == df.history_event_type.MASTERPIECE_CREATED_ITEM_IMPROVEMENT
+                elseif (df.history_event_masterpiece_created_itemst:is_instance(event) or
+                        df.history_event_masterpiece_created_item_improvementst:is_instance(event)
                         ) and k == "mat_index" then
                     --skip
-                elseif event:getType() == df.history_event_type.MASTERPIECE_CREATED_ITEM_IMPROVEMENT and k == "imp_mat_index" then
+                elseif df.history_event_masterpiece_created_item_improvementst:is_instance(event) and k == "imp_mat_index" then
                     --skip
-                elseif (event:getType() == df.history_event_type.WAR_PEACE_ACCEPTED or
-                        event:getType() == df.history_event_type.WAR_PEACE_REJECTED or
-                        event:getType() == df.history_event_type.TOPICAGREEMENT_CONCLUDED or
-                        event:getType() == df.history_event_type.TOPICAGREEMENT_REJECTED or
-                        event:getType() == df.history_event_type.TOPICAGREEMENT_MADE
+                elseif (df.history_event_war_peace_acceptedst:is_instance(event) or
+                        df.history_event_war_peace_rejectedst:is_instance(event) or
+                        df.history_event_topicagreement_concludedst:is_instance(event) or
+                        df.history_event_topicagreement_rejectedst:is_instance(event) or
+                        df.history_event_topicagreement_madest:is_instance(event)
                         ) and k == "topic" then
                     file:write("\t\t<topic>"..tostring(df_enums.meeting_topic[v]):lower().."</topic>\n")
-                elseif event:getType() == df.history_event_type.MASTERPIECE_CREATED_ITEM_IMPROVEMENT and k == "improvement_type" then
+                elseif df.history_event_masterpiece_created_item_improvementst:is_instance(event) and k == "improvement_type" then
                     file:write("\t\t<improvement_type>"..df_enums.improvement_type[v]:lower().."</improvement_type>\n")
-                elseif ((event:getType() == df.history_event_type.HIST_FIGURE_REACH_SUMMIT and k == "group")
-                     or (event:getType() == df.history_event_type.HIST_FIGURE_NEW_PET and k == "group")
-                     or (event:getType() == df.history_event_type.BODY_ABUSED and k == "bodies")) then
+                elseif ((df.history_event_hist_figure_reach_summitst:is_instance(event) and k == "group")
+                     or (df.history_event_hist_figure_new_petst:is_instance(event) and k == "group")
+                     or (df.history_event_body_abusedst:is_instance(event) and k == "bodies")) then
                     for detailK,detailV in pairs(v) do
                         file:write("\t\t<"..k..">"..detailV.."</"..k..">\n")
                     end
-                elseif  event:getType() == df.history_event_type.HIST_FIGURE_NEW_PET and k == "pets" then
+                elseif  df.history_event_hist_figure_new_petst:is_instance(event) and k == "pets" then
                     for detailK,detailV in pairs(v) do
                         file:write("\t\t<"..k..">"..df.global.world.raws.creatures.all[detailV].name[0].."</"..k..">\n")
                     end
-                elseif event:getType() == df.history_event_type.BODY_ABUSED and (k == "props") then
+                elseif df.history_event_body_abusedst:is_instance(event) and (k == "props") then
                     file:write("\t\t<props_item_type>"..tostring(df_enums.item_type[event.props.item.item_type]):lower().."</props_item_type>\n")
                     file:write("\t\t<props_item_subtype>"..getItemSubTypeName(event.props.item.item_type,event.props.item.item_subtype).."</props_item_subtype>\n")
                     if (event.props.item.mat_type > -1) then
@@ -573,7 +577,7 @@ function export_more_legends_xml()
                     --file:write("\t\t<"..k.."_item_mat_type>"..tostring(event.props.item.mat_type).."</"..k.."_item_mat_index>\n")
                     --file:write("\t\t<"..k.."_item_mat_index>"..tostring(event.props.item.mat_index).."</"..k.."_item_mat_index>\n")
                     file:write("\t\t<"..k.."_pile_type>"..tostring(event.props.pile_type).."</"..k.."_pile_type>\n")
-                elseif event:getType() == df.history_event_type.ASSUME_IDENTITY and k == "identity" then
+                elseif df.history_event_assume_identityst:is_instance(event) and k == "identity" then
                     if (table.contains(df.global.world.identities.all,v)) then
                         if (df.global.world.identities.all[v].histfig_id == -1) then
                             local thisIdentity = df.global.world.identities.all[v]
@@ -584,9 +588,9 @@ function export_more_legends_xml()
                             file:write("\t\t<identity_hf>"..df.global.world.identities.all[v].histfig_id.."</identity_hf>\n")
                         end
                     end
-                elseif event:getType() == df.history_event_type.MASTERPIECE_CREATED_ARCH_CONSTRUCT and k == "building_type" then
+                elseif df.history_event_masterpiece_created_arch_constructst:is_instance(event) and k == "building_type" then
                     file:write("\t\t<building_type>"..df_enums.building_type[v]:lower().."</building_type>\n")
-                elseif event:getType() == df.history_event_type.MASTERPIECE_CREATED_ARCH_CONSTRUCT and k == "building_subtype" then
+                elseif df.history_event_masterpiece_created_arch_constructst:is_instance(event) and k == "building_subtype" then
                     if (df_enums.building_type[event.building_type]:lower() == "furnace") then
                         file:write("\t\t<building_subtype>"..df_enums.furnace_type[v]:lower().."</building_subtype>\n")
                     elseif v > -1 then
@@ -600,12 +604,12 @@ function export_more_legends_xml()
                     if v > -1 then
                         file:write("\t\t<caste>"..(df.global.world.raws.creatures.all[event.race].caste[v].caste_id):lower().."</caste>\n")
                     end
-                elseif k == "interaction" and event:getType() == df.history_event_type.HF_DOES_INTERACTION then
+                elseif k == "interaction" and df.history_event_hf_does_interactionst:is_instance(event) then
                     file:write("\t\t<interaction_action>"..df.global.world.raws.interactions[v].str[3].value.."</interaction_action>\n")
                     file:write("\t\t<interaction_string>"..df.global.world.raws.interactions[v].str[4].value.."</interaction_string>\n")
-                elseif k == "interaction" and event:getType() == df.history_event_type.HF_LEARNS_SECRET then
+                elseif k == "interaction" and df.history_event_hf_learns_secretst:is_instance(event) then
                     file:write("\t\t<secret_text>"..df.global.world.raws.interactions[v].str[2].value.."</secret_text>\n")
-                elseif event:getType() == df.history_event_type.HIST_FIGURE_DIED and k == "weapon" then
+                elseif df.history_event_hist_figure_diedst:is_instance(event) and k == "weapon" then
                     for detailK,detailV in pairs(v) do
                         if (detailK == "item") then
                             if detailV > -1 then
@@ -614,7 +618,7 @@ function export_more_legends_xml()
                                 if (thisItem ~= nil) then
                                     if (thisItem.flags.artifact == true) then
                                         for refk,refv in pairs(thisItem.general_refs) do
-                                            if (refv:getType() == df.general_ref_type.IS_ARTIFACT) then
+                                            if (df.general_ref_is_artifactst:is_instance(refv)) then
                                                 file:write("\t\t<artifact_id>"..refv.artifact_id.."</artifact_id>\n")
                                                 break
                                             end
@@ -644,7 +648,7 @@ function export_more_legends_xml()
                                 if  thisItem ~= nil then
                                     if (thisItem.flags.artifact == true) then
                                         for refk,refv in pairs(thisItem.general_refs) do
-                                            if (refv:getType() == df.general_ref_type.IS_ARTIFACT) then
+                                            if (df.general_ref_is_artifactst:is_instance(refv)) then
                                                 file:write("\t\t<shooter_artifact_id>"..refv.artifact_id.."</shooter_artifact_id>\n")
                                                 break
                                             end
@@ -672,11 +676,11 @@ function export_more_legends_xml()
                             file:write("\t\t<"..detailK..">"..detailV.."</"..detailK..">\n")
                         end
                     end
-                elseif event:getType() == df.history_event_type.HIST_FIGURE_DIED and k == "death_cause" then
+                elseif df.history_event_hist_figure_diedst:is_instance(event) and k == "death_cause" then
                     file:write("\t\t<"..k..">"..df_enums.death_type[v]:lower().."</"..k..">\n")
-                elseif event:getType() == df.history_event_type.CHANGE_HF_JOB and (k == "new_job" or k == "old_job") then
+                elseif df.history_event_change_hf_jobst:is_instance(event) and (k == "new_job" or k == "old_job") then
                     file:write("\t\t<"..k..">"..df_enums.profession[v]:lower().."</"..k..">\n")
-                elseif event:getType() == df.history_event_type.CHANGE_CREATURE_TYPE and (k == "old_race" or k == "new_race")  and v >= 0 then
+                elseif df.history_event_change_creature_typest:is_instance(event) and (k == "old_race" or k == "new_race")  and v >= 0 then
                     file:write("\t\t<"..k..">"..df.global.world.raws.creatures.all[v].name[0].."</"..k..">\n")
                 else
                     file:write("\t\t<"..k..">"..tostring(v).."</"..k..">\n")
@@ -701,21 +705,21 @@ function export_more_legends_xml()
         for refK, refV in pairs(wcV.refs) do
             file:write("\t\t<reference>\n")
             file:write("\t\t\t<type>"..df_enums.general_ref_type[refV:getType()].."</type>\n")
-            if refV:getType() == df.general_ref_type.ARTIFACT then file:write("\t\t\t<id>"..refV.artifact_id.."</id>\n") -- artifact
-            elseif refV:getType() == df.general_ref_type.ENTITY then file:write("\t\t\t<id>"..refV.entity_id.."</id>\n") -- entity
-            elseif refV:getType() == df.general_ref_type.HISTORICAL_EVENT then file:write("\t\t\t<id>"..refV.event_id.."</id>\n") -- event
-            elseif refV:getType() == df.general_ref_type.SITE then file:write("\t\t\t<id>"..refV.site_id.."</id>\n") -- site
-            elseif refV:getType() == df.general_ref_type.SUBREGION then file:write("\t\t\t<id>"..refV.region_id.."</id>\n") -- region
-            elseif refV:getType() == df.general_ref_type.HISTORICAL_FIGURE then file:write("\t\t\t<id>"..refV.hist_figure_id.."</id>\n") -- hist figure
-            elseif refV:getType() == df.general_ref_type.WRITTEN_CONTENT then file:write("\t\t\t<id>"..refV.written_content_id.."</id>\n")
-            elseif refV:getType() == df.general_ref_type.POETIC_FORM then file:write("\t\t\t<id>"..refV.poetic_form_id.."</id>\n") -- poetic form
-            elseif refV:getType() == df.general_ref_type.MUSICAL_FORM then file:write("\t\t\t<id>"..refV.musical_form_id.."</id>\n") -- musical form
-            elseif refV:getType() == df.general_ref_type.DANCE_FORM then file:write("\t\t\t<id>"..refV.dance_form_id.."</id>\n") -- dance form
-            elseif refV:getType() == df.general_ref_type.INTERACTION then -- TODO INTERACTION
-            elseif refV:getType() == df.general_ref_type.KNOWLEDGE_SCHOLAR_FLAG then -- TODO KNOWLEDGE_SCHOLAR_FLAG
-            elseif refV:getType() == df.general_ref_type.VALUE_LEVEL then -- TODO VALUE_LEVEL
-            elseif refV:getType() == df.general_ref_type.LANGUAGE then -- TODO LANGUAGE
-            elseif refV:getType() == df.general_ref_type.ABSTRACT_BUILDING then -- TODO ABSTRACT_BUILDING
+            if df.general_ref_artifact:is_instance(refV) then file:write("\t\t\t<id>"..refV.artifact_id.."</id>\n") -- artifact
+            elseif df.general_ref_entity:is_instance(refV) then file:write("\t\t\t<id>"..refV.entity_id.."</id>\n") -- entity
+            elseif df.general_ref_historical_eventst:is_instance(refV) then file:write("\t\t\t<id>"..refV.event_id.."</id>\n") -- event
+            elseif df.general_ref_sitest:is_instance(refV) then file:write("\t\t\t<id>"..refV.site_id.."</id>\n") -- site
+            elseif df.general_ref_subregionst:is_instance(refV) then file:write("\t\t\t<id>"..refV.region_id.."</id>\n") -- region
+            elseif df.general_ref_historical_figurest:is_instance(refV) then file:write("\t\t\t<id>"..refV.hist_figure_id.."</id>\n") -- hist figure
+            elseif df.general_ref_written_contentst:is_instance(refV) then file:write("\t\t\t<id>"..refV.written_content_id.."</id>\n")
+            elseif df.general_ref_poetic_formst:is_instance(refV) then file:write("\t\t\t<id>"..refV.poetic_form_id.."</id>\n") -- poetic form
+            elseif df.general_ref_musical_formst:is_instance(refV) then file:write("\t\t\t<id>"..refV.musical_form_id.."</id>\n") -- musical form
+            elseif df.general_ref_dance_formst:is_instance(refV) then file:write("\t\t\t<id>"..refV.dance_form_id.."</id>\n") -- dance form
+            elseif df.general_ref_interactionst:is_instance(refV) then -- TODO INTERACTION
+            elseif df.general_ref_knowledge_scholar_flagst:is_instance(refV) then -- TODO KNOWLEDGE_SCHOLAR_FLAG
+            elseif df.general_ref_value_levelst:is_instance(refV) then -- TODO VALUE_LEVEL
+            elseif df.general_ref_languagest:is_instance(refV) then -- TODO LANGUAGE
+            elseif df.general_ref_abstract_buildingst:is_instance(refV) then -- TODO ABSTRACT_BUILDING
             else
                 print("unknown reference",refV:getType(),df_enums.general_ref_type[refV:getType()])
                 --for k,v in pairs(refV) do print(k,v) end
@@ -798,16 +802,20 @@ end
 function export_site_maps()
     local vs = dfhack.gui.getCurViewscreen()
     if ((dfhack.gui.getCurFocus() ~= "legends" ) and (not table.contains(vs, "main_cursor"))) then -- Using open-legends
-        vs = vs.parent
+        vs = vs.parent --luacheck: retype
     end
-    print('    Exporting:  All possible site maps')
-    vs.main_cursor = 1
-    gui.simulateInput(vs, 'SELECT')
-    for i=1, #vs.sites do
-        gui.simulateInput(vs, 'LEGENDS_EXPORT_MAP')
-        gui.simulateInput(vs, 'STANDARDSCROLL_DOWN')
+    if df.viewscreen_legendsst:is_instance(vs) then
+        print('    Exporting:  All possible site maps')
+        vs.main_cursor = 1
+        gui.simulateInput(vs, 'SELECT')
+        for i=1, #vs.sites do
+            gui.simulateInput(vs, 'LEGENDS_EXPORT_MAP')
+            gui.simulateInput(vs, 'STANDARDSCROLL_DOWN')
+        end
+        gui.simulateInput(vs, 'LEAVESCREEN')
+    else
+        qerror('this command can only be used in Legends mode')
     end
-    gui.simulateInput(vs, 'LEAVESCREEN')
 end
 
 -- main()

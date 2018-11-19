@@ -31,8 +31,11 @@ Feel free to adjust the values as you see fit, change the has steel to
 platinum, change the axp axes to great axes, whatnot.
 
 ]====]
+
+local utils = require 'utils'
+
 -- ---------------------------------------------------------------------------
-function axeplate(unit)
+function axeplate()
     local unit = dfhack.gui.getSelectedUnit()
 
     if unit==nil then
@@ -44,8 +47,6 @@ function axeplate(unit)
 
     local prefcount = #(unit.status.current_soul.preferences)
     print ("Before, unit "..dfhack.TranslateName(dfhack.units.getVisibleName(unit)).." has "..prefcount.." preferences")
-
-    utils = require 'utils'
 
     -- axes and breastplates
     utils.insert_or_update(unit.status.current_soul.preferences, { new = true, type = 4 , item_type = df.item_type.WEAPON , creature_id = df.item_type.WEAPON , color_id = df.item_type.WEAPON , shape_id = df.item_type.WEAPON , plant_id = df.item_type.WEAPON , item_subtype = 1 , mattype = -1 , matindex = -1 , active = true, prefstring_seed = pss_counter }, 'prefstring_seed')
@@ -60,7 +61,7 @@ function axeplate(unit)
 
 end
 -- ---------------------------------------------------------------------------
-function hammershirt(unit)
+function hammershirt()
     local unit = dfhack.gui.getSelectedUnit()
 
     if unit==nil then
@@ -72,8 +73,6 @@ function hammershirt(unit)
 
     local prefcount = #(unit.status.current_soul.preferences)
     print ("Before, unit "..dfhack.TranslateName(dfhack.units.getVisibleName(unit)).." has "..prefcount.." preferences")
-
-    utils = require 'utils'
 
     -- hammers and mail shirts
     utils.insert_or_update(unit.status.current_soul.preferences, { new = true, type = 4 , item_type = df.item_type.WEAPON , creature_id = df.item_type.WEAPON , color_id = df.item_type.WEAPON , shape_id = df.item_type.WEAPON , plant_id = df.item_type.WEAPON , item_subtype = 2 , mattype = -1 , matindex = -1 , active = true, prefstring_seed = pss_counter }, 'prefstring_seed')
@@ -88,7 +87,7 @@ function hammershirt(unit)
 
 end
 -- ---------------------------------------------------------------------------
-function swordboot(unit)
+function swordboot()
     local unit = dfhack.gui.getSelectedUnit()
 
     if unit==nil then
@@ -100,8 +99,6 @@ function swordboot(unit)
 
     local prefcount = #(unit.status.current_soul.preferences)
     print ("Before, unit "..dfhack.TranslateName(dfhack.units.getVisibleName(unit)).." has "..prefcount.." preferences")
-
-    utils = require 'utils'
 
     -- short swords and high boots
     utils.insert_or_update(unit.status.current_soul.preferences, { new = true, type = 4 , item_type = df.item_type.WEAPON , creature_id = df.item_type.WEAPON , color_id = df.item_type.WEAPON , shape_id = df.item_type.WEAPON , plant_id = df.item_type.WEAPON , item_subtype = 3 , mattype = -1 , matindex = -1 , active = true, prefstring_seed = pss_counter }, 'prefstring_seed')
@@ -116,7 +113,7 @@ function swordboot(unit)
 
 end
 -- ---------------------------------------------------------------------------
-function spearboot(unit)
+function spearboot()
     local unit = dfhack.gui.getSelectedUnit()
 
     if unit==nil then
@@ -128,8 +125,6 @@ function spearboot(unit)
 
     local prefcount = #(unit.status.current_soul.preferences)
     print ("Before, unit "..dfhack.TranslateName(dfhack.units.getVisibleName(unit)).." has "..prefcount.." preferences")
-
-    utils = require 'utils'
 
     -- spears and high boots
     utils.insert_or_update(unit.status.current_soul.preferences, { new = true, type = 4 , item_type = df.item_type.WEAPON , creature_id = df.item_type.WEAPON , color_id = df.item_type.WEAPON , shape_id = df.item_type.WEAPON , plant_id = df.item_type.WEAPON , item_subtype = 4 , mattype = -1 , matindex = -1 , active = true, prefstring_seed = pss_counter }, 'prefstring_seed')
@@ -144,7 +139,7 @@ function spearboot(unit)
 
 end
 -- ---------------------------------------------------------------------------
-function maceshield(unit)
+function maceshield()
     local unit = dfhack.gui.getSelectedUnit()
 
     if unit==nil then
@@ -156,8 +151,6 @@ function maceshield(unit)
 
     local prefcount = #(unit.status.current_soul.preferences)
     print ("Before, unit "..dfhack.TranslateName(dfhack.units.getVisibleName(unit)).." has "..prefcount.." preferences")
-
-    utils = require 'utils'
 
     -- maces and shields
     utils.insert_or_update(unit.status.current_soul.preferences, { new = true, type = 4 , item_type = df.item_type.WEAPON , creature_id = df.item_type.WEAPON , color_id = df.item_type.WEAPON , shape_id = df.item_type.WEAPON , plant_id = df.item_type.WEAPON , item_subtype = 5 , mattype = -1 , matindex = -1 , active = true, prefstring_seed = pss_counter }, 'prefstring_seed')
@@ -172,7 +165,7 @@ function maceshield(unit)
 
 end
 -- ---------------------------------------------------------------------------
-function xbowhelm(unit)
+function xbowhelm()
     local unit = dfhack.gui.getSelectedUnit()
 
     if unit==nil then
@@ -184,8 +177,6 @@ function xbowhelm(unit)
 
     local prefcount = #(unit.status.current_soul.preferences)
     print ("Before, unit "..dfhack.TranslateName(dfhack.units.getVisibleName(unit)).." has "..prefcount.." preferences")
-
-    utils = require 'utils'
 
     -- crossbows and helms
     utils.insert_or_update(unit.status.current_soul.preferences, { new = true, type = 4 , item_type = df.item_type.WEAPON , creature_id = df.item_type.WEAPON , color_id = df.item_type.WEAPON , shape_id = df.item_type.WEAPON , plant_id = df.item_type.WEAPON , item_subtype = 6 , mattype = -1 , matindex = -1 , active = true, prefstring_seed = pss_counter }, 'prefstring_seed')
@@ -200,7 +191,7 @@ function xbowhelm(unit)
 
 end
 -- ---------------------------------------------------------------------------
-function pickglove(unit)
+function pickglove()
     local unit = dfhack.gui.getSelectedUnit()
 
     if unit==nil then
@@ -212,8 +203,6 @@ function pickglove(unit)
 
     local prefcount = #(unit.status.current_soul.preferences)
     print ("Before, unit "..dfhack.TranslateName(dfhack.units.getVisibleName(unit)).." has "..prefcount.." preferences")
-
-    utils = require 'utils'
 
     -- picks and gauntlets
     utils.insert_or_update(unit.status.current_soul.preferences, { new = true, type = 4 , item_type = df.item_type.WEAPON , creature_id = df.item_type.WEAPON , color_id = df.item_type.WEAPON , shape_id = df.item_type.WEAPON , plant_id = df.item_type.WEAPON , item_subtype = 7 , mattype = -1 , matindex = -1 , active = true, prefstring_seed = pss_counter }, 'prefstring_seed')
@@ -228,7 +217,7 @@ function pickglove(unit)
 
 end
 -- ---------------------------------------------------------------------------
-function longglove(unit)
+function longglove()
     local unit = dfhack.gui.getSelectedUnit()
 
     if unit==nil then
@@ -240,8 +229,6 @@ function longglove(unit)
 
     local prefcount = #(unit.status.current_soul.preferences)
     print ("Before, unit "..dfhack.TranslateName(dfhack.units.getVisibleName(unit)).." has "..prefcount.." preferences")
-
-    utils = require 'utils'
 
     -- long swords and gauntlets, skipped bows and whatnot
     utils.insert_or_update(unit.status.current_soul.preferences, { new = true, type = 4 , item_type = df.item_type.WEAPON , creature_id = df.item_type.WEAPON , color_id = df.item_type.WEAPON , shape_id = df.item_type.WEAPON , plant_id = df.item_type.WEAPON , item_subtype = 13 , mattype = -1 , matindex = -1 , active = true, prefstring_seed = pss_counter }, 'prefstring_seed')
@@ -256,7 +243,7 @@ function longglove(unit)
 
 end
 -- ---------------------------------------------------------------------------
-function daggerpants(unit)
+function daggerpants()
     local unit = dfhack.gui.getSelectedUnit()
 
     if unit==nil then
@@ -268,8 +255,6 @@ function daggerpants(unit)
 
     local prefcount = #(unit.status.current_soul.preferences)
     print ("Before, unit "..dfhack.TranslateName(dfhack.units.getVisibleName(unit)).." has "..prefcount.." preferences")
-
-    utils = require 'utils'
 
     -- daggers and greaves, skipped the weapons which are too large for most dorfs
     utils.insert_or_update(unit.status.current_soul.preferences, { new = true, type = 4 , item_type = df.item_type.WEAPON , creature_id = df.item_type.WEAPON , color_id = df.item_type.WEAPON , shape_id = df.item_type.WEAPON , plant_id = df.item_type.WEAPON , item_subtype = 16 , mattype = -1 , matindex = -1 , active = true, prefstring_seed = pss_counter }, 'prefstring_seed')
@@ -285,7 +270,7 @@ function daggerpants(unit)
 end
 -- ---------------------------------------------------------------------------
 function print_all(v)
-    unit=v
+    local unit=v
 
     local kk,vv
 
@@ -295,7 +280,7 @@ function print_all(v)
 end
 -- ---------------------------------------------------------------------------
 function clear_all(v)
-    unit=v
+    local unit=v
 
     local kk,vv,unk_counter
     unk_counter=31415926
@@ -334,7 +319,7 @@ function clearpref_all_dwarves()
     end
 end
 -- ---------------------------------------------------------------------------
-function clear_preferences(v)
+function clear_preferences()
     local unit = dfhack.gui.getSelectedUnit()
     local prefs=unit.status.current_soul.preferences
     for index,pref in ipairs(prefs) do
@@ -354,7 +339,7 @@ if opt and opt ~= "help" then
         return
     end
     if opt=="c" then
-        clear_preferences(v)
+        clear_preferences()
         return
     end
     if opt=="all" then
@@ -362,39 +347,39 @@ if opt and opt ~= "help" then
         return
     end
     if opt=="axp" then
-        axeplate(unit)
+        axeplate()
         return
     end
     if opt=="has" then
-        hammershirt(unit)
+        hammershirt()
         return
     end
     if opt=="swb" then
-        swordboot(unit)
+        swordboot()
         return
     end
     if opt=="spb" then
-        spearboot(unit)
+        spearboot()
         return
     end
     if opt=="mas" then
-        maceshield(unit)
+        maceshield()
         return
     end
     if opt=="xbh" then
-        xbowhelm(unit)
+        xbowhelm()
         return
     end
     if opt=="pig" then
-        pickglove(unit)
+        pickglove()
         return
     end
     if opt=="log" then
-        longglove(unit)
+        longglove()
         return
     end
     if opt=="dap" then
-        daggerpants(unit)
+        daggerpants()
         return
     end
 else

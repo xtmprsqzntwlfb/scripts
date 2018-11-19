@@ -6,13 +6,38 @@ armoks-blessing
 ===============
 Runs the equivalent of `rejuvenate`, `elevate-physical`, `elevate-mental`, and
 `brainwash` on all dwarves currently on the map.  This is an extreme change,
-which sets every stat to an ideal - legendary skills, great traits, and
-easy-to-satisfy preferences.
+which sets every stat and trait to an ideal easy-to-satisfy preference.
 
-Without arguments, all attributes, age & personalities are adjusted.
-Arguments allow for skills to be adjusted as well.
+Without providing arguments, only attributes, age, and personalities will be adjusted.
+Adding arguments allows for skills or classes to be adjusted to legendary (maximum).
+
+Arguments:
+
+- ``list``
+   Prints list of all skills
+
+- ``classes``
+   Prints list of all classes
+
+- ``all``
+   Set all skills, for all Dwarves, to legendary
+
+- ``<skill name>``
+   Set a specific skill, for all Dwarves, to legendary
+
+   example: ``armoks-blessing RANGED_COMBAT``
+
+   All Dwarves become a Legendary Archer
+
+- ``<class name>``
+   Set a specific class (group of skills), for all Dwarves, to legendary
+
+   example: ``armoks-blessing Medical``
+
+   All Dwarves will have all medical related skills set to legendary
 
 ]====]
+local utils = require 'utils'
 function rejuvenate(unit)
     if unit==nil then
         print ("No unit available!  Aborting with extreme prejudice.")
@@ -51,18 +76,14 @@ function elevate_attributes(unit)
         return
     end
 
-    local ok,f,t,k = pcall(pairs,unit.status.current_soul.mental_attrs)
-    if ok then
-        for k,v in f,t,k do
+    if unit.status.current_soul then
+        for k,v in pairs(unit.status.current_soul.mental_attrs) do
             v.value=v.max_value
         end
     end
 
-    local ok,f,t,k = pcall(pairs,unit.body.physical_attrs)
-    if ok then
-        for k,v in f,t,k do
-            v.value=v.max_value
-        end
+    for k,v in pairs(unit.body.physical_attrs) do
+        v.value=v.max_value
     end
 end
 -- ---------------------------------------------------------------------------
@@ -95,7 +116,6 @@ function make_legendary(skillname,unit)
     end
 
     if skillnamenoun ~= nil then
-        utils = require 'utils'
         skillnum = df.job_skill[skillname]
         utils.insert_or_update(unit.status.current_soul.skills, { new = true, id = skillnum, rating = 20 }, 'id')
         print (unit.name.first_name.." is now a Legendary "..skillnamenoun)
@@ -114,7 +134,6 @@ function BreathOfArmok(unit)
     local i
 
     local count_max = count_this(df.job_skill)
-    utils = require 'utils'
     for i=0, count_max do
         utils.insert_or_update(unit.status.current_soul.skills, { new = true, id = i, rating = 20 }, 'id')
     end
@@ -122,13 +141,12 @@ function BreathOfArmok(unit)
 end
 -- ---------------------------------------------------------------------------
 function LegendaryByClass(skilltype,v)
-    unit=v
+    local unit=v
     if unit==nil then
         print ("No unit available!  Aborting with extreme prejudice.")
         return
     end
 
-    utils = require 'utils'
     local i
     local skillclass
     local count_max = count_this(df.job_skill)
@@ -168,7 +186,7 @@ function adjust_all_dwarves(skillname)
             elevate_attributes(v)
             rejuvenate(v)
             if skillname then
-                if skillname=="Normal" or skillname=="Medical" or skillname=="Personal" or skillname=="Social" or skillname=="Cultural" or skillname=="MilitaryWeapon" or skillname=="MilitaryAttack" or skillname=="MilitaryDefense" or skillname=="MilitaryMisc" then
+                if df.job_skill_class[skillname] then
                     LegendaryByClass(skillname,v)
                 elseif skillname=="all" then
                     BreathOfArmok(v)
@@ -182,7 +200,8 @@ end
 -- ---------------------------------------------------------------------------
 -- main script operation starts here
 -- ---------------------------------------------------------------------------
-local opt = ...
+local args = {...}
+local opt = args[1]
 local skillname
 
 if opt then

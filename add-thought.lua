@@ -15,18 +15,16 @@ local utils=require('utils')
 function addEmotionToUnit(unit,thought,emotion,severity,strength,subthought)
     local emotions=unit.status.current_soul.personality.emotions
     if not (tonumber(emotion)) then
-        emotion=df.emotion_type[emotion]
+        emotion=df.emotion_type[emotion] --luacheck: retype
     end
-    local properThought=nil
-    if not (tonumber(thought)) then
-        properThought=df.unit_thought_type[tonumber(thought)]
-        if not properThought then
-            for k,syn in ipairs(df.global.world.raws.syndromes.all) do
-                if syn.syn_name==thought then
-                    properThought=df.unit_thought_type['Syndrome']
-                    subthought=syn.id
-                    break
-                end
+    local properThought = tonumber(thought) --as:df.unit_thought_type
+    local properSubthought = tonumber(subthought)
+    if not properThought or not df.unit_thought_type[properThought] then
+        for k,syn in ipairs(df.global.world.raws.syndromes.all) do
+            if syn.syn_name==thought then
+                properThought = df.unit_thought_type.Syndrome
+                properSubthought = syn.id
+                break
             end
         end
     end
@@ -34,8 +32,8 @@ function addEmotionToUnit(unit,thought,emotion,severity,strength,subthought)
     type=tonumber(emotion),
     unk2=1,
     strength=tonumber(strength),
-    thought=tonumber(thought),
-    subthought=tonumber(subthought),
+    thought=properThought,
+    subthought=properSubthought,
     severity=tonumber(severity),
     unk7=0,
     year=df.global.cur_year,
@@ -47,7 +45,7 @@ function addEmotionToUnit(unit,thought,emotion,severity,strength,subthought)
     end
 end
 
-validArgs = validArgs or utils.invert({
+local validArgs = utils.invert({
  'unit',
  'thought',
  'emotion',
@@ -58,7 +56,7 @@ validArgs = validArgs or utils.invert({
 })
 
 function tablify(iterableObject)
-    t={}
+    local t={}
     for k,v in ipairs(iterableObject) do
         t[k] = v~=nil and v or 'nil'
     end

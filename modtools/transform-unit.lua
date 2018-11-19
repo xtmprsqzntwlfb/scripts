@@ -32,7 +32,7 @@ Arguments::
 ]====]
 local utils = require 'utils'
 
-normalRace = normalRace or {}
+normalRace = normalRace or {} --as:{race:number,caste:number}[]
 
 local function transform(unit,race,caste)
  unit.enemy.normal_race = race
@@ -41,7 +41,7 @@ local function transform(unit,race,caste)
  unit.enemy.were_caste = caste
 end
 
-validArgs = validArgs or utils.invert({
+local validArgs = utils.invert({
  'clear',
  'help',
  'unit',
@@ -122,7 +122,7 @@ if args.setPrevRace then
 end
 transform(unit,raceIndex,caste,args.setPrevRace)
 
-local inventoryItems = {}
+local inventoryItems = {} --as:df.unit_inventory_item[]
 
 local function getInventory()
  local result = {}

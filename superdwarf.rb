@@ -29,7 +29,7 @@ when 'add'
                 $superdwarf_onupdate = nil
             else
                 $superdwarf_ids.each { |id|
-                    if u = df.unit_find(id) and not u.flags1.dead
+                    if u = df.unit_find(id) and not u.flags1.inactive
                         u.actions.each { |a|
                             case a.type
                             when :Move

@@ -19,14 +19,15 @@ local function maybeQuote(str)
  end
 end
 
-warnings = ''
-output = ''
+local warnings = ''
+local output = ''
 for _,reaction in ipairs(df.global.world.raws.reactions.reactions) do
  local function foreachProduct(product)
   local prodType = product:getType()
   if prodType ~= df.reaction_product_type.item then
    return
   end
+  local product = product --as:df.reaction_product_itemst
   if product.item_type ~= df.item_type.BOULDER then
    return
   end
@@ -82,22 +83,12 @@ for _,reaction in ipairs(df.global.world.raws.reactions.reactions) do
     if destroyRock then
      warnings = warnings .. ('Warning: instead of destroying the rock, do not produce it in the first place.\n')
     end
-    if workerOnly then
-     workerOnly = 'true'
-    else
-     workerOnly = 'false'
+    local reactionTriggerStr = 'modtools/reaction-trigger -reactionName ' .. maybeQuote(reaction.code) --.. '"'
+    if not workerOnly then
+     reactionTriggerStr = reactionTriggerStr .. ' -workerOnly false'
     end
     if allowMultipleTargets then
-     allowMultipleTargets = 'true'
-    else
-     allowMultipleTargets = 'false'
-    end
-    local reactionTriggerStr = 'modtools/reaction-trigger -reactionName ' .. maybeQuote(reaction.code) --.. '"'
-    if workerOnly ~= 'true' then
-     reactionTriggerStr = reactionTriggerStr .. ' -workerOnly ' .. workerOnly
-    end
-    if allowMultipleTargets ~= 'false' then
-     reactionTriggerStr = reactionTriggerStr .. ' -allowMultipleTargets ' .. allowMultipleTargets
+     reactionTriggerStr = reactionTriggerStr .. ' -allowMultipleTargets true'
     end
     if resetPolicy and resetPolicy ~= 'NewInstance' then
      reactionTriggerStr = reactionTriggerStr .. ' -resetPolicy ' .. resetPolicy

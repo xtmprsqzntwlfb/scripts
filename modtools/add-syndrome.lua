@@ -38,7 +38,7 @@ Arguments::
 local syndromeUtil = require 'syndrome-util'
 local utils = require 'utils'
 
-validArgs = validArgs or utils.invert({
+local validArgs = utils.invert({
  'help',
  'syndrome',
  'resetPolicy',
@@ -64,17 +64,17 @@ local targ = df.unit.find(tonumber(args.target))
 if not targ then
  error ('Could not find target: ' .. args.target)
 end
-args.target = targ
 
 if args.eraseClass then
- local count = syndromeUtil.eraseSyndromeClass(args.target, args.eraseClass)
+ local count = syndromeUtil.eraseSyndromeClass(targ, args.eraseClass)
  --print('deleted ' .. tostring(count) .. ' syndromes')
  return
 end
 
+local resetPolicy = syndromeUtil.ResetPolicy.NewInstance
 if args.resetPolicy then
- args.resetPolicy = syndromeUtil.ResetPolicy[args.resetPolicy]
- if not args.resetPolicy then
+ resetPolicy = syndromeUtil.ResetPolicy[args.resetPolicy]
+ if not resetPolicy then
   error ('Invalid reset policy.')
  end
 end
@@ -93,21 +93,20 @@ end
 if not syndrome then
  error ('Invalid syndrome: ' .. args.syndrome)
 end
-args.syndrome = syndrome
 
 if args.erase then
- syndromeUtil.eraseSyndrome(args.target,args.syndrome.id,args.eraseOldest)
+ syndromeUtil.eraseSyndrome(targ,syndrome.id,args.eraseOldest)
  return
 end
 
 if args.eraseAll then
- syndromeUtil.eraseSyndromes(args.target,args.syndrome.id)
+ syndromeUtil.eraseSyndromes(targ,syndrome.id)
  return
 end
 
-if skipImmunities then
- syndromeUtil.infectWithSyndrome(args.target,args.syndrome,args.resetPolicy)
+if args.skipImmunities then
+ syndromeUtil.infectWithSyndrome(targ,syndrome,resetPolicy)
 else
- syndromeUtil.infectWithSyndromeIfValidTarget(args.target,args.syndrome,args.resetPolicy)
+ syndromeUtil.infectWithSyndromeIfValidTarget(targ,syndrome,resetPolicy)
 end
 

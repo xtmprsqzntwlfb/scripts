@@ -6,6 +6,10 @@ adv-rumors
 ==========
 Improves the "Bring up specific incident or rumor" menu in Adventure mode.
 
+- Moves entries into one line
+- Adds a "slew" keyword for filtering, making it easy to find your kills and not your companions'
+- Trims repetitive words
+
 ]====]
 
 --========================
@@ -13,12 +17,9 @@ Improves the "Bring up specific incident or rumor" menu in Adventure mode.
 -- Version : 0.2
 -- Description : A small utility based on dfhack to improve the rumor UI in adventure mode.
 --
--- Usage: Save this code as rumors.lua file in your /hack/scripts/ folder
 --      In game when you want to boast about your kill to someone. Start conversation and choose
 --      the menu "Bring up specific incident or rumor"
 --      type rumors in dfhack window and hit enter. Or do the below keybind and use that directly from DF window.
--- Optional One time setup : run below command at dfhack command prompt once to setup easy keybind for this
---          keybinding add Ctrl-A@dungeonmode/ConversationSpeak rumors
 --
 -- Prior Configuration: (you can skip this if you want)
 --      Set the three boolean values below and play around with the script as to how you like
@@ -27,9 +28,9 @@ Improves the "Bring up specific incident or rumor" menu in Adventure mode.
 --      shortenString = will further shorten the line to = slew "XYZ" ( "n time" ago in " Region")
 --=======================
 
-utils = require "utils"
+local utils = require "utils"
 
-names_blacklist = utils.invert{"a", "an", "you", "attacked", "slew", "was", "slain", "by"}
+local names_blacklist = utils.invert{"a", "an", "you", "attacked", "slew", "was", "slain", "by"}
 
 function condenseChoiceTitle(choice)
     while #choice.title > 1 do
@@ -45,10 +46,10 @@ function addKeyword(choice, keyword)
 end
 
 function rumorUpdate()
-    improveReadability = true
-    addKeywordSlew = true
-    shortenString = true
-    addKeywordNames = true
+    local improveReadability = true
+    local addKeywordSlew = true
+    local shortenString = true
+    local addKeywordNames = true
 
     for i, choice in ipairs(df.global.ui_advmode.conversation.choices) do
         if choice.choice.type == df.talk_choice_type.SummarizeConflict then

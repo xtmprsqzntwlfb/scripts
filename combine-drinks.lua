@@ -8,7 +8,7 @@ Merge stacks of drinks in the selected stockpile.
 ]====]
 local utils = require 'utils'
 
-validArgs = validArgs or utils.invert({ 'max', 'stockpile' })
+local validArgs = utils.invert({ 'max', 'stockpile' })
 local args = utils.processArgs({...}, validArgs)
 
 local max = 30;
@@ -30,7 +30,7 @@ local function getDrinks(items, drinks, index)
         -- Skip items currently tasked
         if #d.specific_refs == 0 then
 
-            if d:getType() == 68 then
+            if d:getType() == df.item_type.DRINK then
                 foundDrink = d
             else
                 --print(d.id)
@@ -39,7 +39,7 @@ local function getDrinks(items, drinks, index)
                 if #containedItems == 1 then
                     local possibleDrink = containedItems[1]
 
-                    if #possibleDrink.specific_refs == 0 and possibleDrink:getType() == 68 then
+                    if #possibleDrink.specific_refs == 0 and possibleDrink:getType() == df.item_type.DRINK then
                         foundDrink = possibleDrink
                     end
                 end
@@ -68,14 +68,14 @@ else
         error("Select a non-empty stockpile")
 
     else
-        local drinks = { }
+        local drinks = { } --as:df.item_drinkst[]
         local drinkCount = getDrinks(rootItems, drinks, 0)
 
         --for i,p in ipairs(drinks) do
         --    print(i .. ': ' .. dfhack.items.getDescription(p, p:getType()))
         --end
 
-        local removedDrinks = { }
+        local removedDrinks = {} --as:bool[]
 
         for i=0,(drinkCount-2) do
             local currentDrink = drinks[i]

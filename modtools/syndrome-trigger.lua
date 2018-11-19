@@ -25,7 +25,7 @@ Arguments::
 local eventful = require 'plugins.eventful'
 local utils = require 'utils'
 
-onInfection = onInfection or {}
+onInfection = onInfection or {} --as:{_type:table,_array:{_type:table,_array:{_type:table,command:__arg}}}
 
 eventful.enableEvent(eventful.eventType.UNLOAD,1)
 eventful.onUnload.syndromeTrigger = function()
@@ -35,8 +35,8 @@ end
 eventful.enableEvent(eventful.eventType.SYNDROME,5) --requires iterating through every unit, so not cheap, but not slow either
 
 local function processTrigger(args)
- local command = {}
- for i,arg in ipairs(args.command) do
+ local command = {} --as:string[]
+ for i,arg in ipairs(args.command) do --as:string
   if arg == '\\SYNDROME_ID' then
    table.insert(command, '' .. args.syndrome.id)
   elseif arg == '\\UNIT_ID' then
@@ -62,26 +62,26 @@ eventful.onSyndrome.syndromeTrigger = function(unitId, syndromeIndex)
   return
  end
  local syndrome = df.syndrome.find(syn_id)
- local table = {}
- table.unit = unit
- table.unit_syndrome = unit_syndrome
- table.syndrome = syndrome
  for _,args in ipairs(onInfection[syn_id] or {}) do
-  utils.fillTable(args,table)
-  processTrigger(args)
-  utils.unfillTable(args,table)
+  processTrigger({
+    unit = unit,
+    unit_syndrome = unit_syndrome,
+    syndrome = syndrome,
+    command = args.command
+  })
  end
 end
 
 ------------------------------
 --argument processing
 
-validArgs = validArgs or utils.invert({
+local validArgs = utils.invert({
  'clear',
  'help',
  'command',
  'syndrome',
- 'synclass'
+ 'synclass',
+ 'unit'
 })
 
 local args = utils.processArgs({...}, validArgs)

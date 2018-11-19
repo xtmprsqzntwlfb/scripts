@@ -8,7 +8,7 @@ Remove all 'aquifer' tags from the map blocks. Irreversible.
 ]====]
 
 local function drain()
-    local layers = {}
+    local layers = {} --as:bool[]
     local layer_count = 0
     local tile_count = 0
 

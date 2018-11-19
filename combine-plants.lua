@@ -8,7 +8,7 @@ Merge stacks of plants or plant growths in the selected container or stockpile.
 ]====]
 local utils = require 'utils'
 
-validArgs = validArgs or utils.invert({ 'max', 'stockpile', 'container' })
+local validArgs = utils.invert({ 'max', 'stockpile', 'container' })
 local args = utils.processArgs({...}, validArgs)
 
 local max = 12
@@ -22,8 +22,8 @@ if args.container then container = df.item.find(tonumber(args.container)) end
 
 function itemsCompatible(item0, item1)
     return item0:getType() == item1:getType()
-        and item0.mat_type == item1.mat_type
-        and item0.mat_index == item1.mat_index
+        and item0.mat_type == item1.mat_type --hint:df.item_plantst
+        and item0.mat_index == item1.mat_index --hint:df.item_plantst
 end
 
 function getPlants(items, plants, index)
@@ -32,7 +32,7 @@ function getPlants(items, plants, index)
         for _,v in pairs(items) do
             -- Skip items currently tasked
             if #v.specific_refs == 0 then
-                if v:getType() == 53 or v:getType() == 55 or v:getType() == 70 then
+                if v:getType() == df.item_type.PLANT or v:getType() == df.item_type.PLANT_GROWTH or v:getType() == df.item_type.CHEESE then
                     plants[index] = v
                     index = index + 1
 
@@ -70,14 +70,14 @@ else
         error("Select a non-empty container")
 
     else
-        local plants = { }
+        local plants = { } --as:df.item_actual[]
         local plantCount = getPlants(rootItems, plants, 0)
         print("found " .. plantCount .. " plants")
 
-        local removedPlants = { }
+        local removedPlants = { } --as:bool[]
 
         for i=0,(plantCount-2) do
-            local currentPlant = plants[i]
+            local currentPlant = plants[i] --as:df.item_plantst
             local itemsNeeded = max - currentPlant.stack_size
 
             if removedPlants[currentPlant.id] == nil and itemsNeeded > 0 then

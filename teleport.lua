@@ -19,19 +19,19 @@ See `gui/teleport` for an in-game UI.
 
 function teleport(unit,pos)
  local unitoccupancy = dfhack.maps.getTileBlock(unit.pos).occupancy[unit.pos.x%16][unit.pos.y%16]
- local newoccupancy = dfhack.maps.getTileBlock(pos).occupancy[pos.x%16][pos.y%16]
+ local newoccupancy = dfhack.maps.getTileBlock(pos).occupancy[tonumber(pos.x)%16][tonumber(pos.y)%16]
  if newoccupancy.unit then
   unit.flags1.on_ground=true
  end
- unit.pos.x = pos.x
- unit.pos.y = pos.y
- unit.pos.z = pos.z
+ unit.pos.x = tonumber(pos.x)
+ unit.pos.y = tonumber(pos.y)
+ unit.pos.z = tonumber(pos.z)
  if not unit.flags1.on_ground then unitoccupancy.unit = false else unitoccupancy.unit_grounded = false end
 end
 
-utils = require('utils')
+local utils = require('utils')
 
-validArgs = validArgs or utils.invert({
+local validArgs = utils.invert({
  'unit',
  'x',
  'y',

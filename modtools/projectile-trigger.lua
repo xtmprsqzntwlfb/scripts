@@ -27,7 +27,7 @@ This triggers dfhack commands when projectiles hit their targets.  Usage::
 local eventful = require 'plugins.eventful'
 local utils = require 'utils'
 
-materialTriggers = materialTriggers or {}
+materialTriggers = materialTriggers or {} --as:{_type:table,command:__arg,material:__arg}[][]
 
 eventful.enableEvent(eventful.eventType.UNLOAD,1)
 eventful.onUnload.projectileTrigger = function()
@@ -35,16 +35,16 @@ eventful.onUnload.projectileTrigger = function()
 end
 
 function processTrigger(args)
- local command2 = {}
+ local command2 = {} --as:string[]
  for _,arg in ipairs(args.command) do
   if arg == '\\LOCATION' then
-   table.insert(command2,args.pos.x)
-   table.insert(command2,args.pos.y)
-   table.insert(command2,args.pos.z)
+   table.insert(command2,tostring(args.pos.x))
+   table.insert(command2,tostring(args.pos.y))
+   table.insert(command2,tostring(args.pos.z))
   elseif arg == '\\PROJECTILE_ID' then
-   table.insert(command2,args.projectile.id)
+   table.insert(command2,tostring(args.projectile.id))
   elseif arg == '\\FIRER_ID' then
-   table.insert(command2,args.projectile.firer.id)
+   table.insert(command2,tostring(args.projectile.firer.id))
   elseif string.sub(arg,1,1) == '\\' then
    table.insert(command2,string.sub(arg,2))
   else
@@ -56,18 +56,18 @@ end
 
 eventful.onProjItemCheckImpact.expansion = function(projectile)
  local matStr = dfhack.matinfo.decode(projectile.item):getToken()
- local table = {}
- table.pos = projectile.cur_pos
- table.projectile = projectile
- table.item = projectile.item
  for _,args in ipairs(materialTriggers[matStr] or {}) do
-  utils.fillTable(args,table)
-  processTrigger(args)
-  utils.unfillTable(args,table)
+  processTrigger({
+   pos = projectile.cur_pos,
+   projectile = projectile,
+   item = projectile.item,
+   command = args.command,
+   material = args.material
+  })
  end
 end
 
-validArgs = validArgs or utils.invert({
+local validArgs = utils.invert({
  'help',
  'clear',
  'command',

@@ -16,15 +16,15 @@ Animals will give birth within two in-game hours (100 ticks or fewer).
 
 ]====]
 
-world = df.global.world
+local world = df.global.world
 
 if not dfhack.isWorldLoaded() then
     qerror('World not loaded.')
 end
 
-args = {...}
-list_only = false
-creatures = {}
+local args = {...}
+local list_only = false
+local creatures = {}
 
 if #args > 0 then
     for _, arg in pairs(args) do
@@ -38,12 +38,12 @@ else
     creatures.CAT = true
 end
 
-total = 0
-total_changed = 0
-total_created = 0
+local total = 0
+local total_changed = 0
+local total_created = 0
 
-males = {}
-females = {}
+local males = {} --as:df.unit[][]
+local females = {} --as:df.unit[][]
 
 for _, unit in pairs(world.units.all) do
     local id = world.raws.creatures.all[unit.race].creature_id
@@ -55,7 +55,7 @@ end
 if list_only then
     print("Type                   Male # Female #")
     -- sort IDs alphabetically
-    local ids = {}
+    local ids = {} --as:string[]
     for id in pairs(males) do
         table.insert(ids, id)
     end
@@ -67,9 +67,8 @@ if list_only then
 end
 
 for id in pairs(creatures) do
-    local females = females[id] or {}
-    total = total + #females
-    for _, female in pairs(females) do
+    total = total + #(females[id] or {})
+    for _, female in pairs(females[id]) do
         if female.pregnancy_timer ~= 0 then
             female.pregnancy_timer = math.random(1, 100)
             total_changed = total_changed + 1

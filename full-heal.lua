@@ -1,6 +1,6 @@
 -- Attempts to fully heal the selected unit
 --author Kurik Amudnil, Urist DaVinci
---edited by expwnent
+--edited by expwnent and AtomicChicken
 
 --[====[
 
@@ -25,7 +25,7 @@ the corpse - creepy!
 
 local utils = require('utils')
 
-validArgs = validArgs or utils.invert({
+local validArgs = utils.invert({
     'r',
     'help',
     'unit',
@@ -40,10 +40,11 @@ if args.help then
 end
 
 local item = dfhack.gui.getSelectedItem(true)
+local unit
 if args.unit then
     unit = df.unit.find(tonumber(args.unit))
 elseif df.item_corpsest:is_instance(item) then
-    unit = df.unit.find(item.unit_id)
+    unit = df.unit.find(item.unit_id) --hint:df.item_corpsest
 else
     unit = dfhack.gui.getSelectedUnit()
 end
@@ -54,16 +55,16 @@ end
 
 if unit then
     if args.r then
-        if unit.flags1.dead then
+        if unit.flags2.killed then
             --print("Resurrecting...")
             unit.flags2.slaughter = false
             unit.flags3.scuttle = false
         end
-        unit.flags1.dead = false
+        unit.flags1.inactive = false
         unit.flags2.killed = false
         unit.flags3.ghostly = false
         if not args.keep_corpse then
-            for _, corpse in ipairs(df.global.world.items.other.CORPSE) do
+            for _, corpse in ipairs(df.global.world.items.other.CORPSE) do --as:df.item_body_component
                 if corpse.unit_id == unit.id then
                     corpse.flags.garbage_collect = true
                     corpse.flags.forbid = true
@@ -84,9 +85,10 @@ if unit then
     --print("Refilling blood...")
     unit.body.blood_count = unit.body.blood_max
 
-    --print("Resetting grasp/stand status...")
+    --print("Resetting grasp/stand/fly status...")
     unit.status2.limbs_stand_count = unit.status2.limbs_stand_max
     unit.status2.limbs_grasp_count = unit.status2.limbs_grasp_max
+    unit.status2.limbs_fly_count = unit.status2.limbs_fly_max
 
     --print("Resetting status flags...")
     unit.flags2.has_breaks = false
@@ -101,7 +103,9 @@ if unit then
     unit.flags2.calculated_nerves = false
     unit.flags2.calculated_bodyparts = false
     unit.flags2.calculated_insulation = false
+    unit.flags3.body_temp_in_range = false
     unit.flags3.compute_health = true
+    unit.flags3.gelded = false
 
     --print("Resetting counters...")
     unit.counters.winded = 0
@@ -111,8 +115,16 @@ if unit then
     unit.counters.pain = 0
     unit.counters.nausea = 0
     unit.counters.dizziness = 0
+    unit.counters.suffocation = 0
+    unit.counters.guts_trail1.x = -30000
+    unit.counters.guts_trail1.y = -30000
+    unit.counters.guts_trail1.z = -30000
+    unit.counters.guts_trail2.x = -30000
+    unit.counters.guts_trail2.y = -30000
+    unit.counters.guts_trail2.z = -30000
 
     unit.counters2.paralysis = 0
+    unit.counters2.numbness = 0
     unit.counters2.fever = 0
     unit.counters2.exhaustion = 0
     unit.counters2.hunger_timer = 0
@@ -121,6 +133,8 @@ if unit then
     unit.counters2.vomit_timeout = 0
 
     unit.animal.vanish_countdown = 0
+
+    unit.body.infection_level = 0
 
     --print("Resetting body part status...")
     local comp = unit.body.components
@@ -148,16 +162,68 @@ if unit then
         status.skin_damage = false
         status.motor_nerve_severed = false
         status.sensory_nerve_severed = false
+        status.spilled_guts = false
+        status.severed_or_jammed = false
     end
 
-    for i, temp in ipairs(unit.status2.body_part_temperature) do
-        local bp = unit.body.body_plan.body_parts[i]
-        temp.whole = math.floor((bp.min_temp + bp.max_temp) / 2)
+    for i = #unit.status2.body_part_temperature-1,0,-1 do
+      unit.status2.body_part_temperature:erase(i) -- attempting to rewrite temperature was causing body parts to melt for some reason; forcing repopulation in this manner appears to be safer
     end
 
-    if unit.job.current_job and unit.job.current_job.job_type == df.job_type.Rest then
-        --print("Wake from rest -> clean self...")
-        unit.job.current_job.job_type = df.job_type.CleanSelf
+    for i = 0,#unit.enemy.body_part_8a8-1,1 do
+      unit.enemy.body_part_8a8[i] = 1 -- not sure what this does, but values appear to change following injuries
+    end
+    for i = 0,#unit.enemy.body_part_8d8-1,1 do
+      unit.enemy.body_part_8d8[i] = 0 -- same as above
+    end
+    for i = 0,#unit.enemy.body_part_878-1,1 do
+      unit.enemy.body_part_878[i] = 3 -- as above
+    end
+    for i = 0,#unit.enemy.body_part_888-1,1 do
+      unit.enemy.body_part_888[i] = 3 -- as above
+    end
+
+    local histFig = df.historical_figure.find(unit.hist_figure_id)
+    if histFig and histFig.info and histFig.info.wounds then
+      --print("Clearing historical wounds...")
+      histFig.info.wounds = nil
+    end
+
+    local health = unit.health
+    if health then
+      for i = 0, #health.flags-1,1 do
+        health.flags[i] = false
+      end
+      for _,bpFlags in ipairs(health.body_part_flags) do
+        for i = 0, #bpFlags-1,1 do
+          bpFlags[i] = false
+        end
+      end
+      health.immobilize_cntdn = 0
+      health.dressing_cntdn = 0
+      health.suture_cntdn = 0
+      health.crutch_cntdn = 0
+      health.unk_18_cntdn = 0
+    end
+
+    local job = unit.job.current_job
+    if job and job.job_type == df.job_type.Rest then
+        --print("Wake from rest...")
+        job.completion_timer = 0
+        job.pos:assign(unit.pos)
+    end
+
+    local job_link = df.global.world.jobs.list.next
+    while job_link do
+      local doctor_job = job_link.item
+      if doctor_job then
+        local patientRef = dfhack.job.getGeneralRef(doctor_job, df.general_ref_type['UNIT_PATIENT']) --as:df.general_ref_unit_patientst
+        if patientRef and patientRef.unit_id == unit.id then
+          patientRef.unit_id = -1 -- causes active healthcare job to be cancelled, generating a job cancellation announcement indicating the lack of a patient
+          break
+        end
+      end
+      job_link = job_link.next
     end
 end
 

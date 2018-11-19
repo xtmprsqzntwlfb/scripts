@@ -14,46 +14,33 @@ Sets the wear on items in your fort to zero.  Usage:
 ]====]
 
 local args = {...}
+local count = 0
 
 if args[1] == 'help' then
     print(help)
     return
-elseif args[1] == 'all' then
- local count = 0;
- for _,item in ipairs(df.global.world.items.all) do
-  if (item.wear > 0) then
-   item:setWear(0)
-   count = count+1
-  end
- end
- print('remove-wear removed wear from '..count..' objects')
+elseif args[1] == 'all' or args[1] == '-all' then
+    for _, item in ipairs(df.global.world.items.all) do
+        if item.wear > 0 then --hint:df.item_actual
+            item:setWear(0)
+            count = count + 1
+        end
+    end
 else
- local argIndex = 1
- local isCompleted = {}
- for i,x in ipairs(args) do
-  args[i] = tonumber(x)
- end
- table.sort(args)
- for _,item in ipairs(df.global.world.items.all) do
-  local function loop()
-   if argIndex > #args then
-    return
-   elseif item.id > args[argIndex] then
-    argIndex = argIndex+1
-    loop()
-    return
-   elseif item.id == args[argIndex] then
-    --print('removing wear from item with id ' .. args[argIndex])
-    item:setWear(0)
-    isCompleted[args[argIndex]] = true
-    argIndex = argIndex+1
-   end
-  end
-  loop()
- end
- for _,arg in ipairs(args) do
-  if isCompleted[arg] ~= true then
-   print('failed to remove wear from item ' .. arg .. ': could not find item with that id')
-  end
- end
+    for i, arg in ipairs(args) do
+        local item_id = tonumber(arg)
+        if item_id then
+            local item = df.item.find(item_id)
+            if item then
+                item:setWear(0)
+                count = count + 1
+            else
+                dfhack.printerr('remove-wear: could not find item: ' .. item_id)
+            end
+        else
+            qerror('Invalid item ID: ' .. arg)
+        end
+    end
 end
+
+print('remove-wear: removed wear from '..count..' objects')

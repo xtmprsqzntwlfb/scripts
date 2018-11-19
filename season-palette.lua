@@ -28,7 +28,7 @@ misrepresented as being the original software.
 --@ module = true
 --@ enable = true
 
-help = [====[
+local help = [====[
 
 season-palette
 ==============
@@ -162,11 +162,12 @@ function usage()
     print(help)
 end
 
-args = {...}
+local args = {...}
 if dfhack_flags.enable then
     table.insert(args, dfhack_flags.enable_state and 'enable' or 'disable')
 end
 
+--luacheck: global
 enabled = false
 if #args >= 1 then
     if args[1] == 'start' or args[1] == 'enable' then
@@ -189,7 +190,7 @@ local seasons = {
     [2] = '_autumn',
     [3] = '_winter',
 }
-lastSeason = lastSeason or nil
+lastSeason = lastSeason or nil --as:number
 
 local function seasonSwapLoop()
     if not enabled then

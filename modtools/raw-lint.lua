@@ -8,7 +8,7 @@ Checks for simple issues with raw files. Can be run automatically.
 
 ]====]
 
-utils = require 'utils'
+local utils = require 'utils'
 
 enabled = enabled or false
 
@@ -16,12 +16,12 @@ if dfhack.filesystem == nil or dfhack.filesystem.listdir_recursive == nil then
     qerror('This script requires DFHack 0.40.24-r2 or newer')
 end
 
-perr_prefix = ''
+local perr_prefix = ''
 function perr(msg, ...)
     dfhack.printerr((#perr_prefix > 0 and perr_prefix .. ': ' or '') .. tostring(msg):format(...))
 end
 
-valid_objnames = utils.invert{
+local valid_objnames = utils.invert{
     'BODY_DETAIL_PLAN',
     'BODY',
     'BUILDING',
@@ -41,7 +41,7 @@ valid_objnames = utils.invert{
     'TISSUE_TEMPLATE',
 }
 
-objname_overrides = {
+local objname_overrides = {
     b_detail_plan = 'BODY_DETAIL_PLAN',
     c_variation = 'CREATURE_VARIATION',
 }
@@ -58,13 +58,13 @@ function check_file(path)
         perr('Name mismatch: expected %s, found %s', filename, realname)
     end
     local objname = filename
-    local check_objnames = {}
+    local check_objnames = {} --as:string[]
     for k, v in pairs(objname_overrides) do
         if filename:sub(1, #k) == k and valid_objnames[v] ~= nil then
             table.insert(check_objnames, v)
         end
     end
-    local start = filename:find('_', start)
+    local start = filename:find('_')
     while start ~= nil do
         local part = filename:sub(1, filename:find('_', start) - 1):upper()
         if valid_objnames[part] ~= nil then
@@ -120,7 +120,7 @@ dfhack.onStateChange.raw_lint = function(event)
     end
 end
 
-args = {...}
+local args = {...}
 if dfhack_flags and dfhack_flags.enable then
     table.insert(args, dfhack_flags.enable_state and 'enable' or 'disable')
 end

@@ -17,6 +17,8 @@ Usage:  ``emigration enable|disable``
 
 ]====]
 
+enabled = enabled or false
+
 local args = {...}
 if args[1] == "enable" then
     enabled = true
@@ -56,25 +58,27 @@ function desert(u,method,civ)
 end
 
 function canLeave(unit)
+    if not unit.status.current_soul then
+        return false
+    end
+    
     for _, skill in pairs(unit.status.current_soul.skills) do
         if skill.rating > 14 then return false end
     end
-    if unit.flags1.caged
-        or unit.race ~= df.global.ui.race_id
-        or unit.civ_id ~= df.global.ui.civ_id
-        or dfhack.units.isDead(unit)
-        or dfhack.units.isOpposedToLife(unit)
-        or unit.flags1.merchant
-        or unit.flags1.diplomat
-        or unit.flags1.chained
-        or dfhack.units.getNoblePositions(unit) ~= nil
-        or unit.military.squad_id ~= -1
-        or dfhack.units.isCitizen(unit)
-        or dfhack.units.isSane(unit)
-        or unit.profession ~= 103
-        or not dfhack.units.isDead(unit)
-            then return false end
-    return true
+    
+    return dfhack.units.isOwnRace(unit) and  --  Doubtful check. naturalized citizens
+           dfhack.units.isOwnCiv(unit) and   --  might also want to leave.
+           dfhack.units.isActive(unit) and
+           not dfhack.units.isOpposedToLife(unit) and
+           not unit.flags1.merchant and
+           not unit.flags1.diplomat and
+           not unit.flags1.chained and
+           dfhack.units.getNoblePositions(unit) == nil and
+           unit.military.squad_id == -1 and
+           dfhack.units.isCitizen(unit) and
+           dfhack.units.isSane(unit) and
+           not dfhack.units.isBaby(unit) and
+           not dfhack.units.isChild(unit)
 end
 
 function checkForDeserters(method,civ_id)
@@ -88,13 +92,13 @@ function checkForDeserters(method,civ_id)
 end
 
 function checkmigrationnow()
-    local merchant_civ_ids = {}
-    local diplomat_civ_ids = {}
+    local merchant_civ_ids = {} --as:number[]
+    local diplomat_civ_ids = {} --as:number[]
     local allUnits = df.global.world.units.active
     for i=0, #allUnits-1 do
         local unit = allUnits[i]
         if dfhack.units.isSane(unit)
-        and not dfhack.units.isDead(unit)
+        and dfhack.units.isActive(unit)
         and not dfhack.units.isOpposedToLife(unit)
         and not unit.flags1.tame
         then

@@ -53,7 +53,7 @@ local function current_selected_unit()
    end
 
    -- 'k' over a corpse
-   local item = dfhack.gui.getSelectedItem(true)
+   local item = dfhack.gui.getSelectedItem(true) --as:df.item_corpsest
    if df.item_corpsest:is_instance(item) then
       return df.unit.find(item.unit_id)
    end

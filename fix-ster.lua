@@ -47,7 +47,7 @@ end
 
 function process_args(args)
     local n, v, ori, crename, crenum
-    local creatures = {}
+    local creatures = {} --as:number[]
     --Checks for any arguments at all.
     if args == nil or #args == 0 then
         print("No arguments.  Usage is: fixster <fert|ster> [all|animals|only:<creature>]")
@@ -66,7 +66,7 @@ function process_args(args)
 
     --Checks for the existence of the second argument.  If it's missing, uses selected unit (if any)
     if args[2] == nil then
-        unit = dfhack.gui.getSelectedUnit()
+        local unit = dfhack.gui.getSelectedUnit()
         if not unit then return end
         changeorient(unit, ori)
         print('Changed selected creature.')

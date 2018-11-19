@@ -8,7 +8,7 @@ Activate with a cursor on screen and you will go there rapidly. Attack
 something first to ride them there.
 
 ]====]
-function launch(unitSource,unitTarget,unitRider)
+function launch(unitSource,unitRider)
     local curpos
     if df.global.ui_advmode.menu == df.ui_advmode_menu.Look then
         curpos = df.global.cursor
@@ -31,14 +31,14 @@ function launch(unitSource,unitTarget,unitRider)
         l = l.next
     end
 
-    resultx = curpos.x - unitSource.pos.x
-    resulty = curpos.y - unitSource.pos.y
-    resultz = curpos.z - unitSource.pos.z
+    local resultx = curpos.x - unitSource.pos.x
+    local resulty = curpos.y - unitSource.pos.y
+    local resultz = curpos.z - unitSource.pos.z
 
-    newlist = df.proj_list_link:new()
+    local newlist = df.proj_list_link:new()
     lastlist.next=newlist
     newlist.prev=lastlist
-    proj = df.proj_unitst:new()
+    local proj = df.proj_unitst:new()
     newlist.item=proj
     proj.link=newlist
     proj.id=df.global.proj_next_id
@@ -70,7 +70,7 @@ function launch(unitSource,unitTarget,unitRider)
     elseif df.global.world.units.active[0].job.hunt_target then
         proj.flags.safe_landing=false
     end
-    unitoccupancy = dfhack.maps.ensureTileBlock(unitSource.pos).occupancy[unitSource.pos.x%16][unitSource.pos.y%16]
+    local unitoccupancy = dfhack.maps.ensureTileBlock(unitSource.pos).occupancy[unitSource.pos.x%16][unitSource.pos.y%16]
     if not unitSource.flags1.on_ground then
         unitoccupancy.unit = false
     else
@@ -80,11 +80,10 @@ function launch(unitSource,unitTarget,unitRider)
     unitSource.flags1.on_ground=false
 end
 
-unitTarget = curpos
-if df.global.world.units.active[0].job.hunt_target==nil then
-    unitSource = df.global.world.units.active[0]
-else
-    unitRider = df.global.world.units.active[0]
+local unitSource = df.global.world.units.active[0]
+local unitRider = nil --as:df.unit
+if unitSource.job.hunt_target ~= nil then
+    unitRider = unitSource
     unitSource = df.global.world.units.active[0].job.hunt_target
     unitSource.general_refs:insert("#",{new=df.general_ref_unit_riderst,unit_id=unitRider.id})
     unitRider.relationship_ids.RiderMount=unitSource.id
@@ -93,4 +92,4 @@ else
     require("utils").insert_sorted(df.global.world.units.other.ANY_RIDER,unitRider,"id")
 end
 
-launch(unitSource,unitTarget,unitRider)
+launch(unitSource,unitRider)

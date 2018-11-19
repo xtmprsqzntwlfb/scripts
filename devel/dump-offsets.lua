@@ -191,7 +191,7 @@ else
     search = {0x12345678, 0x87654321}
 end
 
-addrs = {}
+local addrs = {}
 function save_addr(name, addr)
     print(("<global-address name='%s' value='0x%x'/>"):format(name, addr))
     if iargs[name] or iargs.all then

@@ -31,11 +31,14 @@ local eventful = require 'plugins.eventful'
 local utils = require 'utils'
 
 --invaders = invaders or {}
-entities = entities or {}
-items = items or {}
+entities = entities or {} --as:bool[]
+items = items or {} --as:bool[]
 
 allEntities = allEntities or false
-allItems = allitems or true
+allItems = allItems or nil --as:bool
+if allItems == nil then
+ allItems = true
+end
 
 eventful.enableEvent(eventful.eventType.UNLOAD,1)
 eventful.onUnload.invaderItemDestroyer = function()
@@ -115,7 +118,7 @@ end
  --TODO: delete corpses?
 end]]
 
-validArgs = validArgs or utils.invert({
+local validArgs = utils.invert({
  'clear',
  'help',
  'allRaces',

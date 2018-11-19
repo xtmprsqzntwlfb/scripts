@@ -18,7 +18,7 @@ Sets or modifies a skill of a unit.  Args:
 ]====]
 local utils = require 'utils'
 
-validArgs = validArgs or utils.invert({
+local validArgs = utils.invert({
     'help',
     'skill',
     'mode',
@@ -28,12 +28,12 @@ validArgs = validArgs or utils.invert({
     'loud',
 })
 
-mode = mode or utils.invert({
+local modes = utils.invert({
     'add',
     'set',
 })
 
-granularity = granularity or utils.invert({
+local granularities = utils.invert({
     'experience',
     'level',
 })
@@ -48,41 +48,41 @@ end
 if not args.unit or not tonumber(args.unit) or not df.unit.find(tonumber(args.unit)) then
     error 'Invalid unit.'
 end
-args.unit = df.unit.find(tonumber(args.unit))
+local unit = df.unit.find(tonumber(args.unit))
 
-args.skill = df.job_skill[args.skill]
-args.mode = mode[args.mode or 'set']
-args.granularity = granularity[args.granularity or 'level']
-args.value = tonumber(args.value)
+local job_skill = df.job_skill[args.skill] --as:df.job_skill
+local mode = modes[args.mode or 'set']
+local granularity = granularities[args.granularity or 'level']
+local value = tonumber(args.value)
 
-if not args.skill then
+if not job_skill then
     error('invalid skill')
 end
-if not args.value then
+if not value then
     error('invalid value')
 end
 
 local skill
-for _,skill_c in ipairs(args.unit.status.current_soul.skills) do
-    if skill_c.id == args.skill then
+for _,skill_c in ipairs(unit.status.current_soul.skills) do
+    if skill_c.id == job_skill then
         skill = skill_c
     end
 end
 
 if not skill then
     skill = df.unit_skill:new()
-    skill.id = args.skill
-    utils.insert_sorted(args.unit.status.current_soul.skills,skill,'id')
+    skill.id = job_skill
+    utils.insert_sorted(unit.status.current_soul.skills,skill,'id')
 end
 
 if args.loud then
     print('old: ' .. skill.rating .. ': ' .. skill.experience)
 end
 
-if args.granularity == granularity.experience then
-    if args.mode == mode.set then
-        skill.experience = args.value
-    elseif args.mode == mode.add then
+if granularity == granularities.experience then
+    if mode == modes.set then
+        skill.experience = value
+    elseif mode == modes.add then
     -- Changing of skill levels when experience increases/decreases hacked in by Atkana
     -- https://github.com/DFHack/scripts/pull/27
         local function nextCost(rating)
@@ -92,7 +92,7 @@ if args.granularity == granularity.experience then
                 return (400 + (100 * rating))
             end
         end
-        local newExp = skill.experience + args.value
+        local newExp = skill.experience + value
         if (newExp < 0) or (newExp > nextCost(skill.rating+1)) then
             if newExp > 0 then --positive
                 repeat
@@ -113,11 +113,11 @@ if args.granularity == granularity.experience then
     else
         error 'bad mode'
     end
-elseif args.granularity == granularity.level then
-    if args.mode == mode.set then
-        skill.rating = args.value
-    elseif args.mode == mode.add then
-        skill.rating = args.value + skill.rating
+elseif granularity == granularities.level then
+    if mode == modes.set then
+        skill.rating = value
+    elseif mode == modes.add then
+        skill.rating = value + skill.rating
     else
         error 'bad mode'
     end

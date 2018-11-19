@@ -18,8 +18,10 @@ UnitPathUI = defclass(UnitPathUI, guidm.MenuOverlay)
 
 UnitPathUI.focus_path = 'unit-path'
 
+local default_nil_unit = DEFAULT_NIL --as:df.unit
+
 UnitPathUI.ATTRS {
-    unit = DEFAULT_NIL,
+    unit = default_nil_unit,
     has_path = false,
     has_goal = false,
 }
@@ -105,17 +107,17 @@ function UnitPathUI:renderPath(dc,vp,cursor)
                 if i < pcnt-1 then
                     local npt = get_path_point(gpath, i+1)
                     if npt.z == pt.z+1 then
-                        char = 30
+                        char = 30 --luacheck: retype
                     elseif npt.z == pt.z-1 then
-                        char = 31
+                        char = 31 --luacheck: retype
                     elseif npt.x == pt.x+1 then
-                        char = 26
+                        char = 26 --luacheck: retype
                     elseif npt.x == pt.x-1 then
-                        char = 27
+                        char = 27 --luacheck: retype
                     elseif npt.y == pt.y+1 then
-                        char = 25
+                        char = 25 --luacheck: retype
                     elseif npt.y == pt.y-1 then
-                        char = 24
+                        char = 24 --luacheck: retype
                     end
                 end
                 local color = COLOR_LIGHTGREEN

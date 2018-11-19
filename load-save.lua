@@ -28,7 +28,7 @@ if not loadgame_screen then
         qerror("Can't find title or load game screen")
     end
     local found = false
-    for idx, item in pairs(title_screen.menu_line_id) do
+    for idx, item in ipairs(title_screen.menu_line_id) do
         if item == df.viewscreen_titlest.T_menu_line_id.Continue then
             found = true
             title_screen.sel_menu_line = idx
@@ -45,7 +45,7 @@ loadgame_screen = dfhack.gui.getViewscreenByType(df.viewscreen_loadgamest, 0) or
     qerror("Can't find load game screen")
 
 local found = false
-for idx, save in pairs(loadgame_screen.saves) do
+for idx, save in ipairs(loadgame_screen.saves) do
     if save.folder_name == folder_name then
         found = true
         loadgame_screen.sel_idx = idx

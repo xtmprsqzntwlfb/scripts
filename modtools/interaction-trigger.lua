@@ -41,9 +41,9 @@ it will not be triggered twice in a row if both happen.
 local eventful = require 'plugins.eventful'
 local utils = require 'utils'
 
-attackTriggers = attackTriggers or {}
-defendTriggers = defendTriggers or {}
-commands = commands or {}
+attackTriggers = attackTriggers or {} --as:number[][]
+defendTriggers = defendTriggers or {} --as:number[][]
+commands = commands or {} --as:{_type:table,_array:{_type:table,onAttackStr:string,onDefendStr:string,command:'string[]',suppressAttack:bool,suppressDefend:bool}}
 commandCount = commandCount or 0
 
 eventful.enableEvent(eventful.eventType.INTERACTION,1) --cheap, so every tick is fine
@@ -57,20 +57,20 @@ eventful.onUnload.interactionTrigger = function()
 end
 
 local function processTrigger(args)
- local command = {}
+ local command = {} --as:string[]
  for _,arg in ipairs(args.command) do
   if arg == '\\ATTACK_VERB' then
    table.insert(command,args.attackVerb)
   elseif arg == '\\DEFEND_VERB' then
    table.insert(command,args.defendVerb)
   elseif arg == '\\ATTACKER_ID' then
-   table.insert(command,args.attackerId)
+   table.insert(command,tostring(args.attackerId))
   elseif arg == '\\DEFENDER_ID' then
-   table.insert(command,args.defenderId)
+   table.insert(command,tostring(args.defenderId))
   elseif arg == '\\ATTACK_REPORT' then
-   table.insert(command,args.attackReport)
+   table.insert(command,tostring(args.attackReport))
   elseif arg == '\\DEFEND_REPORT' then
-   table.insert(command,args.defendReport)
+   table.insert(command,tostring(args.defendReport))
   elseif string.sub(arg,1,1) == '\\' then
    table.insert(command,string.sub(arg,2))
   else
@@ -81,16 +81,9 @@ local function processTrigger(args)
 end
 
 eventful.onInteraction.interactionTrigger = function(attackVerb, defendVerb, attacker, defender, attackReport, defendReport)
- local extras = {}
- extras.attackVerb = attackVerb
- extras.defendVerb = defendVerb
- extras.attackReport = attackReport
- extras.defendReport = defendReport
- extras.attackerId = attacker
- extras.defenderId = defender
  local suppressAttack = false
  local suppressDefend = false
- local todo = {}
+ local todo = {} --as:bool[]
  for _,trigger in ipairs(attackTriggers[attackVerb] or {}) do
   todo[trigger] = true
  end
@@ -98,12 +91,16 @@ eventful.onInteraction.interactionTrigger = function(attackVerb, defendVerb, att
   todo[trigger] = true
  end
  for k,v in pairs(todo) do
-  command = commands[k]
+  local command = commands[k]
   suppressAttack = suppressAttack or command.suppressAttack
   suppressDefend = suppressDefend or command.suppressDefend
-  utils.fillTable(command,extras)
+  command.attackVerb = attackVerb
+  command.defendVerb = defendVerb
+  command.attackReport = attackReport
+  command.defendReport = defendReport
+  command.attackerId = attacker
+  command.defenderId = defender
   processTrigger(command)
-  utils.unfillTable(command,extras)
  end
 
  local eraseReport = function(unit,report)
@@ -115,8 +112,8 @@ eventful.onInteraction.interactionTrigger = function(attackVerb, defendVerb, att
   end
  end
  if suppressAttack or suppressDefend then
-  attacker = df.unit.find(tonumber(attacker))
-  defender = df.unit.find(tonumber(defender))
+  attacker = df.unit.find(tonumber(attacker)) --luacheck: retype
+  defender = df.unit.find(tonumber(defender)) --luacheck: retype
  end
  if suppressAttack then
   eraseReport(attacker,attackReport)
@@ -132,7 +129,7 @@ end
 ----------------------------------------------------
 --argument processing
 
-validArgs = validArgs or utils.invert({
+local validArgs = utils.invert({
  'clear',
  'help',
  'onAttackStr',
@@ -150,7 +147,8 @@ if args.help then
 end
 
 if args.clear then
- triggers = {}
+ attackTriggers = {}
+ defendTriggers = {}
  commands = {}
  commandCount = 0
 end

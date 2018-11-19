@@ -10,11 +10,11 @@ in the current DF folder. Useful for bug reports.
 
 ]====]
 
-utils = require 'utils'
+local utils = require 'utils'
 
-f = io.open(dfhack.getDFPath() .. '/install-info.txt', 'w')
+local f = io.open(dfhack.getDFPath() .. '/install-info.txt', 'w')
 function log(...)
-    text = table.concat({...}, '')
+    local text = table.concat({...}, '')
     if not f then
         print(text)
     else
@@ -45,7 +45,7 @@ log_version('Is map loaded', 'isMapLoaded')
 
 function log_command(cmd)
     log('\nOutput of "' .. cmd .. '":')
-    output = select(1, dfhack.run_command_silent(cmd))
+    local output = select(1, dfhack.run_command_silent(cmd))
     for _, line in pairs(utils.split_string(output, '\n')) do
         log('    ' .. line)
     end
@@ -53,6 +53,17 @@ end
 
 log_command('devel/save-version')
 log_command('plug')
+
+log('Tweak log entries:')
+if not pcall(function()
+    for line in io.lines('stderr.log') do
+        if line:match('tweak') then
+            log('    ' .. line)
+        end
+    end
+end) then
+    log('Failed to read stderr.log')
+end
 
 if not f then
     qerror('Could not write to install-info.txt.\nCopy the above text instead.')

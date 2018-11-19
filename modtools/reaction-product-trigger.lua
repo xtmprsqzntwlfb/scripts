@@ -29,13 +29,7 @@ local eventful = require 'plugins.eventful'
 local utils = require 'utils'
 
 --TODO: onUnload
-productHooks = productHooks or {}
-
-reactionInputItems = reactionInputItems
-
-function preserveReagents()
- reactionInputItems:resize(0)
-end
+productHooks = productHooks or {} --as:{_type:table,_array:{_type:table,_array:{_type:table,clear:__arg,reactionName:__arg,command:__arg}}}
 
 eventful.enableEvent(eventful.eventType.UNLOAD,1)
 eventful.onUnload.reactionProductTrigger = function()
@@ -46,7 +40,7 @@ end
 --productHooks.after = productHooks.after or {}
 
 local function processArgs(args, reaction, reaction_product, unit, input_items, input_reagents, output_items, buildingId)
- local result = {}
+ local result = {} --as:string[]
  for _,arg in ipairs(args) do
   if arg == '\\WORKER_ID' then
    table.insert(result,tostring(unit.id))
@@ -88,12 +82,10 @@ local function afterProduce(reaction,reaction_product,unit,input_items,input_rea
 end
 
 eventful.onReactionComplete.reactionProductTrigger = function(reaction,reaction_product,unit,input_items,input_reagents,output_items)
- reactionInputItems = input_items
  afterProduce(reaction,reaction_product,unit,input_items,input_reagents,output_items)
- reactionInputItems = nil
 end
 
-validArgs = validArgs or utils.invert({
+local validArgs = utils.invert({
  'help',
  'clear',
  'reactionName',
@@ -104,8 +96,7 @@ if moduleMode then
  return
 end
 
-local args = {...} or {}
-args = utils.processArgs(args, validArgs)
+local args = utils.processArgs({...}, validArgs)
 
 if args.help then
  print(usage)

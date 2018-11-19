@@ -31,6 +31,8 @@ Arguments:
 
 ]====]
 
+--luacheck-flags: strictsubtype
+
 local utils = require 'utils'
 local ms = require 'memscan'
 local gui = require 'gui'
@@ -39,7 +41,7 @@ local is_known = dfhack.internal.getAddress
 
 local os_type = dfhack.getOSType()
 
-local force_scan = {}
+local force_scan = {} --as:bool[]
 for _,v in ipairs({...}) do
     force_scan[v] = true
 end
@@ -101,9 +103,9 @@ local function get_screen(class, prompt)
     if not is_known('gview') then
         print('Please navigate to '..prompt)
         if not prompt_proceed() then
-            return nil
+            return nil, false
         end
-        return true
+        return nil, true
     end
 
     while true do
@@ -111,10 +113,10 @@ local function get_screen(class, prompt)
         if not df.is_instance(class, cs) then
             print('Please navigate to '..prompt)
             if not prompt_proceed() then
-                return nil
+                return nil, false
             end
         else
-            return cs
+            return cs, true
         end
     end
 end
@@ -165,12 +167,13 @@ local function zoomed_searcher(startn, end_or_sz, bidirectional)
     end
 end
 
-local finder_searches = {}
+local finder_searches = {} --as:string[]
 local function exec_finder(finder, names, validators)
+    local validators = validators --as:{_type:function,_node:bool}[]
     if type(names) ~= 'table' then
-        names = { names }
+        names = { names } --luacheck: retype
     end
-    if type(validators) ~= 'table' then
+    if type(validators) ~= 'table' then --luacheck: skip
         validators = { validators }
     end
     local search = force_scan['all']
@@ -179,7 +182,7 @@ local function exec_finder(finder, names, validators)
             table.insert(finder_searches, v)
             search = true
         elseif validators[k] then
-            if not validators[k](df.global[v]) then
+            if not validators[k](df.global[v]) then --luacheck: skip
                 dfhack.printerr('Validation failed for '..v..', will try to find again')
                 table.insert(finder_searches, v)
                 search = true
@@ -379,7 +382,8 @@ end
 --
 
 local function find_cursor()
-    if not screen_title() then
+    local _, ok = screen_title()
+    if not ok then
         return false
     end
 
@@ -1075,7 +1079,7 @@ end
 --
 
 local function building_item_list_count()
-    return #df.global.world.selected_building.contained_items
+    return #df.global.world.selected_building.contained_items --hint:df.building_actual
 end
 
 local function find_ui_building_item_cursor()
@@ -1465,6 +1469,7 @@ function stop_autosave()
     end
 end
 
+--luacheck: in=number,df.viewscreen_dwarfmodest
 function step_n_frames(cnt, feed)
     local world = df.global.world
     local ctick = world.frame_counter
@@ -1794,8 +1799,9 @@ local function find_standing_orders(gname, seq, depends)
 end
 
 local function exec_finder_so(gname, seq, _depends)
-    local depends = {}
-    for k, v in pairs(_depends or {}) do
+    local depends = {} --as:number[]
+    local _depends = _depends or {} --as:number[]
+    for k, v in pairs(_depends) do
         if k:find('standing_orders_') ~= 1 then
             k = 'standing_orders_' .. k
         end

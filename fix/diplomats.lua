@@ -51,7 +51,7 @@ for _,ent in pairs(df.global.world.entities.all) do
     if ent.type == df.historical_entity_type.Civilization and ent.entity_raw.flags.TREE_CAP_DIPLOMACY then
         checked = checked + 1
 
-        update = true
+        local update = true
         local found_position
         -- see if we need to add a new position or modify an existing one
         for _,pos in pairs(ent.positions.own) do
@@ -72,12 +72,12 @@ for _,ent in pairs(df.global.world.entities.all) do
         if update then
             -- either there's no diplomat, or there is one and it's got the wrong responsibilities
             if not found_position then
-                found_position = add_guild_rep( ent )
+                found_position = update_pos( ent )
             end
             -- assign responsibilities
-            found_position.responsibilities.MAKE_INTRODUCTIONS = true
-            found_position.responsibilities.MAKE_PEACE_AGREEMENTS = true
-            found_position.responsibilities.MAKE_TOPIC_AGREEMENTS = true
+            found_position.responsibilities.MAKE_INTRODUCTIONS = 1
+            found_position.responsibilities.MAKE_PEACE_AGREEMENTS = 1
+            found_position.responsibilities.MAKE_TOPIC_AGREEMENTS = 1
         end
         -- make sure the diplomat position, whether we created it or not, is set up for proper assignment
         local assign = true

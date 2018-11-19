@@ -17,21 +17,10 @@ local gui = require 'gui'
 local guidm = require 'gui.dwarfmode'
 
 local room_type_table = {
-    [df.building_bedst] = { token = 'bed', qidx = 2, tile = 233 },
-    [df.building_tablest] = { token = 'table', qidx = 3, tile = 209 },
-    [df.building_chairst] = { token = 'chair', qidx = 4, tile = 210 },
-    [df.building_coffinst] = { token = 'coffin', qidx = 5, tile = 48 },
-}
-
-local room_quality_table = {
-    { 1, 'Meager Quarters', 'Meager Dining Room', 'Meager Office', 'Grave' },
-    { 100, 'Modest Quarters', 'Modest Dining Room', 'Modest Office', "Servant's Burial Chamber" },
-    { 250, 'Quarters', 'Dining Room', 'Office', 'Burial Chamber' },
-    { 500, 'Decent Quarters', 'Decent Dining Room', 'Decent Office', 'Tomb' },
-    { 1000, 'Fine Quarters', 'Fine Dining Room', 'Splendid Office', 'Fine Tomb' },
-    { 1500, 'Great Bedroom', 'Great Dining Room', 'Throne Room', 'Mausoleum' },
-    { 2500, 'Grand Bedroom', 'Grand Dining Room', 'Opulent Throne Room', 'Grand Mausoleum' },
-    { 10000, 'Royal Bedroom', 'Royal Dining Room', 'Royal Throne Room', 'Royal Mausoleum' }
+    [df.building_bedst] = { token = 'bed', tile = 233 },
+    [df.building_tablest] = { token = 'table', tile = 209 },
+    [df.building_chairst] = { token = 'chair', tile = 210 },
+    [df.building_coffinst] = { token = 'coffin', tile = 48 },
 }
 
 function getRoomName(building, unit)
@@ -39,17 +28,7 @@ function getRoomName(building, unit)
     if not info or not building.is_room then
         return utils.getBuildingName(building)
     end
-
-    local quality = building:getRoomValue(unit)
-    local row = room_quality_table[1]
-    for _,v in ipairs(room_quality_table) do
-        if v[1] <= quality then
-            row = v
-        else
-            break
-        end
-    end
-    return row[info.qidx]
+    return dfhack.buildings.getRoomDescription(building, unit)
 end
 
 function makeRoomEntry(bld, unit, is_spouse)
@@ -162,7 +141,7 @@ end
 
 function can_modify(sel_item)
     return sel_item and sel_item.owner
-       and sel_item.can_use and not sel_item.owner.flags1.dead
+       and sel_item.can_use and not sel_item.owner.flags2.killed
 end
 
 function RoomList:onRenderBody(dc)
@@ -248,6 +227,10 @@ function RoomList:onInput(keys)
     elseif self:simulateViewScroll(keys) then
         return
     end
+end
+
+function RoomList:onGetSelectedBuilding()
+    return self.items[self.selected].obj
 end
 
 local focus = dfhack.gui.getCurFocus()

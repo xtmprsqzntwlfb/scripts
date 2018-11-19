@@ -34,7 +34,7 @@ Arguments::
 ]====]
 local utils = require 'utils'
 
-validArgs = --[[validArgs or--]] utils.invert({
+local validArgs = utils.invert({
  'help',
  'creator',
  'material',
@@ -46,7 +46,7 @@ validArgs = --[[validArgs or--]] utils.invert({
  'quality'
 })
 
-organicTypes = organicTypes or utils.invert({
+local organicTypes = utils.invert({
  df.item_type.REMAINS,
  df.item_type.FISH,
  df.item_type.FISH_RAW,
@@ -55,7 +55,7 @@ organicTypes = organicTypes or utils.invert({
  df.item_type.EGG,
 })
 
-badTypes = badTypes or utils.invert({
+local badTypes = utils.invert({
  df.item_type.CORPSE,
  df.item_type.CORPSEPIECE,
  df.item_type.FOOD,
@@ -64,12 +64,12 @@ badTypes = badTypes or utils.invert({
 function createItem(creatorID, item, material, leftHand, rightHand, quality)
  local itemQuality = quality and df.item_quality[quality]
  print(itemQuality)
- 
+
  local creator = df.unit.find(creatorID)
  if not creator then
   error 'Invalid creator.'
  end
- 
+
  if not item then
   error 'Invalid item.'
  end
@@ -103,7 +103,7 @@ function createItem(creatorID, item, material, leftHand, rightHand, quality)
  elseif rightHand then
   item:setGloveHandedness(1)
  end
- 
+
  if itemQuality then
   item:setQuality(itemQuality)
  end

@@ -7,7 +7,7 @@ gui/gm-editor
 This editor allows to change and modify almost anything in df. Press :kbd:`?` for
 in-game help. There are three ways to open this editor:
 
-* Callling ``gui/gm-editor``  from a command or keybinding opens the editor
+* Calling ``gui/gm-editor``  from a command or keybinding opens the editor
   on whatever is selected or viewed (e.g. unit/item description screen)
 
 * using gui/gm-editor <lua command> - executes lua command and opens editor on
@@ -313,7 +313,7 @@ function GmEditorUi:openReinterpret(key)
     local trg=self:currentTarget()
     dialog.showInputPrompt(tostring(trg_key),"Enter new type:",COLOR_WHITE,
                 "",function(choice)
-                    local ntype=df[tp]
+                    local ntype=df[choice]
                     self:pushTarget(df.reinterpret_cast(ntype,trg.target[key]))
                 end)
 end

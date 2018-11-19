@@ -251,7 +251,7 @@ scriptArgs={...}
 
 utils=require('utils')
 
-validArgs = validArgs or utils.invert({
+validArgs = utils.invert({
  'startup',
  'all',
  'restrictive',

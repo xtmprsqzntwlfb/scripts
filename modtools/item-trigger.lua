@@ -78,7 +78,7 @@ Arguments::
 local eventful = require 'plugins.eventful'
 local utils = require 'utils'
 
-itemTriggers = itemTriggers or {}
+itemTriggers = itemTriggers or {} --as:{_type:table,_array:{_type:table,triggers:{_type:table,itemType:string,material:string,contaminant:string},args:{_type:table,_array:{_type:table,checkAttackEvery:string,checkInventoryEvery:string,command:'string[]',itemType:string,onStrike:__arg,onEquip:__arg,onUnequip:__arg,material:string,contaminant:string}}}}
 eventful.enableEvent(eventful.eventType.UNIT_ATTACK,1) -- this event type is cheap, so checking every tick is fine
 eventful.enableEvent(eventful.eventType.INVENTORY_CHANGE,5) -- this is expensive, but you might still want to set it lower
 eventful.enableEvent(eventful.eventType.UNLOAD,1)
@@ -88,7 +88,7 @@ eventful.onUnload.itemTrigger = function()
 end
 
 function processTrigger(command)
- local command2 = {}
+ local command2 = {} --as:string[]
  for i,arg in ipairs(command.command) do
   if arg == '\\ATTACKER_ID' then
    command2[i] = '' .. command.attacker.id
@@ -125,11 +125,10 @@ end
 
 function getitemType(item)
  if item:getSubtype() ~= -1 and dfhack.items.getSubtypeDef(item:getType(),item:getSubtype()) then
-  itemType = dfhack.items.getSubtypeDef(item:getType(),item:getSubtype()).id
+  return dfhack.items.getSubtypeDef(item:getType(),item:getSubtype()).id
  else
-  itemType = df.item_type[item:getType()]
+  return df.item_type[item:getType()]
  end
- return itemType
 end
 
 function compareInvModes(reqMode,itemMode)
@@ -143,48 +142,56 @@ function compareInvModes(reqMode,itemMode)
  end
 end
 
-function checkMode(triggerArgs,table)
- local mode = table.mode
+function checkMode(triggerArgs,data)
+ local data = data --as:{_type:table,mode:string,modeType:number,attacker:df.unit,defender:df.unit,unit:df.unit,item:df.item,itemMat:dfhack.matinfo,contaminantMat:dfhack.matinfo}
+ local mode = data.mode
  for _,argArray in ipairs(triggerArgs) do
-  if argArray[tostring(mode)] then
-   local modeType = table.modeType
-   local reqModeType = argArray[tostring(mode)]
+  local modes = argArray --as:__arg[]
+  if modes[tostring(mode)] then
+   local modeType = data.modeType
+   local reqModeType = modes[tostring(mode)]
    if #reqModeType == 1 then
     if compareInvModes(reqModeType,modeType) or compareInvModes(reqModeType[1],modeType) then
-     utils.fillTable(argArray,table)
+     utils.fillTable(argArray,data)
      processTrigger(argArray)
-     utils.unfillTable(argArray,table)
+     utils.unfillTable(argArray,data)
     end
    elseif #reqModeType > 1 then
     for _,r in ipairs(reqModeType) do
      if compareInvModes(r,modeType) then
-      utils.fillTable(argArray,table)
+      utils.fillTable(argArray,data)
       processTrigger(argArray)
-      utils.unfillTable(argArray,table)
+      utils.unfillTable(argArray,data)
      end
     end
    else
-    utils.fillTable(argArray,table)
+    utils.fillTable(argArray,data)
     processTrigger(argArray)
-    utils.unfillTable(argArray,table)
+    utils.unfillTable(argArray,data)
    end
   end
  end
 end
 
-function checkForTrigger(table)
- local itemTypeStr = table.itemType
- local itemMatStr = table.itemMat:getToken()
+function checkForTrigger(data)
+ local itemTypeStr = data.itemType
+ local itemMatStr = data.itemMat:getToken()
  local contaminantStr
- if table.contaminantMat then
-  contaminantStr = table.contaminantMat:getToken()
+ if data.contaminantMat then
+  contaminantStr = data.contaminantMat:getToken()
  end
  for _,triggerBundle in ipairs(itemTriggers) do
   local count = 0
   local trigger = triggerBundle['triggers']
   local triggerCount = 0
-  for _,t in pairs(trigger) do
-   triggerCount = triggerCount+1
+  if trigger['itemType'] then
+   triggerCount = triggerCount + 1
+  end
+  if trigger['material'] then
+   triggerCount = triggerCount + 1
+  end
+  if trigger['contaminant'] then
+   triggerCount = triggerCount + 1
   end
   if itemTypeStr and trigger['itemType'] == itemTypeStr then
    count = count+1
@@ -196,7 +203,7 @@ function checkForTrigger(table)
    count = count+1
   end
   if count == triggerCount then
-   checkMode(triggerBundle['args'],table)
+   checkMode(triggerBundle['args'],data)
   end
  end
 end
@@ -220,32 +227,32 @@ function checkForDuplicates(args)
  end
 end
 
-function handler(table)
- local itemMat = dfhack.matinfo.decode(table.item)
- local itemType = getitemType(table.item)
- table.itemMat = itemMat
- table.itemType = itemType
+function handler(data)
+ local itemMat = dfhack.matinfo.decode(data.item)
+ local itemType = getitemType(data.item)
+ data.itemMat = itemMat
+ data.itemType = itemType
 
- if table.item.contaminants and #table.item.contaminants > 0 then
-  for _,contaminant in ipairs(table.item.contaminants or {}) do
+ if data.item.contaminants and #data.item.contaminants > 0 then --hint:df.item_actual
+  for _,contaminant in ipairs(data.item.contaminants or {}) do --hint:df.item_actual
    local contaminantMat = dfhack.matinfo.decode(contaminant.mat_type, contaminant.mat_index)
-   table.contaminantMat = contaminantMat
-   checkForTrigger(table)
-   table.contaminantMat = nil
+   data.contaminantMat = contaminantMat
+   checkForTrigger(data)
+   data.contaminantMat = nil
   end
  else
-  checkForTrigger(table)
+  checkForTrigger(data)
  end
 end
 
 function equipHandler(unit, item, mode, modeType)
- local table = {}
- table.mode = tostring(mode)
- table.modeType = tonumber(modeType)
- table.item = df.item.find(item)
- table.unit = df.unit.find(unit)
- if table.item and table.unit then -- they must both be not nil or errors will occur after this point with instant reactions.
-  handler(table)
+ local data = {}
+ data.mode = tostring(mode)
+ data.modeType = tonumber(modeType)
+ data.item = df.item.find(item)
+ data.unit = df.unit.find(unit)
+ if data.item and data.unit then -- they must both be not nil or errors will occur after this point with instant reactions.
+  handler(data)
  end
 end
 
@@ -273,8 +280,8 @@ eventful.onInventoryChange.equipmentTrigger = function(unit, item, item_old, ite
 end
 
 eventful.onUnitAttack.attackTrigger = function(attacker,defender,wound)
- attacker = df.unit.find(attacker)
- defender = df.unit.find(defender)
+ attacker = df.unit.find(attacker) --luacheck: retype
+ defender = df.unit.find(defender) --luacheck: retype
 
  if not attacker then
   return
@@ -292,15 +299,15 @@ eventful.onUnitAttack.attackTrigger = function(attacker,defender,wound)
   return
  end
 
- local table = {}
- table.attacker = attacker
- table.defender = defender
- table.item = attackerWeapon
- table.mode = 'onStrike'
- handler(table)
+ local data = {}
+ data.attacker = attacker
+ data.defender = defender
+ data.item = attackerWeapon
+ data.mode = 'onStrike'
+ handler(data)
 end
 
-validArgs = validArgs or utils.invert({
+local validArgs = utils.invert({
  'clear',
  'help',
  'checkAttackEvery',
@@ -389,8 +396,7 @@ if not itemTriggers[index]['args'] then
  itemTriggers[index]['args'] = {}
 end
 local triggerArgs = itemTriggers[index]['args']
+args.itemType = nil
+args.material = nil
+args.contaminant = nil
 table.insert(triggerArgs,args)
-local argsArray = triggerArgs[#triggerArgs]
-argsArray.itemType = nil
-argsArray.material = nil
-argsArray.contaminant = nil

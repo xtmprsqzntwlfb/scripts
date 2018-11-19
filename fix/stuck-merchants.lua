@@ -2,7 +2,7 @@
 -- Based on "dismissmerchants" by PatrikLundell:
 -- http://www.bay12forums.com/smf/index.php?topic=159297.msg7257447#msg7257447
 
-help = [====[
+local help = [====[
 
 fix/stuck-merchants
 ===================
@@ -45,7 +45,7 @@ function dismissMerchants(args)
         end
     end
     for _,u in pairs(df.global.world.units.active) do
-        if u.flags1.merchant and u.flags1.dead then
+        if u.flags1.merchant and not dfhack.units.isActive (u) then
             print(('%s unit %d: %s (%s), civ %d (%s, %s)'):format(
                 dry_run and 'Would remove' or 'Removing',
                 u.id,

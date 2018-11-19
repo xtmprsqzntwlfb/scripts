@@ -50,7 +50,7 @@ for _,ent in pairs(df.global.world.entities.all) do
     if ent.type == df.historical_entity_type.Civilization and ent.entity_raw.flags.MERCHANT_NOBILITY then
         checked = checked + 1
 
-        update = true
+        local update = true
         -- see if we need to add a new position or modify an existing one
         local found_position
         for _,pos in pairs(ent.positions.own) do
@@ -72,8 +72,8 @@ for _,ent in pairs(df.global.world.entities.all) do
                 found_position = add_guild_rep(ent)
             end
             -- assign responsibilities
-            found_position.responsibilities.ESTABLISH_COLONY_TRADE_AGREEMENTS = true
-            found_position.responsibilities.TRADE=true
+            found_position.responsibilities.ESTABLISH_COLONY_TRADE_AGREEMENTS = 1
+            found_position.responsibilities.TRADE = 1
         end
 
         -- make sure the guild rep position, whether we created it or not, is set up for proper assignment

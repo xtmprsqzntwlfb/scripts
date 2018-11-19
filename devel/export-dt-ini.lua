@@ -14,7 +14,7 @@ local globals = df.global
 local global_addr = dfhack.internal.getAddress
 local os_type = dfhack.getOSType()
 local rdelta = dfhack.internal.getRebaseDelta()
-local lines = {}
+local lines = {} --as:string[]
 local complete = true
 
 local function header(name)
@@ -123,6 +123,8 @@ address('events_vector',globals,'world','history','events')
 address('historical_figures_vector',globals,'world','history','figures')
 address('world_site_type',df.world_site,'type')
 address('active_sites_vector',df.world_data,'active_site')
+address('gview',globals,'gview')
+value('viewscreen_setupdwarfgame_vtable',dfhack.internal.getVTable('viewscreen_setupdwarfgamest'))
 
 header('offsets')
 address('word_table',df.language_translation,'words')
@@ -226,9 +228,12 @@ address('quality',df.item_crafted,'quality')
 
 header('item_subtype_offsets')
 address('sub_type',df.itemdef,'subtype')
+address('base_flags',df.itemdef,'base_flags')
 address('name',df.itemdef_armorst,'name')
 address('name_plural',df.itemdef_armorst,'name_plural')
 address('adjective',df.itemdef_armorst,'name_preplural')
+address('tool_flags',df.itemdef_toolst,'flags')
+address('tool_adjective',df.itemdef_toolst,'adjective')
 
 header('item_filter_offsets')
 address('item_subtype',df.item_filter_spec,'item_subtype')
@@ -378,6 +383,15 @@ address('goals',df.unit_personality,'dreams')
 address('goal_realized',df.unit_personality.T_dreams,'unk8')
 address('traits',df.unit_personality,'traits')
 address('stress_level',df.unit_personality,'stress_level')
+address('needs',df.unit_personality,'needs')
+address('current_focus',df.unit_personality,'current_focus')
+address('undistracted_focus',df.unit_personality,'undistracted_focus')
+
+header('need_offsets')
+address('id',df.unit_personality.T_needs,'id')
+address('deity_id',df.unit_personality.T_needs,'deity_id')
+address('focus_level',df.unit_personality.T_needs,'focus_level')
+address('need_level',df.unit_personality.T_needs,'need_level')
 
 header('emotion_offsets')
 address('emotion_type',df.unit_personality.T_emotions,'type')
@@ -444,6 +458,11 @@ address('perf_histfig',df.activity_event_performancest.T_participant_actions,'hi
 header('art_offsets')
 address('name',df.poetic_form,'name')
 
+header('viewscreen_offsets')
+address('view',df.interfacest,'view')
+address('child',df.viewscreen,'child')
+address('setupdwarfgame_units',df.viewscreen_setupdwarfgamest,'units')
+
 -- Final creation of the file
 
 local out = io.open('therapist.ini', 'w')
@@ -465,6 +484,7 @@ end
 
 -- Flags
 local function write_flags(name,flag_array)
+    local flag_array = flag_array --as:{1:string,2:'number[]'}[]
     out:write('\n')
     out:write('['..name..']\n')
     out:write('size='..#flag_array..'\n')
@@ -482,12 +502,12 @@ write_flags('valid_flags_2', {})
 write_flags('invalid_flags_1', {
     { 'a skeleton', { df.unit_flags1.skeleton } },
     { 'a merchant', { df.unit_flags1.merchant } },
-    { 'outpost liaison or diplomat', { df.unit_flags1.diplomat } },
+    { 'outpost liaison, diplomat, or artifact requesting visitor', { df.unit_flags1.diplomat } },
     { 'an invader or hostile', { df.unit_flags1.active_invader } },
     { 'an invader or hostile', { df.unit_flags1.invader_origin } },
     { 'resident, invader or ambusher', { df.unit_flags1.hidden_ambusher, df.unit_flags1.invades } },
     { 'part of a merchant caravan', { df.unit_flags1.forest } },
-    { 'Dead, Jim.', { df.unit_flags1.dead } },
+    { 'inactive, currently not in play', { df.unit_flags1.inactive } },
     { 'marauder', { df.unit_flags1.marauder } }
 });
 write_flags ('invalid_flags_2', {

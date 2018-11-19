@@ -32,8 +32,8 @@ end
 local fn_env = copyall(math)
 
 fn_env.rng = rng
-fn_env.apow = function(x,y) return math.pow(math.abs(x),y) end
-fn_env.spow = function(x,y) return x*math.pow(math.abs(x),y-1) end
+fn_env.apow = function(x,y) return math.abs(x) ^ y end
+fn_env.spow = function(x,y) return x*(math.abs(x)^(y-1)) end
 
 -- Noise functions are referenced from expressions
 -- as variables of form like "x3a", where:
@@ -55,7 +55,7 @@ local subs = {
     g =    { 0.5, 0.5, 0.5 },
 }
 
-function mkdelta(v)
+local function mkdelta(v)
     if v == 0 then
         return ''
     else
@@ -63,7 +63,8 @@ function mkdelta(v)
     end
 end
 
-function mkexpr(expr)
+--luacheck: in=string out={_type:function,_node:number} skip
+local function mkexpr(expr)
     -- Collect referenced variables
     local max_octave = -1
     local vars = {}
@@ -100,7 +101,7 @@ function mkexpr(expr)
 
     for var,info in pairs(vars) do
         local fn = '_fn_'..info.octave..'_'..info.id
-        local mul = math.pow(2,info.octave)
+        local mul = 2 ^ info.octave
         mul = math.min(48*4, mul)
         code = code .. '    local '..var
                     .. ' = _fn_'..info.octave..'_'..info.id
@@ -151,6 +152,7 @@ function render(thresh,file)
                 end
             end
             if file then
+                local file = file --as:io
                 file:write(line,line)
             end
         end

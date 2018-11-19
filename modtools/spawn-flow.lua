@@ -38,7 +38,7 @@ Arguments::
 ]====]
 local utils = require 'utils'
 
-validArgs = validArgs or utils.invert({
+local validArgs = utils.invert({
  'help',
  'material',
  'flowType',
@@ -67,12 +67,12 @@ if args.flowSize and not tonumber(args.flowSize) then
  error ('Invalid flow size: ' .. args.flowSize)
 end
 
-args.flowSize = tonumber(args.flowSize or 'z') or 100
+local flowSize = tonumber(args.flowSize or 'z') or 100
 
 if not args.flowType or not df.flow_type[args.flowType] then
  error ('Invalid flow type: ' .. (args.flowType or 'none specified'))
 end
-args.flowType = df.flow_type[args.flowType]
+local flowType = df.flow_type[args.flowType]
 
 if not args.location then
  error 'Specify a location.'
@@ -86,5 +86,5 @@ if not pos.x or not pos.y or not pos.z then
  error ('Invalid pos.')
 end
 
-dfhack.maps.spawnFlow(pos, args.flowType, mat_type, mat_index, args.flowSize)
+dfhack.maps.spawnFlow(pos, flowType, mat_type, mat_index, flowSize)
 

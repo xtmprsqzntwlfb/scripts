@@ -17,6 +17,8 @@ so missing items simply go undescribed if not defined in the fallback.
 
 ]====]
 
+local utils = require 'utils'
+
 function isInList(list, item, helper)
     if not helper then
         helper = function(v) return v end
@@ -26,9 +28,11 @@ function isInList(list, item, helper)
             return true
         end
     end
+    return false
 end
 
 if dfhack_flags and dfhack_flags.enable then
+    --luacheck: global
     enabled = dfhack_flags.enable_state
 end
 
@@ -43,6 +47,8 @@ elseif isInList(args, "disable") then
     enabled = false
 end
 
+local standard = nil --as:df.material
+
 function append (list, str, indent)
     local str = str or " "
     local indent = indent or 0
@@ -50,6 +56,8 @@ function append (list, str, indent)
 end
 
 function add_lines_to_list(t1,t2)
+    local t1 = t1 --as:{1:string,2:number}[]
+    local t2 = t2 --as:{1:string,2:number}[]
     for i=1,#t2 do
         t1[#t1+1] = t2[i]
     end
@@ -62,15 +70,12 @@ function GetMatPlant (item)
     end
 end
 
-function get_textid (item)
-    return string.match(tostring(item._type),"<type: item_(.+)st>"):upper()
-end
-
 function compare_iron (mat_prop, iron_prop)
     return " "..mat_prop.." ("..math.floor(mat_prop/iron_prop*100).."% of iron)"
 end
 
 function GetMatPropertiesStringList (item)
+    local item = item --as:df.item_actual
     local mat = dfhack.matinfo.decode(item).material
     local list = {}
     local deg_U = item.temperature.whole
@@ -91,7 +96,7 @@ function GetMatPropertiesStringList (item)
     local mat_properties_for = {"BAR", "SMALLGEM", "BOULDER", "ROUGH",
         "WOOD", "GEM", "ANVIL", "THREAD", "SHOES", "CLOTH", "ROCK", "WEAPON", "TRAPCOMP",
         "ORTHOPEDIC_CAST", "SIEGEAMMO", "SHIELD", "PANTS", "HELM", "GLOVES", "ARMOR", "AMMO"}
-    if isInList(mat_properties_for, get_textid (item)) then
+    if isInList(mat_properties_for, df.item_type[item:getType()]) then
         append(list,"Material name: "..mat.state_name.Solid)
         append(list,"Material properties: ")
         append(list,"Solid density: "..mat.solid_density..'kg/m^3',1)
@@ -115,6 +120,7 @@ function GetMatPropertiesStringList (item)
 end
 
 function GetArmorPropertiesStringList (item)
+    local item = item --as:df.item_armorst
     local mat = dfhack.matinfo.decode(item).material
     local list = {}
     append(list,"Armor properties: ")
@@ -128,6 +134,7 @@ function GetArmorPropertiesStringList (item)
 end
 
 function GetShieldPropertiesStringList (item)
+    local item = item --as:df.item_shieldst
     local mat = dfhack.matinfo.decode(item).material
     local list = {}
     append(list,"Shield properties:")
@@ -142,9 +149,10 @@ end
 function GetWeaponPropertiesStringList (item)
     local mat = dfhack.matinfo.decode(item).material
     local list = {}
-    if item._type == df.item_toolst and #item.subtype.attacks < 1 then
+    if item._type == df.item_toolst and #item.subtype.attacks < 1 then --hint:df.item_toolst
         return list
     end
+    local item = item --as:df.item_weaponst
     append(list,"Weapon properties: ")
     if item.sharpness > 0 then
         append(list,"Sharpness:"..compare_iron(item.sharpness, standard.strength.max_edge),1)
@@ -193,9 +201,10 @@ end
 function GetAmmoPropertiesStringList (item)
     local mat = dfhack.matinfo.decode(item).material
     local list = {}
-    if item._type == df.item_toolst and #item.subtype.attacks < 1 then
+    if item._type == df.item_toolst and #item.subtype.attacks < 1 then --hint:df.item_toolst
         return list
     end
+    local item = item --as:df.item_ammost
     append(list,"Ammo properties: ")
     if item.sharpness > 0 then
         append(list,"Sharpness: "..item.sharpness,1)
@@ -302,43 +311,45 @@ function GetFoodPropertiesStringList (item)
     add_lines_to_list(list, get_plant_reaction_products(mat))
     if item._type == df.item_plantst and GetMatPlant (item) then
         local plant = GetMatPlant (item)
-        for k,v in pairs (plant.material_defs) do
-            if v ~= -1 and k:find("type_") and not (k:find("type_basic")
-                    or k:find("type_seed") or k:find("type_tree")) then
-                local targetmat = dfhack.matinfo.decode (v,
-                    plant.material_defs["idx_"..k:match("type_(.+)")])
-                local state = "Liquid"
-                local describe = "Made into "
-                if k:find("type_mill")
-                    then state = "Powder" describe = "Ground into "
-                elseif k:find("type_thread")
-                    then state = "Solid" describe = "Woven into "
-                elseif k:find("type_drink")
-                    then describe = "Brewed into "
-                elseif k:find("type_extract_barrel")
-                    then describe = "Cask-aged into "
-                elseif k:find("type_extract_vial")
-                    then describe = "Refined into vials of "
-                elseif k:find("type_extract_still_vial")
-                    then describe = "Distilled into vials of " end
-                local st_name = targetmat.material.state_name[state]
-                append(list,describe..targetmat.material.prefix..''..st_name)
-            end
+        if plant.material_defs.type_mill ~= -1 then
+            local targetmat = dfhack.matinfo.decode(plant.material_defs.type_mill, plant.material_defs.idx_mill)
+            append(list,'Ground into '..targetmat.material.prefix..''..targetmat.material.state_name[df.matter_state.Powder])
+        end
+        if plant.material_defs.type_thread ~= -1 then
+            local targetmat = dfhack.matinfo.decode(plant.material_defs.type_thread, plant.material_defs.idx_thread)
+            append(list,'Woven into '..targetmat.material.prefix..''..targetmat.material.state_name[df.matter_state.Solid])
+        end
+        if plant.material_defs.type_drink ~= -1 then
+            local targetmat = dfhack.matinfo.decode(plant.material_defs.type_drink, plant.material_defs.idx_drink)
+            append(list,'Brewed into '..targetmat.material.prefix..''..targetmat.material.state_name[df.matter_state.Liquid])
+        end
+        if plant.material_defs.type_extract_barrel ~= -1 then
+            local targetmat = dfhack.matinfo.decode(plant.material_defs.type_extract_barrel, plant.material_defs.idx_extract_barrel)
+            append(list,'Cask-aged into '..targetmat.material.prefix..''..targetmat.material.state_name[df.matter_state.Liquid])
+        end
+        if plant.material_defs.type_extract_vial ~= -1 then
+            local targetmat = dfhack.matinfo.decode(plant.material_defs.type_extract_vial, plant.material_defs.idx_extract_vial)
+            append(list,'Refined into vials of '..targetmat.material.prefix..''..targetmat.material.state_name[df.matter_state.Liquid])
+        end
+        if plant.material_defs.type_extract_still_vial ~= -1 then
+            local targetmat = dfhack.matinfo.decode(plant.material_defs.type_extract_still_vial, plant.material_defs.idx_extract_still_vial)
+            append(list,'Distilled into vials of '..targetmat.material.prefix..''..targetmat.material.state_name[df.matter_state.Liquid])
         end
     end
     return list
 end
 
+--luacheck: in=df.item_actual out=string[][]
 function get_all_uses_strings (item)
-    local all_lines = {}
-    local FoodsAndPlants = {df.item_meatst, df.item_globst,
-        df.item_plantst, df.item_plant_growthst, df.item_liquid_miscst,
-         df.item_powder_miscst, df.item_cheesest, df.item_foodst}
-    local ArmourTypes = {df.item_armorst, df.item_pantsst,
-        df.item_helmst, df.item_glovesst, df.item_shoesst}
+    local all_lines = {} --as:string[][]
+    local FoodsAndPlants = {df.item_type.MEAT, df.item_type.GLOB,
+        df.item_type.PLANT, df.item_type.PLANT_GROWTH, df.item_type.LIQUID_MISC,
+        df.item_type.POWDER_MISC, df.item_type.CHEESE, df.item_type.FOOD}
+    local ArmourTypes = {df.item_type.ARMOR, df.item_type.PANTS,
+        df.item_type.HELM, df.item_type.GLOVES, df.item_type.SHOES}
     if df.global.gamemode == df.game_mode.ADVENTURE and item ~= "COIN" then
         add_lines_to_list(all_lines, {{"Value: "..dfhack.items.getValue(item),0}})
-    elseif isInList(ArmourTypes, item._type) then
+    elseif isInList(ArmourTypes, item:getType()) then
         add_lines_to_list(all_lines, GetArmorPropertiesStringList(item))
     elseif item._type == df.item_weaponst or item._type == df.item_toolst then
         add_lines_to_list(all_lines, GetWeaponPropertiesStringList(item))
@@ -349,10 +360,10 @@ function get_all_uses_strings (item)
     elseif item._type == df.item_seedsst then
         local str = math.floor(GetMatPlant(item).growdur/12).." days"
         add_lines_to_list(all_lines, {{"Growth time: "..str, 0}})
-    elseif isInList(FoodsAndPlants, item._type) then
+    elseif isInList(FoodsAndPlants, item:getType()) then
         add_lines_to_list(all_lines, GetFoodPropertiesStringList(item))
     end
-    if not dfhack.items.isCasteMaterial(df.item_type[get_textid(item)]) then
+    if not dfhack.items.isCasteMaterial(item:getType()) then
         add_lines_to_list(all_lines, GetMatPropertiesStringList(item))
     end
     return all_lines
@@ -360,17 +371,21 @@ end
 
 function get_custom_item_desc (item)
     local desc
-    local ID = get_textid (item)
+    local ID = df.item_type[item:getType()]
     if ID and dfhack.items.getSubtypeCount(df.item_type[ID]) ~= -1 then
+        local item = item --as:df.item_armorst
         ID = item.subtype.id end
     if not ID then return nil end
     if dfhack.findScript("item-descriptions") then
         desc = dfhack.script_environment("item-descriptions").descriptions[ID]
     end
-    if dfhack.findScript("more-item-descriptions") then
+    if dfhack.findScript("more-item-descriptions") then --luacheck: skip
         desc = dfhack.script_environment("more-item-descriptions").descriptions[ID] or desc
     end
-    if desc then add_lines_to_list(desc, {""}) end
+    if desc then
+        desc = utils.clone(desc)
+        add_lines_to_list(desc, {""})
+    end
     return desc
 end
 
@@ -386,12 +401,12 @@ function AddUsesString (viewscreen,line,indent)
 end
 
 function dfhack.onStateChange.item_info (code)
-    vi_label = 'More information (DFHack):'
+    local vi_label = 'More information (DFHack):'
     if not enabled then return end
     if code == SC_VIEWSCREEN_CHANGED and dfhack.isWorldLoaded() then
         standard = dfhack.matinfo.find("INORGANIC:IRON").material
         if not standard then return end
-        local scr = dfhack.gui.getCurViewscreen()
+        local scr = dfhack.gui.getCurViewscreen() --as:df.viewscreen_itemst
         if scr._type == df.viewscreen_itemst then
             if isInList(scr.entry_string, vi_label, function(v) return v.value end) then
                 return

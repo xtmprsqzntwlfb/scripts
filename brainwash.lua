@@ -21,7 +21,7 @@ Usage:  ``brainwash <type>``, with one of the following types:
 function brainwash_unit(profile)
     local i,unit_name
 
-    unit=dfhack.gui.getSelectedUnit()
+    local unit=dfhack.gui.getSelectedUnit()
         if unit==nil then
             print ("No unit under cursor!  Aborting.")
         return

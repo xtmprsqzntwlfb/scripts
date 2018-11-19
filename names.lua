@@ -17,7 +17,7 @@ local dlg = require 'gui.dialogs'
 local widgets = require 'gui.widgets'
 local utils = require 'utils'
 
-validArgs = validArgs or utils.invert({
+local validArgs = utils.invert({
     'help',
 })
 local args = utils.processArgs({...}, validArgs)
@@ -46,17 +46,18 @@ function namescr:init()
     if trg then
         -- ok
     elseif df.viewscreen_itemst:is_instance(parent) then
-        fact = dfhack.items.getGeneralRef(parent.item, df.general_ref_type.IS_ARTIFACT)
+        local fact = dfhack.items.getGeneralRef(parent.item, df.general_ref_type.IS_ARTIFACT) --hint:df.viewscreen_itemst
         if fact then
-            trg = df.artifact_record.find(fact.artifact_id)
+            local artifact = df.artifact_record.find(fact.artifact_id) --hint:df.general_ref_is_artifactst
+            trg = artifact --luacheck: retype
         end
     elseif df.viewscreen_dungeon_monsterstatusst:is_instance(parent) then
-        uid = parent.unit.id
-        trg = df.unit.find(uid)
+        local uid = parent.unit.id --hint:df.viewscreen_dungeon_monsterstatusst
+        trg = df.unit.find(uid) --luacheck: retype
     elseif df.global.ui_advmode.menu == df.ui_advmode_menu.Look then
         local t_look = df.global.ui_look_list.items[df.global.ui_look_cursor]
         if t_look.type == df.ui_look_list.T_items.T_type.Unit then
-            trg = t_look.unit
+            trg = t_look.unit --luacheck: retype
         end
     else
         qerror('Could not find valid target')
@@ -69,7 +70,7 @@ function namescr:init()
     gui.simulateInput(adv_screen, 'A_CUST_NAME')
 end
 function namescr:setName()
-    self.trg.name:assign(self._native.parent.name)
+    self.trg.name:assign(self._native.parent.name) --hint:df.viewscreen_layer_choose_language_namest
 end
 function namescr:onRenderBody(dc)
     self._native.parent:render()

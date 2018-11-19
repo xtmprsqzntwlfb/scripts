@@ -39,7 +39,7 @@ Arguments:
 local repeatUtil = require 'repeat-util'
 local utils = require 'utils'
 
-validArgs = validArgs or utils.invert({
+local validArgs = utils.invert({
  'help',
  'cancel',
  'name',
@@ -63,7 +63,8 @@ if args.cancel then
  return
 end
 
-args.time = tonumber(args.time)
+local time = tonumber(args.time)
+
 if not args.name then
  args.name = args.command[1]
 end
@@ -76,5 +77,5 @@ local callCommand = function()
  dfhack.run_command(table.unpack(args.command))
 end
 
-repeatUtil.scheduleEvery(args.name,args.time,args.timeUnits,callCommand)
+repeatUtil.scheduleEvery(args.name,time,args.timeUnits,callCommand)
 

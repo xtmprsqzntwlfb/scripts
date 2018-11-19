@@ -25,7 +25,7 @@ Arguments::
 ]====]
 local utils = require 'utils'
 
-validArgs = validArgs or utils.invert({
+local validArgs = utils.invert({
  'help',
  'name',
  'spheres',
@@ -35,7 +35,7 @@ validArgs = validArgs or utils.invert({
  'description',
 -- 'entities',
 })
-local args = utils.processArgs({...})
+local args = utils.processArgs({...}, validArgs)
 
 if args.help then
  print(usage)
@@ -57,10 +57,11 @@ if not templateGod then
  error 'Could not find template god.'
 end
 
+local gender
 if args.gender == 'male' then
- args.gender = 1
+ gender = 1
 elseif args.gender == 'female' then
- args.gender = 0
+ gender = 0
 else
  error 'invalid gender'
 end
@@ -91,7 +92,7 @@ godFig.info = df.historical_figure_info:new()
 godFig.info.spheres = {new=true}
 godFig.info.secret = df.historical_figure_info.T_secret:new()
 
-godFig.sex = args.gender
+godFig.sex = gender
 godFig.name.first_name = args.name
 for _,sphere in ipairs(args.spheres) do
  godFig.info.spheres:insert('#',df.sphere_type[sphere])

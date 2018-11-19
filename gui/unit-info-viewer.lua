@@ -1,5 +1,5 @@
 -- unit-info-viewer.lua
--- Displays age, birth, maxage, shearing, milking, grazing, egg laying, body size, and death info about a unit. Recommended keybinding Alt-I
+-- Displays age, birth, maxage, shearing, milking, grazing, egg laying, body size, and death info about a unit.
 -- version 1.04
 -- original author: Kurik Amudnil
 -- edited by expwnent
@@ -8,7 +8,7 @@
 gui/unit-info-viewer
 ====================
 Displays age, birth, maxage, shearing, milking, grazing, egg laying, body size,
-and death info about a unit. Recommended keybinding :kbd:`Alt`:kbd:`I`.
+and death info about a unit.
 
 ]====]
 local gui = require 'gui'
@@ -408,7 +408,7 @@ function Identity:init(args)
 
 
  ------------ death ------------
- self.dead = u.flags1.dead
+ self.dead = u.flags2.killed
  self.ghostly = u.flags3.ghostly
  self.undead = u.enemy.undead
 

@@ -764,7 +764,7 @@ def get_effect(logger, ce, ticks, showdisplayeffects)
 
   when "CAN_DO_INTERACTION"
     name = "Add interaction"
-    desc = "#{get_interaction(ce)}"
+    desc = get_interaction(ce).to_s
     color = Output::GREEN
   when "SKILL_ROLL_ADJUST"
     name = "Skill check"
@@ -854,7 +854,7 @@ def get_effect(logger, ce, ticks, showdisplayeffects)
   when "DISPLAY_NAME"
     if !showdisplayeffects then return "", Output::DEFAULT end
     name = "Set display name"
-    desc = "#{ce.name}"
+    desc = ce.name.to_s
     color = Output::DEFAULT
   else
     name = "Unknown"
@@ -940,7 +940,7 @@ print_syndromes = lambda { |logger, unit, showrace, showall, showeffects, showhi
     if showrace
       logger.log "#{df.world.raws.creatures.all[unit.race].name[0]}#{unit.name == '' ? "" : ": "}#{unit.name}", Output::HIGHLIGHT
     else
-      logger.log "#{unit.name}", Output::HIGHLIGHT
+      logger.log unit.name.to_s, Output::HIGHLIGHT
     end
   end
 

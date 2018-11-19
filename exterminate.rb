@@ -8,7 +8,7 @@ Kills any unit of a given race.
 With no argument, lists the available races and count eligible targets.
 
 With the special argument ``this``, targets only the selected creature.
-Alternatively, ``him``, ``her``, ``it``, ``this``, ``target``, and ``selected``
+Alternatively, ``him``, ``her``, ``it``, ``target``, and ``selected``
 do the same thing.
 
 With the special argument ``undead``, targets all undeads on the map,
@@ -64,7 +64,7 @@ end
 
 checkunit = lambda { |u|
     (u.body.blood_count != 0 or u.body.blood_max == 0) and
-    not u.flags1.dead and
+    not u.flags1.inactive and
     not u.flags1.caged and not u.flags1.chained and
     #not u.flags1.hidden_in_ambush and
     not df.map_designation_at(u).hidden
@@ -76,7 +76,7 @@ slayit = lambda { |u|
         # it's getting hot around here
         # !!WARNING!! do not call on a magma-safe creature
         ouh = df.onupdate_register("exterminate ensure #{u.id}", 1) {
-            if u.flags1.dead
+            if u.flags2.killed
                 df.onupdate_unregister(ouh)
             else
                 x, y, z = u.pos.x, u.pos.y, u.pos.z
@@ -118,7 +118,8 @@ when 'help', '?'
     puts <<EOS
 Kills all creatures of a given race.
 With no argument, lists possible targets with their head count.
-With the special argument 'him' or 'her', kill only the currently selected creature.
+With the special argument 'this', kill only the currently selected creature.
+    Alternatively, 'him', 'her', 'it', 'target', and 'selected' do the same thing.
 With the special argument 'undead', kill all undead creatures/thralls.
 
 The targets will bleed out on the next game tick, or if they are immune to that, will vanish in a puff of smoke.

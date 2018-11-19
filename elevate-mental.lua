@@ -11,7 +11,7 @@ any number numbers between 0 and 5000 passed as an argument:
 ]====]
 
 function ElevateMentalAttributes(value)
-    unit=dfhack.gui.getSelectedUnit()
+    local unit=dfhack.gui.getSelectedUnit()
     if unit==nil then
         print ("No unit under cursor!  Aborting with extreme prejudice.")
         return
@@ -19,9 +19,8 @@ function ElevateMentalAttributes(value)
     --print name of dwarf
     print("Adjusting "..dfhack.TranslateName(dfhack.units.getVisibleName(unit)))
     --walk through available attributes, adjust current to max
-    local ok,f,t,k = pcall(pairs,unit.status.current_soul.mental_attrs)
-    if ok then
-        for k,v in f,t,k do
+    if unit.status.current_soul then
+        for k,v in pairs(unit.status.current_soul.mental_attrs) do
             if value ~= nil then
                 print("Adjusting current value for "..tostring(k).." of "..v.value.." to the value of "..value)
                 v.value=value
@@ -36,7 +35,7 @@ function ElevateMentalAttributes(value)
 end
 --script execution starts here
 local opt = ...
-opt = tonumber(opt)
+opt = tonumber(opt) --luacheck: retype
 
 if opt ~= nil then
     if opt >=0 and opt <=5000 then

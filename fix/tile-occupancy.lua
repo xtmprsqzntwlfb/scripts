@@ -26,8 +26,8 @@ function findUnit(x, y, z)
     return false
 end
 
-cursor = df.global.cursor
-changed = false
+local cursor = df.global.cursor
+local changed = false
 function report(flag)
     print('Cleared occupancy flag: ' .. flag)
     changed = true
@@ -37,10 +37,10 @@ if cursor.x == -30000 then
     qerror('Cursor not active.')
 end
 
-occ = dfhack.maps.getTileBlock(pos2xyz(cursor)).occupancy[cursor.x % 16][cursor.y % 16]
+local occ = dfhack.maps.getTileBlock(pos2xyz(cursor)).occupancy[cursor.x % 16][cursor.y % 16]
 
-if occ.building ~= 0 and not dfhack.buildings.findAtTile(pos2xyz(cursor)) then
-    occ.building = 0
+if occ.building ~= df.tile_building_occ.None and not dfhack.buildings.findAtTile(pos2xyz(cursor)) then
+    occ.building = df.tile_building_occ.None
     report('building')
 end
 

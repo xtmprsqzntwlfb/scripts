@@ -24,10 +24,11 @@ Arguments::
 local eventful = require 'plugins.eventful'
 local utils = require 'utils'
 
-buildingType = buildingType or utils.invert({'EITHER','OUTSIDE_ONLY','INSIDE_ONLY'})
-registeredBuildings = registeredBuildings or {}
+--luacheck: global
+buildingType = utils.invert({'EITHER','OUTSIDE_ONLY','INSIDE_ONLY'})
+registeredBuildings = registeredBuildings or {} --as:number[]
 checkEvery = checkEvery or 100
-timeoutId = timeoutId or nil
+timeoutId = timeoutId or nil --as:number
 
 eventful.enableEvent(eventful.eventType.UNLOAD,1)
 eventful.onUnload.outsideOnly = function()
@@ -49,7 +50,7 @@ local function destroy(building)
 end
 
 local function checkBuildings()
- local toDestroy = {}
+ local toDestroy = {} --as:df.building[]
  local function forEach(building)
   if building:getCustomType() < 0 then
    --TODO: support builtin building types if someone wants
@@ -98,7 +99,7 @@ eventful.onBuildingCreatedDestroyed.outsideOnly = function(buildingId)
  checkBuildings()
 end
 
-validArgs = validArgs or utils.invert({
+local validArgs = utils.invert({
  'help',
  'clear',
  'checkEvery',

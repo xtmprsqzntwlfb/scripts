@@ -46,11 +46,19 @@ local eventful = require 'plugins.eventful'
 local syndromeUtil = require 'syndrome-util'
 local utils = require 'utils'
 
-reactionHooks = reactionHooks or {}
+reactionHooks = reactionHooks or {} --as:{_type:table,_array:{_type:table,_array:{_type:table,reactionName:__arg,syndrome:__arg,allowNonworkerTargets:__arg,allowMultipleTargets:__arg,resetPolicy:__arg,command:__arg}}}
 
 eventful.enableEvent(eventful.eventType.UNLOAD,1)
 eventful.onUnload.reactionTrigger = function()
  reactionHooks = {}
+end
+
+local function findSyndrome(name)
+ for _,syndrome in ipairs(df.global.world.raws.syndromes.all) do
+  if syndrome.syn_name == name then
+   return syndrome
+  end
+ end
 end
 
 function getWorkerAndBuilding(job)
@@ -61,9 +69,9 @@ function getWorkerAndBuilding(job)
    if workerId ~= -1 then
     print(job)
     printall(job)
-    error('reaction-trigger: two workers on same job: ' .. workerId .. ', ' .. generalRef.unit_id)
+    error('reaction-trigger: two workers on same job: ' .. workerId .. ', ' .. generalRef.unit_id) --hint:df.general_ref_unit_workerst
    else
-    workerId = generalRef.unit_id
+    workerId = generalRef.unit_id --hint:df.general_ref_unit_workerst
     if workerId == -1 then
      print(job)
      printall(job)
@@ -74,9 +82,9 @@ function getWorkerAndBuilding(job)
    if buildingId ~= -1 then
     print(job)
     printall(job)
-    error('reaction-trigger: two buildings same job: ' .. buildingId .. ', ' .. generalRef.building_id)
+    error('reaction-trigger: two buildings same job: ' .. buildingId .. ', ' .. generalRef.building_id) --hint:df.general_ref_building_holderst
    else
-    buildingId = generalRef.building_id
+    buildingId = generalRef.building_id --hint:df.general_ref_building_holderst
     if buildingId == -1 then
      print(job)
      printall(job)
@@ -89,7 +97,7 @@ function getWorkerAndBuilding(job)
 end
 
 local function processCommand(job, worker, target, building, command)
- local result = {}
+ local result = {} --as:string[]
  for _,arg in ipairs(command) do
   if arg == '\\WORKER_ID' then
    table.insert(result,''..worker.id)
@@ -130,9 +138,9 @@ eventful.onJobCompleted.reactionTrigger = function(job)
   return
  end
 
- local worker,building = getWorkerAndBuilding(job)
- worker = df.unit.find(worker)
- building = df.building.find(building)
+ local worker_id,building_id = getWorkerAndBuilding(job)
+ local worker = df.unit.find(worker_id)
+ local building = df.building.find(building_id)
  if not worker or not building then
   --this probably means that it finished before EventManager could get a copy of the job while the job was running
   --TODO: consider printing a warning once
@@ -146,9 +154,12 @@ eventful.onJobCompleted.reactionTrigger = function(job)
    dfhack.run_command(table.unpack(processed))
   end
   if action.syndrome then
-   didSomething = syndromeUtil.infectWithSyndromeIfValidTarget(worker, action.syndrome, action.resetPolicy) or didSomething
+   local syndrome = findSyndrome(action.syndrome)
+   if syndrome then
+    didSomething = syndromeUtil.infectWithSyndromeIfValidTarget(worker, syndrome, action.resetPolicy) or didSomething
+   end
   end
-  if action.workerOnly then
+  if not action.allowNonworkerTargets then
    return
   end
   if didSomething and not action.allowMultipleTargets then
@@ -168,7 +179,10 @@ eventful.onJobCompleted.reactionTrigger = function(job)
      processCommand(job, worker, unit, building, action.command)
     end
     if action.syndrome then
-     didSomething = syndrome.infectWithSyndromeIfValidTarget(unit,action.syndrome,action.resetPolicy) or didSomething
+     local syndrome = findSyndrome(action.syndrome)
+     if syndrome then
+      didSomething = syndromeUtil.infectWithSyndromeIfValidTarget(unit,syndrome,action.resetPolicy) or didSomething
+     end
     end
     if didSomething and not action.allowMultipleTargets then
      return true
@@ -188,7 +202,7 @@ eventful.onJobCompleted.reactionTrigger = function(job)
 end
 eventful.enableEvent(eventful.eventType.JOB_COMPLETED,0) --0 is necessary to catch cancelled jobs and not trigger them
 
-validArgs = validArgs or utils.invert({
+local validArgs = utils.invert({
  'help',
  'clear',
  'reactionName',
@@ -220,18 +234,8 @@ if not reactionHooks[args.reactionName] then
  reactionHooks[args.reactionName] = {}
 end
 
-if args.syndrome then
- local foundIt
- for _,syndrome in ipairs(df.global.world.raws.syndromes.all) do
-  if syndrome.syn_name == args.syndrome then
-   args.syndrome = syndrome
-   foundIt = true
-   break
-  end
- end
- if not foundIt then
-  error('Could not find syndrome ' .. args.syndrome)
- end
+if args.syndrome and not findSyndrome(args.syndrome) then
+ error('Could not find syndrome ' .. args.syndrome)
 end
 
 table.insert(reactionHooks[args.reactionName], args)
