@@ -108,6 +108,7 @@ end
 
 if args.clear then
  productHooks = {}
+ return
 end
 
 if not args.reactionName then
