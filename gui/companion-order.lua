@@ -3,8 +3,8 @@
 
 gui/companion-order
 ===================
-A script to issue orders for companions. Select companions with lower case chars, issue orders with upper
-case. Must be in look or talk mode to issue command on tile.
+A script to issue orders for companions. Select companions with lower case chars (green when selected), issue orders with upper
+case. Must be in look or talk mode to issue command on tile (e.g. move/equip/pick-up).
 
 .. image:: /docs/images/companion-order.png
 
@@ -16,6 +16,11 @@ case. Must be in look or talk mode to issue command on tile.
 * wait - temporarily remove from party
 * follow - rejoin the party after "wait"
 * leave - remove from party (can be rejoined by talking)
+
+Can be called with '-c' flag to display "cheating" commands.
+
+* patch up - fully heals the companion
+* get in - rides e.g. minecart at cursor. Bit buggy as unit will teleport to the item when e.g. pushing it.
 
 ]====]
 
@@ -222,14 +227,31 @@ function FilterBySize(items,race_id) --TODO add logic for compatible races
     end
     return ret
 end
---local companions=??
+
+function move_unit( unit,tx,ty,tz ) --copied from http/commands.lua with minor modifications
+    unit.idle_area.x=tx
+    unit.idle_area.y=ty
+    unit.idle_area.z=tz
+
+    unit.idle_area_type=df.unit_station_type.Commander
+    unit.idle_area_threshold=0
+    unit.follow_distance=50
+    --invalidate old path
+    unit.path.dest={x=unit.idle_area.x,y=unit.idle_area.y,z=unit.idle_area.z}
+    unit.path.goal=df.unit_path_goal.SeekStation
+    unit.path.path.x:resize(0)
+    unit.path.path.y:resize(0)
+    unit.path.path.z:resize(0)
+    return true
+end
+
 local orders={
 {name="move",f=function (unit_list,pos)
     if not CheckCursor(pos) then
         return false
     end
     for k,v in pairs(unit_list) do
-        v.path.dest:assign(pos)
+        move_unit(v,pos.x,pos.y,pos.z)
     end
 
     return true
@@ -354,18 +376,10 @@ end},
 
 }
 local cheats={
-{name="Patch up",f=function (unit_list)
-    local dft=require("plugins.dfusion.tools")
+{name="patch up",f=function (unit_list)
     for k,v in pairs(unit_list) do
-        dft.healunit(v)
+        dfhack.run_script('full-heal','-unit',v.id)
      end
-    return true
-end},
-{name="Power up",f=function (unit_list)
-    local dft=require("plugins.dfusion.tools")
-    for k,d in pairs(unit_list) do
-        dft.powerup(d)
-    end
     return true
 end},
 {name="get in",f=function (unit_list,pos)
@@ -373,18 +387,19 @@ end},
         return false
     end
     adv=df.global.world.units.active[0]
-    item=getItemsAtPos(getxyz())[1]
+    item=GetItemsAtPos(df.global.cursor)[1]
     print(item.id)
     for k,v in pairs(unit_list) do
         v.riding_item_id=item.id
         local ref=df.general_ref_unit_riderst:new()
         ref.unit_id=v.id
         item.general_refs:insert("#",ref)
+        item.flags2.has_rider=true
     end
     return true
 end},
 }
---[[ todo: add cheats...]]--
+
 function getCompanions(unit)
     unit=unit or df.global.world.units.active[0]
     local t_nem=dfhack.units.getNemesis(unit)
@@ -476,13 +491,14 @@ function CompanionUi:onRenderBody( dc)
     end
     dc:pen(COLOR_GREY)
     local w,h=self:getWindowSize()
+    local w2=math.floor(w/2)
     local char_A=string.byte('A')-1
     for k,v in ipairs(orders) do
-        dc:seek(w/2,k):string(string.char(k+char_A)..". "):string(v.name);
+        dc:seek(w2,k):string(string.char(k+char_A)..". "):string(v.name);
     end
     if is_cheat then
         for k,v in ipairs(cheats) do
-            dc:seek(w/2,k+#orders):string(string.char(k+#orders+char_A)..". "):string(v.name);
+            dc:seek(w2,k+#orders):string(string.char(k+#orders+char_A)..". "):string(v.name);
         end
     end
 end
