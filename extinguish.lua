@@ -1,15 +1,14 @@
 -- Puts out fires.
 -- author: Atomic Chicken
+--@ module = true
 
 local utils = require 'utils'
 local validArgs = utils.invert({
-'all',
-'location',
-'help'
+  'all',
+  'location',
+  'help'
 })
 local args = utils.processArgs({...}, validArgs)
-
---@ module = true
 
 local usage = [====[
 
@@ -31,8 +30,8 @@ Arguments::
 ]====]
 
 if args.help then
- print(usage)
- return
+  print(usage)
+  return
 end
 
 if args.all and args.location then
@@ -77,7 +76,7 @@ function extinguishContaminant(spatter)
 end
 
 function extinguishItem(item)
-  if item.flags.on_fire == true then
+  if item.flags.on_fire then
     item.flags.on_fire = false
     item.temperature.whole = 10050
     item.temperature.fraction = 0
@@ -95,7 +94,7 @@ function extinguishUnit(unit)
   local burning = false
   for _, status in ipairs(unit.body.components.body_part_status) do
     if not burning then
-      if status.on_fire == true then
+      if status.on_fire then
         burning = true
         status.on_fire = false
       end
