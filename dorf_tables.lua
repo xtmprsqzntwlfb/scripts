@@ -98,7 +98,7 @@ dorf_jobs = {
     and also the probability that the profession will be applied during the algorithm's execution.
 }
 --]]
-dorf_jobs = {
+jobs = {
     _Grunt = {
         req={'RECRUIT'}, max={1988},
         HERBALIST=0.4,
@@ -288,7 +288,7 @@ professions = {
 }
 
 --probability is used for randomly applying types to any and all dwarves
-dorf_types = {
+types = {
     resilient1 = {
         p = 0.2,
         attribs = {ENDURANCE={'verygood'},RECUPERATION={'verygood'},DISEASE_RESISTANCE={'superb'}}},

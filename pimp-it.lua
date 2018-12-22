@@ -24,9 +24,11 @@ local engineID = rng.MakeNewEngine()
 local dorf_tables = reqscript('dorf_tables')
 cloned = {} --assurances I'm sure
 cloned = {
-    jobs = utils.clone(dorf_tables.dorf_jobs, true),
-    professions = utils.clone(dorf_tables.professions, true),
     distributions = utils.clone(dorf_tables.job_distributions, true),
+    attrib_levels = utils.clone(dorf_tables.attrib_levels, true),
+    types = utils.clone(dorf_tables.types, true),
+    jobs = utils.clone(dorf_tables.jobs, true),
+    professions = utils.clone(dorf_tables.professions, true),
 }
 print("Done.")
 local validArgs = utils.invert({
@@ -303,12 +305,12 @@ function GetRandomTableEntry(gen, t)
     return R
 end
 
-local attrib_seq = rng.num_sequence:new(1,TableLength(dorf_tables.attrib_levels))
+local attrib_seq = rng.num_sequence:new(1,TableLength(cloned.attrib_levels))
 function GetRandomAttribLevel() --returns a randomly generated value for assigning to an attribute
     local gen = rng.crng:new(engineID,false,attrib_seq)
     gen:shuffle()
     while true do
-        local level = GetRandomTableEntry(gen, dorf_tables.attrib_levels)
+        local level = GetRandomTableEntry(gen, cloned.attrib_levels)
         if rng.rollBool(engineID, level.p) then
             return level
         end
@@ -316,7 +318,7 @@ function GetRandomAttribLevel() --returns a randomly generated value for assigni
     return nil
 end
 
-function isValidJob(job) --job is a dorf_jobs.<job> table
+function isValidJob(job)
     if job ~= nil and job.req ~= nil then
         local jobName = FindValueKey(cloned.jobs, job)
         local jd = cloned.distributions[jobName]
@@ -344,7 +346,7 @@ function GetSkillTable(dwf, skill)
 end
 
 function GenerateStatValue(stat, atr_lvl)
-    atr_lvl = atr_lvl == nil and GetRandomAttribLevel() or dorf_tables.attrib_levels[atr_lvl]
+    atr_lvl = atr_lvl == nil and GetRandomAttribLevel() or cloned.attrib_levels[atr_lvl]
     if args.debug and tonumber(args.debug) >= 4 then print(atr_lvl, atr_lvl[1], atr_lvl[2]) end
     local R = rng.rollNormal(engineID, atr_lvl[1], atr_lvl[2])
     local value = math.floor(R)
@@ -364,7 +366,7 @@ function LoopStatsTable(statsTable, callback)
 end
 
 function ApplyType(dwf, dorf_type)
-    local type = dorf_tables.dorf_types[dorf_type]
+    local type = cloned.types[dorf_type]
     assert(type, "Invalid dorf type.")
     for attribute, atr_lvl in pairs(type.attribs) do
         if args.debug and tonumber(args.debug) >= 3 then print(attribute, atr_lvl[1]) end
@@ -552,7 +554,7 @@ function RollStats(dwf, types)
         if args.debug and tonumber(args.debug) >= 4 then print(i, type) end
         ApplyType(dwf, type)
     end
-    for type, table in pairs(dorf_tables.dorf_types) do
+    for type, table in pairs(cloned.types) do
         local p = table.p
         if p ~= nil then
             if rng.rollBool(engineID, p) then
@@ -1046,10 +1048,10 @@ elseif args.select and (args.debug or args.clear or args.pimpem or args.reroll o
             elseif args.applytypes then
                 if type(args.applytypes) == 'table' then
                     print("Applying types:" .. TableToString(args.applytypes) .. ", to selected dwarves")
-                    temp = LoopTable_Apply_ToUnits(selection, ApplyType, args.applytypes, dorf_tables.dorf_types)
+                    temp = LoopTable_Apply_ToUnits(selection, ApplyType, args.applytypes, cloned.types)
                 else
                     print("Applying type:" .. args.applytypes .. ", to selected dwarves")
-                    if dorf_tables.dorf_types[args.applytypes] then
+                    if cloned.types[args.applytypes] then
                         temp = LoopUnits(selection, ApplyType, nil, args.applytypes)
                     else
                         error("Invalid type: " .. args.applytypes)
