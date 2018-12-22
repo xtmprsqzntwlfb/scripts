@@ -195,26 +195,38 @@ function GetChar(str,i)
     return string.sub(str,i,i)
 end
 
-function DisplayTable(t,query,field)
-    print('###########################')
+function DisplayTable(t,recursion)
+    if recursion == nil then
+        print('###########################')
+        print(t)
+        print('######')
+        recursion = 0
+    elseif recursion == 1 then
+        print('-------------')
+    elseif recursion == 2 then
+        print('-------')
+    elseif recursion == 3 then
+        print('---')
+    end
     for i,k in pairs(t) do
-        if query ~= nil then
-            if string.find(i, query) then
-                if field ~= nil then
-                    print(i,k,k[field])
-                else
-                    print(i,k)
-                end
-            end
-        else
-            if field ~= nil then
-                print(i,k,k[field])
-            else
-                print(i,k)
+        if type(k) ~= "table" then
+            print(i,k)
+        end
+    end
+    for i,k in pairs(t) do
+        if type(k) == "table" then
+            print(i,k)
+            DisplayTable(k,recursion+1)
+            if recursion >= 2 then
+                print('')
+            elseif recursion == 0 then
+                print('######')
             end
         end
     end
-    print('###########################')
+    if recursion == nil then
+        print('###########################')
+    end
 end
 
 function TableToString(t)
@@ -472,6 +484,7 @@ function ApplyJob(dwf, jobName) --job = dorf_jobs[X]
     local points = 11
     local base_dec = 11 / job.max[1]
     local total = 0
+    --We want to loop through professions according to need (ie. count & ratio(ie. p))
     for prof, t in spairs(PimpData[jobName].profs,
     function(a,b)
         return twofield_compare(PimpData[jobName].profs,
@@ -483,11 +496,9 @@ function ApplyJob(dwf, jobName) --job = dorf_jobs[X]
         if total < job.max[1] then
             if args.debug and tonumber(args.debug) >= 1 then print("dwf id:", dwf.id, jobName, prof) end
             local ratio = job[prof]
-            if ratio ~= nil then --[[not clear why this happens, simple fix though
-                What is clear is that the persistent data has a ratio defined
-                More importantly this loop is cycling through pimpdata
-                This is a major todo!!
-                ie. todo: figure out/remember, and comment, why this loop uses PimpData's profs. Then why those are being cross referenced into the actual dorf tables
+            if ratio ~= nil then --[[not clear why this was happening, simple fix though
+                (tried to reproduce the next day and couldn't,
+                must have been a bad table lingering in memory between tests despite resetting persistent data and dwarves)
                 --]]
                 local max = math.ceil(points)
                 local min = math.ceil(points - 5)
@@ -849,7 +860,7 @@ function Prepare()
     end
     if args.debug and tonumber(args.debug) >= 4 then
         print("PimpData, job counts")
-        DisplayTable(PimpData,nil,'count')
+        DisplayTable(PimpData) --this is gonna print out a lot of data, including the persistent data
     end
     --Count Professions from 'DwarvesData'
     --[[for id, dwf_data in pairs(DwarvesData) do
