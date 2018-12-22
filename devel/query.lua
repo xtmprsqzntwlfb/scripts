@@ -4,7 +4,8 @@ local utils=require('utils')
 local validArgs = utils.invert({
  'unit',
  'table',
- 'query'
+ 'query',
+ 'help',
 })
 local args = utils.processArgs({...}, validArgs)
 local help = [====[
@@ -102,7 +103,9 @@ function parseTableString(str)
 end
 
 local selection = nil
-if args.unit then
+if args.help then
+    print(help)
+elseif args.unit then
     if _G[args.unit] ~= nil then
         selection = _G[args.unit]
     else
