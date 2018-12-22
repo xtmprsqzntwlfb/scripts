@@ -60,6 +60,7 @@ function Query(table, query, parent)
         parent = ""
     end
     for k,v in safe_pairs(table) do
+        -- avoid infinite recursion
         if not tonumber(k) and type(k) ~= "table" and not string.find(tostring(k), 'script') then
             if string.find(tostring(k), query) then
                 print(parent .. "." .. k .. ":", v)
