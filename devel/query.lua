@@ -8,8 +8,8 @@ local validArgs = utils.invert({
 })
 local args = utils.processArgs({...}, validArgs)
 local help = [====[
-query
-=====
+devel/query
+===========
 Query is a script useful for finding and reading values of data structure fields.
 Purposes will likely be exclusive to writing lua script code.
 
