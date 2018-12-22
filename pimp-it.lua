@@ -4,10 +4,12 @@
 pimp-it
 =======
 Optimize dwarves for fort-mode work.
-The core function takes dwarves and allocates a "dorf_job" to each dwarf.
-This decision takes into account current counts for each dorf_job, in
+The core function takes dwarves and allocates a "job" to each dwarf.
+This decision takes into account current counts for each job, in
 relation to how many should be allocated based on the working population
-size.
+size. Jobs involve required professions, tertiary professions (may or
+may not be applied), and types which come along with attribute buffs
+and characteristics (eg. strength, speed, focus, dodging, etc)
 
 Usage: ``pimp-it -help`` or ``pimp-it -select <sel-opt> -<command> <args>``
 
@@ -365,9 +367,9 @@ function LoopStatsTable(statsTable, callback)
     end
 end
 
-function ApplyType(dwf, dorf_type)
-    local type = cloned.types[dorf_type]
-    assert(type, "Invalid dorf type.")
+function ApplyType(dwf, dwf_type)
+    local type = cloned.types[dwf_type]
+    assert(type, "Invalid dwarf type.")
     for attribute, atr_lvl in pairs(type.attribs) do
         if args.debug and tonumber(args.debug) >= 3 then print(attribute, atr_lvl[1]) end
         if
@@ -931,7 +933,7 @@ Examples:
     protected   - selects any dwarves which use protection signals in their name or profession. (ie. {'.', 'c', 'j', 'p'})
     unprotected - selects any dwarves which don't use protection signals in their name or profession.
     drunks      - selects any dwarves which are currently zeroed, or were originally drunks as their profession.
-    jobs        - selects any dwarves with the listed job types. This will only match with custom professions, or pimped dwarves (for pimped dwarves see: dorf_jobs in dorf_tables.lua).
+    jobs        - selects any dwarves with the listed jobs. This will only match with custom professions, or pimped dwarves (for pimped dwarves see: jobs in dorf_tables.lua).
                 - usage `-select [ jobs job1 job2 etc. ]` eg. `-select [ jobs Miner Trader ]`
 ~~~~~~~~~~~~
 Commands will run on the selected dwarves
@@ -943,11 +945,11 @@ Commands will run on the selected dwarves
                        - optional argument: inclusive. Only performs the reroll, will no zero the dwarf first. Benefit: stats can only go higher, not lower.
     pimpem             - performs a job search for unpimped dwarves. Each dwarf will be found a job according to the job_distribution table in dorf_tables.lua
     applyjobs          - applies the listed jobs to the selected dwarves. list format: `[ job1 job2 jobn ]` brackets and jobs all separated by spaces.
-                       - see dorf_jobs table in dorf_tables.lua for available jobs.")
+                       - see jobs table in dorf_tables.lua for available jobs.")
     applyprofessions   - applies the listed professions to the selected dwarves. list format: `[ prof1 prof2 profn ]` brackets and professions all separated by spaces.
                        - see professions table in dorf_tables.lua for available professions.
     applytypes         - applies the listed types to the selected dwarves. list format: `[ type1 type2 typen ]` brackets and types all separated by spaces.
-                       - see dorf_types table in dorf_tables.lua for available types.
+                       - see dwf_types table in dorf_tables.lua for available types.
 ~~~~~~~~~~~~
     Other Arguments:
       help - displays this help information.
