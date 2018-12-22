@@ -1,5 +1,5 @@
 -- Optimize dwarves for fort-mode work. Pimp your dwarves, make your life easier in managing labours.
--- written by josh cooper(cppcooper) [created: 12-2017 | last edited: 10-2018]
+-- written by josh cooper(cppcooper) [created: 12-2017 | last edited: 12-2018]
 --[====[
 pimp-it
 =======
@@ -21,8 +21,7 @@ utils = require('utils')
 json = require('json')
 local rng = require('plugins.cxxrandom')
 local engineID = rng.MakeNewEngine()
-print("Loading data tables..")
-local dorf_tables = dfhack.script_environment('dorf_tables')
+local dorf_tables = reqscript('dorf_tables')
 cloned = {} --assurances I'm sure
 cloned = {
     jobs = utils.clone(dorf_tables.dorf_jobs, true),
@@ -34,6 +33,8 @@ local validArgs = utils.invert({
     'help',
     'debug',
     'show',
+    'reset',
+    'resetall',
 
     'select', --highlighted --all --named --unnamed --employed --pimped --unpimped --protected --unprotected --drunks --jobs
     'clear',
@@ -111,6 +112,19 @@ function SavePersistentData()
     PimpData.Dwarves = newDwfTable
     cur.data = PimpData
     cur:write()
+end
+
+function ClearPersistentData(all)
+    local gamePath = dfhack.getDFPath()
+    local fortName = dfhack.TranslateName(df.world_site.find(df.global.ui.site_id).name)
+    local savePath = dfhack.getSavePath()
+    local fileName = fortName .. ".json.dat"
+    local file_cur = gamePath .. "/data/save/current/" .. fileName
+    local file_sav = savePath .. "/" .. fileName
+    os.remove(file_cur)
+    if all then
+        os.remove(file_sav)
+    end
 end
 
 function safecompare(a,b)
@@ -392,8 +406,7 @@ end
 --Apply only after previously validating
 function ApplyProfession(dwf, profession, min, max)
     local prof = cloned.professions[profession]
-    --todo: implement persistent profession counting
-    --prof.cur = prof.cur + 1
+    --todo: consider counting total dwarves trained in a profession [currently counting total sub-professions, of a job]
     for skill, bonus in pairs(prof.skills) do
         local sTable = GetSkillTable(dwf, skill)
         if sTable == nil then
@@ -456,7 +469,6 @@ function ApplyJob(dwf, jobName) --job = dorf_jobs[X]
         
     -- Loop tertiary professions
     -- Sort loop (asc)
-    --[[]]
     local points = 11
     local base_dec = 11 / job.max[1]
     local total = 0
@@ -467,36 +479,25 @@ function ApplyJob(dwf, jobName) --job = dorf_jobs[X]
         function(f1,f2) return safecompare(f1,f2) end,
         function(f1,f2) return safecompare(f2,f1) end)
     end)
-    do--]]
+    do
         if total < job.max[1] then
+            if args.debug and tonumber(args.debug) >= 1 then print("dwf id:", dwf.id, jobName, prof) end
             local ratio = job[prof]
-            local max = math.ceil(points)
-            local min = math.ceil(points - 5)
-            min = min < 0 and 0 or min
-            --Firsts are special
-            if PimpData[jobName].profs[prof].count < (ratio * PimpData[jobName].count) and points > 7.7 then
-                ApplyProfession(dwf, prof, min, max)
-                table.insert(DwarvesData[id]['professions'], prof)
-                PimpData[jobName].profs[prof].count = PimpData[jobName].profs[prof].count + 1
-                if args.debug and tonumber(args.debug) >= 1 then print("dwf id:", dwf.id, "count: ", PimpData[jobName].profs[prof].count, jobName, prof) end
-                
-                if not bAlreadySetProf2 then
-                    bAlreadySetProf2 = true
-                    dwf.profession2 = df.profession[prof]
-                end
-                points = points - base_dec
-                total = total + 1
-            else
-                local p = PimpData[jobName].profs[prof].count > 0 and (1 - (ratio / ((ratio*PimpData[jobName].count) / PimpData[jobName].profs[prof].count))) or ratio
-                p = p < 0 and 0 or p
-                p = p > 1 and 1 or p
-                --p = (p - math.floor(p)) >= 0.5 and math.ceil(p) or math.floor(p)
-                --> proc probability and check points
-                if points >= 1 and rng.rollBool(engineID, p) then
+            if ratio ~= nil then --[[not clear why this happens, simple fix though
+                What is clear is that the persistent data has a ratio defined
+                More importantly this loop is cycling through pimpdata
+                This is a major todo!!
+                ie. todo: figure out/remember, and comment, why this loop uses PimpData's profs. Then why those are being cross referenced into the actual dorf tables
+                --]]
+                local max = math.ceil(points)
+                local min = math.ceil(points - 5)
+                min = min < 0 and 0 or min
+                --Firsts are special
+                if PimpData[jobName].profs[prof].count < (ratio * PimpData[jobName].count) and points > 7.7 then
                     ApplyProfession(dwf, prof, min, max)
                     table.insert(DwarvesData[id]['professions'], prof)
                     PimpData[jobName].profs[prof].count = PimpData[jobName].profs[prof].count + 1
-                    if args.debug and tonumber(args.debug) >= 1 then print("dwf id:", dwf.id, "count: ", PimpData[jobName].profs[prof].count, jobName, prof) end
+                    if args.debug and tonumber(args.debug) >= 1 then print("count: ", PimpData[jobName].profs[prof].count) end
                     
                     if not bAlreadySetProf2 then
                         bAlreadySetProf2 = true
@@ -504,6 +505,25 @@ function ApplyJob(dwf, jobName) --job = dorf_jobs[X]
                     end
                     points = points - base_dec
                     total = total + 1
+                else
+                    local p = PimpData[jobName].profs[prof].count > 0 and (1 - (ratio / ((ratio*PimpData[jobName].count) / PimpData[jobName].profs[prof].count))) or ratio
+                    p = p < 0 and 0 or p
+                    p = p > 1 and 1 or p
+                    --p = (p - math.floor(p)) >= 0.5 and math.ceil(p) or math.floor(p)
+                    --> proc probability and check points
+                    if points >= 1 and rng.rollBool(engineID, p) then
+                        ApplyProfession(dwf, prof, min, max)
+                        table.insert(DwarvesData[id]['professions'], prof)
+                        PimpData[jobName].profs[prof].count = PimpData[jobName].profs[prof].count + 1
+                        if args.debug and tonumber(args.debug) >= 1 then print("dwf id:", dwf.id, "count: ", PimpData[jobName].profs[prof].count, jobName, prof) end
+                        
+                        if not bAlreadySetProf2 then
+                            bAlreadySetProf2 = true
+                            dwf.profession2 = df.profession[prof]
+                        end
+                        points = points - base_dec
+                        total = total + 1
+                    end
                 end
             end
         end
@@ -898,11 +918,13 @@ Examples:
     protected   - selects any dwarves which use protection signals in their name or profession. (ie. {'.', 'c', 'j', 'p'})
     unprotected - selects any dwarves which don't use protection signals in their name or profession.
     drunks      - selects any dwarves which are currently zeroed, or were originally drunks as their profession.
-    jobs        - selects any dwarves with the listed job types. This will only match with custom professions, or pimped dwarves (for pimped dorfs see: dorf_jobs in dorf_tables.lua).
+    jobs        - selects any dwarves with the listed job types. This will only match with custom professions, or pimped dwarves (for pimped dwarves see: dorf_jobs in dorf_tables.lua).
                 - usage `-select [ jobs job1 job2 etc. ]` eg. `-select [ jobs Miner Trader ]`
 ~~~~~~~~~~~~
 Commands will run on the selected dwarves
  available commands:
+    reset              - deletes json file containing session data
+    resetall           - deletes both json files. session data and existing persistent data
     clear              - zeroes selected dwarves. No attributes, no labours. Assigns 'DRUNK' profession.
     reroll <inclusive> - zeroes selected dwarves, then rerolls that dwarf based on its job. Ignores dwarves with unlisted jobs.
                        - optional argument: inclusive. Only performs the reroll, will no zero the dwarf first. Benefit: stats can only go higher, not lower.
@@ -951,6 +973,8 @@ args.b_reroll = exists(args.reroll) if args.debug and tonumber(args.debug) >= 0 
 args.b_applyjobs = exists(args.applyjobs) if args.debug and tonumber(args.debug) >= 0 then print("args.b_applyjob: " .. tostring(args.b_applyjobs)) end
 if args.help then
     ShowHelp()
+elseif args.reset or args.resetall then
+    ClearPersistentData(exists(args.resetall))
 elseif args.select and (args.debug or args.clear or args.pimpem or args.reroll or args.applyjobs or args.applyprofessions or args.applytypes) then
     selection = {}
     count = 0

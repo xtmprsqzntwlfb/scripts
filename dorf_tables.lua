@@ -1,6 +1,8 @@
 -- dorf_tables has job distribution configurations, random number information for attributes generation, job configurations, profession configurations, dorf type configurations
 -- usage: loaded by pimp-it.lua
--- by josh cooper(cppcooper) [created: 12-2017 | last edited: 10-2018]
+-- by josh cooper(cppcooper) [created: 12-2017 | last edited: 12-2018]
+--@ module = true
+
 local help = [====[
 
 dorf_tables
@@ -10,7 +12,12 @@ Data tables for pimp-it.lua.
 Usage: load inside secondary script (pimp-it.lua)
 
 ]====]
---local _ENV = mkmodule('dorf_tables')
+
+if not moduleMode then
+    print("scripts/dorf_tables.lua is a content library; calling it does nothing.")
+    do return end
+end
+print("Loading data tables..")
 
 -- p denotes probability, always.
 local O = 0
@@ -377,5 +384,3 @@ dorf_types = {
         attribs = {STRENGTH={'verygood'},AGILITY={'verygood'},ENDURANCE={'verygood'},RECUPERATION={'verygood'},FOCUS={'superb'}},
         skills  = {DISCIPLINE={7,14},SITUATIONAL_AWARENESS={5,10},MELEE_COMBAT={4,6},RANGED_COMBAT={4,6},ARMOR={4,6},HAMMER={4,6},CROSSBOW={4,6},COORDINATION={4,6},BALANCE={4,6},MILITARY_TACTICS={5,8}}}
 }
-
---return _ENV
