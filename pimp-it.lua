@@ -17,7 +17,7 @@ Usage: ``pimp-it -help`` or ``pimp-it -select <sel-opt> -<command> <args>``
 :select <option>:    Indicates the next parameter will be indicate which dwarves to select
 ]====]
 
-print("v1.1")
+print("v1.2")
 utils ={}
 utils = require('utils')
 json = require('json')
@@ -125,8 +125,10 @@ function ClearPersistentData(all)
     local fileName = fortName .. ".json.dat"
     local file_cur = gamePath .. "/data/save/current/" .. fileName
     local file_sav = savePath .. "/" .. fileName
+    print("Deleting " .. file_cur)
     os.remove(file_cur)
     if all then
+        print("Deleting " .. file_sav)
         os.remove(file_sav)
     end
 end
@@ -940,12 +942,12 @@ Commands will run on the selected dwarves
  available commands:
     reset              - deletes json file containing session data
     resetall           - deletes both json files. session data and existing persistent data
-    clear              - zeroes selected dwarves. No attributes, no labours. Assigns 'DRUNK' profession.
+    clear              - zeroes selected dwarves, or zeroes all dwarves if no selection is given. No attributes, no labours. Assigns 'DRUNK' profession.
     reroll <inclusive> - zeroes selected dwarves, then rerolls that dwarf based on its job. Ignores dwarves with unlisted jobs.
                        - optional argument: inclusive. Only performs the reroll, will no zero the dwarf first. Benefit: stats can only go higher, not lower.
     pimpem             - performs a job search for unpimped dwarves. Each dwarf will be found a job according to the job_distribution table in dorf_tables.lua
     applyjobs          - applies the listed jobs to the selected dwarves. list format: `[ job1 job2 jobn ]` brackets and jobs all separated by spaces.
-                       - see jobs table in dorf_tables.lua for available jobs.")
+                       - see jobs table in dorf_tables.lua for available jobs."
     applyprofessions   - applies the listed professions to the selected dwarves. list format: `[ prof1 prof2 profn ]` brackets and professions all separated by spaces.
                        - see professions table in dorf_tables.lua for available professions.
     applytypes         - applies the listed types to the selected dwarves. list format: `[ type1 type2 typen ]` brackets and types all separated by spaces.
@@ -954,6 +956,7 @@ Commands will run on the selected dwarves
     Other Arguments:
       help - displays this help information.
       debug - enables debugging print lines
+      show - displays affected dwarves (id, name, primary job)
 
 No dorfs were harmed in the building of this help screen.
 ]====])
@@ -988,8 +991,21 @@ args.b_reroll = exists(args.reroll) if args.debug and tonumber(args.debug) >= 0 
 args.b_applyjobs = exists(args.applyjobs) if args.debug and tonumber(args.debug) >= 0 then print("args.b_applyjob: " .. tostring(args.b_applyjobs)) end
 if args.help then
     ShowHelp()
-elseif args.reset or args.resetall then
-    ClearPersistentData(exists(args.resetall))
+elseif not args.select and (args.reset or args.resetall or args.clear) then
+    if args.reset or args.resetall then
+        ClearPersistentData(exists(args.resetall))
+    end
+    if args.clear then
+        selection = {}
+        print("Selected Dwarves: " .. LoopUnits(ActiveUnits, CheckWorker, SelectDwarf, 'all'))
+        print("\nResetting selected dwarves..")
+        temp = LoopUnits(selection, nil, ZeroDwarf)
+        print(temp .. " dwarves affected.")
+        if args.show then
+            print("Affected Dwarves: ")
+            LoopUnits(selection, nil, Show)
+        end
+    end
 elseif args.select and (args.debug or args.clear or args.pimpem or args.reroll or args.applyjobs or args.applyprofessions or args.applytypes) then
     selection = {}
     count = 0
@@ -997,14 +1013,17 @@ elseif args.select and (args.debug or args.clear or args.pimpem or args.reroll o
     
     if args.b_clear ~= args.b_reroll or not args.b_clear then
         --error("Clear is implied with Reroll. Choose one, not both.")
-        if args.b_reroll and args.b_pimpem and args.b_applyjobs then
-            error("options: pimpem, reroll, applyjob. Choose one, and only one.")
-        elseif args.b_reroll ~= args.b_pimpem ~= args.b_applyjobs or not args.b_reroll then
+        if args.b_reroll and args.b_pimpem then
+            error("options: pimpem, reroll. Choose one, and only one.")
+        else
             --
             --Valid options were entered
             --
             local affected = 0
             local temp = 0
+            if args.reset or args.resetall then
+                ClearPersistentData(exists(args.resetall))
+            end
             if args.clear then
                 print("\nResetting selected dwarves..")
                 temp = LoopUnits(selection, nil, ZeroDwarf)
@@ -1019,7 +1038,9 @@ elseif args.select and (args.debug or args.clear or args.pimpem or args.reroll o
                 print("\nRerolling selected dwarves..")
                 temp = LoopUnits(selection, nil, Reroll)
                 affected = affected < temp and temp or affected
-            elseif args.applyjobs then
+            end
+
+            if args.applyjobs then
                 if type(args.applyjobs) == 'table' then
                     print("Applying jobs:" .. TableToString(args.applyjobs) .. ", to selected dwarves")
                     temp = LoopTable_Apply_ToUnits(selection, ApplyJob, args.applyjobs, cloned.jobs)
@@ -1033,7 +1054,6 @@ elseif args.select and (args.debug or args.clear or args.pimpem or args.reroll o
                 end
                 affected = affected < temp and temp or affected
             end
-            
             if args.applyprofessions then
                 if type(args.applyprofessions) == 'table' then
                     print("Applying professions:" .. TableToString(args.applyprofessions) .. ", to selected dwarves")
@@ -1047,7 +1067,8 @@ elseif args.select and (args.debug or args.clear or args.pimpem or args.reroll o
                     end
                 end
                 affected = affected < temp and temp or affected
-            elseif args.applytypes then
+            end
+            if args.applytypes then
                 if type(args.applytypes) == 'table' then
                     print("Applying types:" .. TableToString(args.applytypes) .. ", to selected dwarves")
                     temp = LoopTable_Apply_ToUnits(selection, ApplyType, args.applytypes, cloned.types)
@@ -1073,11 +1094,13 @@ elseif args.select and (args.debug or args.clear or args.pimpem or args.reroll o
             --
             --Valid options code block ending
             --
-        else
-            error("options: pimpem, reroll, applyjob. Choose one, and only one.")
         end
     else
         error("Clear is implied with Reroll. Choose one, not both.")
+    end
+    if args.show then
+        print("Affected Dwarves: ")
+        LoopUnits(selection, nil, Show)
     end
 else
     if args.show then
