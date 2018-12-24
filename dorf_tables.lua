@@ -1,4 +1,4 @@
--- dorf_tables has job distribution configurations, random number information for attributes generation, job configurations, profession configurations, dorf type configurations
+-- dorf_tables has job distribution configurations, random number information for attributes generation, job configurations, profession configurations, dwarf types(ie. attributes/characteristic) configurations
 -- usage: loaded by pimp-it.lua
 -- by josh cooper(cppcooper) [created: 12-2017 | last edited: 12-2018]
 --@ module = true
@@ -50,7 +50,7 @@ job_distributions = {
 }
 --[[
 Stat Rolling:
-    ->Loop dorf attributes (physical/mental)
+    ->Loop dwarf attributes (physical/mental)
         ->Loop attrib_levels randomly selecting elements
             -Roll(p) to apply the element
              *Apply element to attribute,
