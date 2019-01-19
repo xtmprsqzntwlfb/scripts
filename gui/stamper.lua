@@ -58,7 +58,7 @@ local function cullBuffer(data) --there"s probably a memory saving way of doing 
     local upperY=-math.huge
     for x=0,data.xlen do
         for y=0,data.ylen do
-            if data[x][y].dig>0 then
+            if data[x][y].dig ~= df.tile_dig_designation.No then
                 lowerX=math.min(x,lowerX)
                 lowerY=math.min(y,lowerY)
                 upperX=math.max(x,upperX)
@@ -156,6 +156,15 @@ function StamperUI:transformBuffer(callback)
     return newBuffer
 end
 
+function StamperUI:transformDesignationType(type)
+    self:transformBuffer(function(x,y,xlen,ylen,tile)
+        if tile.dig ~= df.tile_dig_designation.No then
+            tile.dig = type
+        end
+        return x,y
+    end)
+end
+
 function StamperUI:pasteBuffer(position,option)
     local z=position.z
     local offsetX,offsetY=self:getOffset()
@@ -170,9 +179,9 @@ function StamperUI:pasteBuffer(position,option)
             if x>=x1 and x<=x2 then
                 for block_y, tile in ipairs(row) do
                     local y=block_y+block.map_pos.y
-                    if y>=y1 and y<=y2 and self.buffer[x-x1][y-y1].dig>0 then
+                    if y>=y1 and y<=y2 and self.buffer[x-x1][y-y1].dig ~= df.tile_dig_designation.No then
                         if self.option=="erase" then
-                            tile.dig=0
+                            tile.dig = df.tile_dig_designation.No
                         elseif self.option=="construction" then
                             dfhack.constructions.designateRemove(x,y,z)
                         else
@@ -193,7 +202,11 @@ function StamperUI:invertBuffer() --this modifies the buffer instead of copying 
             tile.dig_prev = nil
         else
             tile.dig_prev = tile.dig
-            tile.dig = 0
+            if tile.dig ~= df.tile_dig_designation.No then
+                tile.dig = df.tile_dig_designation.No
+            else
+                tile.dig = df.tile_dig_designation.Default
+            end
         end
         return x, y
     end)
@@ -213,7 +226,7 @@ function StamperUI:renderOverlay()
         for x=0, self.buffer.xlen do
             for y=0, self.buffer.ylen do
                 local tile=self.buffer[x][y]
-                if tile.dig>0 then
+                if tile.dig ~= df.tile_dig_designation.No then
                     if not (gui.blink_visible(750) and x==-offsetX and y==-offsetY) then
                         local fg=COLOR_BLACK
                         local bg=COLOR_CYAN
@@ -338,22 +351,22 @@ function StamperUI:onInput(keys)
             self.state="brush"
             return
         elseif keys.CUSTOM_D then
-            self:transformBuffer(function(x,y,xlen,ylen,tile) if tile.dig>0 then tile.dig=1 end return x,y end)
+            self:transformDesignationType(df.tile_dig_designation.Default)
             self.state="brush"
         elseif keys.CUSTOM_H then
-            self:transformBuffer(function(x,y,xlen,ylen,tile) if tile.dig>0 then tile.dig=3 end  return x,y end)
+            self:transformDesignationType(df.tile_dig_designation.Channel)
             self.state="brush"
         elseif keys.CUSTOM_U then
-            self:transformBuffer(function(x,y,xlen,ylen,tile) if tile.dig>0 then tile.dig=6 end  return x,y end)
+            self:transformDesignationType(df.tile_dig_designation.UpStair)
             self.state="brush"
         elseif keys.CUSTOM_J then
-            self:transformBuffer(function(x,y,xlen,ylen,tile) if tile.dig>0 then tile.dig=5 end  return x,y end)
+            self:transformDesignationType(df.tile_dig_designation.DownStair)
             self.state="brush"
         elseif keys.CUSTOM_I then
-            self:transformBuffer(function(x,y,xlen,ylen,tile) if tile.dig>0 then tile.dig=2 end  return x,y end)
+            self:transformDesignationType(df.tile_dig_designation.UpDownStair)
             self.state="brush"
         elseif keys.CUSTOM_R then
-            self:transformBuffer(function(x,y,xlen,ylen,tile) if tile.dig>0 then tile.dig=4 end  return x,y end)
+            self:transformDesignationType(df.tile_dig_designation.Ramp)
             self.state="brush"
         end
     end
