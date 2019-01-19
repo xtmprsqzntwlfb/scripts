@@ -17,7 +17,7 @@ local usage = [====[
 bodyswap
 ========
 This script allows the player to take direct control of any unit present in
-adventure mode whilst losing control of their current adventurer.
+adventure mode whilst giving up control of their current player character.
 
 To specify the target unit, simply select it in the user interface,
 such as by opening the unit's status screen or viewing its description,
@@ -35,11 +35,11 @@ Arguments::
 ]====]
 
 if args.help then
- print(usage)
- return
+  print(usage)
+  return
 end
 
-if not dfhack.world.isAdventureMode() then
+if df.global.gamemode ~= df.game_mode.ADVENTURE then
   qerror("This script can only be used in adventure mode!")
 end
 
