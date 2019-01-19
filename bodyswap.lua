@@ -39,7 +39,7 @@ if args.help then
   return
 end
 
-if not df.global.gamemode == df.game_mode.ADVENTURE then
+if df.global.gamemode ~= df.game_mode.ADVENTURE then
   qerror("This script can only be used in adventure mode!")
 end
 
