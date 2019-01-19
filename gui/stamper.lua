@@ -187,7 +187,16 @@ function StamperUI:pasteBuffer(position,option)
 end
 
 function StamperUI:invertBuffer() --this modifies the buffer instead of copying it
-    self:transformBuffer(function(x,y,xlen,ylen,tile) if tile.dig>0 then tile.dig=0 else tile.dig=1 end return x,y end)
+    self:transformBuffer(function(x,y,xlen,ylen,tile)
+        if tile.dig_prev then
+            tile.dig = tile.dig_prev
+            tile.dig_prev = nil
+        else
+            tile.dig_prev = tile.dig
+            tile.dig = 0
+        end
+        return x, y
+    end)
 end
 
 function StamperUI:renderOverlay()
