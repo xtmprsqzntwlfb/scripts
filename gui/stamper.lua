@@ -279,17 +279,17 @@ function StamperUI:onRenderBody(dc)
         dc:newline():newline(1)
         dc:key_string("CUSTOM_P", "Cull Selections",self.cull and COLOR_WHITE or COLOR_GREY)
     elseif self.state=="convert" then
-        dc:key_string("CUSTOM_D","Mine",COLOR_GREY):newline(2)
-        dc:key_string("CUSTOM_H", "Channel",COLOR_GREY):newline(2)
-        dc:key_string("CUSTOM_U", "Up Stair",COLOR_GREY):newline(2)
-        dc:key_string("CUSTOM_J", "Up Stair",COLOR_GREY):newline(2)
-        dc:key_string("CUSTOM_I", "U/D Stair",COLOR_GREY):newline(2)
-        dc:key_string("CUSTOM_R", "Up Ramp",COLOR_GREY):newline(2)
+        dc:key_string("DESIGNATE_DIG", "Mine",COLOR_GREY):newline(2)
+        dc:key_string("DESIGNATE_CHANNEL", "Channel",COLOR_GREY):newline(2)
+        dc:key_string("DESIGNATE_STAIR_UP", "Up Stair",COLOR_GREY):newline(2)
+        dc:key_string("DESIGNATE_STAIR_DOWN", "Down Stair",COLOR_GREY):newline(2)
+        dc:key_string("DESIGNATE_STAIR_UPDOWN", "U/D Stair",COLOR_GREY):newline(2)
+        dc:key_string("DESIGNATE_RAMP", "Up Ramp",COLOR_GREY):newline(2)
         dc:newline(1)
         dc:string("To undesignate use the erase command",COLOR_WHITE)
     end
 
-    dc:newline():newline():key_string("LEAVESCREEN", "Back")
+    dc:newline():newline(1):key_string("LEAVESCREEN", "Back")
 end
 
 function StamperUI:onInput(keys)
@@ -350,22 +350,22 @@ function StamperUI:onInput(keys)
         if keys.LEAVESCREEN then
             self.state="brush"
             return
-        elseif keys.CUSTOM_D then
+        elseif keys.DESIGNATE_DIG then
             self:transformDesignationType(df.tile_dig_designation.Default)
             self.state="brush"
-        elseif keys.CUSTOM_H then
+        elseif keys.DESIGNATE_CHANNEL then
             self:transformDesignationType(df.tile_dig_designation.Channel)
             self.state="brush"
-        elseif keys.CUSTOM_U then
+        elseif keys.DESIGNATE_STAIR_UP then
             self:transformDesignationType(df.tile_dig_designation.UpStair)
             self.state="brush"
-        elseif keys.CUSTOM_J then
+        elseif keys.DESIGNATE_STAIR_DOWN then
             self:transformDesignationType(df.tile_dig_designation.DownStair)
             self.state="brush"
-        elseif keys.CUSTOM_I then
+        elseif keys.DESIGNATE_STAIR_UPDOWN then
             self:transformDesignationType(df.tile_dig_designation.UpDownStair)
             self.state="brush"
-        elseif keys.CUSTOM_R then
+        elseif keys.DESIGNATE_RAMP then
             self:transformDesignationType(df.tile_dig_designation.Ramp)
             self.state="brush"
         end
