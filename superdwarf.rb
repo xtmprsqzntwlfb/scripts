@@ -11,7 +11,7 @@ To make any creature superfast, target it ingame using 'v' and::
 
 Other options available: ``del``, ``clear``, ``list``.
 
-This script also shortens the 'sleeping' and 'on break' periods of targets.
+This script also shortens the 'sleeping' periods of targets.
 
 =end
 
@@ -55,10 +55,6 @@ when 'add'
                             u.counters2.sleepiness_timer = 1
                         end
 
-                        # no break
-                        if b = u.status.misc_traits.find { |t| t.id == :OnBreak }
-                            b.value = 500_000
-                        end
                     else
                         $superdwarf_ids.delete id
                     end

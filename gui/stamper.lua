@@ -58,7 +58,7 @@ local function cullBuffer(data) --there"s probably a memory saving way of doing 
     local upperY=-math.huge
     for x=0,data.xlen do
         for y=0,data.ylen do
-            if data[x][y].dig>0 then
+            if data[x][y].dig ~= df.tile_dig_designation.No then
                 lowerX=math.min(x,lowerX)
                 lowerY=math.min(y,lowerY)
                 upperX=math.max(x,upperX)
@@ -156,6 +156,15 @@ function StamperUI:transformBuffer(callback)
     return newBuffer
 end
 
+function StamperUI:transformDesignationType(type)
+    self:transformBuffer(function(x,y,xlen,ylen,tile)
+        if tile.dig ~= df.tile_dig_designation.No then
+            tile.dig = type
+        end
+        return x,y
+    end)
+end
+
 function StamperUI:pasteBuffer(position,option)
     local z=position.z
     local offsetX,offsetY=self:getOffset()
@@ -170,9 +179,9 @@ function StamperUI:pasteBuffer(position,option)
             if x>=x1 and x<=x2 then
                 for block_y, tile in ipairs(row) do
                     local y=block_y+block.map_pos.y
-                    if y>=y1 and y<=y2 and self.buffer[x-x1][y-y1].dig>0 then
+                    if y>=y1 and y<=y2 and self.buffer[x-x1][y-y1].dig ~= df.tile_dig_designation.No then
                         if self.option=="erase" then
-                            tile.dig=0
+                            tile.dig = df.tile_dig_designation.No
                         elseif self.option=="construction" then
                             dfhack.constructions.designateRemove(x,y,z)
                         else
@@ -187,7 +196,20 @@ function StamperUI:pasteBuffer(position,option)
 end
 
 function StamperUI:invertBuffer() --this modifies the buffer instead of copying it
-    self:transformBuffer(function(x,y,xlen,ylen,tile) if tile.dig>0 then tile.dig=0 else tile.dig=1 end return x,y end)
+    self:transformBuffer(function(x,y,xlen,ylen,tile)
+        if tile.dig_prev then
+            tile.dig = tile.dig_prev
+            tile.dig_prev = nil
+        else
+            tile.dig_prev = tile.dig
+            if tile.dig ~= df.tile_dig_designation.No then
+                tile.dig = df.tile_dig_designation.No
+            else
+                tile.dig = df.tile_dig_designation.Default
+            end
+        end
+        return x, y
+    end)
 end
 
 function StamperUI:renderOverlay()
@@ -204,7 +226,7 @@ function StamperUI:renderOverlay()
         for x=0, self.buffer.xlen do
             for y=0, self.buffer.ylen do
                 local tile=self.buffer[x][y]
-                if tile.dig>0 then
+                if tile.dig ~= df.tile_dig_designation.No then
                     if not (gui.blink_visible(750) and x==-offsetX and y==-offsetY) then
                         local fg=COLOR_BLACK
                         local bg=COLOR_CYAN
@@ -257,17 +279,17 @@ function StamperUI:onRenderBody(dc)
         dc:newline():newline(1)
         dc:key_string("CUSTOM_P", "Cull Selections",self.cull and COLOR_WHITE or COLOR_GREY)
     elseif self.state=="convert" then
-        dc:key_string("CUSTOM_D","Mine",COLOR_GREY):newline(2)
-        dc:key_string("CUSTOM_H", "Channel",COLOR_GREY):newline(2)
-        dc:key_string("CUSTOM_U", "Up Stair",COLOR_GREY):newline(2)
-        dc:key_string("CUSTOM_J", "Up Stair",COLOR_GREY):newline(2)
-        dc:key_string("CUSTOM_I", "U/D Stair",COLOR_GREY):newline(2)
-        dc:key_string("CUSTOM_R", "Up Ramp",COLOR_GREY):newline(2)
+        dc:key_string("DESIGNATE_DIG", "Mine",COLOR_GREY):newline(2)
+        dc:key_string("DESIGNATE_CHANNEL", "Channel",COLOR_GREY):newline(2)
+        dc:key_string("DESIGNATE_STAIR_UP", "Up Stair",COLOR_GREY):newline(2)
+        dc:key_string("DESIGNATE_STAIR_DOWN", "Down Stair",COLOR_GREY):newline(2)
+        dc:key_string("DESIGNATE_STAIR_UPDOWN", "U/D Stair",COLOR_GREY):newline(2)
+        dc:key_string("DESIGNATE_RAMP", "Up Ramp",COLOR_GREY):newline(2)
         dc:newline(1)
         dc:string("To undesignate use the erase command",COLOR_WHITE)
     end
 
-    dc:newline():newline():key_string("LEAVESCREEN", "Back")
+    dc:newline():newline(1):key_string("LEAVESCREEN", "Back")
 end
 
 function StamperUI:onInput(keys)
@@ -328,23 +350,23 @@ function StamperUI:onInput(keys)
         if keys.LEAVESCREEN then
             self.state="brush"
             return
-        elseif keys.CUSTOM_D then
-            self:transformBuffer(function(x,y,xlen,ylen,tile) if tile.dig>0 then tile.dig=1 end return x,y end)
+        elseif keys.DESIGNATE_DIG then
+            self:transformDesignationType(df.tile_dig_designation.Default)
             self.state="brush"
-        elseif keys.CUSTOM_H then
-            self:transformBuffer(function(x,y,xlen,ylen,tile) if tile.dig>0 then tile.dig=3 end  return x,y end)
+        elseif keys.DESIGNATE_CHANNEL then
+            self:transformDesignationType(df.tile_dig_designation.Channel)
             self.state="brush"
-        elseif keys.CUSTOM_U then
-            self:transformBuffer(function(x,y,xlen,ylen,tile) if tile.dig>0 then tile.dig=6 end  return x,y end)
+        elseif keys.DESIGNATE_STAIR_UP then
+            self:transformDesignationType(df.tile_dig_designation.UpStair)
             self.state="brush"
-        elseif keys.CUSTOM_J then
-            self:transformBuffer(function(x,y,xlen,ylen,tile) if tile.dig>0 then tile.dig=5 end  return x,y end)
+        elseif keys.DESIGNATE_STAIR_DOWN then
+            self:transformDesignationType(df.tile_dig_designation.DownStair)
             self.state="brush"
-        elseif keys.CUSTOM_I then
-            self:transformBuffer(function(x,y,xlen,ylen,tile) if tile.dig>0 then tile.dig=2 end  return x,y end)
+        elseif keys.DESIGNATE_STAIR_UPDOWN then
+            self:transformDesignationType(df.tile_dig_designation.UpDownStair)
             self.state="brush"
-        elseif keys.CUSTOM_R then
-            self:transformBuffer(function(x,y,xlen,ylen,tile) if tile.dig>0 then tile.dig=4 end  return x,y end)
+        elseif keys.DESIGNATE_RAMP then
+            self:transformDesignationType(df.tile_dig_designation.Ramp)
             self.state="brush"
         end
     end

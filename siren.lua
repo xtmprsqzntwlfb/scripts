@@ -1,13 +1,12 @@
--- Wakes up the sleeping, ends breaks and parties
+-- Wakes up the sleeping, ends parties
 --[====[
 
 siren
 =====
-Wakes up sleeping units, cancels breaks and stops parties either everywhere,
-or in the burrows given as arguments. In return, adds bad thoughts about
-noise, tiredness and lack of protection. Also, the units with interrupted
-breaks will go on break again a lot sooner. The script is intended for
-emergencies, e.g. when a siege appears, and all your military is partying.
+Wakes up sleeping units and stops parties, either everywhere or in the burrows
+given as arguments. In return, adds bad thoughts about noise, tiredness and lack
+of protection. The script is intended for emergencies, e.g. when a siege
+appears, and all your military is partying.
 
 ]====]
 
@@ -82,15 +81,6 @@ function wake_unit(unit)
     unit.counters.job_counter = 0
 end
 
-function stop_break(unit)
-    local counter = dfhack.units.getMiscTrait(unit, df.misc_trait_type.OnBreak)
-    if counter then
-        counter.id = df.misc_trait_type.TimeSinceBreak
-        counter.value = 100800 - 30*1200
-        add_thought(unit, df.emotion_type.Grumpiness, df.unit_thought_type.Drowsy)
-    end
-end
-
 -- Check siege for thought purpose
 for _,v in ipairs(df.global.ui.invasions.list) do
     if v.flags.siege and v.flags.active then
@@ -107,7 +97,6 @@ for _,v in ipairs(df.global.world.units.active) do
             add_thought(v, df.emotion_type.Nervousness, df.unit_thought_type.LackProtection)
         end
         wake_unit(v)
-        stop_break(v)
     end
 end
 
