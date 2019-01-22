@@ -16,12 +16,21 @@ including death.  Usage:
 :full-heal -r [-keep_corpse]:
     Heal the unit, raising from the dead if needed.
     Add ``-keep_corpse`` to avoid removing their corpse.
+    The unit can be targeted by selecting its corpse on the UI.
+:full-heal -all [-r] [-keep_corpse]:
+    Heal all units on the map.
+:full-heal -all_citizens [-r] [-keep_corpse]:
+    Heal all fortress citizens on the map. Does not include pets.
+:full-heal -all_civ [-r] [-keep_corpse]:
+    Heal all units belonging to your parent civilisation, including pets and visitors.
 
 For example, ``full-heal -r -keep_corpse -unit ID_NUM`` will fully heal
 unit ID_NUM.  If this unit was dead, it will be resurrected without deleting
 the corpse - creepy!
 
 ]====]
+
+--@ module = true
 
 local utils = require('utils')
 
@@ -30,6 +39,9 @@ local validArgs = utils.invert({
     'help',
     'unit',
     'keep_corpse',
+    'all',
+    'all_civ',
+    'all_citizens'
 })
 
 local args = utils.processArgs({...}, validArgs)
@@ -39,31 +51,57 @@ if args.help then
     return
 end
 
-local item = dfhack.gui.getSelectedItem(true)
-local unit
-if args.unit then
-    unit = df.unit.find(tonumber(args.unit))
-elseif df.item_corpsest:is_instance(item) then
-    unit = df.unit.find(item.unit_id) --hint:df.item_corpsest
-else
-    unit = dfhack.gui.getSelectedUnit()
-end
-
-if not unit then
-    qerror('Error: please select a unit or pass its ID as an argument.')
-end
-
-if unit then
-    if args.r then
-        if unit.flags2.killed then
-            --print("Resurrecting...")
-            unit.flags2.slaughter = false
-            unit.flags3.scuttle = false
+function isCitizen(unit)
+-- required as dfhack.units.isCitizen() returns false for dead units
+    local hf = unit.hist_figure_id ~= -1 and df.historical_figure.find(unit.hist_figure_id)
+    if not hf then
+        return false
+    end
+    for _,link in ipairs(hf.entity_links) do
+        if link.entity_id == df.global.ui.group_id and df.histfig_entity_link_type[link:getType()] == 'MEMBER' then
+            return true
         end
-        unit.flags1.inactive = false
-        unit.flags2.killed = false
-        unit.flags3.ghostly = false
-        if not args.keep_corpse then
+    end
+end
+
+function isFortCivMember(unit)
+    if unit.civ_id == df.global.ui.civ_id then
+        return true
+    end
+end
+
+function heal(unit,resurrect,keep_corpse)
+    if not unit then
+        return
+    end
+    if resurrect then
+        if unit.flags2.killed and not unit.flags3.scuttle then -- scuttle appears to be applicable to just wagons, which probably shouldn't be resurrected
+            --print("Resurrecting...")
+            unit.flags1.inactive = false
+            unit.flags2.slaughter = false
+            unit.flags2.killed = false
+            unit.flags3.ghostly = false -- TO DO: check whether ghost is currently walking through walls before removing ghostliness
+            unit.ghost_info = nil
+
+            if unit.hist_figure_id ~= -1 then
+                local hf = df.historical_figure.find(unit.hist_figure_id)
+                hf.died_year = -1
+                hf.died_seconds = -1
+                hf.flags.ghost = false
+
+                if dfhack.world.isFortressMode and isFortCivMember(unit) then
+                    unit.flags2.resident = false -- appears to be set to true for dead citizens in a reclaimed fortress, which causes them to be marked as hostile when resurrected
+
+                    local deadCitizens = df.global.ui.main.dead_citizens
+                    for i = #deadCitizens-1,0,-1 do
+                        if deadCitizens[i].unit_id == unit.id then
+                            deadCitizens:erase(i)
+                        end
+                    end
+                end
+            end
+        end
+        if not keep_corpse then
             for _, corpse in ipairs(df.global.world.items.other.CORPSE) do --as:df.item_body_component
                 if corpse.unit_id == unit.id then
                     corpse.flags.garbage_collect = true
@@ -227,3 +265,40 @@ if unit then
     end
 end
 
+if not dfhack_flags.module then
+
+    if args.all then
+        for _,unit in ipairs(df.global.world.units.active) do
+            heal(unit,args.r,args.keep_corpse)
+        end
+
+    elseif args.all_citizens then
+        for _,unit in ipairs(df.global.world.units.active) do
+            if isCitizen(unit) then
+                heal(unit,args.r,args.keep_corpse)
+            end
+        end
+
+    elseif args.all_civ then
+        for _,unit in ipairs(df.global.world.units.active) do
+            if isFortCivMember(unit) then
+                heal(unit,args.r,args.keep_corpse)
+            end
+        end
+
+    else
+        local item = dfhack.gui.getSelectedItem(true)
+        local unit
+        if args.unit then
+            unit = df.unit.find(tonumber(args.unit))
+        elseif df.item_corpsest:is_instance(item) then
+            unit = df.unit.find(item.unit_id)
+        else
+            unit = dfhack.gui.getSelectedUnit()
+        end
+        if not unit then
+            qerror('Error: please select a unit or pass its ID as an argument.')
+        end
+        heal(unit,args.r,args.keep_corpse)
+    end
+end

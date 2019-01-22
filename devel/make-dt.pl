@@ -402,7 +402,6 @@ sub generate_dt_ini($$$$) {
     emit_addr 'mat_type',%all,'job','mat_type';
     emit_addr 'mat_index',%all,'job','mat_index';
     emit_addr 'mat_category',%all,'job','material_category';
-    emit_addr 'on_break_flag',%all,'misc_trait_type','OnBreak';
     emit_addr 'sub_job_id',%all,'job','reaction_name';
     emit_addr 'reaction',%all,'reaction','name';
     emit_addr 'reaction_skill',%all,'reaction','skill';
