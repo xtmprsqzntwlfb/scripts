@@ -593,7 +593,6 @@ for n = 1,spawnNumber do
   u.flags2.calculated_bodyparts = false
   u.flags3.body_part_relsize_computed = false
   u.flags3.size_modifier_computed = false
-  u.flags3.compute_health = true
   u.flags3.weight_computed = false
 
   if age or age == 0 then
