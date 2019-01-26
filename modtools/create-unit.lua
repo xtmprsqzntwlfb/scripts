@@ -315,13 +315,17 @@ function createNemesis(trgunit,civ_id,group_id)
     he.nemesis:insert("#",nem)
     allocateIds(nem,he)
   end
+  local he
+  if civ_id and civ_id ~= -1 then
+    he = df.historical_entity.find(civ_id)
+  end
   local he_group
   if group_id and group_id ~= -1 then
-      he_group=df.historical_entity.find(group_id)
+    he_group=df.historical_entity.find(group_id)
   end
   if he_group then
-      he_group.nemesis_ids:insert("#",id)
-      he_group.nemesis:insert("#",nem)
+    he_group.nemesis_ids:insert("#",id)
+    he_group.nemesis:insert("#",nem)
   end
   nem.figure = trgunit.hist_figure_id ~= -1 and df.historical_figure.find(trgunit.hist_figure_id) or createFigure(trgunit,he,he_group) -- the histfig check is there just in case this function is called by another script to create nemesis data for a historical figure which somehow lacks it
   return nem
