@@ -309,15 +309,12 @@ function createNemesis(trgunit,civ_id,group_id)
 
   nem.save_file_id=-1
 
-  if civ_id ~= -1 then
-    local he=df.historical_entity.find(civ_id)
-    he.nemesis_ids:insert("#",id)
-    he.nemesis:insert("#",nem)
-    allocateIds(nem,he)
-  end
   local he
   if civ_id and civ_id ~= -1 then
     he = df.historical_entity.find(civ_id)
+    he.nemesis_ids:insert("#",id)
+    he.nemesis:insert("#",nem)
+    allocateIds(nem,he)
   end
   local he_group
   if group_id and group_id ~= -1 then
