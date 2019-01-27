@@ -171,7 +171,7 @@ function createUnitInner(race_id, caste_id, location, entityRawName)
   local unit = df.unit.find(id)
   if entityRawName and tostring(entityRawName) then
     nameUnit(id, entityRawName)
-  else
+  elseif not dfhack.world.isArena() then -- arena mode ONLY displays the first_name of units; removing it would result in a blank space where you'd otherwise expect the caste name to show up
     unit.name.first_name = '' -- removes the string of numbers produced by the arena spawning process
     unit.name.has_name = false
     if unit.status.current_soul then
