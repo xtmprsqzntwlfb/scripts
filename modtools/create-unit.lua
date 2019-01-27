@@ -59,7 +59,7 @@ Creates a unit.  Usage::
         Can be used instead of -civId \\LOCAL and -groupId \\LOCAL
     -name entityRawName
         Set the unit's name to be a random name appropriate for the
-        given entity. \\LOCAL can be specified instead to automatically 
+        given entity. \\LOCAL can be specified instead to automatically
         use the fort group entity in fortress mode only
         examples:
             MOUNTAIN
