@@ -43,6 +43,7 @@ Creates a unit.  Usage::
         examples:
             MALE
             FEMALE
+            DEFAULT
     -domesticate
         tames the unit if it lacks the CAN_LEARN and CAN_SPEAK tokens
     -civId id
@@ -57,8 +58,9 @@ Creates a unit.  Usage::
         Sets the groupId and civId to the local fort
         Can be used instead of -civId \\LOCAL and -groupId \\LOCAL
     -name entityRawName
-        set the unit's name to be a random name appropriate for the
-        given entity
+        Set the unit's name to be a random name appropriate for the
+        given entity. \\LOCAL can be specified instead to automatically 
+        use the fort group entity in fortress mode only
         examples:
             MOUNTAIN
             EVIL
@@ -404,10 +406,14 @@ function nameUnit(id, entityRawName)
   local unit = df.unit.find(id)
   local entity_raw
   if entityRawName then
-    for k,v in ipairs(df.global.world.raws.entities) do
-      if v.code == entityRawName then
-        entity_raw = v
-        break
+    if entityRawName == "\\LOCAL" then
+      entity_raw = df.historical_entity.find(df.global.ui.group_id).entity_raw
+    else
+      for k,v in ipairs(df.global.world.raws.entities) do
+        if v.code == entityRawName then
+          entity_raw = v
+          break
+        end
       end
     end
   end
