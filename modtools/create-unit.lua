@@ -129,7 +129,11 @@ function createUnitInner(race_id, caste_id, location, entityRawName)
 
   local gui = require 'gui'
 
-  if not dfhack.world.isArena() then
+  local isArena = dfhack.world.isArena()
+  local oldSpawnFilter
+  local oldSpawnType
+
+  if not isArena then
     -- This is already populated in arena mode, so don't clear it then (#994)
     df.global.world.arena_spawn.race:resize(0)
     df.global.world.arena_spawn.race:insert(0,race_id)
@@ -139,6 +143,11 @@ function createUnitInner(race_id, caste_id, location, entityRawName)
 
     df.global.world.arena_spawn.creature_cnt:resize(0)
     df.global.world.arena_spawn.creature_cnt:insert(0,0)
+  else
+    oldSpawnFilter = df.global.world.arena_spawn.filter
+    df.global.world.arena_spawn.filter = ""
+    oldSpawnType = df.global.world.arena_spawn.type
+    df.global.world.arena_spawn.type = 0
   end
 
   df.global.gametype = df.game_type.DWARF_ARENA
@@ -152,7 +161,7 @@ function createUnitInner(race_id, caste_id, location, entityRawName)
   end
 
   local spawnScreen = dfhack.gui.getCurViewscreen()
-  if dfhack.world.isArena() then
+  if isArena then
     -- Just modify the current screen in arena mode (#994)
     spawnScreen.race:insert(0, race_id)
     spawnScreen.caste:insert(0, caste_id)
@@ -161,6 +170,11 @@ function createUnitInner(race_id, caste_id, location, entityRawName)
 
   curViewscreen.child = nil
   dwarfmodeScreen:delete()
+  
+  if isArena then
+    df.global.world.arena_spawn.filter = oldSpawnFilter
+    df.global.world.arena_spawn.type = oldSpawnType
+  end
 
   local id = df.global.unit_next_id-1
 
