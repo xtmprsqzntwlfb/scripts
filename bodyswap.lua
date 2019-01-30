@@ -75,6 +75,15 @@ function createNemesis(unit)
   return nemesis
 end
 
+function updateAdvCompanionsList(advHistFig)
+  df.global.ui_advmode.companions.all_histfigs:resize(0)
+  for _,link in ipairs(advHistFig.histfig_links) do
+    if link._type == df.histfig_hf_link_companionst then
+      df.global.ui_advmode.companions.all_histfigs:insert('#',link.target_hf) -- we only need to update the historical figure ID list as the other stuff here is reset whenever the companions screen is loaded, and is probably not used for anything else
+    end
+  end
+end
+
 function swapAdvUnit(newUnit)
 
   if not newUnit then
@@ -119,6 +128,7 @@ function swapAdvUnit(newUnit)
   setOldAdvNemFlags(oldNem)
   setNewAdvNemFlags(newNem)
   clearNemesisFromLinkedSites(newNem)
+  updateAdvCompanionsList(newNem.figure)
   df.global.ui_advmode.player_id = newNem.id
   activeUnits[newUnitIndex] = oldUnit
   activeUnits[oldUnitIndex] = newUnit
