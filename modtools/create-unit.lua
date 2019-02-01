@@ -134,6 +134,7 @@ function createUnitInner(race_id, caste_id, location, entityRawName)
   local isArena = dfhack.world.isArena()
   local oldSpawnFilter
   local oldSpawnType
+  local oldInteractionEffect
 
   if not isArena then
     -- This is already populated in arena mode, so don't clear it then (#994)
@@ -150,6 +151,8 @@ function createUnitInner(race_id, caste_id, location, entityRawName)
     df.global.world.arena_spawn.filter = ""
     oldSpawnType = df.global.world.arena_spawn.type
     df.global.world.arena_spawn.type = 0
+    oldInteractionEffect = df.global.world.arena_spawn.interaction
+    df.global.world.arena_spawn.interaction = -1
   end
 
   df.global.gametype = df.game_type.DWARF_ARENA
@@ -176,6 +179,7 @@ function createUnitInner(race_id, caste_id, location, entityRawName)
   if isArena then
     df.global.world.arena_spawn.filter = oldSpawnFilter
     df.global.world.arena_spawn.type = oldSpawnType
+    df.global.world.arena_spawn.interaction = oldInteractionEffect
   end
 
   local id = df.global.unit_next_id-1
