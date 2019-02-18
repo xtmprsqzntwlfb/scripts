@@ -16,6 +16,8 @@ def print_help()
   puts "  liquid: either water or magma, spawns that liquid"
   puts "  x y z : the location to spawn liquid at (replacing any preexisting liquid)"
   puts "  xOff yOff zOff: optional convenience offsets, added to x,y,z"
+  puts "square brackets are ignored (so [ 0 0 -1 ] would be treated as 0 0 -1)"
+  puts "note - in other scripts, \\LOCATION or similar is usually equivalent to x y z"
 end
 
 if $script_args.any?{ |arg| arg == "help" or arg == "?" or arg == "-?" }
