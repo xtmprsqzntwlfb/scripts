@@ -61,6 +61,9 @@ local function processArgs(args, reaction, reaction_product, unit, input_items, 
    end
    --table.insert(result,']')
   elseif arg == '\\BUILDING_ID' then
+   if not buildingId then
+    error('BUILDING_ID is not supported for adventure mode reactions')
+   end
    table.insert(result,tostring(buildingId))
   elseif string.sub(arg,1,1) == '\\' then
    table.insert(result,string.sub(arg,2))
@@ -76,9 +79,6 @@ local function afterProduce(reaction,reaction_product,unit,input_items,input_rea
  local _,buildingId 
  if unit.job.current_job then 
   _,buildingId = dfhack.script_environment('foe/reaction-trigger').getWorkerAndBuilding(unit.job.current_job) 
- end
- if not buildingId and string.match(command,'\\BUILDING_ID') then
-  error('BUILDING_ID is not supported for adventure mode reactions')
  end
  for _,hook in ipairs(productHooks[reaction.code] or {}) do
   local command = hook.command
