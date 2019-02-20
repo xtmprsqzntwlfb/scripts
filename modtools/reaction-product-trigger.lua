@@ -78,7 +78,7 @@ local function afterProduce(reaction,reaction_product,unit,input_items,input_rea
  --adv mode reactions have no associated building.
  local _,buildingId 
  if unit.job.current_job then 
-  _,buildingId = dfhack.script_environment('foe/reaction-trigger').getWorkerAndBuilding(unit.job.current_job) 
+  _,buildingId = dfhack.script_environment('modtools/reaction-trigger').getWorkerAndBuilding(unit.job.current_job) 
  end
  for _,hook in ipairs(productHooks[reaction.code] or {}) do
   local command = hook.command
