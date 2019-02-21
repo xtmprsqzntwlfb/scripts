@@ -6,7 +6,7 @@ modtools/spawn-liquid
 =====================
 This script spawns liquid at the given coordinates
 
-type spawn-liquid help for usage 
+type spawn-liquid help for usage
 
 =end
 
@@ -30,7 +30,7 @@ args=$script_args
 args.delete_if {|arg| arg=='[' or arg==']'}
 height=args[0].to_i
 #liquid is handled later
-x=args[2].to_i 
+x=args[2].to_i
 y=args[3].to_i
 z=args[4].to_i
 if args.count>=5
