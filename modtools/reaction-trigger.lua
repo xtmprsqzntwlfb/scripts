@@ -159,7 +159,7 @@ eventful.onJobCompleted.reactionTrigger = function(job)
  end
 
  local function doAction(action)
-  local didSomething
+  local didSomething = false
   if action.syndrome and not action.ignoreWorker then
    local syndrome = findSyndrome(action.syndrome)
    if syndrome then
@@ -178,6 +178,7 @@ eventful.onJobCompleted.reactionTrigger = function(job)
    return
   end
   local function foreach(unit)
+   local didSomething = false
    if unit == worker or not (action.dontSkipInactive or dfhack.units.isActive(unit)) then
     return false
    end
@@ -198,8 +199,9 @@ eventful.onJobCompleted.reactionTrigger = function(job)
       didSomething = syndromeUtil.infectWithSyndromeIfValidTarget(unit,syndrome,syndromeUtil.ResetPolicy[action.resetPolicy]) or didSomething
      end
     end
-    if action.command ( not action.syndrome or didSomething ) then
-     processCommand(job, worker, unit, building, action.command)
+    if action.command and ( (not action.syndrome) or didSomething ) then
+     local processed = processCommand(job, worker, unit, building, action.command)
+     dfhack.run_command(table.unpack(processed))
      didSomething = true
     end
     if didSomething and not action.allowMultipleTargets then
