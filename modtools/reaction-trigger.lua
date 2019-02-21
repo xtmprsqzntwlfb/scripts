@@ -14,9 +14,9 @@ it produced anything, once per completion.  Arguments::
     -reactionName name
         specify the name of the reaction
     -syndrome name
-        specify the name of the syndrome to be applied to the targets
+        specify the name of the syndrome to be applied to valid targets
     -allowNonworkerTargets
-        allow other units within range to be targeted if the worker is skipped
+        allow other units to be targeted if the worker is invalid or ignored
     -allowMultipleTargets
         allow all valid targets within range to be affected
         if absent:
