@@ -113,7 +113,7 @@ else
             end
         end
         print('found ' .. drinkCount .. ' drinks')
-        print('removed ' .. removedDrinkCount .. 'drinks')
+        print('removed ' .. removedDrinkCount .. ' drinks')
     end
 --elseif item:getType() == 68 then
     --handleDrink(item)
