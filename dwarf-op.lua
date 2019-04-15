@@ -1,8 +1,8 @@
--- Optimize dwarves for fort-mode work. Pimp your dwarves, make your life easier in managing labours.
+-- Optimize dwarves for fort-mode work. Buff your dwarves and make your life easier in managing labours.
 -- written by josh cooper(cppcooper) [created: 12-2017 | last edited: 12-2018]
 --[====[
-pimp-it
-=======
+dwarf-op
+========
 Optimize dwarves for fort-mode work.
 The core function takes dwarves and allocates a "job" to each dwarf.
 This decision takes into account current counts for each job, in
@@ -11,7 +11,7 @@ size. Jobs involve required professions, tertiary professions (may or
 may not be applied), and types which come along with attribute buffs
 and characteristics (eg. strength, speed, focus, dodging, etc)
 
-Usage: ``pimp-it -help`` or ``pimp-it -select <sel-opt> -<command> <args>``
+Usage: ``dwarf-op -help`` or ``dwarf-op -select <sel-opt> -<command> <args>``
 
 :help:               Highly detailed help documentation.
 :select <option>:    Indicates the next parameter will be indicate which dwarves to select
@@ -40,10 +40,10 @@ local validArgs = utils.invert({
     'reset',
     'resetall',
 
-    'select', --highlighted --all --named --unnamed --employed --pimped --unpimped --protected --unprotected --drunks --jobs
+    'select', --highlighted --all --named --unnamed --employed --optimized --unoptimized --protected --unprotected --drunks --jobs
     'clear',
     'reroll',
-    'pimpem',
+    'optimize',
 
     'applyjobs',
     'applyprofessions',
@@ -52,9 +52,9 @@ local validArgs = utils.invert({
 local args = utils.processArgs({...}, validArgs)
 if args.debug and tonumber(args.debug) >= 0 then print("Debug info [ON]") end
 protected_dwarf_signals = {'.', 'c', 'j', 'p'}
-if args.select and args.select == 'pimped' then
-    if args.pimpem and not args.clear then
-        error("Invalid arguments detected. You've selected only pimped dwarves, and are attempting to pimp them without clearing them. This will not work, so I'm warning you about it with this lovely error.")
+if args.select and args.select == 'optimized' then
+    if args.optimize and not args.clear then
+        error("Invalid arguments detected. You've selected only optimized dwarves, and are attempting to optimize them without clearing them. This will not work, so I'm warning you about it with this lovely error.")
     end
 end
 
@@ -94,12 +94,12 @@ function LoadPersistentData()
         print("Previous session save data found. [" .. file_sav .. "]")
         cur.data = saved.data
     elseif saved.exists == false then
-        print("No session data found. All dwarves will be treated as non-pimped.")
+        print("No session data found. All dwarves will be treated as non-optimized.")
         --saved:write()
     elseif cur.exists == true then
         print("Existing session data found. [" .. file_cur .. "]")
     end
-    PimpData = cur.data
+    OpData = cur.data
 end
 
 function SavePersistentData()
@@ -108,13 +108,13 @@ function SavePersistentData()
     local fileName = fortName .. ".json.dat"
     local cur = json.open(gamePath .. "/data/save/current/" .. fileName)
     local newDwfTable = {}
-    for k,v in pairs(PimpData.Dwarves) do
+    for k,v in pairs(OpData.Dwarves) do
         if v~=nil then
             newDwfTable[k] = v
         end
     end
-    PimpData.Dwarves = newDwfTable
-    cur.data = PimpData
+    OpData.Dwarves = newDwfTable
+    cur.data = OpData
     cur:write()
 end
 
@@ -329,7 +329,7 @@ function isValidJob(job)
         if not jd then
             error("Job distribution not found. Job: " .. jobName)
         end
-        if PimpData[jobName].count < jd.max then
+        if OpData[jobName].count < jd.max then
             return true
         end
     end
@@ -445,15 +445,15 @@ end
 function ApplyJob(dwf, jobName) --job = dorf_jobs[X]
     local jd = cloned.distributions[jobName]
     local job = cloned.jobs[jobName]
-    if args.debug and tonumber(args.debug) >= 3 then print(dwf,job,jobName, PimpData[jobName]) end
-    PimpData[jobName].count = PimpData[jobName].count + 1
-    jd.cur = PimpData[jobName].count
+    if args.debug and tonumber(args.debug) >= 3 then print(dwf,job,jobName, OpData[jobName]) end
+    OpData[jobName].count = OpData[jobName].count + 1
+    jd.cur = OpData[jobName].count
     local id = tostring(dwf.id)
     DwarvesData[id] = {}
     DwarvesData[id]['job'] = jobName
     DwarvesData[id]['professions'] = {}
-    if not PimpData[jobName] then
-        PimpData[jobName] = {}
+    if not OpData[jobName] then
+        OpData[jobName] = {}
     end
     dwf.custom_profession = jobName
     RollStats(dwf, job.types)
@@ -491,9 +491,9 @@ function ApplyJob(dwf, jobName) --job = dorf_jobs[X]
     local base_dec = 11 / job.max[1]
     local total = 0
     --We want to loop through professions according to need (ie. count & ratio(ie. p))
-    for prof, t in spairs(PimpData[jobName].profs,
+    for prof, t in spairs(OpData[jobName].profs,
     function(a,b)
-        return twofield_compare(PimpData[jobName].profs,
+        return twofield_compare(OpData[jobName].profs,
         a, b, 'count', 'p',
         function(f1,f2) return safecompare(f1,f2) end,
         function(f1,f2) return safecompare(f2,f1) end)
@@ -510,11 +510,11 @@ function ApplyJob(dwf, jobName) --job = dorf_jobs[X]
                 local min = math.ceil(points - 5)
                 min = min < 0 and 0 or min
                 --Firsts are special
-                if PimpData[jobName].profs[prof].count < (ratio * PimpData[jobName].count) and points > 7.7 then
+                if OpData[jobName].profs[prof].count < (ratio * OpData[jobName].count) and points > 7.7 then
                     ApplyProfession(dwf, prof, min, max)
                     table.insert(DwarvesData[id]['professions'], prof)
-                    PimpData[jobName].profs[prof].count = PimpData[jobName].profs[prof].count + 1
-                    if args.debug and tonumber(args.debug) >= 1 then print("count: ", PimpData[jobName].profs[prof].count) end
+                    OpData[jobName].profs[prof].count = OpData[jobName].profs[prof].count + 1
+                    if args.debug and tonumber(args.debug) >= 1 then print("count: ", OpData[jobName].profs[prof].count) end
                     
                     if not bAlreadySetProf2 then
                         bAlreadySetProf2 = true
@@ -523,7 +523,7 @@ function ApplyJob(dwf, jobName) --job = dorf_jobs[X]
                     points = points - base_dec
                     total = total + 1
                 else
-                    local p = PimpData[jobName].profs[prof].count > 0 and (1 - (ratio / ((ratio*PimpData[jobName].count) / PimpData[jobName].profs[prof].count))) or ratio
+                    local p = OpData[jobName].profs[prof].count > 0 and (1 - (ratio / ((ratio*OpData[jobName].count) / OpData[jobName].profs[prof].count))) or ratio
                     p = p < 0 and 0 or p
                     p = p > 1 and 1 or p
                     --p = (p - math.floor(p)) >= 0.5 and math.ceil(p) or math.floor(p)
@@ -531,8 +531,8 @@ function ApplyJob(dwf, jobName) --job = dorf_jobs[X]
                     if points >= 1 and rng.rollBool(engineID, p) then
                         ApplyProfession(dwf, prof, min, max)
                         table.insert(DwarvesData[id]['professions'], prof)
-                        PimpData[jobName].profs[prof].count = PimpData[jobName].profs[prof].count + 1
-                        if args.debug and tonumber(args.debug) >= 1 then print("dwf id:", dwf.id, "count: ", PimpData[jobName].profs[prof].count, jobName, prof) end
+                        OpData[jobName].profs[prof].count = OpData[jobName].profs[prof].count + 1
+                        if args.debug and tonumber(args.debug) >= 1 then print("dwf id:", dwf.id, "count: ", OpData[jobName].profs[prof].count, jobName, prof) end
                         
                         if not bAlreadySetProf2 then
                             bAlreadySetProf2 = true
@@ -570,7 +570,7 @@ end
 
 --Returns true if a job was found and applied, returns false otherwise
 function FindJob(dwf, recursive)
-    if isDwarfPimped(dwf) then
+    if isDwarfOptimized(dwf) then
         return false
     end
     for jobName, jd in spairs(cloned.distributions,
@@ -586,7 +586,6 @@ function FindJob(dwf, recursive)
         if isValidJob(job) then
             if args.debug and tonumber(args.debug) >= 1 then print("Found a job!") end
             ApplyJob(dwf, jobName)
-            --pimped_count = pimped_count + 1
             return true
         end
     end
@@ -655,16 +654,16 @@ function ZeroDwarf(dwf)
             print("Clearing loaded dwf data for dwf id: " .. id)
             local jobName = dwf_data.job
             local job = cloned.jobs[jobName]
-            PimpData[jobName].count = PimpData[jobName].count - 1
+            OpData[jobName].count = OpData[jobName].count - 1
             for i, prof in pairs(dwf_data.professions) do
-                PimpData[jobName].profs[prof].count = PimpData[jobName].profs[prof].count - 1
-                if args.debug and tonumber(args.debug) >= 1 then print("dwf id:", dwf.id, "count: ", PimpData[jobName].profs[prof].count, jobName, prof) end
+                OpData[jobName].profs[prof].count = OpData[jobName].profs[prof].count - 1
+                if args.debug and tonumber(args.debug) >= 1 then print("dwf id:", dwf.id, "count: ", OpData[jobName].profs[prof].count, jobName, prof) end
             end
             DwarvesData[id] = nil
             --table.remove(DwarvesData,id)
         elseif next(dwf_data) == nil and id == tostring(dwf.id) then
-            print(":WARNING: ZeroDwarf(dwf) - dwf was zeroed, but had never been pimped before")
-            --error("this dwf_data shouldn't be nil, I think.. I guess maybe if you were clearing dwarves that weren't pimped")
+            print(":WARNING: ZeroDwarf(dwf) - dwf was zeroed, but had never been optimized before")
+            --error("this dwf_data shouldn't be nil, I think.. I guess maybe if you were clearing dwarves that weren't optimized")
         end
     end
     return true
@@ -747,15 +746,15 @@ function isDwarfEmployed(dwf)
 end
 
 --Returns true if the DWARF is in the DwarvesData table
-function isDwarfPimped(dwf)
+function isDwarfOptimized(dwf)
     local id = tostring(dwf.id)
-    local pimp = DwarvesData[id]
-    return pimp ~= nil
+    local dorf = DwarvesData[id]
+    return dorf ~= nil
 end
 
 --Returns true if the DWARF is not in the DwarvesData table
-function isDwarfUnpimped(dwf)
-    return (not isDwarfPimped(dwf))
+function isDwarfUnoptimized(dwf)
+    return (not isDwarfOptimized(dwf))
 end
 
 --Returns true if the DWARF uses a protection signal in its name or profession
@@ -806,10 +805,10 @@ function CheckWorker(dwf, option)
                 return (not isDwarfNamed(dwf))
             elseif option == 'employed' then
                 return isDwarfEmployed(dwf)
-            elseif option == 'pimped' then
-                return isDwarfPimped(dwf)
-            elseif option == 'unpimped' then
-                return isDwarfUnpimped(dwf)
+            elseif option == 'optimized' then
+                return isDwarfOptimized(dwf)
+            elseif option == 'unoptimized' then
+                return isDwarfUnoptimized(dwf)
             elseif option == 'unprotected' then
                 return isDwarfUnprotected(dwf)
             elseif option == 'drunks' or option == 'drunk' then
@@ -839,43 +838,43 @@ function Prepare()
     print("Loading persistent data..")
     --Load /current/fort.json.dat or /world/fort.json.dat
     LoadPersistentData()
-    if not PimpData.Dwarves then
-        PimpData.Dwarves = {}
+    if not OpData.Dwarves then
+        OpData.Dwarves = {}
     end
-    DwarvesData = PimpData.Dwarves
+    DwarvesData = OpData.Dwarves
 
     --[[ We need to validate the persistent data/
         Perhaps I/you/we updated the dorf_tables, so we should check.]]
-    --Initialize PimpData
+    --Initialize OpData
     for jobName, job in pairs(cloned.jobs) do --should be looping the distribution table instead (probably a major refactor needed)
         PrepareDistributionMax(jobName)
-        if not PimpData[jobName] then
-            PimpData[jobName] = {}
-            PimpData[jobName].count = 0
-            PimpData[jobName].profs = {}
+        if not OpData[jobName] then
+            OpData[jobName] = {}
+            OpData[jobName].count = 0
+            OpData[jobName].profs = {}
         end
         for prof, p in pairs(job) do
             if tonumber(p) then
-                if not PimpData[jobName].profs[prof] then
-                    PimpData[jobName].profs[prof] = {}
-                    PimpData[jobName].profs[prof].count = 0
+                if not OpData[jobName].profs[prof] then
+                    OpData[jobName].profs[prof] = {}
+                    OpData[jobName].profs[prof].count = 0
                 end
-                PimpData[jobName].profs[prof].p = p
+                OpData[jobName].profs[prof].p = p
             end
         end
     end
     if args.debug and tonumber(args.debug) >= 4 then
-        print("PimpData, job counts")
-        DisplayTable(PimpData) --this is gonna print out a lot of data, including the persistent data
+        print("OpData, job counts")
+        DisplayTable(OpData) --this is gonna print out a lot of data, including the persistent data
     end
     --Count Professions from 'DwarvesData'
     --[[for id, dwf_data in pairs(DwarvesData) do
         local jobName = dwf_data.job
         local job = cloned.jobs[jobName]
         local profs = dwf_data.professions
-        PimpData[jobName].count = PimpData[jobName].count + 1
+        OpData[jobName].count = OpData[jobName].count + 1
         for i, prof in pairs(profs) do
-            PimpData[jobName].profs[prof].count = PimpData[jobName].profs[prof].count + 1
+            OpData[jobName].profs[prof].count = OpData[jobName].profs[prof].count + 1
         end
     end--]]
 
@@ -911,17 +910,18 @@ end
 
 function ShowHelp()
     print([====[
-usage: pimp-it [-help|-select]
+usage: dwarf-op [-help|-select]
                -select <sel-opt> -<command> <args>
 ============
-pimp-it script
+dwarf-op script
 ~~~~~~~~~~~~
 To use this script, you need to select a subset of your dwarves. Then run commands on those dwarves.
+Please report any bugs or crashes you experience here [https://github.com/cppcooper/dfhack-scripts/issues]
 Examples:
-  [DFHack]# pimp-it -select [ jobs Trader Miner Leader Warden ] -applytype adaptable
-  [DFHack]# pimp-it -select all -clear -pimpem
-  [DFHack]# pimp-it -select pimped -reroll
-  [DFHack]# pimp-it -select named -reroll inclusive -applyprofession RECRUIT
+  [DFHack]# dwarf-op -select [ jobs Trader Miner Leader Warden ] -applytype adaptable
+  [DFHack]# dwarf-op -select all -clear -optimize
+  [DFHack]# dwarf-op -select optimized -reroll
+  [DFHack]# dwarf-op -select named -reroll inclusive -applyprofession RECRUIT
 ~~~~~~~~~~~~
  select options:
    (protected is the only option which will select PROTECTED dwarves)
@@ -929,13 +929,13 @@ Examples:
     highlighted - selects only the in-game highlighted dwarf (from any screen).
     named       - selects dwarves with user-given names.
     unnamed     - selects dwarves without user-given names.
-    employed    - selects dwarves with custom professions. Excludes pimped dwarves.
-    pimped      - selects dwarves based on session data. Dwarves who have been pimped, should be listed in this data.
-    unpimped    - selects any dwarves that don't appear in session data.
+    employed    - selects dwarves with custom professions. Excludes optimized dwarves.
+    optimized   - selects dwarves based on session data. Dwarves who have been optimized, should be listed in this data.
+    unoptimized - selects any dwarves that don't appear in session data.
     protected   - selects any dwarves which use protection signals in their name or profession. (ie. {'.', 'c', 'j', 'p'})
     unprotected - selects any dwarves which don't use protection signals in their name or profession.
     drunks      - selects any dwarves which are currently zeroed, or were originally drunks as their profession.
-    jobs        - selects any dwarves with the listed jobs. This will only match with custom professions, or pimped dwarves (for pimped dwarves see: jobs in dorf_tables.lua).
+    jobs        - selects any dwarves with the listed jobs. This will only match with custom professions, or optimized dwarves (for optimized dwarves see: jobs in dorf_tables.lua).
                 - usage `-select [ jobs job1 job2 etc. ]` eg. `-select [ jobs Miner Trader ]`
 ~~~~~~~~~~~~
 Commands will run on the selected dwarves
@@ -945,7 +945,7 @@ Commands will run on the selected dwarves
     clear              - zeroes selected dwarves, or zeroes all dwarves if no selection is given. No attributes, no labours. Assigns 'DRUNK' profession.
     reroll <inclusive> - zeroes selected dwarves, then rerolls that dwarf based on its job. Ignores dwarves with unlisted jobs.
                        - optional argument: inclusive. Only performs the reroll, will no zero the dwarf first. Benefit: stats can only go higher, not lower.
-    pimpem             - performs a job search for unpimped dwarves. Each dwarf will be found a job according to the job_distribution table in dorf_tables.lua
+    optimize           - performs a job search for unoptimized dwarves. Each dwarf will be found a job according to the job_distribution table in dorf_tables.lua
     applyjobs          - applies the listed jobs to the selected dwarves. list format: `[ job1 job2 jobn ]` brackets and jobs all separated by spaces.
                        - see jobs table in dorf_tables.lua for available jobs."
     applyprofessions   - applies the listed professions to the selected dwarves. list format: `[ prof1 prof2 profn ]` brackets and professions all separated by spaces.
@@ -963,14 +963,14 @@ No dorfs were harmed in the building of this help screen.
 end
 
 function ShowHint()
-    print("\n============\npimp-it script")
+    print("\n============\ndwarf-op script")
     print("~~~~~~~~~~~~")
     print("To use this script, you need to select a subset of your dwarves. Then run commands on those dwarves.")
     print("Examples:")
-    print("  [DFHack]# pimp-it -select [ jobs Trader Miner Leader Warden ] -applytype adaptable")
-    print("  [DFHack]# pimp-it -select all -clear -pimpem")
-    print("  [DFHack]# pimp-it -select pimped -reroll")
-    print("  [DFHack]# pimp-it -select named -reroll inclusive -applyprofession RECRUIT")
+    print("  [DFHack]# dwarf-op -select [ jobs Trader Miner Leader Warden ] -applytype adaptable")
+    print("  [DFHack]# dwarf-op -select all -clear -optimize")
+    print("  [DFHack]# dwarf-op -select optimized -reroll")
+    print("  [DFHack]# dwarf-op -select named -reroll inclusive -applyprofession RECRUIT")
 end
 
 local ActiveUnits = df.global.world.units.active
@@ -980,13 +980,13 @@ Prepare()
 print('\nActive Units Population: ' .. ArrayLength(ActiveUnits))
 print("Dwarf Population: " .. dwarf_count)
 print("Work Force: " .. work_force)
-print("Existing Pimps: " .. ArrayLength(PimpData.Dwarves))
+print("Existing Optimized Dwarves: " .. ArrayLength(OpData.Dwarves))
 
 function exists(thing)
     if thing then return true else return false end
 end
 args.b_clear = exists(args.clear) if args.debug and tonumber(args.debug) >= 0 then print(        "args.b_clear:    " .. tostring(args.b_clear)) end
-args.b_pimpem = exists(args.pimpem) if args.debug and tonumber(args.debug) >= 0 then print(      "args.b_pimpem:   " .. tostring(args.b_pimpem)) end
+args.b_optimize = exists(args.optimize) if args.debug and tonumber(args.debug) >= 0 then print(      "args.b_optimize:   " .. tostring(args.b_optimize)) end
 args.b_reroll = exists(args.reroll) if args.debug and tonumber(args.debug) >= 0 then print(      "args.b_reroll:   " .. tostring(args.b_reroll)) end
 args.b_applyjobs = exists(args.applyjobs) if args.debug and tonumber(args.debug) >= 0 then print("args.b_applyjob: " .. tostring(args.b_applyjobs)) end
 if args.help then
@@ -1006,15 +1006,15 @@ elseif not args.select and (args.reset or args.resetall or args.clear) then
             LoopUnits(selection, nil, Show)
         end
     end
-elseif args.select and (args.debug or args.clear or args.pimpem or args.reroll or args.applyjobs or args.applyprofessions or args.applytypes) then
+elseif args.select and (args.debug or args.clear or args.optimize or args.reroll or args.applyjobs or args.applyprofessions or args.applytypes) then
     selection = {}
     count = 0
     print("Selected Dwarves: " .. LoopUnits(ActiveUnits, CheckWorker, SelectDwarf, args.select))
     
     if args.b_clear ~= args.b_reroll or not args.b_clear then
         --error("Clear is implied with Reroll. Choose one, not both.")
-        if args.b_reroll and args.b_pimpem then
-            error("options: pimpem, reroll. Choose one, and only one.")
+        if args.b_reroll and args.b_optimize then
+            error("options: optimize, reroll. Choose one, and only one.")
         else
             --
             --Valid options were entered
@@ -1030,8 +1030,8 @@ elseif args.select and (args.debug or args.clear or args.pimpem or args.reroll o
                 affected = affected < temp and temp or affected
             end
             
-            if args.pimpem then
-                print("\nPimping selected dwarves..")
+            if args.optimize then
+                print("\nOptimizing selected dwarves..")
                 temp = LoopUnits(selection, nil, FindJob)
                 affected = affected < temp and temp or affected
             elseif args.reroll then
@@ -1115,7 +1115,7 @@ SavePersistentData()
 print('\n')
 
 --Query(dfhack, '','dfhack')
---Query(PimpData, '', 'pd')
+--Query(OpData, '', 'pd')
 
 attrib_seq = nil
 rng.DestroyEngine(engineID)
