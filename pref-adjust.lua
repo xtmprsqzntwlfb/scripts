@@ -9,23 +9,23 @@ pref-adjust
 For either, the script inserts an 'ideal' set which is easy to satisfy::
 
     ... likes iron, steel, weapons, armor, shields/bucklers and plump helmets
-    for their rounded tops.  When possible, she prefers to consume dwarven 
-    wine, plump helmets, and prepared meals (quarry bush). She absolutely 
+    for their rounded tops.  When possible, she prefers to consume dwarven
+    wine, plump helmets, and prepared meals (quarry bush). She absolutely
     detests trolls, buzzards, vultures and crundles.
 
 Additionally, ``pref-adjust goth`` will insert a less than ideal set, which
 is quite challenging, for a single dwarf::
 
-    ... likes dwarf skin, corpses, body parts, remains, coffins, the color 
-    black, crosses, glumprongs for their living shadows and snow demons for 
-    their horrifying features.  When possible, she prefers to consume sewer 
-    brew, gutter cruor and bloated tubers.  She absolutely detests elves, 
+    ... likes dwarf skin, corpses, body parts, remains, coffins, the color
+    black, crosses, glumprongs for their living shadows and snow demons for
+    their horrifying features.  When possible, she prefers to consume sewer
+    brew, gutter cruor and bloated tubers.  She absolutely detests elves,
     humans and dwarves.
 
-To see what values can be used with each type of preference, use 
-``pref-adjust list``.  Optionally, a single dwarf or all dwarves can have 
+To see what values can be used with each type of preference, use
+``pref-adjust list``.  Optionally, a single dwarf or all dwarves can have
 their preferences cleared manually with the use of ``pref-adjust clear_one``
-and ``pref-adjust clear_all``, respectively. Existing preferences are 
+and ``pref-adjust clear_all``, respectively. Existing preferences are
 automatically cleared, normally.
 
 ]====]
@@ -86,7 +86,7 @@ if profile == "IDEAL" then
 end -- end IDEAL profile
 
 if profile == "GOTH" then
-    insert_preference(unit,0,"CREATURE:DWARF:SKIN")        
+    insert_preference(unit,0,"CREATURE:DWARF:SKIN")
     insert_preference(unit,4,df.item_type.CORPSE)
     insert_preference(unit,4,df.item_type.CORPSEPIECE)
     insert_preference(unit,4,df.item_type.REMAINS)
