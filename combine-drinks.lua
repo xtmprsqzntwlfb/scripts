@@ -11,7 +11,7 @@ local utils = require 'utils'
 local validArgs = utils.invert({ 'max', 'stockpile' })
 local args = utils.processArgs({...}, validArgs)
 
-local max = 30;
+local max = 30
 if args.max then max = tonumber(args.max) end
 
 local stockpile = nil
@@ -59,13 +59,13 @@ local building = stockpile or dfhack.gui.getSelectedBuilding(true)
 if building ~= nil and building:getType() ~= 29 then building = nil end
 
 if building == nil then
-    error("Select a stockpile")
+    qerror("Select a stockpile")
 
 else
-    local rootItems = dfhack.buildings.getStockpileContents(building);
+    local rootItems = dfhack.buildings.getStockpileContents(building)
 
     if #rootItems == 0 then
-        error("Select a non-empty stockpile")
+        qerror("Select a non-empty stockpile")
 
     else
         local drinks = { } --as:df.item_drinkst[]
@@ -118,5 +118,5 @@ else
 --elseif item:getType() == 68 then
     --handleDrink(item)
 --else
---    error("Select a drink or a drink.")
+--    qerror("Select a drink or a drink.")
 end

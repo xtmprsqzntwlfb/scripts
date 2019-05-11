@@ -56,10 +56,10 @@ local item = container or dfhack.gui.getSelectedItem(true)
 local building = stockpile or dfhack.gui.getSelectedBuilding(true)
 if building ~= nil and building:getType() ~= 29 then building = nil end
 if item == nil and building == nil then
-    error("Select an item or building")
+    qerror("Select an item or building")
 
 else
-    local rootItems;
+    local rootItems
     if building then
         rootItems = dfhack.buildings.getStockpileContents(building)
     else
@@ -67,7 +67,7 @@ else
     end
 
     if #rootItems == 0 then
-        error("Select a non-empty container")
+        qerror("Select a non-empty container")
 
     else
         local plants = { } --as:df.item_actual[]
