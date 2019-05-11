@@ -237,4 +237,5 @@ function Autogems:onDismiss()
     save()
 end
 
+if not dfhack.isWorldLoaded() then qerror('No world loaded') end
 Autogems():show()
