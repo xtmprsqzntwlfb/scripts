@@ -103,13 +103,17 @@ else
             end
         end
 
+        local removedDrinkCount = 0
         for id,removed in pairs(removedDrinks) do
             if removed then
                 local removedDrink = df.item.find(id)
+                removedDrinkCount = removedDrinkCount + 1
                 --print('remove id=' .. id .. ' drink=' .. dfhack.items.getDescription(removedDrink, removedDrink:getType()))
                 dfhack.items.remove(removedDrink)
             end
         end
+        print('found ' .. drinkCount .. ' drinks')
+        print('removed ' .. removedDrinkCount .. ' drinks')
     end
 --elseif item:getType() == 68 then
     --handleDrink(item)
