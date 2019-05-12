@@ -173,6 +173,24 @@ function export_more_legends_xml()
     end
     file:write("</underground_regions>\n")
 
+    file:write("<rivers>\n")
+    for riverK, riverV in progress_ipairs(df.global.world.world_data.rivers, 'river') do
+        file:write("\t<river>\n")
+        file:write("\t\t<name>"..dfhack.df2utf(dfhack.TranslateName(riverV.name, 1)).."</name>\n")
+        file:write("\t\t<path>")
+        for pathK, pathV in progress_ipairs(riverV.path.x, 'river section') do
+            file:write(pathV..","..riverV.path.y[pathK]..",")
+            file:write(riverV.flow[pathK]..",")
+            file:write(riverV.exit_tile[pathK]..",")
+            file:write(riverV.elevation[pathK].."|")
+        end
+        file:write("</path>\n")
+        file:write("\t\t<end_pos>"..riverV.end_pos.x..","..riverV.end_pos.y.."</end_pos>\n")
+        file:write("\t</river>\n")
+    end
+    file:write("</rivers>\n")
+
+
     file:write("<sites>\n")
     for siteK, siteV in progress_ipairs(df.global.world.world_data.sites, 'site') do
         file:write("\t<site>\n")
