@@ -395,7 +395,7 @@ function AddUsesString (viewscreen,line,indent)
     local indent = indent or 0
     viewscreen.entry_ref:insert('#', nil)
     viewscreen.entry_indent:insert('#', indent)
-    viewscreen.unk_34:insert('#', nil) -- TODO: get this into structures, and fix usage!
+    viewscreen.entry_spatters:insert('#', nil) -- TODO: get this into structures, and fix usage!
     viewscreen.entry_string:insert('#', str)
     viewscreen.entry_reaction:insert('#', -1)
 end
