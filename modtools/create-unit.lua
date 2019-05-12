@@ -43,6 +43,7 @@ Creates a unit.  Usage::
         examples:
             MALE
             FEMALE
+            DEFAULT
     -domesticate
         tames the unit if it lacks the CAN_LEARN and CAN_SPEAK tokens
     -civId id
@@ -57,8 +58,9 @@ Creates a unit.  Usage::
         Sets the groupId and civId to the local fort
         Can be used instead of -civId \\LOCAL and -groupId \\LOCAL
     -name entityRawName
-        set the unit's name to be a random name appropriate for the
-        given entity
+        Set the unit's name to be a random name appropriate for the
+        given entity. \\LOCAL can be specified instead to automatically
+        use the fort group entity in fortress mode only
         examples:
             MOUNTAIN
             EVIL
@@ -129,7 +131,12 @@ function createUnitInner(race_id, caste_id, location, entityRawName)
 
   local gui = require 'gui'
 
-  if not dfhack.world.isArena() then
+  local isArena = dfhack.world.isArena()
+  local oldSpawnFilter
+  local oldSpawnType
+  local oldInteractionEffect
+
+  if not isArena then
     -- This is already populated in arena mode, so don't clear it then (#994)
     df.global.world.arena_spawn.race:resize(0)
     df.global.world.arena_spawn.race:insert(0,race_id)
@@ -139,6 +146,13 @@ function createUnitInner(race_id, caste_id, location, entityRawName)
 
     df.global.world.arena_spawn.creature_cnt:resize(0)
     df.global.world.arena_spawn.creature_cnt:insert(0,0)
+  else
+    oldSpawnFilter = df.global.world.arena_spawn.filter
+    df.global.world.arena_spawn.filter = ""
+    oldSpawnType = df.global.world.arena_spawn.type
+    df.global.world.arena_spawn.type = 0
+    oldInteractionEffect = df.global.world.arena_spawn.interaction
+    df.global.world.arena_spawn.interaction = -1
   end
 
   df.global.gametype = df.game_type.DWARF_ARENA
@@ -152,7 +166,7 @@ function createUnitInner(race_id, caste_id, location, entityRawName)
   end
 
   local spawnScreen = dfhack.gui.getCurViewscreen()
-  if dfhack.world.isArena() then
+  if isArena then
     -- Just modify the current screen in arena mode (#994)
     spawnScreen.race:insert(0, race_id)
     spawnScreen.caste:insert(0, caste_id)
@@ -161,6 +175,12 @@ function createUnitInner(race_id, caste_id, location, entityRawName)
 
   curViewscreen.child = nil
   dwarfmodeScreen:delete()
+  
+  if isArena then
+    df.global.world.arena_spawn.filter = oldSpawnFilter
+    df.global.world.arena_spawn.type = oldSpawnType
+    df.global.world.arena_spawn.interaction = oldInteractionEffect
+  end
 
   local id = df.global.unit_next_id-1
 
@@ -171,7 +191,7 @@ function createUnitInner(race_id, caste_id, location, entityRawName)
   local unit = df.unit.find(id)
   if entityRawName and tostring(entityRawName) then
     nameUnit(id, entityRawName)
-  else
+  elseif not isArena then -- arena mode ONLY displays the first_name of units; removing it would result in a blank space where you'd otherwise expect the caste name to show up
     unit.name.first_name = '' -- removes the string of numbers produced by the arena spawning process
     unit.name.has_name = false
     if unit.status.current_soul then
@@ -309,19 +329,20 @@ function createNemesis(trgunit,civ_id,group_id)
 
   nem.save_file_id=-1
 
-  if civ_id ~= -1 then
-    local he=df.historical_entity.find(civ_id)
+  local he
+  if civ_id and civ_id ~= -1 then
+    he = df.historical_entity.find(civ_id)
     he.nemesis_ids:insert("#",id)
     he.nemesis:insert("#",nem)
     allocateIds(nem,he)
   end
   local he_group
   if group_id and group_id ~= -1 then
-      he_group=df.historical_entity.find(group_id)
+    he_group=df.historical_entity.find(group_id)
   end
   if he_group then
-      he_group.nemesis_ids:insert("#",id)
-      he_group.nemesis:insert("#",nem)
+    he_group.nemesis_ids:insert("#",id)
+    he_group.nemesis:insert("#",nem)
   end
   nem.figure = trgunit.hist_figure_id ~= -1 and df.historical_figure.find(trgunit.hist_figure_id) or createFigure(trgunit,he,he_group) -- the histfig check is there just in case this function is called by another script to create nemesis data for a historical figure which somehow lacks it
   return nem
@@ -389,10 +410,14 @@ function nameUnit(id, entityRawName)
   local unit = df.unit.find(id)
   local entity_raw
   if entityRawName then
-    for k,v in ipairs(df.global.world.raws.entities) do
-      if v.code == entityRawName then
-        entity_raw = v
-        break
+    if entityRawName == "\\LOCAL" then
+      entity_raw = df.historical_entity.find(df.global.ui.group_id).entity_raw
+    else
+      for k,v in ipairs(df.global.world.raws.entities) do
+        if v.code == entityRawName then
+          entity_raw = v
+          break
+        end
       end
     end
   end
@@ -592,7 +617,6 @@ for n = 1,spawnNumber do
   u.flags2.calculated_bodyparts = false
   u.flags3.body_part_relsize_computed = false
   u.flags3.size_modifier_computed = false
-  u.flags3.compute_health = true
   u.flags3.weight_computed = false
 
   if age or age == 0 then
