@@ -188,7 +188,7 @@ else
     df.world.units.active.each do |u|
         if u.race == race_nr and checkunit[u]
             if caste_nr
-                next if caste == "enemy" && !df.unit_hostile(u)
+                next if caste == "enemy" && !df.unit_ishostile(u)
                 next if caste != "enemy" && u.caste != caste_nr
             end
             slayit[u]
