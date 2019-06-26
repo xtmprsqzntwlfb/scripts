@@ -34,6 +34,7 @@ if selected ~= nil then
         selected.flags1.tame = level ~= 8 and level ~= 9
         if selected.flags1.tame then
             selected.training_level = level
+            selected.civ_id = df.global.ui.civ_id
         else
             selected.training_level = 9
         end
