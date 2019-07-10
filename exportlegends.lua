@@ -857,5 +857,5 @@ if dfhack.gui.getCurFocus() == "legends" or dfhack.gui.getCurFocus() == "dfhack/
 elseif args[1] == "maps" and dfhack.gui.getCurFocus() == "export_graphical_map" then
     export_detailed_maps()
 else
-    qerror('Exportlegends must be run from the main legends view')
+    qerror('exportlegends must be run from the main legends view')
 end
