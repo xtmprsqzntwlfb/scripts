@@ -172,11 +172,12 @@ else
 
     if caste == "enemy"
         caste_nr = true
+        raw_caste = "enemy"
     elsif caste
         all_castes = df.world.raws.creatures.all[race_nr].caste.map { |c| c.caste_id }
         raw_caste = df.match_rawname(caste, all_castes)
         if not raw_caste
-            puts "Invalid caste, use one of #{all_castes.sort.join(' ')}"
+            puts "Invalid caste, use one of #{all_castes.sort.join(' ')} enemy"
             throw :script_finished
         end
         caste_nr = all_castes.index(raw_caste)
