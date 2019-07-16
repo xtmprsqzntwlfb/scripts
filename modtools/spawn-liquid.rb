@@ -4,14 +4,14 @@
 
 modtools/spawn-liquid
 =====================
-This script spawns liquid at the given coordinates
+This script spawns liquid at the given coordinates.
 
-type spawn-liquid help for usage
+Run ``modtools/spawn-liquid help`` for usage.
 
 =end
 
 def print_help()
-  puts "modtools/spawn-liquids height liquid x y z xOff yOff zOff "
+  puts "modtools/spawn-liquid height liquid x y z xOff yOff zOff"
   puts "  height: height of the water/magma (1 to 7)"
   puts "  liquid: either water or magma, spawns that liquid"
   puts "  x y z: the location to spawn liquid at (replacing any preexisting liquid)"
