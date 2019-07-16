@@ -20,35 +20,35 @@ def print_help()
   puts "note - in other scripts, \\\\LOCATION or similar is usually equivalent to x y z"
 end
 
-if $script_args.any?{ |arg| arg == "help" or arg == "?" or arg == "-?" } or $script_args.count<1
+if $script_args.any?{ |arg| arg == "help" or arg == "?" or arg == "-?" } or $script_args.count < 1
   print_help()
   throw :script_finished
 end
 
-args=$script_args
-#user might put in square brackets around coords, ignore these
+args = $script_args
+# user might put in square brackets around coords, ignore these
 args.delete_if {|arg| arg=='[' or arg==']'}
-height=args[0].to_i
-#liquid is handled later
-x=args[2].to_i
-y=args[3].to_i
-z=args[4].to_i
+height = args[0].to_i
+# liquid is handled later
+x = args[2].to_i
+y = args[3].to_i
+z = args[4].to_i
 if args.count>=5
- x+=args[5].to_i
+  x += args[5].to_i
 end
 if args.count>=6
- y+=args[6].to_i
+  y += args[6].to_i
 end
 if args.count>=7
- z+=args[7].to_i
+  z += args[7].to_i
 end
 
-tile=df.map_tile_at(x, y, z)
+tile = df.map_tile_at(x, y, z)
 if tile.shape_passableflow
- case args[1]
- when 'magma'
-  tile.spawn_magma(height)
- when 'water'
-  tile.spawn_water(height)
- end
+  case args[1]
+  when 'magma'
+    tile.spawn_magma(height)
+  when 'water'
+    tile.spawn_water(height)
+  end
 end
