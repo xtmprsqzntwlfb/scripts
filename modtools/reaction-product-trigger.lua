@@ -61,6 +61,9 @@ local function processArgs(args, reaction, reaction_product, unit, input_items, 
    end
    --table.insert(result,']')
   elseif arg == '\\BUILDING_ID' then
+   if not buildingId then
+    error('BUILDING_ID is not supported for adventure mode reactions')
+   end
    table.insert(result,tostring(buildingId))
   elseif string.sub(arg,1,1) == '\\' then
    table.insert(result,string.sub(arg,2))
@@ -72,8 +75,11 @@ local function processArgs(args, reaction, reaction_product, unit, input_items, 
 end
 
 local function afterProduce(reaction,reaction_product,unit,input_items,input_reagents,output_items)
- --printall(unit.job.current_job)
- local _,buildingId = dfhack.script_environment('modtools/reaction-trigger').getWorkerAndBuilding(unit.job.current_job)
+ --adv mode reactions have no associated building.
+ local _,buildingId
+ if unit.job.current_job then
+  _,buildingId = dfhack.script_environment('modtools/reaction-trigger').getWorkerAndBuilding(unit.job.current_job)
+ end
  for _,hook in ipairs(productHooks[reaction.code] or {}) do
   local command = hook.command
   local processed = processArgs(command, reaction, reaction_product, unit, input_items, input_reagents, output_items, buildingId)
@@ -105,6 +111,7 @@ end
 
 if args.clear then
  productHooks = {}
+ return
 end
 
 if not args.reactionName then
