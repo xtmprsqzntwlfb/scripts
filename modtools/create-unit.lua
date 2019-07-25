@@ -363,6 +363,8 @@ function createFigure(unit,he,he_group)
   hf.civ_id = unit.civ_id
   hf.population_id = unit.population_id
   hf.breed_id = -1
+  hf.cultural_identity = unit.cultural_identity
+  hf.family_head_id = -1
 
   df.global.world.history.figures:insert("#", hf)
 
@@ -417,20 +419,8 @@ function createNemesis(unit,civ_id,group_id)
 
   nem.id = id
   nem.unit_id = unit.id
-  nem.unit=unit
-  nem.flags:resize(4)
-  --not sure about these flags...
-  -- [[
-  nem.flags[4]=true
-  nem.flags[5]=true
-  nem.flags[6]=true
-  nem.flags[7]=true
-  nem.flags[8]=true
-  nem.flags[9]=true
-  --]]
-  --[[for k=4,8 do
-      nem.flags[k]=true
-  end]]
+  nem.unit = unit
+  nem.flags:resize(31)
   nem.unk10 = -1
   nem.unk11 = -1
   nem.unk12 = -1
@@ -438,7 +428,7 @@ function createNemesis(unit,civ_id,group_id)
   df.global.nemesis_next_id = id+1
   unit.general_refs:insert("#",{new = df.general_ref_is_nemesisst, nemesis_id = id})
 
-  nem.save_file_id=-1
+  nem.save_file_id = -1
 
   local he
   if civ_id and civ_id ~= -1 then
