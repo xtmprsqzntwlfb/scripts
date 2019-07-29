@@ -360,7 +360,7 @@ end},
         v.relationship_ids.GroupLeader=-1
         local u_nem=dfhack.units.getNemesis(v)
         if u_nem then
-            u_nem.relationship_ids.GroupLeader=-1
+            u_nem.group_leader_id=-1
         end
         if t_nem and u_nem then
             for k,v in pairs(t_nem.companions) do
