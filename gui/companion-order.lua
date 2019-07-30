@@ -369,6 +369,18 @@ end},
                     break
                 end
             end
+            for k,v in pairs(t_nem.figure.histfig_links) do
+                if df.histfig_hf_link_companionst:is_instance(v) and v.target_hf == u_nem.figure.id then
+                    t_nem.figure.histfig_links:erase(k)
+                    break
+                end
+            end
+            for k,v in pairs(u_nem.figure.histfig_links) do
+                if df.histfig_hf_link_companionst:is_instance(v) and v.target_hf == t_nem.figure.id then
+                    u_nem.figure.histfig_links:erase(k)
+                    break
+                end
+            end
         end
     end
     return true
