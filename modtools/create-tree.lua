@@ -142,7 +142,7 @@ end
 
 local treeAge
 if args.age then
-  treeAge = tonumber(args.age) 
+  treeAge = tonumber(args.age)
   if not treeAge or treeAge < 0 then
     qerror("Invalid age: " .. args.age)
   end
