@@ -256,7 +256,7 @@ function createFigure(trgunit,he,he_group)
   hf.population_id = trgunit.population_id
   hf.breed_id = -1
   hf.unit_id = trgunit.id
-  hf.unit_id2 = trgunit.id
+  hf.unit_id2 = -1
 
   df.global.world.history.figures:insert("#",hf)
 
@@ -345,6 +345,7 @@ function createNemesis(trgunit,civ_id,group_id)
     he_group.nemesis:insert("#",nem)
   end
   nem.figure = trgunit.hist_figure_id ~= -1 and df.historical_figure.find(trgunit.hist_figure_id) or createFigure(trgunit,he,he_group) -- the histfig check is there just in case this function is called by another script to create nemesis data for a historical figure which somehow lacks it
+  nem.figure.unit_id2=id
   return nem
 end
 
