@@ -59,7 +59,7 @@ function getItemSubTypeName(itemType, subType)
     end
 end
 
-function table:contains(element)
+function table_contains(self, element)
     for _, value in pairs(self) do
         if value == element then
             return true
@@ -68,7 +68,7 @@ function table:contains(element)
     return false
 end
 
-function table:containskey(key)
+function table_containskey(self, key)
     for value, _ in pairs(self) do
         if value == key then
             return true
@@ -204,7 +204,7 @@ function export_more_legends_xml()
                         file:write("\t\t\t<structure>\n")
                         file:write("\t\t\t\t<id>"..buildingV.id.."</id>\n")
                         file:write("\t\t\t\t<type>"..df_enums.abstract_building_type[buildingV:getType()]:lower().."</type>\n")
-                        if table.containskey(buildingV,"name") then
+                        if table_containskey(buildingV,"name") then
                             file:write("\t\t\t\t<name>"..dfhack.df2utf(dfhack.TranslateName(buildingV.name, 1)).."</name>\n")
                             file:write("\t\t\t\t<name2>"..dfhack.df2utf(dfhack.TranslateName(buildingV.name)).."</name2>\n")
                         end
@@ -266,7 +266,7 @@ function export_more_legends_xml()
                 end
             end
         end
-        if (table.containskey(item,"description")) then
+        if (table_containskey(item,"description")) then
             file:write("\t\t<item_description>"..dfhack.df2utf(item.description:lower()).."</item_description>\n")
         end
         if item:getMaterial() ~= -1 then
@@ -358,7 +358,7 @@ function export_more_legends_xml()
         end
         file:write("\t\t</claims>\n")
 
-        if (table.containskey(entityV,"occasion_info") and entityV.occasion_info ~= nil) then
+        if (table_containskey(entityV,"occasion_info") and entityV.occasion_info ~= nil) then
             for occasionK, occasionV in pairs(entityV.occasion_info.occasions) do
                 file:write("\t\t<occasion>\n")
                 file:write("\t\t\t<id>"..occasionV.id.."</id>\n")
@@ -596,7 +596,7 @@ function export_more_legends_xml()
                     --file:write("\t\t<"..k.."_item_mat_index>"..tostring(event.props.item.mat_index).."</"..k.."_item_mat_index>\n")
                     file:write("\t\t<"..k.."_pile_type>"..tostring(event.props.pile_type).."</"..k.."_pile_type>\n")
                 elseif df.history_event_assume_identityst:is_instance(event) and k == "identity" then
-                    if (table.contains(df.global.world.identities.all,v)) then
+                    if (table_contains(df.global.world.identities.all,v)) then
                         if (df.global.world.identities.all[v].histfig_id == -1) then
                             local thisIdentity = df.global.world.identities.all[v]
                             file:write("\t\t<identity_name>"..thisIdentity.name.first_name.."</identity_name>\n")
@@ -819,7 +819,7 @@ end
 -- export site maps
 function export_site_maps()
     local vs = dfhack.gui.getCurViewscreen()
-    if ((dfhack.gui.getCurFocus() ~= "legends" ) and (not table.contains(vs, "main_cursor"))) then -- Using open-legends
+    if ((dfhack.gui.getCurFocus() ~= "legends" ) and (not table_contains(vs, "main_cursor"))) then -- Using open-legends
         vs = vs.parent --luacheck: retype
     end
     if df.viewscreen_legendsst:is_instance(vs) then
