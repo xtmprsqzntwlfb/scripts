@@ -14,7 +14,7 @@ of the other ``assign-...`` modules in this collection: please refer
 to the other modules documentation for more specific information.
 
 For information about the json schema, please see the
-the "/hack/scripts/uniteditor/dwarf_profiles.json" file.
+the "/hack/scripts/dwarf_profiles.json" file.
 
 Usage:
 
@@ -30,7 +30,7 @@ Usage:
                     It's a relative path, starting from the DF
                     root directory and ending at the json file.
                     It must begin with a slash. Default value:
-                    "/hack/scripts/uniteditor/dwarf_profiles.json".
+                    "/hack/scripts/dwarf_profiles.json".
 
 :``-profile <profile>``:
                     the profile to apply. It's the name of
