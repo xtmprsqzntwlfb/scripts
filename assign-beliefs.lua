@@ -27,6 +27,7 @@ Resetting a belief means setting it to a level that does not trigger a
 report in the "Thoughts and preferences" screen.
 
 Usage:
+
 :``-help``:
                     print the help page.
 
