@@ -163,10 +163,10 @@ function assign(attributes, unit, reset)
     ---                                           median + (tier * 250).
     --- For tiers 1, 2, 3 and 4, the formula returns the minimum value of the tier; for tiers -1, -2, -3, -4, the
     --- formula returns the maximum value of the tier. Given that all tiers but tier 0 and tier 4 are 250 points
-    --- apart, for tiers -3, -2, -1, 1, 2 and 3 we can add (for positive tiers) or subtract (for negative tiers) up to
-    --- 249 points to the formula result and still remain in the same tier. For tier 0, we can add or subtract 249
-    --- points to the median value. For tier 4, we could add points up to the maximum value, but we won't do it for
-    --- simplicity's sake and we will treat tier 4 as any other tier.
+    --- apart, for tiers -4, -3, -2, -1, 1, 2 and 3 we can add (for positive tiers) or subtract (for negative tiers)
+    --- up to 249 points to the formula result and still remain in the same tier. For tier 0, we can add or
+    --- subtract 249 points to the median value. For tier 4, we could add points up to the maximum value, but we won't
+    --- do it for simplicity's sake and we will treat tier 4 as any other tier.
     local function convert_tier_to_value(attribute, tier)
         assert(type(attribute) == "string")
         assert(type(tier) == "number" and tier >= -4 or tier <= 4)
