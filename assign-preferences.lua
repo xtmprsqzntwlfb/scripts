@@ -98,7 +98,7 @@ Usage:
                     crutches, or a tool). The item tokens can be found here:
                     https://dwarffortresswiki.org/index.php/DF2014:Item_token
                     If you want to specify an item subtype, look into the files
-                    listed under the column ``Subtype`` of the wiki page (they are
+                    listed under the column "Subtype" of the wiki page (they are
                     in the "/raw/ojects/" folder), then specify the items using
                     the full tokens found in those files (see examples below).
 

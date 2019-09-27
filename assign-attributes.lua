@@ -32,7 +32,7 @@ https://dwarffortresswiki.org/index.php/DF2014:Attribute
 
 Usage:
 
-``-help``:
+:``-help``:
                     print the help page.
 
 :``-unit <UNIT_ID>``:
@@ -42,7 +42,7 @@ Usage:
 :``-attributes <ATTRIBUTE TIER [ATTRIBUTE TIER] [...]>``:
                     the list of the attributes to modify and their tiers.
                     The valid attribute names can be found in the wiki:
-                    `<https://dwarffortresswiki.org/index.php/DF2014:Attribute>`_
+                    https://dwarffortresswiki.org/index.php/DF2014:Attribute
                     (substitute any space with underscores); tiers range from -4
                     to 4.
 
