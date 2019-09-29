@@ -42,6 +42,7 @@
             ]
         },
         "BELIEFS": {
+            "ELOQUENCE": 1,
             "LOYALTY": 1,
             "FAMILY": 1,
             "FRIENDSHIP": 2,
@@ -64,7 +65,8 @@
             "BASHFUL": 1,
             "TOLERANT": 2,
             "EMOTIONALLY_OBSESSIVE": 2,
-            "ALTRUISM": 1
+            "ALTRUISM": 1,
+            "GRATITUDE": 1
         }
     },
     "DOCTOR": {
@@ -74,7 +76,8 @@
             "MEMORY": 1,
             "EMPATHY": 1,
             "ANALYTICAL_ABILITY": 1,
-            "INTUITION": 1
+            "INTUITION": 1,
+            "PATIENCE": 1
         },
         "SKILLS": {
             "DIAGNOSE": 3,
@@ -114,7 +117,8 @@
             "POWER": -1,
             "SACRIFICE": 1,
             "COOPERATION": 1,
-            "TRADITION": 2
+            "TRADITION": 2,
+            "ROMANCE": 2
         },
         "FACETS": {
             "DISCORD": -1,
@@ -138,7 +142,9 @@
             "ENDURANCE": 1,
             "SPATIAL_SENSE": 1,
             "STRENGTH": 1,
-            "CREATIVITY": 2
+            "CREATIVITY": 2,
+            "EMPATHY": -1,
+            "SOCIAL AWARENESS": -1
         },
         "SKILLS": {
             "MECHANICS": 5
@@ -153,35 +159,95 @@
                 "RAVEN"
             ],
             "HATECREATURE": [
-                "WORM"
+                "FLY"
             ],
             "LIKEITEM": [
                 "ITEM_TRAPCOMP:ITEM_TRAPCOMP_ENORMOUSCORKSCREW"
             ],
             "LIKEFOOD": [
-                "PLANT:GRASS_WHEAT_CAVE:DRINK",
-                "CREATURE:HONEY_BEE:HONEY"
+                "CREATURE:HONEY_BEE:DRINK"
             ],
             "LIKESHAPE": [
                 "CIRCLE"
             ]
         },
         "BELIEFS": {
+            "TRADITION": -2,
             "INDEPENDENCE": 2,
             "STOICISM": 1,
             "INTROSPECTION": 3,
-            "KNOWLEDGE": 2
+            "KNOWLEDGE": 2,
+            "TRUTH": 2
         },
         "GOALS": {
             "MASTER_A_SKILL": false
         },
         "FACETS": {
+            "IMAGINATION": 1,
             "LOVE_PROPENSITY": -1,
             "CURIOUS": 1,
             "PRIVACY": 1,
             "PERFECTIONIST": 3,
             "SWAYED_BY_EMOTIONS": -2,
             "ABSTRACT_INCLINED": 3
+        }
+    },
+    "HAMMERDWARF": {
+        "comment": "Roughly based on: https://www.16personalities.com/entj-personality",
+        "ATTRIBUTES": {
+            "AGILITY": 1,
+            "SPATIAL_SENSE": 1,
+            "STRENGTH": 1,
+            "TOUGHNESS": 1,
+            "KINESTHETIC_SENSE": 1,
+            "WILLPOWER": 1
+        },
+        "SKILLS": {
+            "HAMMER": 5,
+            "SHIELD": 3,
+            "DODGING": 2,
+            "DISCIPLINE": 1
+        },
+        "PREFERENCES": {
+            "LIKEMATERIAL": [
+                "INORGANIC:DOLOMITE",
+                "INORGANIC:STEEL",
+                "INORGANIC:ONYX OPAL"
+            ],
+            "LIKECREATURE": [
+                "BEAR_GRIZZLY"
+            ],
+            "HATECREATURE": [
+                "SLUG"
+            ],
+            "LIKEITEM": [
+                "ITEM_WEAPON:ITEM_WEAPON_HAMMER_WAR"
+            ],
+            "LIKEFOOD": [
+                "CREATURE:HORSE:MUSCLE",
+                "PLANT:GRASS_TAIL_PIG:DRINK"
+            ],
+            "LIKETREE": [
+                "CEDAR"
+            ]
+        },
+        "BELIEFS": {
+            "POWER": 1,
+            "TRUTH": -1,
+            "SKILL": 1,
+            "HARD_WORK": 1,
+            "KNOWLEDGE": 1
+        },
+        "GOALS": {
+            "BECOME_A_LEGENDARY_WARRIOR": false
+        },
+        "FACETS": {
+            "STRESS_VULNERABILITY": -2,
+            "POLITENESS": -1,
+            "BRAVERY": 1,
+            "CONFIDENCE": 2,
+            "CURIOUS": 1,
+            "SWAYED_BY_EMOTIONS": -2
         }
     },
     "TEST": {
