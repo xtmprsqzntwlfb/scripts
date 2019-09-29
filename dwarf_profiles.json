@@ -80,11 +80,11 @@
             "PATIENCE": 1
         },
         "SKILLS": {
-            "DIAGNOSE": 3,
+            "DIAGNOSE": 2,
             "DRESS_WOUNDS": 1,
-            "SUTURE": 2,
+            "SUTURE": 3,
             "SET_BONE": 1,
-            "SURGERY": 2
+            "SURGERY": 3
         },
         "PREFERENCES": {
             "LIKEMATERIAL": [
@@ -144,10 +144,11 @@
             "STRENGTH": 1,
             "CREATIVITY": 2,
             "EMPATHY": -1,
-            "SOCIAL AWARENESS": -1
+            "SOCIAL_AWARENESS": -1
         },
         "SKILLS": {
-            "MECHANICS": 5
+            "MECHANICS": 5,
+            "DESIGNBUILDING": 5
         },
         "PREFERENCES": {
             "LIKEMATERIAL": [
@@ -156,7 +157,7 @@
                 "GLASS_CRYSTAL"
             ],
             "LIKECREATURE": [
-                "RAVEN"
+                "BIRD_RAVEN"
             ],
             "HATECREATURE": [
                 "FLY"
@@ -165,7 +166,7 @@
                 "ITEM_TRAPCOMP:ITEM_TRAPCOMP_ENORMOUSCORKSCREW"
             ],
             "LIKEFOOD": [
-                "CREATURE:HONEY_BEE:DRINK"
+                "CREATURE:HONEY_BEE:MEAD"
             ],
             "LIKESHAPE": [
                 "CIRCLE"
@@ -204,7 +205,7 @@
         },
         "SKILLS": {
             "HAMMER": 5,
-            "SHIELD": 3,
+            "SHIELD": 2,
             "DODGING": 2,
             "DISCIPLINE": 1
         },
