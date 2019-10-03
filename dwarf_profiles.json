@@ -12,11 +12,10 @@
         "SKILLS": {
             "APPRAISAL": 2,
             "JUDGING_INTENT": 2,
-            "CONSOLE": 1,
             "PACIFY": 2,
             "CONVERSATION": 1,
             "PERSUASION": 1,
-            "NEGOTIATION": 1
+            "NEGOTIATION": 2
         },
         "PREFERENCES": {
             "LIKEMATERIAL": [
@@ -43,10 +42,6 @@
         },
         "BELIEFS": {
             "ELOQUENCE": 1,
-            "LOYALTY": 1,
-            "FAMILY": 1,
-            "FRIENDSHIP": 2,
-            "COOPERATION": 1,
             "STOICISM": -1,
             "HARMONY": 1,
             "COMPETITION": -2
@@ -108,15 +103,8 @@
             "START_A_FAMILY": false
         },
         "BELIEFS": {
-            "FAMILY": 2,
-            "FRIENDSHIP": 1,
-            "HARD_WORK": 1,
-            "HARMONY": 1,
-            "LOYALTY": 2,
-            "PERSEVERANCE": 1,
             "POWER": -1,
             "SACRIFICE": 1,
-            "COOPERATION": 1,
             "TRADITION": 2,
             "ROMANCE": 2
         },
@@ -177,8 +165,7 @@
             "INDEPENDENCE": 2,
             "STOICISM": 1,
             "INTROSPECTION": 3,
-            "KNOWLEDGE": 2,
-            "TRUTH": 2
+            "KNOWLEDGE": 2
         },
         "GOALS": {
             "MASTER_A_SKILL": false
@@ -234,10 +221,7 @@
         },
         "BELIEFS": {
             "POWER": 1,
-            "TRUTH": -1,
-            "SKILL": 1,
-            "HARD_WORK": 1,
-            "KNOWLEDGE": 1
+            "TRUTH": -1
         },
         "GOALS": {
             "BECOME_A_LEGENDARY_WARRIOR": false
