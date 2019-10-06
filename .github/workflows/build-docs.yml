@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: alpine:3.10
+    runs-on: ubuntu-18.04
     steps:
     - name: Install dependencies
       run: |
@@ -13,15 +13,15 @@ jobs:
     - uses: actions/checkout@v1
     - name: Set up DFHack
       run: |
-        git clone git://github.com/dfhack/dfhack /dfhack --depth 1 --branch develop
-        git -C /dfhack submodule update --init --depth 1 plugins/stonesense library/xml
-        rmdir /dfhack/scripts
-        ln -s $(pwd) /dfhack/scripts
+        git clone git://github.com/dfhack/dfhack $HOME/dfhack --depth 1 --branch develop
+        git -C $HOME/dfhack submodule update --init --depth 1 plugins/stonesense library/xml
+        rmdir $HOME/dfhack/scripts
+        ln -sv $(pwd) $HOME/dfhack/scripts
     - name: Build docs
       run: |
-        /dfhack/docs/build.sh
-        zip -r /docs.zip /dfhack/docs/html
+        $HOME/dfhack/docs/build.sh
+        zip -r $HOME/docs.zip $HOME/dfhack/docs/html
     - uses: actions/upload-artifact@master
       with:
         name: docs.zip
-        path: /docs.zip
+        path: $HOME/docs.zip
