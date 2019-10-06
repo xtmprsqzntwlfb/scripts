@@ -22,5 +22,5 @@ jobs:
         zip -r docs.zip $HOME/dfhack/docs/html
     - uses: actions/upload-artifact@master
       with:
-        name: docs.zip
+        name: docs
         path: docs.zip
