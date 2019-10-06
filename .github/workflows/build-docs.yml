@@ -8,8 +8,6 @@ jobs:
     steps:
     - name: Install dependencies
       run: |
-        sudo apt-get update
-        sudo apt-get install -y git python3 python3-pip zip
         sudo pip3 install --system sphinx
     - uses: actions/checkout@v1
     - name: Set up DFHack
@@ -21,8 +19,8 @@ jobs:
     - name: Build docs
       run: |
         $HOME/dfhack/docs/build.sh
-        zip -r $HOME/docs.zip $HOME/dfhack/docs/html
+        zip -r docs.zip $HOME/dfhack/docs/html
     - uses: actions/upload-artifact@master
       with:
         name: docs.zip
-        path: $HOME/docs.zip
+        path: docs.zip
