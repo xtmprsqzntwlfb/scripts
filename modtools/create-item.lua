@@ -26,6 +26,12 @@ Arguments::
         specify the itemdef of the item to be created
         examples:
             WEAPON:ITEM_WEAPON_PICK
+    -quality qualitystr
+        specify the quality level of the item to be created
+        examples:
+            0 - ordinary
+            1 - wellcrafted
+            5 - masterwork
     -matchingShoes
         create two of this item
     -matchingGloves
