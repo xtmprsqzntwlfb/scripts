@@ -95,17 +95,17 @@ local focusDefault = 0
 local focusSatisfied = 400
 
 -- Returns true if unit has the given need, false if not.
--- deityId is an optional argument that records the deity's historical figure ID for PrayOrMedidate needs
+-- deityId is an optional argument that records the deity's historical figure ID for PrayOrMeditate needs
 function unitHasNeed(unit, need, deityId)
   return getUnitNeed(unit, need, deityId) ~= false
 end
 
 -- Returns the unit's need data, followed by its index in the needs list if the unit has the given need. Otherwise, returns false.
--- deityId is an optional argument that records the deity's historical figure ID for PrayOrMedidate needs
+-- deityId is an optional argument that records the deity's historical figure ID for PrayOrMeditate needs
 function getUnitNeed(unit, need, deityId)
   for index, needInstance in ipairs(unit.status.current_soul.personality.needs) do
     if needInstance.id == need then
-      if needInstance.id ~= df.need_type.PrayOrMedidate then --Worship is a special case
+      if needInstance.id ~= df.need_type.PrayOrMeditate then --Worship is a special case
         return needInstance, index
       elseif needInstance.deity_id == deityId then -- Only return the need if it's actually targeting the right deity
         return needInstance, index
@@ -119,7 +119,7 @@ function getUnitNeed(unit, need, deityId)
 end
 
 -- Returns the unit's focus level for the given need, or false if they don't have that need
--- deityId is an optional argument that records the deity's historical figure ID for PrayOrMedidate needs
+-- deityId is an optional argument that records the deity's historical figure ID for PrayOrMeditate needs
 function getFocus(unit, need, deityId)
   local needInstance = getUnitNeed(unit, need, deityId)
   
@@ -131,7 +131,7 @@ function getFocus(unit, need, deityId)
 end
 
 -- Returns the unit's need level for the given need, or false if they don't have that need
--- deityId is an optional argument that records the deity's historical figure ID for PrayOrMedidate needs
+-- deityId is an optional argument that records the deity's historical figure ID for PrayOrMeditate needs
 -- You can use getNeedLevelString to get the label that the game uses for that level e.g. "Strong", "Slight"
 function getNeedLevel(unit, need, deityId)
   local needInstance = getUnitNeed(unit, need, deityId)
@@ -179,7 +179,7 @@ function removeNeedAll(unit)
 end
 
 -- Sets need level of need. Vanilla values are 1 for Slight, 2 for Moderate, 5 for Strong, 10 for Intense
--- deityId is an optional argument that records the deity's historical figure ID for PrayOrMedidate needs
+-- deityId is an optional argument that records the deity's historical figure ID for PrayOrMeditate needs
 function setLevel(unit, need, level, deityId)
   local needInstance = getUnitNeed(unit, need, deityId)
 
@@ -220,7 +220,7 @@ end
 local needDefaultsInfo = {
   [df.need_type.Socialize] = {trait = {id = "GREGARIOUSNESS"}},
   [df.need_type.DrinkAlcohol] = {trait = {id = "IMMODERATION"}},
-  [df.need_type.PrayOrMedidate] = {special = true},
+  [df.need_type.PrayOrMeditate] = {special = true},
   [df.need_type.StayOccupied] = {trait = {id = "ACTIVITY_LEVEL"}, belief = {id = "HARD_WORK"}},
   [df.need_type.BeCreative] = {trait = {id = "ART_INCLINED"}},
   [df.need_type.Excitement] = {trait = {id = "EXCITEMENT_SEEKING"}},
@@ -296,7 +296,7 @@ function getUnitDefaultNeedStrength(unit, need, deityId)
   
   else --There are a couple of needs that don't conform to the regular setup
   
-    if need == df.need_type.PrayOrMedidate then
+    if need == df.need_type.PrayOrMeditate then
       -- Worship uses the strength of the unit's link to their deity to determine the strength of their need
       -- Fun fact: The thresholds used to change the unit's relationship to the deity (e.g. "casual worshipper")
       -- aren't the same as the ones used to change need strength!
@@ -372,7 +372,7 @@ function rebuildNeeds(unit)
   
   -- Record current focus levels.
   for index, needInstance in ipairs(unit.status.current_soul.personality.needs) do
-    if df.need_type[needInstance.id] ~= df.need_type.PrayOrMedidate then
+    if df.need_type[needInstance.id] ~= df.need_type.PrayOrMeditate then
       oldLevels[needInstance.id] = needInstance.focus_level
     else -- Worship needs are handled slightly differently
       oldWorshipLevels[needInstance.deity_id] = needInstance.focus_level
@@ -384,7 +384,7 @@ function rebuildNeeds(unit)
   
   -- Go through all non-worship needs and add any that the unit should have, while also setting the focus to what it was before (if applicable)
   for needId, needName in ipairs(df.need_type) do
-    if needId ~= df.need_type.PrayOrMedidate then
+    if needId ~= df.need_type.PrayOrMeditate then
       local needLevel = getUnitDefaultNeedStrength(unit, needId)
       
       if needLevel > 0 then -- Only add the need if it has a strength
@@ -397,10 +397,10 @@ function rebuildNeeds(unit)
   if unit.hist_figure_id ~= -1 then
     for index, link in ipairs(df.historical_figure.find(unit.hist_figure_id).histfig_links) do
       if df.histfig_hf_link_deityst:is_instance(link) then
-        local needLevel = getUnitDefaultNeedStrength(unit, df.need_type.PrayOrMedidate, link.target_hf)
+        local needLevel = getUnitDefaultNeedStrength(unit, df.need_type.PrayOrMeditate, link.target_hf)
         
         if needLevel > 0 then
-          addNeed(unit, df.need_type.PrayOrMedidate, oldWorshipLevels[link.target_hf] or focusDefault, needLevel, link.target_hf)
+          addNeed(unit, df.need_type.PrayOrMeditate, oldWorshipLevels[link.target_hf] or focusDefault, needLevel, link.target_hf)
         end
       end
     end
@@ -611,3 +611,4 @@ end
 if not dfhack_flags.module then
   main(...)
 end
+
