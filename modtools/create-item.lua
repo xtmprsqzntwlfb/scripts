@@ -27,11 +27,8 @@ Arguments::
         examples:
             WEAPON:ITEM_WEAPON_PICK
     -quality qualitystr
-        specify the quality level of the item to be created
-        examples:
-            0 - ordinary
-            1 - wellcrafted
-            5 - masterwork
+        specify the quality level of the item to be created (df.item_quality)
+        examples: Ordinary, WellCrafted, FinelyCrafted, Masterful, or 0-5
     -matchingShoes
         create two of this item
     -matchingGloves
@@ -68,8 +65,7 @@ local badTypes = utils.invert({
 })
 
 function createItem(creatorID, item, material, leftHand, rightHand, quality)
- local itemQuality = quality and df.item_quality[quality]
- print(itemQuality)
+ local itemQuality = df.item_quality[quality] or tonumber(quality) or df.item_quality.Ordinary
 
  local creator = df.unit.find(creatorID)
  if not creator then
@@ -110,9 +106,7 @@ function createItem(creatorID, item, material, leftHand, rightHand, quality)
   item:setGloveHandedness(1)
  end
 
- if itemQuality then
-  item:setQuality(itemQuality)
- end
+ item:setQuality(itemQuality)
  --[[if matchingGloves or matchingShoes then
   if matchingGloves then
    item1 = df.item.find(item1)
