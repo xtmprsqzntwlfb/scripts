@@ -676,7 +676,7 @@ function editor_orientation:updateChoices()
   table.insert(choices, {text = "Male: " .. maleInterestString, interest = maleInterest, sex = 1})
   -- Female
   local femaleInterest = setorientation.getInterest(self.target_unit, "female")
-  local femaleInterestString = setorientation.getInterestString(femaleInterest) 
+  local femaleInterestString = setorientation.getInterestString(femaleInterest)
   table.insert(choices, {text = "Female: " .. femaleInterestString, interest = femaleInterest, sex = 0})
   
   self.subviews.sex:setChoices(choices)
@@ -985,7 +985,7 @@ function patternString(patternId)
   end
   local out = prefix .. " "
   for i=0, #pattern.colors-1 do
-    if i == #pattern.colors-1 then 
+    if i == #pattern.colors-1 then
       out = out .. "and " .. df.descriptor_color.find(pattern.colors[i]).name
     elseif i == #pattern.colors-2 then
       out = out .. df.descriptor_color.find(pattern.colors[i]).name .. " "
@@ -1135,7 +1135,7 @@ function editor_belief:updateChoices()
   for index, belief in ipairs(df.value_type) do
     local niceText = belief
     niceText = niceText:lower()
-    niceText = niceText:gsub("_", " ") 
+    niceText = niceText:gsub("_", " ")
     niceText = niceText:gsub("^%l", string.upper)
     
     local strength = setbelief.getUnitBelief(self.target_unit, index)
@@ -1237,7 +1237,7 @@ function editor_personality:updateChoices()
   for index, traitName in ipairs(df.personality_facet_type) do
     local niceText = traitName
     niceText = niceText:lower()
-    niceText = niceText:gsub("_", " ") 
+    niceText = niceText:gsub("_", " ")
     niceText = niceText:gsub("^%l", string.upper)
     
     local strength = setpersonality.getUnitTraitBase(self.target_unit, index)
