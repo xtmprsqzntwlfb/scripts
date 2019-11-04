@@ -23,6 +23,7 @@ Interest levels are 0 for Uninterested, 1 for Romance, 2 for Marry.
     Randomise the unit's interest towards both sexes, respecting their ORIENTATION token odds.
 
 Other arguments:
+
 :help:
     Shows this help page.
 :view:
