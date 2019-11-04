@@ -551,7 +551,7 @@ function main(...)
     deity = tonumber(args.deity)
   end
   
-  local focus 
+  local focus
   if args.focus then
     focus = tonumber(args.focus)
   end
