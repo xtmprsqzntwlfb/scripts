@@ -238,8 +238,8 @@ function moveEmbarkStuff(selectedBlock, embarkTiles)
       local flags = item.flags
       if item.age == 0 -- embark equipment consists of newly created items
       and item.pos.x >= x1 and item.pos.x <= x2
-      and item.pos.y >= y1 and item.pos.x <= y2
-      and item.pos.z >= z1 and item.pos.x <= z2
+      and item.pos.y >= y1 and item.pos.y <= y2
+      and item.pos.z >= z1 and item.pos.z <= z2
       and flags.on_ground
       and not flags.in_inventory
       and not flags.in_building
