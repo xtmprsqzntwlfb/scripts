@@ -1,6 +1,8 @@
 -- embark underground
 -- author: Atomic Chicken
 
+--@ module = true
+
 local usage = [====[
 
 deep-embark
@@ -28,6 +30,12 @@ Usage::
     -atReclaim
         including this arg will enable deep embarking
         when reclaiming sites too
+
+    -blockDemons
+        including this arg will prevent demon surges
+        in the context of breached underworld spires
+        (intended mainly for UNDERWORLD embarks)
+        ("wildlife" demon spawning will be unaffected)
 
 ]====]
 
@@ -93,8 +101,7 @@ function isValidTiletype(tiletype)
       return false
     end
   end
-  local shape = tiletypeAttrs.shape
-  local shapeAttrs = df.tiletype_shape.attrs[shape]
+  local shapeAttrs = df.tiletype_shape.attrs[tiletypeAttrs.shape]
   if shapeAttrs.walkable and shapeAttrs.basic_shape ~= df.tiletype_shape_basic.Open then -- downward ramps are walkable but open; units placed here would fall
     return true
   else
@@ -115,9 +122,46 @@ function getValidEmbarkTiles(block)
   return validTiles
 end
 
-function reveal(pos, recenter)
--- creates an unbound glowing barrier at the target location to trigger proper tile revelation when it disappears (fortress mode only)
--- if recenter is true, shifts the view to the target location
+function blockGlowingBarrierAnnouncements(recenter)
+--  temporarily disables the "glowing barrier has disappeared" announcement
+--  announcement settings are restored after 1 tick
+--  setting recenter to true enables recentering of game view to the announcement position
+  local announcementFlags = df.global.d_init.announcements.flags.ENDGAME_EVENT_1 -- glowing barrier disappearance announcement
+  local oldFlags = df.global.d_init.announcements.flags.ENDGAME_EVENT_1:new()
+  oldFlags:assign(announcementFlags) -- backup announcement settings
+  announcementFlags.DO_MEGA = false
+  announcementFlags.PAUSE = false
+  announcementFlags.RECENTER = recenter and true or false
+  announcementFlags.A_DISPLAY = false
+  announcementFlags.D_DISPLAY = recenter and true or false -- an actual announcement is required for recentering to occur
+  dfhack.timeout(1,'ticks', function() -- barrier disappears after 1 tick
+    announcementFlags:assign(oldFlags) -- restore announcement settings
+    if recenter then
+--    Remove glowing barrier notifications:
+      local status = df.global.world.status
+      local announcements = status.announcements
+      for i = #announcements-1, 0, -1 do
+        if string.find(announcements[i].text,"glowing barrier has disappeared") then
+          announcements:erase(i)
+          break
+        end
+      end
+      local reports = status.reports
+      for i = #reports-1, 0, -1 do
+        if string.find(reports[i].text,"glowing barrier has disappeared") then
+          reports:erase(i)
+          break
+        end
+      end
+      status.display_timer = 0 -- to avoid displaying other announcements
+    end
+  end)
+end
+
+function reveal(pos)
+-- creates an unbound glowing barrier at the target location
+-- so as to trigger tile revelation when it disappears 1 tick later (fortress mode only)
+-- should be run in conjunction with blockGlowingBarrierAnnouncements()
   local x,y,z = pos2xyz(pos)
   local block = dfhack.maps.getTileBlock(x,y,z)
   local tiletype = block.tiletype[x%16][y%16]
@@ -129,47 +173,12 @@ function reveal(pos, recenter)
     barrier.pos:assign(pos)
     barriers:insert('#',barrier)
     local hfs = df.glowing_barrier:new()
-    hfs.triggered = 1 -- this prevents hfs events (which can otherwise be triggered by the barrier disappearing)
+    hfs.triggered = true -- this prevents HFS events (which can otherwise be triggered by the barrier disappearing)
     barriers:insert('#',hfs)
-    local announcementFlags = df.global.d_init.announcements.flags.ENDGAME_EVENT_1 -- glowing barrier disappearance announcement
-    local oldDO_MEGA = announcementFlags.DO_MEGA
-    announcementFlags.DO_MEGA = false -- turn off popup announcement
-    local oldPAUSE = announcementFlags.PAUSE
-    announcementFlags.PAUSE = false
-    local oldRECENTER = announcementFlags.RECENTER
-    announcementFlags.RECENTER = recenter and true or false
-    local oldA_DISPLAY = announcementFlags.A_DISPLAY
-    announcementFlags.A_DISPLAY = false
-    local oldD_DISPLAY = announcementFlags.D_DISPLAY
-    announcementFlags.D_DISPLAY = recenter and true or false -- won't recenter without an actual announcement
-    dfhack.timeout(1,'ticks', function() -- barrier disappears after 1 tick
+    dfhack.timeout(1,'ticks', function() -- barrier tiletype disappears after 1 tick
       block.tiletype[x%16][y%16] = tiletype -- restore old tiletype
       barriers:erase(#barriers-1) -- remove hfs blocker
-      barriers:erase(#barriers-1) -- remove revealer
-      announcementFlags.RECENTER = oldRECENTER -- restore announcement settings
-      announcementFlags.A_DISPLAY = oldA_DISPLAY
-      announcementFlags.D_DISPLAY = oldD_DISPLAY
-      announcementFlags.DO_MEGA = oldDO_MEGA
-      announcementFlags.PAUSE = oldPAUSE
-      if recenter then
---      Remove glowing barrier notifications:
-        local status = df.global.world.status
-        local announcements = status.announcements
-        for i = #announcements-1, 0, -1 do
-          if string.find(announcements[i].text, "glowing barrier has disappeared") then
-            announcements:erase(i)
-            break
-          end
-        end
-        local reports = status.reports
-        for i = #reports-1, 0, -1 do
-          if string.find(reports[i].text, "glowing barrier has disappeared") then
-            reports:erase(i)
-            break
-          end
-        end
-        status.display_timer = 0 -- otherwise an older announcement could be displayed
-      end
+      barriers:erase(#barriers-1) -- remove revelation barrier
     end)
   end
 end
@@ -194,13 +203,17 @@ function moveEmbarkStuff(selectedBlock, embarkTiles)
 
 -- Move citizens and pets:
   local unitsAtSpawn = dfhack.units.getUnitsInBox(x1,y1,z1,x2,y2,z2)
-  local last = #unitsAtSpawn
+  local movedUnit = false
   for i, unit in ipairs(unitsAtSpawn) do
     if unit.civ_id == df.global.ui.civ_id and not unit.flags1.inactive and not unit.flags2.killed then
       local pos = embarkTiles[math.random(1, #embarkTiles)]
       teleport(unit, pos)
-      reveal(pos, i == last and true or false)
+      reveal(pos)
+      movedUnit = true
     end
+  end
+  if movedUnit then
+    blockGlowingBarrierAnnouncements(true) -- this is separate from the reveal() function as it only needs to be called once per tick, regardless of how many times reveal() has been run
   end
 
 -- Move wagon contents:
@@ -211,6 +224,7 @@ function moveEmbarkStuff(selectedBlock, embarkTiles)
       for i = #contained-1, 0, -1 do
         if contained[i].use_mode == 0 then -- actual contents (as opposed to building components)
           local item = contained[i].item
+--        dfhack.items.moveToGround() does not handle items within buildings, so do this manually:
           contained:erase(i)
           for k = #item.general_refs-1, 0, -1 do
             if item.general_refs[k]._type == df.general_ref_building_holderst then
@@ -276,12 +290,24 @@ function deepEmbark(cavernType)
   end
 end
 
+function disableSpireDemons()
+--  marks underworld spires on the map as having been breached already, preventing HFS events
+  for _, spire in ipairs(df.global.world.deep_vein_hollows) do
+    spire.triggered = true
+  end
+end
+
 local validArgs = utils.invert({
   'depth',
   'atReclaim',
+  'blockDemons',
   'help'
 })
 local args = utils.processArgs({...}, validArgs)
+
+if moduleMode then
+  return
+end
 
 if args.help then
   print(usage)
@@ -316,6 +342,10 @@ local validDepths = {
 
 if not validDepths[args.depth] then
   qerror("Invalid depth: " .. tostring(args.depth))
+end
+
+if args.blockDemons then
+  disableSpireDemons()
 end
 
 deepEmbark(tostring(args.depth))
