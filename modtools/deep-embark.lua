@@ -127,8 +127,7 @@ function blockGlowingBarrierAnnouncements(recenter)
 --  announcement settings are restored after 1 tick
 --  setting recenter to true enables recentering of game view to the announcement position
   local announcementFlags = df.global.d_init.announcements.flags.ENDGAME_EVENT_1 -- glowing barrier disappearance announcement
-  local oldFlags = df.global.d_init.announcements.flags.ENDGAME_EVENT_1:new()
-  oldFlags:assign(announcementFlags) -- backup announcement settings
+  local oldFlags = df.global.d_init.announcements.flags.ENDGAME_EVENT_1:new() -- backup announcement settings
   announcementFlags.DO_MEGA = false
   announcementFlags.PAUSE = false
   announcementFlags.RECENTER = recenter and true or false
