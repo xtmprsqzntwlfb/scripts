@@ -5,8 +5,8 @@
 
 local usage = [====[
 
-deep-embark
-===========
+modtools/deep-embark
+====================
 Moves the starting units and equipment to
 a specific underground region upon embarking.
 
