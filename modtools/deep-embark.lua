@@ -187,6 +187,7 @@ function moveEmbarkStuff(selectedBlock, embarkTiles)
   for _, hotkey in ipairs(df.global.ui.main.hotkeys) do
     if hotkey.name == "Gate" then -- the preset hotkey is centred around the spawn point
       spawnPosCentre = xyz2pos(hotkey.x, hotkey.y, hotkey.z)
+      hotkey:assign(embarkTiles[math.random(1, #embarkTiles)]) -- set the hotkey to the new spawn point
       break
     end
   end
