@@ -11,13 +11,13 @@ size. Jobs involve required professions, tertiary professions (may or
 may not be applied), and types which come along with attribute buffs
 and characteristics (eg. strength, speed, focus, dodging, etc)
 
-Usage: ``dwarf-op -help`` or ``dwarf-op -select <sel-opt> -<command> <args>``
+Usage: ``dwopit -help`` or ``dwarf-op -select <sel-opt> -<command> <args>``
 
 :help:               Highly detailed help documentation.
 :select <option>:    Indicates the next parameter will be indicate which dwarves to select
 ]====]
 
-print("v1.2")
+print("v1.3.1")
 utils ={}
 utils = require('utils')
 json = require('json')
@@ -32,7 +32,6 @@ cloned = {
     jobs = utils.clone(dorf_tables.jobs, true),
     professions = utils.clone(dorf_tables.professions, true),
 }
-print("Done.")
 local validArgs = utils.invert({
     'help',
     'debug',
@@ -47,7 +46,8 @@ local validArgs = utils.invert({
 
     'applyjobs',
     'applyprofessions',
-    'applytypes'
+    'applytypes',
+    'renamejob'
 })
 local args = utils.processArgs({...}, validArgs)
 if args.debug and tonumber(args.debug) >= 0 then print("Debug info [ON]") end
@@ -125,8 +125,10 @@ function ClearPersistentData(all)
     local fileName = fortName .. ".json.dat"
     local file_cur = gamePath .. "/data/save/current/" .. fileName
     local file_sav = savePath .. "/" .. fileName
+    local cur = json.open(gamePath .. "/data/save/current/" .. fileName)
     print("Deleting " .. file_cur)
-    os.remove(file_cur)
+    cur.data = {}
+    cur:write() --can't seem to find a way to fully nuke this file, unless manually done
     if all then
         print("Deleting " .. file_sav)
         os.remove(file_sav)
@@ -670,7 +672,7 @@ function ZeroDwarf(dwf)
 end
 
 function Reroll(dwf)
-    local jobName = dwf.custom_profession
+    local jobName = DwarvesData[dwf.id].job
     if cloned.jobs[jobName] then
         if args.reroll ~= 'inclusive' then
             ZeroDwarf(dwf)
@@ -679,6 +681,12 @@ function Reroll(dwf)
         return true
     end
     return false
+end
+
+function RenameJob(dwf)
+    if args.renamejob ~= nil then
+        dwf.custom_profession = args.renamejob
+    end
 end
 
 function Show(dwf)
@@ -790,15 +798,25 @@ function CanWork(dwf)
 end
 
 function CheckWorker(dwf, option)
+    local name = dfhack.TranslateName(dfhack.units.getVisibleName(dwf))
+    local nickname = dwf.status.current_soul.name.nickname
+    if option == 'highlighted' then
+        if dwf == dfhack.gui.getSelectedUnit() then
+            return dwf == dfhack.gui.getSelectedUnit()
+        end
+    elseif type(option) == 'string' then
+        if string.match(name,option) or string.match(nickname,option) then
+            return true;
+        end
+    end
     if CanWork(dwf) then
+        --pre-selection options
         --selection options
         if option == 'protected' then
             return isDwarfProtected(dwf)
         elseif isDwarfUnprotected(dwf) then
             if option == 'all' then
                 return true
-            elseif option == 'highlighted' then
-                return dwf == dfhack.gui.getSelectedUnit()
             elseif option == 'named' then
                 return isDwarfNamed(dwf)
             elseif option == 'unnamed' then
@@ -910,21 +928,22 @@ end
 
 function ShowHelp()
     print([====[
-usage: dwarf-op [-help|-select]
+usage: dwopit [-help|-select]
                -select <sel-opt> -<command> <args>
 ============
-dwarf-op script
+dwopit script
 ~~~~~~~~~~~~
 To use this script, you need to select a subset of your dwarves. Then run commands on those dwarves.
 Please report any bugs or crashes you experience here [https://github.com/cppcooper/dfhack-scripts/issues]
 Examples:
-  [DFHack]# dwarf-op -select [ jobs Trader Miner Leader Warden ] -applytype adaptable
+  [DFHack]# dwarf-op -select [ jobs Trader Miner Leader Rancher ] -applytype adaptable
   [DFHack]# dwarf-op -select all -clear -optimize
   [DFHack]# dwarf-op -select optimized -reroll
   [DFHack]# dwarf-op -select named -reroll inclusive -applyprofession RECRUIT
 ~~~~~~~~~~~~
  select options:
    (protected is the only option which will select PROTECTED dwarves)
+    (none)      - same as typing `-select highlighted`
     all         - selects all dwarves.
     highlighted - selects only the in-game highlighted dwarf (from any screen).
     named       - selects dwarves with user-given names.
@@ -940,8 +959,8 @@ Examples:
 ~~~~~~~~~~~~
 Commands will run on the selected dwarves
  available commands:
-    reset              - deletes json file containing session data
-    resetall           - deletes both json files. session data and existing persistent data
+    reset              - deletes json file containing session data (bug: might not delete session data, no idea why)
+    resetall           - deletes both json files. session data and existing persistent data (bug: might not delete session data, no idea why)
     clear              - zeroes selected dwarves, or zeroes all dwarves if no selection is given. No attributes, no labours. Assigns 'DRUNK' profession.
     reroll <inclusive> - zeroes selected dwarves, then rerolls that dwarf based on its job. Ignores dwarves with unlisted jobs.
                        - optional argument: inclusive. Only performs the reroll, will no zero the dwarf first. Benefit: stats can only go higher, not lower.
@@ -952,6 +971,7 @@ Commands will run on the selected dwarves
                        - see professions table in dorf_tables.lua for available professions.
     applytypes         - applies the listed types to the selected dwarves. list format: `[ type1 type2 typen ]` brackets and types all separated by spaces.
                        - see dwf_types table in dorf_tables.lua for available types.
+    renamejob <name>   - renames the selected dwarves custom profession to whatever is specified
 ~~~~~~~~~~~~
     Other Arguments:
       help - displays this help information.
@@ -986,27 +1006,19 @@ function exists(thing)
     if thing then return true else return false end
 end
 args.b_clear = exists(args.clear) if args.debug and tonumber(args.debug) >= 0 then print(        "args.b_clear:    " .. tostring(args.b_clear)) end
-args.b_optimize = exists(args.optimize) if args.debug and tonumber(args.debug) >= 0 then print(      "args.b_optimize:   " .. tostring(args.b_optimize)) end
+args.b_optimize = exists(args.optimize) if args.debug and tonumber(args.debug) >= 0 then print(  "args.b_optimize: " .. tostring(args.b_optimize)) end
 args.b_reroll = exists(args.reroll) if args.debug and tonumber(args.debug) >= 0 then print(      "args.b_reroll:   " .. tostring(args.b_reroll)) end
 args.b_applyjobs = exists(args.applyjobs) if args.debug and tonumber(args.debug) >= 0 then print("args.b_applyjob: " .. tostring(args.b_applyjobs)) end
-if args.help then
-    ShowHelp()
-elseif not args.select and (args.reset or args.resetall or args.clear) then
+if not args.select then
     if args.reset or args.resetall then
         ClearPersistentData(exists(args.resetall))
+    else
+        args.select = 'highlighted'
     end
-    if args.clear then
-        selection = {}
-        print("Selected Dwarves: " .. LoopUnits(ActiveUnits, CheckWorker, SelectDwarf, 'all'))
-        print("\nResetting selected dwarves..")
-        temp = LoopUnits(selection, nil, ZeroDwarf)
-        print(temp .. " dwarves affected.")
-        if args.show then
-            print("Affected Dwarves: ")
-            LoopUnits(selection, nil, Show)
-        end
-    end
-elseif args.select and (args.debug or args.clear or args.optimize or args.reroll or args.applyjobs or args.applyprofessions or args.applytypes) then
+end
+if args.help then
+    ShowHelp()
+elseif args.select and (args.debug or args.clear or args.optimize or args.reroll or args.applyjobs or args.applyprofessions or args.applytypes or args.renamejob) then
     selection = {}
     count = 0
     print("Selected Dwarves: " .. LoopUnits(ActiveUnits, CheckWorker, SelectDwarf, args.select))
@@ -1082,6 +1094,10 @@ elseif args.select and (args.debug or args.clear or args.optimize or args.reroll
                 end
                 affected = affected < temp and temp or affected
             end
+            if args.renamejob and type(args.renamejob) == 'string' then
+                temp = LoopUnits(selection, nil, RenameJob)
+                affected = affected < temp and temp or affected
+            end
             print(affected .. " dwarves affected.")
 
             if args.debug and tonumber(args.debug) >= 1 then
@@ -1102,14 +1118,12 @@ elseif args.select and (args.debug or args.clear or args.optimize or args.reroll
         print("Affected Dwarves: ")
         LoopUnits(selection, nil, Show)
     end
-else
-    if args.show then
-        selection = {}
-        print("Selected Dwarves: " .. LoopUnits(ActiveUnits, CheckWorker, SelectDwarf, args.select))
-        LoopUnits(selection, nil, Show)
-    else
-        ShowHint()
-    end
+end
+
+if args.show then
+    selection = {}
+    print("Selected Dwarves: " .. LoopUnits(ActiveUnits, CheckWorker, SelectDwarf, args.select))
+    LoopUnits(selection, nil, Show)
 end
 SavePersistentData()
 print('\n')
