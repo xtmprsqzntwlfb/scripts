@@ -1,5 +1,5 @@
 -- Optimize dwarves for fort-mode work. Buff your dwarves and make your life easier in managing labours.
--- written by josh cooper(cppcooper) [created: 12-2017 | last edited: 12-2018]
+-- written by josh cooper(cppcooper) [created: 12-2017 | last edited: 12-2019]
 --[====[
 dwopit
 ========
@@ -946,6 +946,7 @@ Examples:
     (none)      - same as typing `-select highlighted`
     all         - selects all dwarves.
     highlighted - selects only the in-game highlighted dwarf (from any screen).
+    <name>      - selects any dwarf with <name> in their name or nickname. (sub-string match)
     named       - selects dwarves with user-given names.
     unnamed     - selects dwarves without user-given names.
     employed    - selects dwarves with custom professions. Excludes optimized dwarves.
@@ -957,10 +958,12 @@ Examples:
     jobs        - selects any dwarves with the listed jobs. This will only match with custom professions, or optimized dwarves (for optimized dwarves see: jobs in dorf_tables.lua).
                 - usage `-select [ jobs job1 job2 etc. ]` eg. `-select [ jobs Miner Trader ]`
 ~~~~~~~~~~~~
-Commands will run on the selected dwarves
- available commands:
+ general commands:
     reset              - deletes json file containing session data (bug: might not delete session data, no idea why)
     resetall           - deletes both json files. session data and existing persistent data (bug: might not delete session data, no idea why)
+    show               - displays affected dwarves (id, name, primary job). useful for previewing selected dwarves before modifying them.
+
+ dwarf commands:
     clear              - zeroes selected dwarves, or zeroes all dwarves if no selection is given. No attributes, no labours. Assigns 'DRUNK' profession.
     reroll <inclusive> - zeroes selected dwarves, then rerolls that dwarf based on its job. Ignores dwarves with unlisted jobs.
                        - optional argument: inclusive. Only performs the reroll, will no zero the dwarf first. Benefit: stats can only go higher, not lower.
@@ -976,7 +979,6 @@ Commands will run on the selected dwarves
     Other Arguments:
       help - displays this help information.
       debug - enables debugging print lines
-      show - displays affected dwarves (id, name, primary job)
 
 No dorfs were harmed in the building of this help screen.
 ]====])
@@ -987,10 +989,10 @@ function ShowHint()
     print("~~~~~~~~~~~~")
     print("To use this script, you need to select a subset of your dwarves. Then run commands on those dwarves.")
     print("Examples:")
-    print("  [DFHack]# dwopit -select [ jobs Trader Miner Leader Warden ] -applytype adaptable")
+    print("  [DFHack]# dwopit -select [ jobs Trader Miner Leader Rancher ] -applytype adaptable")
     print("  [DFHack]# dwopit -select all -clear -optimize")
     print("  [DFHack]# dwopit -select optimized -reroll")
-    print("  [DFHack]# dwopit -select named -reroll inclusive -applyprofession RECRUIT")
+    print("  [DFHack]# dwopit -select Urist -reroll inclusive -applyprofession RECRUIT")
 end
 
 local ActiveUnits = df.global.world.units.active
