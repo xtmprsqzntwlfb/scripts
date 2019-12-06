@@ -1,7 +1,7 @@
 -- Optimize dwarves for fort-mode work. Buff your dwarves and make your life easier in managing labours.
 -- written by josh cooper(cppcooper) [created: 12-2017 | last edited: 12-2018]
 --[====[
-dwarf-op
+dwopit
 ========
 Optimize dwarves for fort-mode work.
 The core function takes dwarves and allocates a "job" to each dwarf.
@@ -11,7 +11,7 @@ size. Jobs involve required professions, tertiary professions (may or
 may not be applied), and types which come along with attribute buffs
 and characteristics (eg. strength, speed, focus, dodging, etc)
 
-Usage: ``dwopit -help`` or ``dwarf-op -select <sel-opt> -<command> <args>``
+Usage: ``dwopit -help`` or ``dwopit -select <sel-opt> -<command> <args>``
 
 :help:               Highly detailed help documentation.
 :select <option>:    Indicates the next parameter will be indicate which dwarves to select
@@ -936,10 +936,10 @@ dwopit script
 To use this script, you need to select a subset of your dwarves. Then run commands on those dwarves.
 Please report any bugs or crashes you experience here [https://github.com/cppcooper/dfhack-scripts/issues]
 Examples:
-  [DFHack]# dwarf-op -select [ jobs Trader Miner Leader Rancher ] -applytype adaptable
-  [DFHack]# dwarf-op -select all -clear -optimize
-  [DFHack]# dwarf-op -select optimized -reroll
-  [DFHack]# dwarf-op -select named -reroll inclusive -applyprofession RECRUIT
+  [DFHack]# dwopit -select [ jobs Trader Miner Leader Rancher ] -applytype adaptable
+  [DFHack]# dwopit -select all -clear -optimize
+  [DFHack]# dwopit -select optimized -reroll
+  [DFHack]# dwopit -select named -reroll inclusive -applyprofession RECRUIT
 ~~~~~~~~~~~~
  select options:
    (protected is the only option which will select PROTECTED dwarves)
@@ -983,14 +983,14 @@ No dorfs were harmed in the building of this help screen.
 end
 
 function ShowHint()
-    print("\n============\ndwarf-op script")
+    print("\n============\ndwopit script")
     print("~~~~~~~~~~~~")
     print("To use this script, you need to select a subset of your dwarves. Then run commands on those dwarves.")
     print("Examples:")
-    print("  [DFHack]# dwarf-op -select [ jobs Trader Miner Leader Warden ] -applytype adaptable")
-    print("  [DFHack]# dwarf-op -select all -clear -optimize")
-    print("  [DFHack]# dwarf-op -select optimized -reroll")
-    print("  [DFHack]# dwarf-op -select named -reroll inclusive -applyprofession RECRUIT")
+    print("  [DFHack]# dwopit -select [ jobs Trader Miner Leader Warden ] -applytype adaptable")
+    print("  [DFHack]# dwopit -select all -clear -optimize")
+    print("  [DFHack]# dwopit -select optimized -reroll")
+    print("  [DFHack]# dwopit -select named -reroll inclusive -applyprofession RECRUIT")
 end
 
 local ActiveUnits = df.global.world.units.active
