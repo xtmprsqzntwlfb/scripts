@@ -1028,15 +1028,18 @@ Please report any bugs or crashes you experience here [https://github.com/cppcoo
 Examples:
   [DFHack]# dwopit -select [ jobs Trader Miner Leader Rancher ] -applytype adaptable
   [DFHack]# dwopit -select all -clear -optimize
+  [DFHack]# dwopit -select pall -clear -optimize
   [DFHack]# dwopit -select optimized -reroll
   [DFHack]# dwopit -select named -reroll inclusive -applyprofession RECRUIT
 ~~~~~~~~~~~~
  select options:
-   (protected is the only option which will select PROTECTED dwarves)
+   (prepend the letter p to any option to include protected dwarves in selection)
     (none)      - same as typing `-select highlighted`
     all         - selects all dwarves.
     highlighted - selects only the in-game highlighted dwarf (from any screen).
+                  [Ignores protection status]
     <name>      - selects any dwarf with <name> in their name or nickname. (sub-string match)
+                  [Ignores protection status]
     named       - selects dwarves with user-given names.
     unnamed     - selects dwarves without user-given names.
     employed    - selects dwarves with custom professions. Excludes optimized dwarves.
@@ -1052,15 +1055,20 @@ Examples:
     jobs        - selects any dwarves with the listed jobs. This will only match with custom
                   professions, or optimized dwarves (for optimized dwarves see: jobs in
                   dorf_tables.lua).
-                - usage `-select [ jobs job1 job2 etc. ]` eg. `-select [ jobs Miner Trader ]`
+                  usage `-select [ jobs job1 job2 etc. ]` eg. `-select [ jobs Miner Trader ]`
+    waves       - selects dwarves from the specified migration waves. Waves are enumerated
+                  starting at 0 and increasing by 1 with each wave. If two waves came in a month
+                  they will be grouped together (sorry)
+                  usage `-select [ waves 0 1 3 5 7 13 ]`
 ~~~~~~~~~~~~
  general commands:
     reset              - deletes json file containing session data (bug: might not delete session
                          data, no idea why)
     resetall           - deletes both json files. session data and existing persistent data (bug:
                          might not delete session data, no idea why)
-    show               - displays affected dwarves (id, name, primary job). useful for previewing
-                         selected dwarves before modifying them.
+    show               - displays affected dwarves (id, name, migration wave, primary job). useful
+                         for previewing selected dwarves before modifying them, or looking up the
+                         migration wave number for a group of dwarves.
 
  dwarf commands:
     clear              - zeroes selected dwarves, or zeroes all dwarves if no selection is given.
