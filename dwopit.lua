@@ -738,7 +738,7 @@ end
 function Show(dwf)
     local name_ptr = dfhack.units.getVisibleName(dwf)
     local name = dfhack.TranslateName(name_ptr)
-    print(string.format("(%05d) - %-23s [wave:%02d]  %03d %s", dwf.id, name, tonumber(FindValueKey(zwaves,dwf)), dwf.profession, dwf.custom_profession))
+    print(string.format("%6d - %-23s [wave:%2d]  %3d %s", dwf.id, name, tonumber(FindValueKey(zwaves,dwf)), dwf.profession, dwf.custom_profession))
     --print('('..dwf.id..') - '..name..spaces..dwf.profession,dwf.custom_profession)
 end
 
@@ -839,41 +839,65 @@ function CanWork(dwf)
     return dfhack.units.isCitizen(dwf) and dfhack.units.isAdult(dwf)
 end
 
+local includeProtectedDwfs = false
 function CheckWorker(dwf, option)
-    local name = dfhack.TranslateName(dfhack.units.getVisibleName(dwf))
-    local nickname = dwf.status.current_soul.name.nickname
-    if option == 'highlighted' then
-        if dwf == dfhack.gui.getSelectedUnit() then
-            return dwf == dfhack.gui.getSelectedUnit()
-        end
-    elseif type(option) == 'string' then
-        if string.match(name,option) or string.match(nickname,option) then
-            return true;
-        end
-    end
     if CanWork(dwf) then
-        --pre-selection options
-        --selection options
-        if option == 'protected' then
-            return isDwarfProtected(dwf)
-        elseif isDwarfUnprotected(dwf) then
-            if option == 'all' then
+        --check option data type (string/table)
+            --string:
+                --check if we want highlighted dwf & whether that is this dwf
+                --check if option specifies a pattern which matches the name of a dwarf
+                --check if option starts with 'p'
+                --check all the possible options
+            --table:
+                --check if option[1] starts with 'p'
+                --check all possible options
+        if type(option) == 'string' then
+            local name = dfhack.TranslateName(dfhack.units.getVisibleName(dwf))
+            local nickname = dwf.status.current_soul.name.nickname
+            if string.match(name,option) or string.match(nickname,option) then
                 return true
-            elseif option == 'named' then
-                return isDwarfNamed(dwf)
-            elseif option == 'unnamed' then
-                return (not isDwarfNamed(dwf))
-            elseif option == 'employed' then
-                return isDwarfEmployed(dwf)
-            elseif option == 'optimized' then
-                return isDwarfOptimized(dwf)
-            elseif option == 'unoptimized' then
-                return isDwarfUnoptimized(dwf)
-            elseif option == 'unprotected' then
-                return isDwarfUnprotected(dwf)
-            elseif option == 'drunks' or option == 'drunk' then
-                return dwf.profession == df.profession['DRUNK'] and dwf.profession2 == df.profession['DRUNK']
-            elseif type(option) == 'table' then
+            elseif option == 'highlighted' then
+                if CanWork(dfhack.gui.getSelectedUnit()) then
+                    return dwf == dfhack.gui.getSelectedUnit()
+                else
+                    error("The selected unit isn't a dwarf, or can't work. This script is not intended for such units.")
+                end
+            elseif GetChar(option,1) == 'p' then
+                includeProtectedDwfs = true
+                if option ~= 'protected' then
+                    option = string.sub(option,2)
+                end
+            end
+            if includeProtectedDwfs or isDwarfUnprotected(dwf) then
+                if option == 'all' then
+                    return true
+                elseif option == 'named' then
+                    return isDwarfNamed(dwf)
+                elseif option == 'unnamed' then
+                    return (not isDwarfNamed(dwf))
+                elseif option == 'employed' then
+                    return isDwarfEmployed(dwf)
+                elseif option == 'optimized' then
+                    return isDwarfOptimized(dwf)
+                elseif option == 'unoptimized' then
+                    return isDwarfUnoptimized(dwf)
+                elseif option == 'protected' then
+                    return isDwarfProtected(dwf)
+                elseif option == 'unprotected' then
+                    return isDwarfUnprotected(dwf)
+                elseif option == 'drunks' or option == 'drunk' then
+                    return dwf.profession == df.profession['DRUNK'] and dwf.profession2 == df.profession['DRUNK']
+                else
+                    error("Invalid select option specified.")
+                end
+            end
+        elseif type(option) == 'table' then
+            if GetChar(option[1],1) == 'p' then
+                includeProtectedDwfs = true
+                option[1] = string.sub(option[1],2)
+            end
+            --print(includeProtectedDwfs)
+            if includeProtectedDwfs or isDwarfUnprotected(dwf) then
                 if option[1] == 'job' or option[1] == 'jobs' then
                     n=0
                     for _,v in pairs(option) do
@@ -893,6 +917,8 @@ function CheckWorker(dwf, option)
                     end
                 end
             end
+        else
+            error("The select option entered is not a table, or a string. I have no idea what you've done.")
         end
     end
     return false
@@ -1203,7 +1229,6 @@ elseif args.select and (args.debug or args.clear or args.optimize or args.reroll
         error("Clear is implied with Reroll. Choose one, not both.")
     end
     if args.show then
-        print("Affected Dwarves: " .. affected)
         LoopUnits(selection, nil, Show)
     end
 end
