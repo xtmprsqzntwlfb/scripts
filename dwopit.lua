@@ -275,12 +275,31 @@ end
 function TableLength(table) local count = 0 for i,k in pairs(table) do count = count + 1 end return
 count end
 
-function FindValueKey(t, value)
-    for k,v in pairs(t) do
+function TableContainsValue(t,value)
+    for _,v in pairs(t) do
         if v == value then
+            return true
+        end
+    end
+    return false
+end
+
+function FindValueKey(t, value, depth)
+    if depth == nil then
+        depth = 0
+    elseif depth == 10 then
+        return nil
+    end
+    for k,v in pairs(t) do
+        if type(v) == 'table' then
+            if FindValueKey(v, value, depth + 1) ~= nil then
+                return k
+            end
+        elseif v == value then
             return k
         end
     end
+    return nil
 end
 
 function FindKeyValue(t, key)
@@ -667,7 +686,8 @@ function ZeroDwarf(dwf)
 end
 
 function Reroll(dwf)
-    local jobName = DwarvesData[dwf.id].job
+    local id = tostring(dwf.id)
+    local jobName = DwarvesData[id].job
     if cloned.jobs[jobName] then
         if args.reroll ~= 'inclusive' then
             ZeroDwarf(dwf)
@@ -681,18 +701,45 @@ end
 function RenameJob(dwf)
     if args.renamejob ~= nil then
         dwf.custom_profession = args.renamejob
+        return true
     end
+    return false
+end
+
+waves={}
+local ticks_per_day = 1200;
+local ticks_per_month = 28 * ticks_per_day;
+local ticks_per_season = 3 * ticks_per_month;
+local ticks_per_year = 12 * ticks_per_month;
+local current_tick = df.global.cur_year_tick
+local seasons = {
+    'spring',
+    'summer',
+    'autumn',
+    'winter',
+}
+function GetWave(dwf)
+    arrival_time = current_tick - dwf.curse.time_on_site;
+    --print(string.format("Current year %s, arrival_time = %s, ticks_per_year = %s", df.global.cur_year, arrival_time, ticks_per_year))
+    arrival_year = df.global.cur_year + (arrival_time // ticks_per_year);
+    arrival_season = (arrival_time % ticks_per_year) // ticks_per_season;
+    wave = 10 * arrival_year + arrival_season
+    day = (wave % 100) + 1;
+    month = (wave // 100) % 100;
+    season = (wave // 10000) % 10;
+    year = wave // 100000;
+    if waves[wave] == nil then
+        waves[wave] = {}
+    end
+    table.insert(waves[wave],dwf)
+    --print(string.format("Arrived in the %s of the year %s. Wave %s, arrival time %s",seasons[season+1],year, wave, arrival_month))
 end
 
 function Show(dwf)
     local name_ptr = dfhack.units.getVisibleName(dwf)
     local name = dfhack.TranslateName(name_ptr)
-    local numspaces = 26 - string.len(name)
-    local spaces = ' '
-    for i=1,numspaces do
-        spaces = spaces .. " "
-    end
-    print('('..dwf.id..') - '..name..spaces..dwf.profession,dwf.custom_profession)
+    print(string.format("(%05d) - %-23s [wave:%02d]  %03d %s", dwf.id, name, tonumber(FindValueKey(zwaves,dwf)), dwf.profession, dwf.custom_profession))
+    --print('('..dwf.id..') - '..name..spaces..dwf.profession,dwf.custom_profession)
 end
 
 function LoopUnits(units, check, fn, checkoption, profmin, profmax) --cause nothing else will use arg 5 or 6
@@ -836,6 +883,14 @@ function CheckWorker(dwf, option)
                             return true
                         end
                     end
+                elseif option[1] == 'wave' or option[1] == 'waves' then
+                    n=0
+                    for _,v in pairs(option) do
+                        n=n+1
+                        if n > 1 and TableContainsValue(zwaves[tonumber(v)],dwf) then
+                            return true
+                        end
+                    end
                 end
             end
         end
@@ -893,6 +948,9 @@ function Prepare()
 
     --TryClearDwarf Loop (or maybe not)
     print("Data load complete.")
+    print("Calculating wave enumerations..")
+    GetWaves()
+    print("Done calculating.")
 end
 
 function PrepareDistributionMax(jobName)
@@ -919,6 +977,17 @@ end
 function SelectDwarf(dwf)
     table.insert(selection, dwf)
     return true
+end
+
+zwaves={}
+function GetWaves()
+    LoopUnits(df.global.world.units.active, CanWork, GetWave)
+    i = 0
+    for k,v in spairs(waves, utils.compare) do
+        --print(string.format("zwave[%s] = wave[%s]",i,k))
+        zwaves[i] = waves[k]
+        i = i + 1
+    end
 end
 
 function ShowHelp()
@@ -1034,6 +1103,7 @@ if not args.select then
         args.select = 'highlighted'
     end
 end
+
 if args.help then
     ShowHelp()
 elseif args.select and (args.debug or args.clear or args.optimize or args.reroll or args.applyjobs or args.applyprofessions or args.applytypes or args.renamejob) then
@@ -1133,7 +1203,7 @@ elseif args.select and (args.debug or args.clear or args.optimize or args.reroll
         error("Clear is implied with Reroll. Choose one, not both.")
     end
     if args.show then
-        print("Affected Dwarves: ")
+        print("Affected Dwarves: " .. affected)
         LoopUnits(selection, nil, Show)
     end
 end
