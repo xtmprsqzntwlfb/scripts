@@ -13,7 +13,7 @@ jobs:
     - name: Set up DFHack
       run: |
         git clone git://github.com/dfhack/dfhack $HOME/dfhack --depth 1 --branch develop
-        git -C $HOME/dfhack submodule update --init --depth 1 plugins/stonesense library/xml
+        git -C $HOME/dfhack submodule update --init --depth 1 --remote plugins/stonesense library/xml
         rmdir $HOME/dfhack/scripts
         ln -sv $(pwd) $HOME/dfhack/scripts
     - name: Build docs
