@@ -64,7 +64,8 @@ Example:
      * Spatial sense: a random value between 1043 and 1292 (tier -1).
 
     The final result will be:
-    ``She is strong, but she is very clumsy. She has a questionable spatial sense.``
+    ``She is very strong, but she is very clumsy.
+    She has a questionable spatial sense.``
 ]====]
 
 local utils = require("utils")
@@ -209,14 +210,23 @@ function assign(attributes, unit, reset)
     -- assign new attributes
     for attribute, tier in pairs(attributes) do
         attribute = attribute:upper()
+
         if medians.PHYSICAL[attribute] then
-            local v, max_v = convert_tier_to_value(attribute, tier)
-            unit.body.physical_attrs[attribute].value = v
-            unit.body.physical_attrs[attribute].max_value = max_v
+            if tier >= -4 and tier <= 4 then
+                local v, max_v = convert_tier_to_value(attribute, tier)
+                unit.body.physical_attrs[attribute].value = v
+                unit.body.physical_attrs[attribute].max_value = max_v
+            else
+                print_yellow("WARNING: tier out of range for attribute '" .. attribute .. "'. Skipping...")
+            end
         elseif medians.MENTAL[attribute] then
-            local v, max_v = convert_tier_to_value(attribute, tier)
-            unit.status.current_soul.mental_attrs[attribute].value = v
-            unit.status.current_soul.mental_attrs[attribute].max_value = max_v
+            if tier >= -4 and tier <= 4 then -- code repetition, but I think the warning message it's clearer this way
+                local v, max_v = convert_tier_to_value(attribute, tier)
+                unit.status.current_soul.mental_attrs[attribute].value = v
+                unit.status.current_soul.mental_attrs[attribute].max_value = max_v
+            else
+                print_yellow("WARNING: tier out of range for attribute '" .. attribute .. "'. Skipping...")
+            end
         else
             print_yellow("WARNING: '" .. attribute .. "' is not a valid attribute. Skipping...")
         end
@@ -225,7 +235,7 @@ end
 
 -- ------------------------------------------------------ MAIN ------------------------------------------------------ --
 local function main(...)
-    local args = utils.processArgs({...}, valid_args)
+    local args = utils.processArgs({ ... }, valid_args)
 
     if args.help then
         print(help)
