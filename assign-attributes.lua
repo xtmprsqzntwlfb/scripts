@@ -39,12 +39,13 @@ Usage:
                     the target unit ID. If not present, the
                     currently selected unit will be the target.
 
-:``-attributes <ATTRIBUTE TIER [ATTRIBUTE TIER] [...]>``:
+:``-attributes [ <ATTRIBUTE> <TIER> <ATTRIBUTE> <TIER> <...> ]``:
                     the list of the attributes to modify and their tiers.
                     The valid attribute names can be found in the wiki:
                     https://dwarffortresswiki.org/index.php/DF2014:Attribute
                     (substitute any space with underscores); tiers range from -4
-                    to 4.
+                    to 4. There must be a space before and after each square
+                    bracket.
 
 :``-reset``:
                     reset all attributes to the average level (tier 0).
@@ -54,7 +55,7 @@ Usage:
 
 Example:
 
-``-reset -attributes STRENGTH 2 AGILITY -1 SPATIAL_SENSE -1``
+``-reset -attributes [ STRENGTH 2 AGILITY -1 SPATIAL_SENSE -1 ]``
     This will reset all attributes to a neutral value and will set
     the following values (if the currently selected unit is a dwarf):
 
@@ -68,12 +69,13 @@ Example:
 
 local utils = require("utils")
 
-local valid_args = {
-    HELP = "-help",
-    UNIT = "-unit",
-    ATTRIBUTES = "-attributes",
-    RESET = "-reset",
-}
+local valid_args = utils.invert({
+                                    'help',
+                                    'unit',
+                                    'attributes',
+                                    'reset',
+                                })
+
 
 -- ----------------------------------------------- UTILITY FUNCTIONS ------------------------------------------------ --
 local function print_yellow(text)
@@ -223,69 +225,46 @@ end
 
 -- ------------------------------------------------------ MAIN ------------------------------------------------------ --
 local function main(...)
-    local args = { ... }
+    local args = utils.processArgs({...}, valid_args)
 
-    if #args == 0 then
+    if args.help then
         print(help)
         return
     end
 
-    local unit_id
-    local attributes
     local reset = false
+    if args.reset then
+        reset = true
+    end
 
-    local i = 1
-    while i <= #args do
-        local arg = args[i]
-        if arg == valid_args.HELP then
-            print(help)
-            return
-        elseif arg == valid_args.UNIT then
-            i = i + 1 -- consume next arg
-            local unit_id_str = args[i]
-            if not unit_id_str then
-                -- we reached the end of the arguments list
-                qerror("Missing unit id.")
-            end
-            unit_id = tonumber(unit_id_str)
-            if not unit_id then
-                qerror("'" .. unit_id_str .. "' is not a valid unit ID.")
-            end
-        elseif arg == valid_args.ATTRIBUTES then
-            -- initialise attribute/tier table: it'll be useful later
-            attributes = {}
-        elseif arg == valid_args.RESET then
-            reset = true
-        elseif attributes then
-            -- if the attributes table is initialised, then we already encountered
-            -- the "-attributes" arg and this arg will probably be an attribute name,
-            -- but it can also be a tier value, so we check if it's a number
-            if not tonumber(arg) then
-                local attribute_name = tostring(arg):upper()
-                -- assume it's a valid attribute name, now check if the next arg is a valid tier
-                local tier_str = args[i + 1]
+    -- parse attributes list
+    local attributes = {}
+    if args.attributes then
+        local i = 1
+        while i <= #args.attributes do
+            local v = args.attributes[i]
+            -- v can be an attribute name but it can also be a tier value, so we have to check
+            if not tonumber(v) then
+                -- assume it's a valid attribute name, for now
+                local attribute_name = tostring(v):upper()
+                -- then try to get the tier value
+                local tier_str = args.attributes[i + 1]
                 if not tier_str then
-                    -- we reached the end of the arguments list
-                    qerror("Missing tier value after '" .. arg .. "'.")
+                    -- we reached the end of the attributes list
+                    qerror("Missing tier value after '" .. v .. "'.")
                 end
                 local tier_int = tonumber(tier_str)
                 if not tier_int then
                     qerror("'" .. tier_str .. "' is not a valid number.")
                 end
-                if tier_int >= -4 and tier_int <= 4 then
-                    attributes[attribute_name] = tier_int
-                    i = i + 1 -- skip next arg because we already consumed it
-                else
-                    qerror("Tier " .. tier_int .. " out of range.")
-                end
+                -- assume the tier value is in range, for now
+                attributes[attribute_name] = tier_int
             end
-        else
-            qerror("'" .. arg .. "' is not a valid argument.")
+            i = i + 1 -- skip next arg because we already consumed it
         end
-        i = i + 1 -- go to the next argument
     end
 
-    assign(attributes, unit_id, reset)
+    assign(attributes, args.unit, reset)
 end
 
 if not dfhack_flags.module then
