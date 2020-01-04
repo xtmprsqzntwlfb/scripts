@@ -27,10 +27,13 @@ Usage:
                     set the target unit ID. If not present, the
                     currently selected unit will be the target.
 
-:``-goals <GOAL REALIZED_FLAG [GOAL REALIZED_FLAG] [...]>``:
+:``-goals [ <GOAL> <REALIZED_FLAG> <GOAL> <REALIZED_FLAG> <...> ]``:
                     the goals to modify/add and whether they have
                     been realized or not. The valid goal tokens
                     can be found in the wiki page linked above.
+                    The flag must be a true/false value.
+                    There must be a space before and after each square
+                    bracket.
 
 :``-reset``:
                     clear all goals. If the script is called with
@@ -40,7 +43,7 @@ Usage:
 
 Example:
 
-``-reset -goals MASTER_A_SKILL false``
+``-reset -goals [ MASTER_A_SKILL false ]``
     Clears all the unit goals, then sets the "master
     a skill" goal. The final result will be:
     ``dreams of mastering a skill.``
@@ -48,12 +51,12 @@ Example:
 
 local utils = require("utils")
 
-local valid_args = {
-    HELP = "-help",
-    UNIT = "-unit",
-    GOALS = "-goals",
-    RESET = "-reset",
-}
+local valid_args = utils.invert({
+                                    'help',
+                                    'unit',
+                                    'goals',
+                                    'reset',
+                                })
 
 -- ----------------------------------------------- UTILITY FUNCTIONS ------------------------------------------------ --
 local function print_yellow(text)
@@ -106,67 +109,54 @@ end
 
 -- ------------------------------------------------------ MAIN ------------------------------------------------------ --
 local function main(...)
-    local args = { ... }
+    local function is_flag(string)
+        return string:upper() == "TRUE" or string:upper() == "FALSE"
+    end
 
-    if #args == 0 then
+    local args = utils.processArgs({ ... }, valid_args)
+
+    if args.help then
         print(help)
         return
     end
 
-    local unit_id
-    local goals
-    local erase = false
-
-    local i = 1
-    while i <= #args do
-        local arg = args[i]
-        if arg == valid_args.HELP then
-            print(help)
-            return
-        elseif arg == valid_args.UNIT then
-            i = i + 1 -- consume next arg
-            local unit_id_str = args[i]
-            if not unit_id_str then
-                -- we reached the end of the arguments list
-                qerror("Missing unit id.")
-            end
-            unit_id = tonumber(unit_id_str)
-            if not unit_id then
-                qerror("'" .. unit_id_str .. "' is not a valid unit ID.")
-            end
-        elseif arg == valid_args.GOALS then
-            -- initialise goal/flag table: it'll be useful later
-            goals = {}
-        elseif arg == valid_args.RESET then
-            erase = true
-        elseif goals then
-            -- if the goals table is initialised, then we already encountered the "-goals" arg and this arg
-            -- will probably be a goal name
-            local goal_name = tostring(arg):upper()
-            -- assume it's a valid goal name, now check if the next arg is a true/false value
-            local realized_str = args[i + 1]:upper()
-            if not realized_str then
-                -- we reached the end of the arguments list
-                qerror("Missing realized flag after '" .. arg .. "'.")
-            end
-            local realized_bool
-            if realized_str == "TRUE" then
-                realized_bool = true
-            elseif realized_str == "FALSE" then
-                realized_bool = false
-            end
-            if realized_bool == nil then
-                qerror("'" .. realized_str .. "' is not a true or false value.")
-            end
-            goals[goal_name] = realized_bool
-            i = i + 1 -- skip next arg because we already consumed it
-        else
-            qerror("'" .. arg .. "' is not a valid argument.")
-        end
-        i = i + 1 -- go to the next argument
+    local reset = false
+    if args.reset then
+        reset = true
     end
 
-    assign(goals, unit_id, erase)
+    -- parse goals list
+    local goals = {}
+    if args.goals then
+        local i = 1
+        while i <= #args.goals do
+            local v = args.goals[i]
+            -- v can be a goal name but it can also be a boolean flag, so we have to check
+            if not is_flag(v) then
+                -- assume it's a valid goal name, for now
+                local goal_name = tostring(v):upper()
+                -- then try to get the boolean flag
+                local flag_str = args.goals[i + 1]
+                if not flag_str then
+                    -- we reached the end of the goals list
+                    qerror("Missing realized flag after '" .. v .. "'.")
+                end
+                local flag_bool
+                if flag_str:upper() == "TRUE" then
+                    flag_bool = true
+                elseif flag_str:upper() == "FALSE" then
+                    flag_bool = false
+                end
+                if flag_bool == nil then
+                    qerror("'" .. flag_str .. "' is not a true or false value.")
+                end
+                goals[goal_name] = flag_bool
+            end
+            i = i + 1 -- skip next arg because we already consumed it
+        end
+    end
+
+    assign(goals, args.unit, reset)
 end
 
 if not dfhack_flags.module then
