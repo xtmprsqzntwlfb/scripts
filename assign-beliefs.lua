@@ -171,7 +171,7 @@ local function main(...)
         local i = 1
         while i <= #args.beliefs do
             local v = args.beliefs[i]
-            -- v can be an belief name but it can also be a level value, so we have to check
+            -- v can be a belief name but it can also be a level value, so we have to check
             if not tonumber(v) then
                 -- assume it's a valid belief name, for now
                 local belief_name = tostring(v):upper()
