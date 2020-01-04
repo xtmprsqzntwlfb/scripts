@@ -48,7 +48,7 @@ Usage:
                     set the target unit ID. If not present, the
                     currently selected unit will be the target.
 
-:``-likematerial <TOKEN [TOKEN] [...]>``:
+:``-likematerial [ <TOKEN> <TOKEN> <...> ]``:
                     usually a type of stone, a type of metal and a type
                     of gem, plus it can also be a type of wood, a type of
                     glass, a type of leather, a type of horn, a type of
@@ -57,8 +57,10 @@ Usage:
                     of silk, a type of yarn, or a type of plant cloth.
                     Write the tokens as found in the "id" column of the
                     file "MatList.csv", generated as explained above.
+                    There must be a space before and after each square
+                    bracket.
 
-:``-likecreature <TOKEN [TOKEN] [...]>``:
+:``-likecreature [ <TOKEN> <TOKEN> <...> ]``:
                     one or more creatures liked by the unit. You can
                     just list the species: if you are using the file
                     "MatList.csv" as explained above, the creature token
@@ -66,23 +68,29 @@ Usage:
                     so the name of the species will be ``SPARROW``. Nothing
                     will stop you to write the full token, if you want: the
                     script will just ignore the first and the last parts.
+                    There must be a space before and after each square
+                    bracket.
 
-:``-likefood <TOKEN [TOKEN] [...]>``:
+:``-likefood [ <TOKEN> <TOKEN> <...> ]``:
                     usually a type of alcohol, plus it can be a type of
                     meat, a type of fish, a type of cheese, a type of edible
                     plant, a cookable plant/creature extract, a cookable
                     mill powder, a cookable plant seed or a cookable plant
                     leaf. Write the tokens as found in the "id" column of
                     the file "MatList.csv", generated as explained above.
+                    There must be a space before and after each square
+                    bracket.
 
-:``-hatecreature <TOKEN [TOKEN] [...]>``:
+:``-hatecreature [ <TOKEN> <TOKEN> <...> ]``:
                     works the same way as ``-likecreature``, but this time
                     it's one or more creatures that the unit detests. They
                     should be a type of ``HATEABLE`` vermin which isn't already
                     explicitly liked, but no check is performed about this.
                     Like before, you can just list the creature species.
+                    There must be a space before and after each square
+                    bracket.
 
-:``-likeitem <TOKEN [TOKEN] [...]>``:
+:``-likeitem [ <TOKEN> <TOKEN> <...> ]``:
                     a kind of weapon, a kind of ammo, a kind of piece of
                     armor, a piece of clothing (including backpacks or
                     quivers), a type of furniture (doors, floodgates, beds,
@@ -101,30 +109,40 @@ Usage:
                     listed under the column "Subtype" of the wiki page (they are
                     in the "/raw/ojects/" folder), then specify the items using
                     the full tokens found in those files (see examples below).
+                    There must be a space before and after each square
+                    bracket.
 
-:``-likeplant <TOKEN [TOKEN] [...]``:
+:``-likeplant [ <TOKEN> <TOKEN> <...> ]``:
                     works in a similar way as ``-likecreature``, this time
                     with plants. You can just List the plant species (the
                     middle part of the token as listed in "MatList.csv").
+                    There must be a space before and after each square
+                    bracket.
 
-``-liketree <TOKEN [TOKEN] [...]``:
+``-liketree [ <TOKEN> <TOKEN> <...> ]``:
                     works exactly as ``-likeplant``. I think this
                     preference type is here for backward compatibility (?).
                     You can still use it, however. As before,
                     you can just list the tree (plant) species.
+                    There must be a space before and after each square
+                    bracket.
 
-``-likecolor <TOKEN [TOKEN] [...]``:
+``-likecolor [ <TOKEN> <TOKEN> <...> ]``:
                     you can find the color tokens here:
                     https://dwarffortresswiki.org/index.php/DF2014:Color#Color_tokens
                     or inside the "descriptor_color_standard.txt" file
                     (in the "/raw/ojects/" folder). You can use the full token or
                     just the color name.
+                    There must be a space before and after each square
+                    bracket.
 
-:``-likeshape <TOKEN [TOKEN] [...]``:
+:``-likeshape [ <TOKEN> <TOKEN> <...> ]``:
                     I couldn't find a list of shape tokens in the wiki, but you
                     can find them inside the "descriptor_shape_standard.txt"
                     file (in the "/raw/ojects/" folder). You can
                     use the full token or just the shape name.
+                    There must be a space before and after each square
+                    bracket.
 
 :``-reset``:
                     clear all preferences. If the script is called
@@ -134,19 +152,19 @@ Usage:
 
 Examples:
 
-``-reset -likematerial INORGANIC:OBSIDAN PLANT:WILLOW:WOOD``
+``-reset -likematerial [ INORGANIC:OBSIDAN PLANT:WILLOW:WOOD ]``
     "likes alabaster and willow wood"
 
 ``-reset -likecreature SPARROW``
     "likes sparrows for their ..."
 
-``-reset -likefood PLANT:MUSHROOM_HELMET_PLUMP:DRINK PLANT:OLIVE:FRUIT``
+``-reset -likefood [ PLANT:MUSHROOM_HELMET_PLUMP:DRINK PLANT:OLIVE:FRUIT ]``
     "prefers to consume dwarven wine and olives"
 
 ``-reset -hatecreature SPIDER_JUMPING``
     "absolutely detests jumping spiders
 
-``-reset -likeitem WOOD ITEM_WEAPON:ITEM_WEAPON_AXE_BATTLE``
+``-reset -likeitem [ WOOD ITEM_WEAPON:ITEM_WEAPON_AXE_BATTLE ]``
     "likes logs and battle axes"
 
 ``-reset -likeplant BERRIES_STRAW``
@@ -164,35 +182,26 @@ Examples:
 
 local utils = require("utils")
 
-local valid_args = {
-    HELP = "-help",
-    UNIT = "-unit",
-    LIKEMATERIAL = "-likematerial",
-    LIKECREATURE = "-likecreature",
-    LIKEFOOD = "-likefood",
-    HATECREATURE = "-hatecreature",
-    LIKEITEM = "-likeitem",
-    LIKEPLANT = "-likeplant",
-    LIKETREE = "-liketree",
-    LIKECOLOR = "-likecolor",
-    LIKESHAPE = "-likeshape",
-    RESET = "-reset",
-}
+local valid_args = utils.invert({
+                                    'help',
+                                    'unit',
+                                    'likematerial',
+                                    'likecreature',
+                                    'likefood',
+                                    'hatecreature',
+                                    'likeitem',
+                                    'likeplant',
+                                    'liketree',
+                                    'likecolor',
+                                    'likeshape',
+                                    'reset',
+                                })
 
 -- ----------------------------------------------- UTILITY FUNCTIONS ------------------------------------------------ --
 local function print_yellow(text)
     dfhack.color(COLOR_YELLOW)
     print(text)
     dfhack.color(-1)
-end
-
-local function contains(table, value)
-    for _, v in pairs(table) do
-        if v == value then
-            return true
-        end
-    end
-    return false
 end
 
 -- initialise random number generator
@@ -554,7 +563,8 @@ local preference_functions = {
 }
 
 --- Assign the given preferences to a unit, clearing all the other preferences if requested.
----   :preferences: nil, or a table. The fields have the preference type as key and an array of reference tokens as value.
+---   :preferences: nil, or a table. The fields have the preference type as key and an array of preference tokens
+---                 as value. If the token is just one, the field can be in a simple key=value format.
 ---   :unit: a valid unit id, a df.unit object, or nil. If nil, the currently selected unit will be targeted.
 ---   :reset: boolean, or nil.
 function assign(preferences, unit, reset)
@@ -582,8 +592,11 @@ function assign(preferences, unit, reset)
     local unit_preferences = unit.status.current_soul.preferences -- store the userdata in a variable for convenience
 
     for preference_type, preference_tokens in pairs(preferences) do
-        assert(type(preference_tokens) == "table")
+        assert(type(preference_tokens) == "table" or type(preference_tokens) == "string")
         local funct = preference_functions[preference_type:upper()]
+        if type(preference_tokens) == "string" then
+            preference_tokens = {preference_tokens} --retype string as table with only one item
+        end
         for _, token in ipairs(preference_tokens) do
             assert(type(token) == "string")
             local new_preference = df.unit_preference:new()
@@ -606,116 +619,33 @@ end
 
 -- ------------------------------------------------------ MAIN ------------------------------------------------------ --
 local function main(...)
-    local args = { ... }
+    local args = utils.processArgs({ ... }, valid_args)
 
-    if #args == 0 then
+    if args.help then
         print(help)
         return
     end
 
-    local unit_id
-    local preferences = {}
-    local erase = false
-
-    local i = 1
-    while i <= #args do
-        local arg = args[i]
-        if arg == valid_args.HELP then
-            print(help)
-            return
-        elseif arg == valid_args.UNIT then
-            i = i + 1 -- consume next arg
-            local unit_id_str = args[i]
-            if not unit_id_str then
-                -- we reached the end of the arguments list
-                qerror("Missing unit id.")
-            end
-            unit_id = tonumber(unit_id_str)
-            if not unit_id then
-                qerror("'" .. unit_id_str .. "' is not a valid unit ID.")
-            end
-        elseif arg == valid_args.RESET then
-            erase = true
-            -- FIXME: we can surely use a function instead of rewriting the same "while" loop
-        elseif arg == valid_args.LIKEMATERIAL then
-            while args[i + 1] and not contains(valid_args, args[i + 1]) do
-                i = i + 1
-                if not preferences.LIKEMATERIAL then
-                    preferences["LIKEMATERIAL"] = {}
-                end
-                table.insert(preferences.LIKEMATERIAL, (args[i]:upper()))
-            end
-        elseif arg == valid_args.LIKECREATURE then
-            while args[i + 1] and not contains(valid_args, args[i + 1]) do
-                i = i + 1
-                if not preferences.LIKECREATURE then
-                    preferences["LIKECREATURE"] = {}
-                end
-                table.insert(preferences.LIKECREATURE, (args[i]:upper()))
-            end
-        elseif arg == valid_args.LIKEFOOD then
-            while args[i + 1] and not contains(valid_args, args[i + 1]) do
-                i = i + 1
-                if not preferences.LIKEFOOD then
-                    preferences["LIKEFOOD"] = {}
-                end
-                table.insert(preferences.LIKEFOOD, (args[i]:upper()))
-            end
-        elseif arg == valid_args.HATECREATURE then
-            while args[i + 1] and not contains(valid_args, args[i + 1]) do
-                i = i + 1
-                if not preferences.HATECREATURE then
-                    preferences["HATECREATURE"] = {}
-                end
-                table.insert(preferences.HATECREATURE, (args[i]:upper()))
-            end
-        elseif arg == valid_args.LIKEITEM then
-            while args[i + 1] and not contains(valid_args, args[i + 1]) do
-                i = i + 1
-                if not preferences.LIKEITEM then
-                    preferences["LIKEITEM"] = {}
-                end
-                table.insert(preferences.LIKEITEM, (args[i]:upper()))
-            end
-        elseif arg == valid_args.LIKEPLANT then
-            while args[i + 1] and not contains(valid_args, args[i + 1]) do
-                i = i + 1
-                if not preferences.LIKEPLANT then
-                    preferences["LIKEPLANT"] = {}
-                end
-                table.insert(preferences.LIKEPLANT, (args[i]:upper()))
-            end
-        elseif arg == valid_args.LIKETREE then
-            while args[i + 1] and not contains(valid_args, args[i + 1]) do
-                i = i + 1
-                if not preferences.LIKETREE then
-                    preferences["LIKETREE"] = {}
-                end
-                table.insert(preferences.LIKETREE, (args[i]:upper()))
-            end
-        elseif arg == valid_args.LIKECOLOR then
-            while args[i + 1] and not contains(valid_args, args[i + 1]) do
-                i = i + 1
-                if not preferences.LIKECOLOR then
-                    preferences["LIKECOLOR"] = {}
-                end
-                table.insert(preferences.LIKECOLOR, (args[i]:upper()))
-            end
-        elseif arg == valid_args.LIKESHAPE then
-            while args[i + 1] and not contains(valid_args, args[i + 1]) do
-                i = i + 1
-                if not preferences.LIKESHAPE then
-                    preferences["LIKESHAPE"] = {}
-                end
-                table.insert(preferences.LIKESHAPE, (args[i]:upper()))
-            end
-        else
-            qerror("'" .. arg .. "' is not a valid argument.")
+    local unit
+    if args.unit then
+        unit = tonumber(args.unit)
+        if not unit then
+            qerror("'" .. args.unit .. "' is not a valid unit ID.")
         end
-        i = i + 1 -- go to the next argument
     end
 
-    assign(preferences, unit_id, erase)
+    local reset = false
+    if args.reset then
+        reset = true
+    end
+
+    -- parse preferences
+    args.unit = nil -- remove from args table
+    args.reset = nil -- remove from args table
+    local preferences = {}
+    utils.assign(preferences, args)
+
+    assign(preferences, unit, reset)
 end
 
 if not dfhack_flags.module then
