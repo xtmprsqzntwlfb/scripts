@@ -35,10 +35,12 @@ Usage:
                     set the target unit ID. If not present, the
                     currently selected unit will be the target.
 
-:``-beliefs <FACET LEVEL [FACET LEVEL] [...]>``:
+:``-beliefs [ <FACET> <LEVEL> <FACET> <LEVEL> <...> ]``:
                     the facets to modify and their levels. The
                     valid facet tokens can be found in the wiki page
                     linked above; level values range from -3 to 3.
+                    There must be a space before and after each square
+                    bracket.
 
 :``-reset``:
                     reset all facets to a neutral level. If the script is
@@ -48,7 +50,7 @@ Usage:
 
 Example:
 
-``-reset -facets HATE_PROPENSITY -2 CHEER_PROPENSITY -1``
+``-reset -facets [ HATE_PROPENSITY -2 CHEER_PROPENSITY -1 ]``
     Resets all the unit facets, then sets the listed facets to the following values:
 
     * Hate propensity: a value between 10 and 24 (level -2);
@@ -64,12 +66,14 @@ Example:
     and if conflicts arise they will be reported.
 ]====]
 
-local valid_args = {
-    HELP = "-help",
-    UNIT = "-unit",
-    FACETS = "-facets",
-    RESET = "-reset",
-}
+local utils = require("utils")
+
+local valid_args = utils.invert({
+                                    'help',
+                                    'unit',
+                                    'facets',
+                                    'reset',
+                                })
 
 -- ----------------------------------------------- UTILITY FUNCTIONS ------------------------------------------------ --
 local function print_yellow(text)
@@ -148,68 +152,46 @@ end
 
 -- ------------------------------------------------------ MAIN ------------------------------------------------------ --
 local function main(...)
-    local args = { ... }
+    local args = utils.processArgs({...}, valid_args)
 
-    if #args == 0 then
+    if args.help then
         print(help)
         return
     end
 
-    local unit_id
-    local facets
     local reset = false
+    if args.reset then
+        reset = true
+    end
 
-    local i = 1
-    while i <= #args do
-        local arg = args[i]
-        if arg == valid_args.HELP then
-            print(help)
-            return
-        elseif arg == valid_args.UNIT then
-            i = i + 1 -- consume next arg
-            local unit_id_str = args[i]
-            if not unit_id_str then
-                -- we reached the end of the arguments list
-                qerror("Missing unit id.")
-            end
-            unit_id = tonumber(unit_id_str)
-            if not unit_id then
-                qerror("'" .. unit_id_str .. "' is not a valid unit ID.")
-            end
-        elseif arg == valid_args.FACETS then
-            -- initialise facet/level table: it'll be useful later
-            facets = {}
-        elseif arg == valid_args.RESET then
-            reset = true
-        elseif facets then
-            -- if the facets table is initialised, then we already encountered the "-facets" arg and this arg
-            -- will probably be a facet name or a level value
-            if not tonumber(arg) then
-                local facet_name = tostring(arg):upper()
-                -- assume it's a valid facet name, now check if the next arg is a valid level
-                local level_str = args[i + 1]
+    -- parse facets list
+    local facets = {}
+    if args.facets then
+        local i = 1
+        while i <= #args.facets do
+            local v = args.facets[i]
+            -- v can be a facet name but it can also be a level value, so we have to check
+            if not tonumber(v) then
+                -- assume it's a valid facet name, for now
+                local facet_name = tostring(v):upper()
+                -- then try to get the level value
+                local level_str = args.facets[i + 1]
                 if not level_str then
-                    -- we reached the end of the arguments list
-                    qerror("Missing level value after '" .. arg .. "'.")
+                    -- we reached the end of the facets list
+                    qerror("Missing level value after '" .. v .. "'.")
                 end
                 local level_int = tonumber(level_str)
                 if not level_int then
                     qerror("'" .. level_str .. "' is not a valid number.")
                 end
-                if level_int >= -3 and level_int <= 3 then
-                    facets[facet_name] = level_int
-                    i = i + 1 -- skip next arg because we already consumed it
-                else
-                    qerror("Level " .. level_int .. " out of range.")
-                end
+                -- assume the level value is in range, for now
+                facets[facet_name] = level_int
             end
-        else
-            qerror("'" .. arg .. "' is not a valid argument.")
+            i = i + 1 -- skip next arg because we already consumed it
         end
-        i = i + 1 -- go to the next argument
     end
 
-    assign(facets, unit_id, reset)
+    assign(facets, args.unit, reset)
 end
 
 if not dfhack_flags.module then
