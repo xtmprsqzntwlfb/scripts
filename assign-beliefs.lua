@@ -35,10 +35,12 @@ Usage:
                     set the target unit ID. If not present, the
                     currently selected unit will be the target.
 
-:``-beliefs <BELIEF LEVEL [BELIEF LEVEL] [...]>``:
+:``-beliefs [ <BELIEF> <LEVEL> <BELIEF> <LEVEL> <...> ]``:
                     the beliefs to modify and their levels. The
                     valid belief tokens can be found in the wiki page
                     linked above; level values range from -3 to 3.
+                    There must be a space before and after each square
+                    bracket.
 
 :``-reset``:
                     reset all beliefs to a neutral level. If the script is
@@ -48,7 +50,7 @@ Usage:
 
 Example:
 
-``-reset -beliefs TRADITION 2 CRAFTSMANSHIP 3 POWER 0 CUNNING -1``
+``-reset -beliefs [ TRADITION 2 CRAFTSMANSHIP 3 POWER 0 CUNNING -1 ]``
     Resets all the unit beliefs, then sets the listed
     beliefs to the following values:
 
@@ -68,12 +70,12 @@ values of the unit have not triggered a report.
 
 local utils = require("utils")
 
-local valid_args = {
-    HELP = "-help",
-    UNIT = "-unit",
-    BELIEFS = "-beliefs",
-    RESET = "-reset",
-}
+local valid_args = utils.invert({
+                                    'help',
+                                    'unit',
+                                    'beliefs',
+                                    'reset',
+                                })
 
 -- ----------------------------------------------- UTILITY FUNCTIONS ------------------------------------------------ --
 local function print_yellow(text)
@@ -151,68 +153,46 @@ end
 
 -- ------------------------------------------------------ MAIN ------------------------------------------------------ --
 local function main(...)
-    local args = { ... }
+    local args = utils.processArgs({...}, valid_args)
 
-    if #args == 0 then
+    if args.help then
         print(help)
         return
     end
 
-    local unit_id
-    local beliefs
     local reset = false
+    if args.reset then
+        reset = true
+    end
 
-    local i = 1
-    while i <= #args do
-        local arg = args[i]
-        if arg == valid_args.HELP then
-            print(help)
-            return
-        elseif arg == valid_args.UNIT then
-            i = i + 1 -- consume next arg
-            local unit_id_str = args[i]
-            if not unit_id_str then
-                -- we reached the end of the arguments list
-                qerror("Missing unit id.")
-            end
-            unit_id = tonumber(unit_id_str)
-            if not unit_id then
-                qerror("'" .. unit_id_str .. "' is not a valid unit ID.")
-            end
-        elseif arg == valid_args.BELIEFS then
-            -- initialise belief/level table: it'll be useful later
-            beliefs = {}
-        elseif arg == valid_args.RESET then
-            reset = true
-        elseif beliefs then
-            -- if the beliefs table is initialised, then we already encountered the "-beliefs" arg and this arg
-            -- will probably be a belief name or a belief level
-            if not tonumber(arg) then
-                local belief_name = tostring(arg):upper()
-                -- assume it's a valid belief name, now check if the next arg is a valid level
-                local level_str = args[i + 1]
+    -- parse beliefs list
+    local beliefs = {}
+    if args.beliefs then
+        local i = 1
+        while i <= #args.beliefs do
+            local v = args.beliefs[i]
+            -- v can be an belief name but it can also be a level value, so we have to check
+            if not tonumber(v) then
+                -- assume it's a valid belief name, for now
+                local belief_name = tostring(v):upper()
+                -- then try to get the level value
+                local level_str = args.beliefs[i + 1]
                 if not level_str then
-                    -- we reached the end of the arguments list
-                    qerror("Missing level value after '" .. arg .. "'.")
+                    -- we reached the end of the beliefs list
+                    qerror("Missing level value after '" .. v .. "'.")
                 end
                 local level_int = tonumber(level_str)
                 if not level_int then
                     qerror("'" .. level_str .. "' is not a valid number.")
                 end
-                if level_int >= -3 and level_int <= 3 then
-                    beliefs[belief_name] = level_int
-                    i = i + 1 -- skip next arg because we already consumed it
-                else
-                    qerror("Level " .. level_int .. " out of range.")
-                end
+                -- assume the level value is in range, for now
+                beliefs[belief_name] = level_int
             end
-        else
-            qerror("'" .. arg .. "' is not a valid argument.")
+            i = i + 1 -- skip next arg because we already consumed it
         end
-        i = i + 1 -- go to the next argument
     end
 
-    assign(beliefs, unit_id, reset)
+    assign(beliefs, args.unit, reset)
 end
 
 if not dfhack_flags.module then
