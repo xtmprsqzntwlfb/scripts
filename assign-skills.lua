@@ -45,11 +45,13 @@ Usage:
                     the target unit ID. If not present, the
                     currently selected unit will be the target.
 
-:``-skills <SKILL RANK [SKILL RANK] [...]>``:
+:``-skills [ <SKILL> <RANK> <SKILL> <RANK> <...> ]``:
                     the list of the skills to modify and their ranks.
                     Rank values range from -1 (the skill is not learned)
                     to normally 20 (legendary + 5). It is actually
                     possible to go beyond 20, no check is performed.
+                    There must be a space before and after each square
+                    bracket.
 
 :``-reset``:
                     clear all skills. If the script is called with
@@ -59,19 +61,19 @@ Usage:
 
 Example:
 
-``-reset -skills WOODCUTTING 3 AXE 2``
+``-reset -skills [ WOODCUTTING 3 AXE 2 ]``
     Clears all the unit skills, then adds the Wood cutter skill
-    (competent evel) and the Axeman skill (adequate level).
+    (competent level) and the Axeman skill (adequate level).
 ]====]
 
 local utils = require("utils")
 
-local valid_args = {
-    HELP = "-help",
-    UNIT = "-unit",
-    SKILLS = "-skills",
-    RESET = "-reset",
-}
+local valid_args = utils.invert({
+                                    'help',
+                                    'unit',
+                                    'skills',
+                                    'reset',
+                                })
 
 -- ----------------------------------------------- UTILITY FUNCTIONS ------------------------------------------------ --
 local function print_yellow(text)
@@ -122,70 +124,54 @@ end
 
 -- ------------------------------------------------------ MAIN ------------------------------------------------------ --
 local function main(...)
-    local args = { ... }
+    local args = utils.processArgs({ ... }, valid_args)
 
-    if #args == 0 then
+    if args.help then
         print(help)
         return
     end
 
-    local unit_id
-    local skills
-    local erase = false
+    local unit
+    if args.unit then
+        unit = tonumber(args.unit)
+        if not unit then
+            qerror("'" .. args.unit .. "' is not a valid unit ID.")
+        end
+    end
 
-    local i = 1
-    while i <= #args do
-        local arg = args[i]
-        if arg == valid_args.HELP then
-            print(help)
-            return
-        elseif arg == valid_args.UNIT then
-            i = i + 1 -- consume next arg
-            local unit_id_str = args[i]
-            if not unit_id_str then
-                -- we reached the end of the arguments list
-                qerror("Missing unit id.")
-            end
-            unit_id = tonumber(unit_id_str)
-            if not unit_id then
-                qerror("'" .. unit_id_str .. "' is not a valid unit ID.")
-            end
-        elseif arg == valid_args.SKILLS then
-            -- initialise skill/rank table: it'll be useful later
-            skills = {}
-        elseif arg == valid_args.RESET then
-            erase = true
-        elseif skills then
-            -- if the skills table is initialised, then we already encountered
-            -- the "-skills" arg and this arg will probably be a skill name,
-            -- but it can also be a rank value, so we check if it's a number
-            if not tonumber(arg) then
-                local skill_name = tostring(arg):upper()
-                -- assume it's a valid skill name, now check if the next arg is a valid rank
-                local rank_str = args[i + 1]
+    local reset = false
+    if args.reset then
+        reset = true
+    end
+
+    -- parse skills list
+    local skills = {}
+    if args.skills then
+        local i = 1
+        while i <= #args.skills do
+            local v = args.skills[i]
+            -- v can be a skill name but it can also be a rank value, so we have to check
+            if not tonumber(v) then
+                -- assume it's a valid skill name, for now
+                local skill_name = tostring(v):upper()
+                -- then try to get the rank value
+                local rank_str = args.skills[i + 1]
                 if not rank_str then
-                    -- we reached the end of the arguments list
-                    qerror("Missing rank value after '" .. arg .. "'.")
+                    -- we reached the end of the skills list
+                    qerror("Missing rank value after '" .. v .. "'.")
                 end
                 local rank_int = tonumber(rank_str)
                 if not rank_int then
                     qerror("'" .. rank_str .. "' is not a valid number.")
                 end
-                if rank_int >= -1 then
-                    -- it can actually be less than -1, but I don't know what would happen
-                    skills[skill_name] = rank_int
-                    i = i + 1 -- skip next arg because we already consumed it
-                else
-                    qerror("Rank " .. rank_int .. " out of range.")
-                end
+                -- assume the rank value is in range, for now
+                skills[skill_name] = rank_int
             end
-        else
-            qerror("'" .. arg .. "' is not a valid argument.")
+            i = i + 1 -- skip next arg because we already consumed it
         end
-        i = i + 1 -- go to the next argument
     end
 
-    assign(skills, unit_id, erase)
+    assign(skills, unit, reset)
 end
 
 if not dfhack_flags.module then
