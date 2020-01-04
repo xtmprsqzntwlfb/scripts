@@ -242,6 +242,14 @@ local function main(...)
         return
     end
 
+    local unit
+    if args.unit then
+        unit = tonumber(args.unit)
+        if not unit then
+            qerror("'" .. args.unit .. "' is not a valid unit ID.")
+        end
+    end
+
     local reset = false
     if args.reset then
         reset = true
@@ -274,7 +282,7 @@ local function main(...)
         end
     end
 
-    assign(attributes, args.unit, reset)
+    assign(attributes, unit, reset)
 end
 
 if not dfhack_flags.module then
