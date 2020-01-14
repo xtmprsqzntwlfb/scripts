@@ -5,8 +5,8 @@
 
 local usage = [====[
 
-modtools/deep-embark
-====================
+deep-embark
+===========
 Moves the starting units and equipment to
 a specific underground region upon embarking.
 
@@ -15,7 +15,7 @@ in the DF raw folder and enter within it the name of
 this script followed by any of the args listed below.
 
 example:
-    modtools/deep-embark -depth CAVERN_2
+    deep-embark -depth CAVERN_2
 
 Usage::
 
@@ -330,7 +330,7 @@ if df.global.ui.fortress_age > 0 then -- reclaimed fortresses also start at fort
 end
 
 if not args.depth then
-  qerror('Depth not specified! Enter "modtools/deep-embark -help" for more information.')
+  qerror('Depth not specified! Enter "deep-embark -help" for more information.')
 end
 
 local validDepths = {
