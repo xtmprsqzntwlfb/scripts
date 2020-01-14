@@ -315,18 +315,18 @@ if args.help then
 end
 
 if df.global.gamemode ~= df.game_mode.DWARF then -- no need to run in adventure/legends mode
-  return
+  qerror('This script requires fortress mode')
 end
 local gametype = df.global.gametype
 if gametype == df.game_type.DWARF_ARENA or gametype == DWARF_UNRETIRE then -- because unretiring forts ~= embarking
-  return
+  qerror('This script requires a new fortress in fortress mode')
 end
 if gametype == df.game_type.DWARF_RECLAIM and not args.atReclaim then -- some might prefer being able to reclaim sites in a cavern-raiding style, so this is an option
-  return
+  qerror('Reclaiming a fortress with this script requires the atReclaim option')
 end
 
 if df.global.ui.fortress_age > 0 then -- reclaimed fortresses also start at fortress_age 0
-  return
+  qerror('This appears to be a reclaimed fortress, which is not supported')
 end
 
 if not args.depth then
