@@ -18,7 +18,7 @@ function get_ptr_size()
 end
 
 function print_off(name, off)
-	print(string.format("%s : %x %x", name, off, off - dfhack.internal.getRebaseDelta()))
+	print(string.format("<global-address name='%s' value='0x%x'/>", name, off - dfhack.internal.getRebaseDelta()))
 end
 
 local ptr_size = get_ptr_size()
