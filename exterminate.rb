@@ -34,6 +34,7 @@ Ex::
 
     exterminate gob
     exterminate gob:male
+    exterminate gob:enemy
 
 To kill a single creature, select the unit with the 'v' cursor and::
 
@@ -117,6 +118,7 @@ when nil
 when 'help', '?'
     puts <<EOS
 Kills all creatures of a given race.
+You may add a 'caste' to the race to kill all males, females, or a special case: enemy.
 With no argument, lists possible targets with their head count.
 With the special argument 'this', kill only the currently selected creature.
     Alternatively, 'him', 'her', 'it', 'target', and 'selected' do the same thing.
@@ -129,6 +131,7 @@ The special final argument 'butcher' will mark the targets for butchering instea
 
 Ex: exterminate gob
     exterminate gob:male
+    exterminate gob:enemy
     exterminate elve magma
     exterminate him
     exterminate pig butcher
@@ -167,24 +170,31 @@ else
 
     race_nr = df.world.raws.creatures.all.index { |cr| cr.creature_id == raw_race }
 
-    if caste
+    if caste == "enemy"
+        caste_nr = true
+        raw_caste = "enemy"
+    elsif caste
         all_castes = df.world.raws.creatures.all[race_nr].caste.map { |c| c.caste_id }
         raw_caste = df.match_rawname(caste, all_castes)
         if not raw_caste
-            puts "Invalid caste, use one of #{all_castes.sort.join(' ')}"
+            puts "Invalid caste, use one of #{all_castes.sort.join(' ')} enemy"
             throw :script_finished
         end
         caste_nr = all_castes.index(raw_caste)
+    else
+        caste_nr = false
     end
 
     count = 0
-    df.world.units.active.each { |u|
+    df.world.units.active.each do |u|
         if u.race == race_nr and checkunit[u]
-            next if caste_nr and u.caste != caste_nr
+            if caste_nr
+                next if caste == "enemy" && !df.unit_ishostile(u)
+                next if caste != "enemy" && u.caste != caste_nr
+            end
             slayit[u]
             count += 1
         end
-    }
+    end
     puts "#{slain} #{count} #{raw_caste} #{raw_race}"
-
 end

@@ -14,15 +14,24 @@ it produced anything, once per completion.  Arguments::
     -reactionName name
         specify the name of the reaction
     -syndrome name
-        specify the name of the syndrome to be applied to the targets
+        specify the name of the syndrome to be applied to valid targets
     -allowNonworkerTargets
-        allow other units in the same building to be targetted by
-        either the script or the syndrome
+        allow other units to be targeted if the worker is invalid or ignored
     -allowMultipleTargets
-        allow multiple targets to the script or syndrome
+        allow all valid targets within range to be affected
         if absent:
             if running a script, only one target will be used
             if applying a syndrome, then only one target will be infected
+    -ignoreWorker
+        ignores the worker when selecting the targets
+    -dontSkipInactive
+        when selecting targets in range, include creatures that are inactive
+        dead creatures count as inactive
+    -range [ x y z ]
+        controls how far elligible targets can be from the workshop
+        defaults to [ 0 0 0 ] (on a workshop tile)
+        negative numbers can be used to ignore outer squares of the workshop
+        line of sight is not respected, and the worker is always within range
     -resetPolicy policy
         the policy in the case that the syndrome is already present
         policy
@@ -40,6 +49,8 @@ it produced anything, once per completion.  Arguments::
             \\REACTION_NAME
             \\anything -> \anything
             anything -> anything
+        when used with -syndrome, the target must be valid for the syndrome
+        otherwise, the command will not be run for that target
 
 ]====]
 local eventful = require 'plugins.eventful'
@@ -148,41 +159,50 @@ eventful.onJobCompleted.reactionTrigger = function(job)
  end
 
  local function doAction(action)
-  local didSomething
-  if action.command then
-   local processed = processCommand(job, worker, worker, building, action.command)
-   dfhack.run_command(table.unpack(processed))
-  end
-  if action.syndrome then
+  local didSomething = false
+  if action.syndrome and not action.ignoreWorker then
    local syndrome = findSyndrome(action.syndrome)
    if syndrome then
-    didSomething = syndromeUtil.infectWithSyndromeIfValidTarget(worker, syndrome, action.resetPolicy) or didSomething
+    didSomething = syndromeUtil.infectWithSyndromeIfValidTarget(worker, syndrome, syndromeUtil.ResetPolicy[action.resetPolicy]) or didSomething
    end
   end
-  if not action.allowNonworkerTargets then
-   return
+  if action.command and not action.ignoreWorker and (not action.syndrome or didSomething) then
+   local processed = processCommand(job, worker, worker, building, action.command)
+   dfhack.run_command(table.unpack(processed))
+   didSomething = true
   end
   if didSomething and not action.allowMultipleTargets then
    return
   end
+  if not action.allowNonworkerTargets and not action.allowMultipleTargets then
+   return
+  end
   local function foreach(unit)
-   if unit == worker then
+   local didSomething = false
+   if unit == worker or not (action.dontSkipInactive or dfhack.units.isActive(unit)) then
     return false
-   elseif unit.pos.z ~= building.z then
+   end
+   local xRange, yRange, zRange = 0, 0, 0
+   if action.range then
+     xRange,yRange,zRange = tonumber(action.range[1]), tonumber(action.range[2]), tonumber(action.range[3])
+   end
+   if unit.pos.z < building.z - zRange or unit.pos.z > building.z + zRange then
     return false
-   elseif unit.pos.x < building.x1 or unit.pos.x > building.x2 then
+   elseif unit.pos.x < building.x1 - xRange or unit.pos.x > building.x2 + xRange then
     return false
-   elseif unit.pos.y < building.y1 or unit.pos.y > building.y2 then
+   elseif unit.pos.y < building.y1 - yRange or unit.pos.y > building.y2 + yRange then
     return false
    else
-    if action.command then
-     processCommand(job, worker, unit, building, action.command)
-    end
     if action.syndrome then
      local syndrome = findSyndrome(action.syndrome)
      if syndrome then
-      didSomething = syndromeUtil.infectWithSyndromeIfValidTarget(unit,syndrome,action.resetPolicy) or didSomething
+      didSomething = syndromeUtil.infectWithSyndromeIfValidTarget(unit,syndrome,syndromeUtil.ResetPolicy[action.resetPolicy]) or didSomething
      end
+    end
+    if action.command and ( (not action.syndrome) or didSomething ) then
+     local processed = processCommand(job, worker, unit, building, action.command)
+     dfhack.run_command(table.unpack(processed))
+     didSomething = true
     end
     if didSomething and not action.allowMultipleTargets then
      return true
@@ -209,7 +229,11 @@ local validArgs = utils.invert({
  'syndrome',
  'command',
  'allowNonworkerTargets',
- 'allowMultipleTargets'
+ 'allowMultipleTargets',
+ 'range',
+ 'ignoreWorker',
+ 'dontSkipInactive',
+ 'resetPolicy'
 })
 
 if moduleMode then

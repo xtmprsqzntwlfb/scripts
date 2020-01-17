@@ -341,7 +341,7 @@ function createFigure(unit,he,he_group)
   df.global.hist_figure_next_id = df.global.hist_figure_next_id+1
 
   hf.unit_id = unit.id
-  hf.unit_id2 = unit.id
+  hf.unit_id2 = -1
   hf.race = unit.race
   hf.caste = unit.caste
   hf.profession = unit.profession
@@ -446,6 +446,7 @@ function createNemesis(unit,civ_id,group_id)
     he_group.nemesis:insert("#",nem)
   end
   nem.figure = unit.hist_figure_id ~= -1 and df.historical_figure.find(unit.hist_figure_id) or createFigure(unit,he,he_group) -- the histfig check is there just in case this function is called by another script to create nemesis data for a historical figure which somehow lacks it
+  nem.figure.unit_id2 = id
   return nem
 end
 

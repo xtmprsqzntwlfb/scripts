@@ -13,7 +13,7 @@ A graphical interface for creating items.
 See also: `createitem`, `modtools/create-item`, :issue:`735`
 
 ]====]
-local function getGenderString(gender)
+function getGenderString(gender)
  local genderStr
  if gender==0 then
   genderStr=string.char(12)
@@ -25,7 +25,7 @@ local function getGenderString(gender)
  return string.char(40)..genderStr..string.char(41)
 end
 
-local function getCreatureList()
+function getCreatureList()
  local crList={}
  for k,cr in ipairs(df.global.world.raws.creatures.alphabetic) do
   for kk,ca in ipairs(cr.caste) do
@@ -37,7 +37,7 @@ local function getCreatureList()
  return crList
 end
 
-local function getRestrictiveMatFilter(itemType)
+function getRestrictiveMatFilter(itemType)
  if not args.restrictive then return nil end
  local itemTypes={
    WEAPON=function(mat,parent,typ,idx)
@@ -77,7 +77,7 @@ local function getRestrictiveMatFilter(itemType)
  return itemTypes[df.item_type[itemType]]
 end
 
-local function getMatFilter(itemtype)
+function getMatFilter(itemtype)
   local itemTypes={
    SEEDS=function(mat,parent,typ,idx)
     return mat.flags.SEED_MAT
@@ -119,7 +119,7 @@ local function getMatFilter(itemtype)
   return itemTypes[df.item_type[itemtype]] or getRestrictiveMatFilter(itemtype)
 end
 
-local function createItem(mat,itemType,quality,creator,description,amount)
+function createItem(mat,itemType,quality,creator,description,amount)
  local item=df.item.find(dfhack.items.createItem(itemType[1], itemType[2], mat[1], mat[2], creator))
  local item2=nil
  assert(item, 'failed to create item')
@@ -148,7 +148,7 @@ local function createItem(mat,itemType,quality,creator,description,amount)
  end
 end
 
-local function qualityTable()
+function qualityTable()
  return {{'None'},
  {'-Well-crafted-'},
  {'+Finely-crafted+'},
@@ -160,7 +160,7 @@ end
 
 local script=require('gui.script')
 
-local function showItemPrompt(text,item_filter,hide_none)
+function showItemPrompt(text,item_filter,hide_none)
  require('gui.materials').ItemTypeDialog{
   prompt=text,
   item_filter=item_filter,
@@ -173,7 +173,7 @@ local function showItemPrompt(text,item_filter,hide_none)
  return script.wait()
 end
 
-local function showMaterialPrompt(title, prompt, filter, inorganic, creature, plant) --the one included with DFHack doesn't have a filter or the inorganic, creature, plant things available
+function showMaterialPrompt(title, prompt, filter, inorganic, creature, plant) --the one included with DFHack doesn't have a filter or the inorganic, creature, plant things available
  require('gui.materials').MaterialDialog{
   frame_title = title,
   prompt = prompt,
@@ -189,7 +189,7 @@ local function showMaterialPrompt(title, prompt, filter, inorganic, creature, pl
  return script.wait()
 end
 
-local function usesCreature(itemtype)
+function usesCreature(itemtype)
  typesThatUseCreatures={REMAINS=true,FISH=true,FISH_RAW=true,VERMIN=true,PET=true,EGG=true,CORPSE=true,CORPSEPIECE=true}
  return typesThatUseCreatures[df.item_type[itemtype]]
 end
@@ -258,6 +258,10 @@ validArgs = utils.invert({
  'unit',
  'multi'
 })
+
+if moduleMode then
+  return
+end
 
 args = utils.processArgs({...}, validArgs)
 

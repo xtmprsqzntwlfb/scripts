@@ -57,6 +57,7 @@ offset = [0, 0]
 tiles = []
 max_x = 0
 max_y = 0
+y = 0
 planfile.each_line { |l|
     if l =~ /#.*start\s*\(\s*(-?\d+)\s*[,;]\s*(-?\d+)/
         raise "Error: multiple start() comments" if offset != [0, 0]
@@ -64,10 +65,12 @@ planfile.each_line { |l|
     end
     if l.chomp == '#<'
         l = '<'
+        y = 0
     end
 
     if l.chomp == '#>'
         l = '>'
+        y = 0
     end
 
     l = l.chomp.sub(/#.*/, '')
@@ -79,7 +82,8 @@ planfile.each_line { |l|
         max_x = x if x > max_x and not t.empty?
         (t[0] == '"') ? t[1..-2] : t
     }
-    max_y = max_y + 1
+    y = y + 1
+    max_y = y if y > max_y
 }
 
 x = df.cursor.x - offset[0]
