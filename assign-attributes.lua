@@ -64,7 +64,7 @@ Example:
      * Spatial sense: a random value between 1043 and 1292 (tier -1).
 
     The final result will be:
-    ``She is very strong, but she is very clumsy.
+    ``She is very strong, but she is clumsy.
     She has a questionable spatial sense.``
 ]====]
 
