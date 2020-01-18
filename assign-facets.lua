@@ -28,21 +28,21 @@ trigger a report in the "Thoughts and preferences" screen.
 
 Usage:
 
-:``-help``:
+``-help``:
                     print the help page.
 
-:``-unit <UNIT_ID>``:
+``-unit <UNIT_ID>``:
                     set the target unit ID. If not present, the
                     currently selected unit will be the target.
 
-:``-beliefs [ <FACET> <LEVEL> <FACET> <LEVEL> <...> ]``:
+``-beliefs [ <FACET> <LEVEL> <FACET> <LEVEL> <...> ]``:
                     the facets to modify and their levels. The
                     valid facet tokens can be found in the wiki page
                     linked above; level values range from -3 to 3.
                     There must be a space before and after each square
                     bracket.
 
-:``-reset``:
+``-reset``:
                     reset all facets to a neutral level. If the script is
                     called with both this option and a list of facets/levels,
                     first all the unit facets will be reset and then those

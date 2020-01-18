@@ -32,14 +32,14 @@ https://dwarffortresswiki.org/index.php/DF2014:Attribute
 
 Usage:
 
-:``-help``:
+``-help``:
                     print the help page.
 
-:``-unit <UNIT_ID>``:
+``-unit <UNIT_ID>``:
                     the target unit ID. If not present, the
                     currently selected unit will be the target.
 
-:``-attributes [ <ATTRIBUTE> <TIER> <ATTRIBUTE> <TIER> <...> ]``:
+``-attributes [ <ATTRIBUTE> <TIER> <ATTRIBUTE> <TIER> <...> ]``:
                     the list of the attributes to modify and their tiers.
                     The valid attribute names can be found in the wiki:
                     https://dwarffortresswiki.org/index.php/DF2014:Attribute
@@ -47,7 +47,7 @@ Usage:
                     to 4. There must be a space before and after each square
                     bracket.
 
-:``-reset``:
+``-reset``:
                     reset all attributes to the average level (tier 0).
                     If both this option and a list of attributes/tiers
                     are present, the unit attributes will be reset

@@ -18,25 +18,25 @@ the "/hack/scripts/dwarf_profiles.json" file.
 
 Usage:
 
-:``-help``:
+``-help``:
                     print the help page.
 
-:``-unit <UNIT_ID>``:
+``-unit <UNIT_ID>``:
                     the target unit ID. If not present, the
                     target will be the currently selected unit.
 
-:``-file <filename>``:
+``-file <filename>``:
                     the json file containing the profile to apply.
                     It's a relative path, starting from the DF
                     root directory and ending at the json file.
                     It must begin with a slash. Default value:
                     "/hack/scripts/dwarf_profiles.json".
 
-:``-profile <profile>``:
+``-profile <profile>``:
                     the profile to apply. It's the name of
                     the profile as stated in the json file.
 
-:``-reset <list of characteristics>``:
+``-reset <list of characteristics>``:
                     the characteristics to be reset/cleared. If not present,
                     it will not clear or reset any characteristic. If it's a
                     valid list of characteristic, those characteristics will

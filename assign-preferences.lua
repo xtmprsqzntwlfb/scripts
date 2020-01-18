@@ -41,14 +41,14 @@ https://dwarffortresswiki.org/index.php/DF2014:Preferences
 
 Usage:
 
-:``-help``:
+``-help``:
                     print the help page.
 
-:``-unit <UNIT_ID>``:
+``-unit <UNIT_ID>``:
                     set the target unit ID. If not present, the
                     currently selected unit will be the target.
 
-:``-likematerial [ <TOKEN> <TOKEN> <...> ]``:
+``-likematerial [ <TOKEN> <TOKEN> <...> ]``:
                     usually a type of stone, a type of metal and a type
                     of gem, plus it can also be a type of wood, a type of
                     glass, a type of leather, a type of horn, a type of
@@ -60,7 +60,7 @@ Usage:
                     There must be a space before and after each square
                     bracket.
 
-:``-likecreature [ <TOKEN> <TOKEN> <...> ]``:
+``-likecreature [ <TOKEN> <TOKEN> <...> ]``:
                     one or more creatures liked by the unit. You can
                     just list the species: if you are using the file
                     "MatList.csv" as explained above, the creature token
@@ -71,7 +71,7 @@ Usage:
                     There must be a space before and after each square
                     bracket.
 
-:``-likefood [ <TOKEN> <TOKEN> <...> ]``:
+``-likefood [ <TOKEN> <TOKEN> <...> ]``:
                     usually a type of alcohol, plus it can be a type of
                     meat, a type of fish, a type of cheese, a type of edible
                     plant, a cookable plant/creature extract, a cookable
@@ -81,7 +81,7 @@ Usage:
                     There must be a space before and after each square
                     bracket.
 
-:``-hatecreature [ <TOKEN> <TOKEN> <...> ]``:
+``-hatecreature [ <TOKEN> <TOKEN> <...> ]``:
                     works the same way as ``-likecreature``, but this time
                     it's one or more creatures that the unit detests. They
                     should be a type of ``HATEABLE`` vermin which isn't already
@@ -90,7 +90,7 @@ Usage:
                     There must be a space before and after each square
                     bracket.
 
-:``-likeitem [ <TOKEN> <TOKEN> <...> ]``:
+``-likeitem [ <TOKEN> <TOKEN> <...> ]``:
                     a kind of weapon, a kind of ammo, a kind of piece of
                     armor, a piece of clothing (including backpacks or
                     quivers), a type of furniture (doors, floodgates, beds,
@@ -112,7 +112,7 @@ Usage:
                     There must be a space before and after each square
                     bracket.
 
-:``-likeplant [ <TOKEN> <TOKEN> <...> ]``:
+``-likeplant [ <TOKEN> <TOKEN> <...> ]``:
                     works in a similar way as ``-likecreature``, this time
                     with plants. You can just List the plant species (the
                     middle part of the token as listed in "MatList.csv").
@@ -136,7 +136,7 @@ Usage:
                     There must be a space before and after each square
                     bracket.
 
-:``-likeshape [ <TOKEN> <TOKEN> <...> ]``:
+``-likeshape [ <TOKEN> <TOKEN> <...> ]``:
                     I couldn't find a list of shape tokens in the wiki, but you
                     can find them inside the "descriptor_shape_standard.txt"
                     file (in the "/raw/ojects/" folder). You can
@@ -144,7 +144,7 @@ Usage:
                     There must be a space before and after each square
                     bracket.
 
-:``-reset``:
+``-reset``:
                     clear all preferences. If the script is called
                     with both this option and one or more preferences,
                     first all the unit preferences will be cleared

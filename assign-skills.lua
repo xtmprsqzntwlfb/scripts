@@ -38,14 +38,14 @@ https://dwarffortresswiki.org/index.php/DF2014:Skill#Skill_level_names
 
 Usage:
 
-:``-help``:
+``-help``:
                     print the help page.
 
-:``-unit <UNIT_ID>``:
+``-unit <UNIT_ID>``:
                     the target unit ID. If not present, the
                     currently selected unit will be the target.
 
-:``-skills [ <SKILL> <RANK> <SKILL> <RANK> <...> ]``:
+``-skills [ <SKILL> <RANK> <SKILL> <RANK> <...> ]``:
                     the list of the skills to modify and their ranks.
                     Rank values range from -1 (the skill is not learned)
                     to normally 20 (legendary + 5). It is actually
@@ -53,7 +53,7 @@ Usage:
                     There must be a space before and after each square
                     bracket.
 
-:``-reset``:
+``-reset``:
                     clear all skills. If the script is called with
                     both this option and a list of skills/ranks,
                     first all the unit skills will be cleared

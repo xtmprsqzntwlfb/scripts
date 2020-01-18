@@ -28,21 +28,21 @@ report in the "Thoughts and preferences" screen.
 
 Usage:
 
-:``-help``:
+``-help``:
                     print the help page.
 
-:``-unit <UNIT_ID>``:
+``-unit <UNIT_ID>``:
                     set the target unit ID. If not present, the
                     currently selected unit will be the target.
 
-:``-beliefs [ <BELIEF> <LEVEL> <BELIEF> <LEVEL> <...> ]``:
+``-beliefs [ <BELIEF> <LEVEL> <BELIEF> <LEVEL> <...> ]``:
                     the beliefs to modify and their levels. The
                     valid belief tokens can be found in the wiki page
                     linked above; level values range from -3 to 3.
                     There must be a space before and after each square
                     bracket.
 
-:``-reset``:
+``-reset``:
                     reset all beliefs to a neutral level. If the script is
                     called with both this option and a list of beliefs/levels,
                     first all the unit beliefs will be reset and then those

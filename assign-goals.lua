@@ -20,14 +20,14 @@ more than one goal, but it's not clear how it will affect the game.
 
 Usage:
 
-:``-help``:
+``-help``:
                     print the help page.
 
-:``-unit <UNIT_ID>``:
+``-unit <UNIT_ID>``:
                     set the target unit ID. If not present, the
                     currently selected unit will be the target.
 
-:``-goals [ <GOAL> <REALIZED_FLAG> <GOAL> <REALIZED_FLAG> <...> ]``:
+``-goals [ <GOAL> <REALIZED_FLAG> <GOAL> <REALIZED_FLAG> <...> ]``:
                     the goals to modify/add and whether they have
                     been realized or not. The valid goal tokens
                     can be found in the wiki page linked above.
@@ -35,7 +35,7 @@ Usage:
                     There must be a space before and after each square
                     bracket.
 
-:``-reset``:
+``-reset``:
                     clear all goals. If the script is called with
                     both this option and a list of goals, first all
                     the unit goals will be erased and then those
