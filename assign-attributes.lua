@@ -55,7 +55,7 @@ Usage:
 
 Example:
 
-``-reset -attributes [ STRENGTH 2 AGILITY -1 SPATIAL_SENSE -1 ]``
+``assign-attributes -reset -attributes [ STRENGTH 2 AGILITY -1 SPATIAL_SENSE -1 ]``
     This will reset all attributes to a neutral value and will set
     the following values (if the currently selected unit is a dwarf):
 

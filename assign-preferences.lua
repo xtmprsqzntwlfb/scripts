@@ -152,31 +152,31 @@ Usage:
 
 Examples:
 
-``-reset -likematerial [ INORGANIC:OBSIDAN PLANT:WILLOW:WOOD ]``
+``assign-preferences -reset -likematerial [ INORGANIC:OBSIDAN PLANT:WILLOW:WOOD ]``
     "likes alabaster and willow wood"
 
-``-reset -likecreature SPARROW``
+``assign-preferences -reset -likecreature SPARROW``
     "likes sparrows for their ..."
 
-``-reset -likefood [ PLANT:MUSHROOM_HELMET_PLUMP:DRINK PLANT:OLIVE:FRUIT ]``
+``assign-preferences -reset -likefood [ PLANT:MUSHROOM_HELMET_PLUMP:DRINK PLANT:OLIVE:FRUIT ]``
     "prefers to consume dwarven wine and olives"
 
-``-reset -hatecreature SPIDER_JUMPING``
+``assign-preferences -reset -hatecreature SPIDER_JUMPING``
     "absolutely detests jumping spiders
 
-``-reset -likeitem [ WOOD ITEM_WEAPON:ITEM_WEAPON_AXE_BATTLE ]``
+``assign-preferences -reset -likeitem [ WOOD ITEM_WEAPON:ITEM_WEAPON_AXE_BATTLE ]``
     "likes logs and battle axes"
 
-``-reset -likeplant BERRIES_STRAW``
+``assign-preferences -reset -likeplant BERRIES_STRAW``
     "likes straberry plants for their ..."
 
-``-reset -liketree OAK``
+``assign-preferences -reset -liketree OAK``
     "likes oaks for their ..."
 
-``-reset -likecolor AQUA``
+``assign-preferences -reset -likecolor AQUA``
     "likes the color aqua"
 
-``-reset -likeshape STAR``
+``assign-preferences -reset -likeshape STAR``
     "likes stars"
 ]====]
 

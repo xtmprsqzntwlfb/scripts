@@ -50,7 +50,7 @@ Usage:
 
 Example:
 
-``-reset -facets [ HATE_PROPENSITY -2 CHEER_PROPENSITY -1 ]``
+``assign-facets -reset -facets [ HATE_PROPENSITY -2 CHEER_PROPENSITY -1 ]``
     Resets all the unit facets, then sets the listed facets to the following values:
 
     * Hate propensity: a value between 10 and 24 (level -2);

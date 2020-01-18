@@ -43,7 +43,7 @@ Usage:
 
 Example:
 
-``-reset -goals [ MASTER_A_SKILL false ]``
+``assign-goals -reset -goals [ MASTER_A_SKILL false ]``
     Clears all the unit goals, then sets the "master
     a skill" goal. The final result will be:
     ``dreams of mastering a skill.``

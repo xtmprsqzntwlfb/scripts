@@ -61,7 +61,7 @@ Usage:
 
 Example:
 
-``-reset -skills [ WOODCUTTING 3 AXE 2 ]``
+``assign-skills -reset -skills [ WOODCUTTING 3 AXE 2 ]``
     Clears all the unit skills, then adds the Wood cutter skill
     (competent level) and the Axeman skill (adequate level).
 ]====]

@@ -50,7 +50,7 @@ Usage:
 
 Example:
 
-``-reset -beliefs [ TRADITION 2 CRAFTSMANSHIP 3 POWER 0 CUNNING -1 ]``
+``assign-beliefs -reset -beliefs [ TRADITION 2 CRAFTSMANSHIP 3 POWER 0 CUNNING -1 ]``
     Resets all the unit beliefs, then sets the listed
     beliefs to the following values:
 
