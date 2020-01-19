@@ -28,7 +28,19 @@ Valid modifiers:
     Set trait to given strength.
 :tier <1-7>:
     Set trait to within the bounds of a strength tier.
-    1 = Lowest | 2 = Very Low | 3 = Low | 4 = Neutral | 5 = High | 6 = Very High | 7 = Highest
+
+    ===== ========
+    Value Strength
+    ===== ========
+    1     Lowest
+    2     Very Low
+    3     Low
+    4     Neutral
+    5     High
+    6     Very High
+    7     Highest
+    ===== ========
+
 :modify <amount>:
     Modify current base trait strength by given amount.
     Negative values need a \ before the negative symbol e.g. \-1
@@ -98,11 +110,11 @@ local function weightedRoll(weightedTable)
   for index, result in ipairs(weightedTable) do
     maxWeight = maxWeight + result.weight
   end
-  
+
   local roll = rng:random(maxWeight) + 1
   local currentNum = roll
   local result
-  
+
   for index, currentResult in ipairs(weightedTable) do
     currentNum = currentNum - currentResult.weight
     if currentNum <= 0 then
@@ -110,14 +122,14 @@ local function weightedRoll(weightedTable)
       break
     end
   end
-  
+
   return result
 end
 
 local function randomiseWithinBounds(min, max)
   local range = math.abs(min - max)
   local roll = rng:random(range+1)
-  
+
   return min + roll
 end
 
@@ -134,7 +146,7 @@ end
 -- Returns the value of the unit's base personality trait (ignoring current modifiers)
 function getUnitTraitBase(unit, trait)
   local value = unit.status.current_soul.personality.traits[trait]
-  
+
   return value
 end
 
@@ -145,7 +157,7 @@ function getUnitTraitCurrent(unit, trait)
   if unit.status.current_soul.personality.temporary_trait_changes ~= nil then
     value = value + unit.status.current_soul.personality.temporary_trait_changes[trait]
   end
-  
+
   return value
 end
 
@@ -155,23 +167,23 @@ end
 -- If tiers is true, the value is the tier of the trait instead of the trait's strength
 function getUnitTraitList(unit, current, tiers)
   local list = {}
-  
+
   for index, traitName in ipairs(df.personality_facet_type) do
     local strength
-    
+
     if current then
       strength = getUnitTraitCurrent(unit, traitName)
     else
       strength = getUnitTraitBase(unit, traitName)
     end
-    
+
     if tiers then
       list[traitName] = getTraitTier(strength)
     else
       list[traitName] = strength
     end
   end
-  
+
   return list
 end
 
@@ -179,7 +191,7 @@ end
 function setUnitTraitTier(unit, trait, tier)
   local tier = clamp(tier, 1, 7)
   local currentTier = getTraitTier(getUnitTraitBase(unit, trait))
-  
+
   -- Randomly generate a strength value which falls between within the new tier, and set that as the unit's trait strength
   local strength = randomiseWithinBounds(tierRanges[tier].min, tierRanges[tier].max)
   setUnitTrait(unit, trait, strength)
@@ -189,7 +201,7 @@ end
 function stepUnitTrait(unit, trait, modifier)
   local currentTier = getTraitTier(getUnitTraitBase(unit, trait))
   local newTier = clamp(currentTier + modifier, 1, 7)
-  
+
   -- Only do so if new tier is different from the current one
   if currentTier ~= newTier then
     setUnitTraitTier(unit, trait, newTier)
@@ -200,7 +212,7 @@ end
 function modifyUnitTrait(unit, trait, modifier)
   local currentStrength = getUnitTraitBase(unit, trait)
   local newStrength = currentStrength + modifier
-  
+
   setUnitTrait(unit, trait, newStrength)
 end
 
@@ -208,14 +220,14 @@ end
 function randomiseUnitTrait(unit, trait)
   local casteRange = getUnitCasteTraitRange(unit, trait)
   local rolledValue = randomTraitRoll(casteRange.min, casteRange.mid, casteRange.max)
-  
+
   setUnitTrait(unit, trait, rolledValue)
 end
 
 -- Sets the unit's trait to their caste average value
 function averageUnitTrait(unit, trait)
   local average = getUnitCasteTraitRange(unit, trait).mid
-  
+
   setUnitTrait(unit, trait, average)
 end
 
@@ -223,11 +235,11 @@ end
 function getUnitCasteTraitRange(unit, trait)
   local caste = df.creature_raw.find(unit.race).caste[unit.caste]
   local range = {}
-  
+
   range.min = caste.personality.a[df.personality_facet_type[trait]]
   range.mid = caste.personality.b[df.personality_facet_type[trait]]
   range.max = caste.personality.c[df.personality_facet_type[trait]]
-  
+
   return range
 end
 
@@ -238,17 +250,17 @@ function randomTraitRoll(min, median, max)
   local min = min or 0
   local median = median or 50
   local max = max or 100
-  
+
   -- Decide whether the result is between min + median, or median + max
   local bucketRoll = randomiseWithinBounds(1, 2)
   local traitValue
-  
+
   if bucketRoll == 1 then -- Min - Median
     traitValue = randomiseWithinBounds(min, median)
   else --median to max
     traitValue = randomiseWithinBounds(median, max)
   end
-  
+
   return traitValue
 end
 
@@ -268,7 +280,7 @@ function getTraitTier(value)
       break
     end
   end
-  
+
   return range
 end
 
@@ -276,24 +288,24 @@ end
 -- Doesn't account for the creature's PERSONALITY weighting!
 function randomTraitTier()
   local weightedTable = {}
-  
+
   for rangeIndex, data in ipairs(tierRanges) do
     local addition = {}
     addition.id = rangeIndex
     addition.weight = data.weight
     table.insert(weightedTable, addition)
   end
-  
+
   -- Determine the range tier
   local result = weightedRoll(weightedTable)
-  
+
   return result
 end
 
 -- Uses above, but then gets a strength value within the tier's bounds
 function randomTraitValue()
   local randomTier = randomTraitTier()
-  
+
   -- Get a random value within that range
   return randomiseWithinBounds(tierRanges[randomTier].min, tierRanges[randomTier].max)
 end
@@ -303,7 +315,7 @@ function printUnitTraits(unit)
   for id, name in ipairs(df.personality_facet_type) do
     local baseValue = getUnitTraitBase(unit, id)
     local currentValue = getUnitTraitCurrent(unit, id)
-    
+
     print(name .. ": " .. baseValue .. " (" .. currentValue .. ")")
   end
 end
@@ -316,14 +328,14 @@ function main(...)
     print(help)
     return
   end
-  
+
   if args.list then
     for index, traitName in ipairs(df.personality_facet_type) do
       print(index .. " (" .. traitName .. ")")
     end
     return
   end
-  
+
   -- Valid target check
   local unitsList = {}
   if not args.citizens then
@@ -334,13 +346,13 @@ function main(...)
             unit = df.unit.find(tonumber(args.unit))
         end
     end
-    
+
     -- If unit ID wasn't provided / unit couldn't be found,
     -- Try getting selected unit
     if unit == nil then
         unit = dfhack.gui.getSelectedUnit(true)
     end
-    
+
     if unit == nil then
         qerror("Couldn't find unit. If you don't want to target a specific unit, use -citizens.")
     else
@@ -349,19 +361,19 @@ function main(...)
   elseif args.citizens then
     -- Technically this will exclude insane citizens, but this is the
     -- easiest thing that dfhack provides
-    
+
     -- Abort if not in Fort mode
     if not dfhack.world.isFortressMode() then
         qerror("-citizens argument only available in Fortress Mode.")
     end
-    
+
     for _, unit in pairs(df.global.world.units.active) do
         if dfhack.units.isCitizen(unit) then
             table.insert(unitsList, unit)
         end
     end
   end
-  
+
   -- Trait check
   local traitsList = {}
   if not args.trait and not args.all and not args.listunit then
@@ -374,14 +386,14 @@ function main(...)
     else
       traitId = df.personality_facet_type[args.trait:upper()]
     end
-    
+
     table.insert(traitsList,traitId)
   else -- To modify: all
     for id, traitName in ipairs(df.personality_facet_type) do
       table.insert(traitsList, id)
     end
   end
-  
+
   -- Modifier check
   local modifyStyle
   local value
@@ -404,7 +416,7 @@ function main(...)
   elseif not args.listunit then
     qerror("Please provide a valid modifier.")
   end
-  
+
   -- Execute
   for index, unit in ipairs(unitsList) do
     for index, trait in ipairs(traitsList) do
@@ -422,11 +434,11 @@ function main(...)
         averageUnitTrait(unit, trait)
       end
     end
-    
+
     if args.listunit then
       printUnitTraits(unit)
     end
-    
+
     if not args.noneed and not args.listunit then
       setneed.rebuildNeeds(unit)
     end

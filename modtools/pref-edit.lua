@@ -34,15 +34,15 @@ Valid filters:
 - ``-item``, ``-creature``, ``-color``, ``-shape``, ``-plant``, ``-poetic``, ``-musical``, ``-dance``:
     Include one of these to describe what the id argument represents.
 - ``-type <PREFERENCE TYPE>``:
-    This describes the type of the preference. Can be entered either using the numerical ID or text id. Valid values are:
-    0 (LikeMaterial) | 1 (LikeCreature) | 2 (LikeFood) | 3 (HateCreature) | 4 (LikeItem) | 5 (LikePlant) | 6 (LikeTree) | 7 (LikeColor) | 8 (LikeShape) | 9 (LikePoeticForm) | 10 (LikeMusicalForm) | 11 (LikeDanceForm)
+    This describes the type of the preference. Can be entered either using the numerical ID or text id.
+    Run ``lua @df.unit_preference.T_type`` for a full list of valid values.
 - ``-subtype <ID>``:
     The value for an item's subtype
 - ``-material <ID>``:
     The id of the material. For example "MUSHROOM_HELMET_PLUMP:DRINK" or "INORGANIC:IRON".
 - ``-state <STATE ID>``:
     The state of the material. Values can be the numerical or text ID.
-    -1 (None) | 0 (Solid) | 1 (Liquid) | 2 (Gas) | 3 (Powder) | 4 (Paste) | 5 (Pressed)
+    Run ``lua @df.matter_state`` for a full list of valid values.
 - ``-active <TRUE/FALSE>``:
     Whether the preference is active or not (?)
 

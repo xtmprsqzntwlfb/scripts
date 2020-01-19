@@ -25,8 +25,20 @@ Valid modifiers:
 :set <-50-50>:
     Set belief to given strength.
 :tier <1-7>:
-    Set belief to within the bounds of a strength tier.
-    1 = Lowest | 2 = Very Low | 3 = Low | 4 = Neutral | 5 = High | 6 = Very High | 7 = Highest
+    Set belief to within the bounds of a strength tier:
+
+    ===== ========
+    Value Strength
+    ===== ========
+    1     Lowest
+    2     Very Low
+    3     Low
+    4     Neutral
+    5     High
+    6     Very High
+    7     Highest
+    ===== ========
+
 :modify <amount>:
     Modify current belief strength by given amount.
     Negative values need a \ before the negative symbol e.g. \-1
