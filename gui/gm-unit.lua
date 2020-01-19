@@ -13,7 +13,12 @@ local widgets = require 'gui.widgets'
 local guiScript = require 'gui.script'
 local utils = require 'utils'
 local args = {...}
+local setbelief = dfhack.reqscript("modtools/set-belief")
+local setpersonality = dfhack.reqscript("modtools/set-personality")
+local setneed = dfhack.reqscript("modtools/set-need")
+local setorientation = dfhack.reqscript("set-orientation")
 
+rng = rng or dfhack.random.new(nil, 10)
 
 local target
 --TODO: add more ways to guess what unit you want to edit
@@ -33,6 +38,29 @@ function add_editor(editor_class)
         editor_class{target_unit=unit}:show()
     end})
 end
+
+function weightedRoll(weightedTable)
+  local maxWeight = 0
+  for index, result in ipairs(weightedTable) do
+    maxWeight = maxWeight + result.weight
+  end
+
+  local roll = rng:random(maxWeight) + 1
+  local currentNum = roll
+  local result
+
+  for index, currentResult in ipairs(weightedTable) do
+    currentNum = currentNum - currentResult.weight
+    if currentNum <= 0 then
+      result = currentResult.id
+      break
+    end
+  end
+
+  return result
+end
+
+
 -------------------------------various subeditors---------
 --TODO set local should or better yet skills vector to reduce long skill list access typing
 editor_skills = defclass(editor_skills, gui.FramedScreen)
@@ -150,6 +178,7 @@ function editor_skills:remove_rust(skill)
     --TODO
 end
 add_editor(editor_skills)
+
 ------- civ editor
 RaceBox = defclass(RaceBox, dialog.ListBox)
 RaceBox.focus_path = 'RaceBox'
@@ -322,6 +351,7 @@ function editor_civ:init( args )
         }
 end
 add_editor(editor_civ)
+
 ------- counters editor
 editor_counters=defclass(editor_counters,gui.FramedScreen)
 editor_counters.ATTRS={
@@ -473,6 +503,7 @@ function prof_editor:save_profession(_, choice)
 end
 
 add_editor(prof_editor)
+
 -------------------
 editor_wounds=defclass(editor_wounds,gui.FramedScreen)
 editor_wounds.ATTRS={
@@ -735,35 +766,6 @@ function editor_attrs:remove_rust(attr)
     attr.demotion_counter=0;
 end
 add_editor(editor_attrs)
-
--- ATKANA EDIT START
-local setbelief = dfhack.reqscript("modtools/set-belief")
-local setpersonality = dfhack.reqscript("modtools/set-personality")
-local setneed = dfhack.reqscript("modtools/set-need")
-local setorientation = dfhack.reqscript("set-orientation")
-
-rng = rng or dfhack.random.new(nil, 10)
-
-function weightedRoll(weightedTable)
-  local maxWeight = 0
-  for index, result in ipairs(weightedTable) do
-    maxWeight = maxWeight + result.weight
-  end
-
-  local roll = rng:random(maxWeight) + 1
-  local currentNum = roll
-  local result
-
-  for index, currentResult in ipairs(weightedTable) do
-    currentNum = currentNum - currentResult.weight
-    if currentNum <= 0 then
-      result = currentResult.id
-      break
-    end
-  end
-
-  return result
-end
 
 -- Orientation editor
 editor_orientation=defclass(editor_orientation,gui.FramedScreen)
@@ -1427,8 +1429,6 @@ function editor_personality:init(args)
   self:updateChoices()
 end
 add_editor(editor_personality)
-
--- ATKANA EDIT END
 
 -------------------------------main window----------------
 unit_editor = defclass(unit_editor, gui.FramedScreen)
