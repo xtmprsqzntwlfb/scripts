@@ -612,6 +612,129 @@ function editor_wounds:init( args )
     self:update_wounds()
 end
 add_editor(editor_wounds)
+---------------------------------------------------------
+editor_attrs = defclass(editor_attrs, gui.FramedScreen)
+editor_attrs.ATTRS = {
+    frame_style = gui.GREY_LINE_FRAME,
+    frame_title = "Attribute editor",
+    target_unit = DEFAULT_NIL,
+}
+function format_attr( name ,max_len)
+    local n=name
+    n=n:gsub("_"," "):lower() --"_" to " " and lower case
+    n=n .. string.rep(" ", max_len - #n+1) --pad to max_len+1 for nice columns
+    n=n:gsub("^%l",string.upper) --uppercase first character
+    return n
+end
+function list_attrs(unit)
+    local m_attrs=unit.status.current_soul.mental_attrs
+    local b_attrs=unit.body.physical_attrs
+    local ret = {}
+    local max_len=0
+    for i,v in ipairs(df.mental_attribute_type) do
+        if(max_len<#v) then
+            max_len=#v
+        end
+    end
+    for i,v in ipairs(df.physical_attribute_type) do
+        if(max_len<#v) then
+            max_len=#v
+        end
+    end
+    for i,v in ipairs(m_attrs) do
+        local attr_name=format_attr(df.mental_attribute_type[i],max_len)
+        local text=string.format("%s: %d/%d",
+            attr_name,v.value,v.max_value)
+        table.insert(ret,{
+            text=text,
+            attr=v,
+            attr_name=attr_name,
+            search_key=text:lower()
+        })
+    end
+    for i,v in ipairs(b_attrs) do
+        local attr_name=format_attr(df.physical_attribute_type[i],max_len)
+        local text=string.format("%s: %d/%d",
+            attr_name,v.value,v.max_value)
+        table.insert(ret,{
+            text=text,
+            attr=v,
+            attr_name=attr_name,
+            search_key=text:lower()
+        })
+    end
+    return ret
+end
+function editor_attrs:update_list(no_save_place)
+    local attr_list=list_attrs(self.target_unit)
+    if no_save_place then
+        self.subviews.attributes:setChoices(attr_list)
+    else
+        self.subviews.attributes:setChoices(attr_list,self.subviews.attributes:getSelected())
+    end
+end
+
+function editor_attrs:init( args )
+    if self.target_unit.status.current_soul==nil then
+        qerror("Unit does not have soul, can't edit mental attributes")
+    end
+
+    local attr_list=list_attrs(self.target_unit)
+
+    self:addviews{
+        widgets.FilteredList{
+            choices=attr_list,
+            frame = {t=0, b=1,l=1},
+            view_id="attributes",
+        },
+        widgets.Label{
+            frame = { b=0,l=1},
+            text ={{text= ": exit editor ",
+                key  = "LEAVESCREEN",
+                on_activate= self:callback("dismiss")
+                },
+                {text=": set max attribute ",
+                key = "SEC_SELECT",
+                on_activate= function (  )
+                    local a,a_name=self:get_cur_attr()
+                    dialog.showInputPrompt(a_name,"Enter new max value:",COLOR_WHITE,
+                    tostring(a.max_value),function(new_value)
+                        a.max_value=new_value
+                        self:update_list()
+                    end)
+                end
+                },
+                {text=": set attribute ",
+                key = "SELECT",
+                on_activate= function (  )
+                    local a,a_name=self:get_cur_attr()
+                    dialog.showInputPrompt(a_name,"Enter new value:",COLOR_WHITE,
+                    tostring(a.value),function(new_value)
+                        a.value=new_value
+                        self:update_list()
+                    end)
+                end
+                }
+            }
+        },
+    }
+end
+function editor_attrs:get_cur_attr()
+    local list_wid=self.subviews.attributes
+    local _,choice=list_wid:getSelected()
+    if choice==nil then
+        qerror("Nothing selected")
+    end
+    return choice.attr,choice.attr_name
+end
+function editor_attrs:remove_rust(attr)
+    --TODO
+    attr.unused_counter=0;
+    attr.soft_demotion =0;
+    attr.rust_counter=0;
+    attr.demotion_counter=0;
+end
+add_editor(editor_attrs)
 
 -- ATKANA EDIT START
 local setbelief = dfhack.reqscript("modtools/set-belief")
@@ -626,11 +749,11 @@ function weightedRoll(weightedTable)
   for index, result in ipairs(weightedTable) do
     maxWeight = maxWeight + result.weight
   end
-  
+
   local roll = rng:random(maxWeight) + 1
   local currentNum = roll
   local result
-  
+
   for index, currentResult in ipairs(weightedTable) do
     currentNum = currentNum - currentResult.weight
     if currentNum <= 0 then
@@ -638,7 +761,7 @@ function weightedRoll(weightedTable)
       break
     end
   end
-  
+
   return result
 end
 
@@ -656,14 +779,14 @@ function editor_orientation:sexSelected(index, choice)
   if newInterest > 2 then
     newInterest = 0
   end
-  
+
   setorientation.setOrientation(self.target_unit, choice.sex, newInterest)
   self:updateChoices()
 end
 
 function editor_orientation:random()
   local index, choice = self.subviews.sex:getSelected()
-  
+
   setorientation.randomiseOrientation(self.target_unit, choice.sex)
   self:updateChoices()
 end
@@ -678,7 +801,7 @@ function editor_orientation:updateChoices()
   local femaleInterest = setorientation.getInterest(self.target_unit, "female")
   local femaleInterestString = setorientation.getInterestString(femaleInterest)
   table.insert(choices, {text = "Female: " .. femaleInterestString, interest = femaleInterest, sex = 0})
-  
+
   self.subviews.sex:setChoices(choices)
 end
 
@@ -686,7 +809,7 @@ function editor_orientation:init(args)
   if self.target_unit == nil then
     qerror("invalid unit")
   end
-  
+
   self:addviews{
     widgets.List{
       frame = {t=0, b=1,l=1},
@@ -702,7 +825,7 @@ function editor_orientation:init(args)
       },
     }
   }
-  
+
   self:updateChoices()
 end
 add_editor(editor_orientation)
@@ -726,7 +849,7 @@ function editor_body_modifier:beautifyString(text)
   out = out:lower() --Make lowercase
   out = out:gsub("_", " ") --Replace underscores with spaces
   out = out:gsub("^%l", string.upper) --capitalises first letter
-  
+
   return out
 end
 
@@ -766,20 +889,20 @@ function editor_body_modifier:random()
   -- 7 values are listed in the _APPEARANCE_MODIFIER token
   -- One of the first 6 values is randomly selected with the same odds for any
   -- A random number is rolled within the range of that number, and the next one to get the modifier value
-  
+
   local startIndex = rng:random(6) -- Will give a number between 0-5 which, when accounting for the fact that the range table starts at 0, gives us the index of which of the first 6 to use
-  
+
   -- Set the ranges
   local min = selected.modifier.entry.ranges[startIndex]
   local max = selected.modifier.entry.ranges[startIndex+1]
-  
+
   -- Get the difference between the two
   local difference = math.abs(min - max)
-  
+
   -- Use the minimum, the difference, and a random roll to work out the new value.
   local roll = rng:random(difference+1) -- difference + 1 because we want to include the max value as an option
   local value = min + roll
-  
+
   -- Set the modifier to the new value
   if self.partChoice.type == "part" then
     self:setPartModifier(selected.modifier.idx, value)
@@ -799,11 +922,11 @@ function editor_body_modifier:step(amount)
       table.insert(ranges, value)
     end
   end
-  
+
   -- Now determine what range the modifier currently falls into
   local currentValue = selected.value
   local rangeIndex
-  
+
   for index, value in ipairs(ranges) do
     if ranges[index+1] then -- There's still a next entry
       if currentValue < ranges[index+1] then -- The current value is less than the next entry
@@ -814,11 +937,11 @@ function editor_body_modifier:step(amount)
       rangeIndex = index
     end
   end
-  
+
   -- Finally, move the modifier's value up / down in range tiers based on given amount
   local newTier = math.min(#ranges, math.max(1, rangeIndex + amount)) -- Clamp values to not go beyond bounds of ranges
   local newValue = ranges[newTier]
-  
+
   if self.partChoice.type == "part" then
     self:setPartModifier(selected.modifier.idx, newValue)
   else
@@ -828,7 +951,7 @@ end
 
 function editor_body_modifier:updateChoices()
   local choices = {}
-  
+
   for index, modifier in ipairs(self.partChoice.modifiers) do
     local currentValue
     if self.partChoice.type == "part" then
@@ -838,14 +961,14 @@ function editor_body_modifier:updateChoices()
     end
     table.insert(choices, {text = self:beautifyString(df.appearance_modifier_type[modifier.entry.type]) .. ": " .. currentValue, value = currentValue, modifier = modifier})
   end
-  
+
   self.subviews.modifiers:setChoices(choices)
 end
 
 function editor_body_modifier:init(args)
   self.target_unit = args.target_unit
   self.partChoice = args.partChoice
-  
+
   self:addviews{
     widgets.List{
       frame = {t=0, b=1,l=1},
@@ -863,7 +986,7 @@ function editor_body_modifier:init(args)
       },
     }
   }
-  
+
   self.frame_title = self.partChoice.text .. " - Select a modifier"
   self:updateChoices()
 end
@@ -878,7 +1001,7 @@ editor_body.ATTRS={
 function makePartList(caste)
   local list = {}
   local lookup = {} -- Stores existing part's index in the list
-  
+
   for index, modifier in ipairs(caste.bp_appearance.modifiers) do
     local name
     if modifier.noun ~= "" then
@@ -886,14 +1009,14 @@ function makePartList(caste)
     else
       name = caste.body_info.body_parts[modifier.body_parts[0]].name_singular[0].value -- Use the name of the first body part modified
     end
-    
+
     -- Make a new entry if this is a new part
     if lookup[name] == nil then
       local entryIndex = #list + 1
       table.insert(list, {name = name, modifiers = {}})
       lookup[name] = entryIndex
     end
-    
+
     -- Find idxes associated with this modifier. These are what will be used later when setting the unit's appearance
     local idx = {}
     for searchIndex, modifierId in ipairs(caste.bp_appearance.modifier_idx) do
@@ -901,7 +1024,7 @@ function makePartList(caste)
         table.insert(idx, searchIndex)
       end
     end
-    
+
     -- Add modifiers to list of part
     table.insert(list[lookup[name]].modifiers, {index = index, entry = modifier, idx = idx})
   end
@@ -912,7 +1035,7 @@ end
 function editor_body:updateChoices()
   local choices = {}
   local caste = df.creature_raw.find(self.target_unit.race).caste[self.target_unit.caste]
-  
+
   -- Body is a special case
   if #caste.body_appearance_modifiers > 0 then
     local bodyEntry = {text = "Body", modifiers = {}, type = "body"}
@@ -921,12 +1044,12 @@ function editor_body:updateChoices()
     end
     table.insert(choices, bodyEntry)
   end
-  
+
   local partList = makePartList(caste)
   for index, partEntry in ipairs(partList) do
     table.insert(choices, {text = partEntry.name:gsub("^%l", string.upper), modifiers = partEntry.modifiers, type = "part"})
   end
-  
+
   self.subviews.featureSelect:setChoices(choices)
 end
 
@@ -938,7 +1061,7 @@ function editor_body:init(args)
   if self.target_unit == nil then
     qerror("invalid unit")
   end
-  
+
   self:addviews{
     widgets.List{
       frame = {t=0, b=1,l=1},
@@ -953,7 +1076,7 @@ function editor_body:init(args)
       },
     }
   }
-  
+
   self:updateChoices()
 end
 add_editor(editor_body)
@@ -999,14 +1122,14 @@ end
 function editor_colors:random()
   local featureChoiceIndex, featureChoice = self.subviews.features:getSelected() -- This is the part / feature that's selected
   local caste = df.creature_raw.find(self.target_unit.race).caste[self.target_unit.caste]
-  
+
   -- Nil check in case there are no features
   if featureChoiceIndex == nil then
     return
   end
-  
+
   local options = {}
-  
+
   for index, patternId in ipairs(featureChoice.mod.pattern_index) do
     local addition = {}
     addition.patternId = patternId
@@ -1014,7 +1137,7 @@ function editor_colors:random()
     addition.weight = featureChoice.mod.pattern_frequency[index]
     table.insert(options, addition)
   end
-  
+
   -- Now create a table from this to use for the weighted roller
   -- We'll use the index as the item appears in options for the id
   local weightedTable = {}
@@ -1024,13 +1147,13 @@ function editor_colors:random()
     addition.weight = entry.weight
     table.insert(weightedTable, addition)
   end
-  
+
   -- Roll randomly. The result will give us the index of the option to use
   local result = weightedRoll(weightedTable)
-  
+
   -- Set the unit's appearance for the feature to the new pattern
   self.target_unit.appearance.colors[featureChoice.index] = options[result].index
-  
+
   -- Notify the user on the change, so they get some visual feedback that something has happened
   local pluralWord
   if featureChoice.mod.unk_6c == 1 then
@@ -1038,7 +1161,7 @@ function editor_colors:random()
   else
     pluralWord = "is"
   end
-  
+
   dialog.showMessage("Color randomised!",
     featureChoice.text .. " " .. pluralWord .." now " .. patternString(options[result].patternId),
     nil, nil)
@@ -1055,11 +1178,11 @@ function editor_colors:featureSelected(index, choice)
 
   -- Generate color choices
   local colorChoices = {}
-  
+
   for index, patternId in ipairs(choice.mod.pattern_index) do
     table.insert(colorChoices, {text = patternString(patternId), index = index})
   end
-  
+
   dialog.showListPrompt(
     "Choose color",
     "Select feature's color", nil,
@@ -1078,7 +1201,7 @@ function editor_colors:updateChoices()
   for index, colorMod in ipairs(caste.color_modifiers) do
     table.insert(choices, {text = colorMod.part:gsub("^%l", string.upper), mod = colorMod, index = index})
   end
-  
+
   self.subviews.features:setChoices(choices)
 end
 
@@ -1086,7 +1209,7 @@ function editor_colors:init(args)
   if self.target_unit == nil then
     qerror("invalid unit")
   end
-  
+
   self:addviews{
     widgets.List{
       frame = {t=0, b=1,l=1},
@@ -1102,7 +1225,7 @@ function editor_colors:init(args)
       },
     }
   }
-  
+
   self:updateChoices()
 end
 add_editor(editor_colors)
@@ -1117,36 +1240,36 @@ editor_belief.ATTRS = {
 
 function editor_belief:randomiseSelected()
   local index, choice = self.subviews.beliefs:getSelected()
-  
+
   setbelief.randomiseUnitBelief(self.target_unit, choice.belief)
   self:updateChoices()
 end
 
 function editor_belief:step(amount)
   local index, choice = self.subviews.beliefs:getSelected()
-  
+
   setbelief.stepUnitBelief(self.target_unit, choice.belief, amount)
   self:updateChoices()
 end
 
 function editor_belief:updateChoices()
   local choices = {}
-  
+
   for index, belief in ipairs(df.value_type) do
     local niceText = belief
     niceText = niceText:lower()
     niceText = niceText:gsub("_", " ")
     niceText = niceText:gsub("^%l", string.upper)
-    
+
     local strength = setbelief.getUnitBelief(self.target_unit, index)
     local symbolAddition = ""
     if setbelief.isCultureBelief(self.target_unit, index) then
       symbolAddition = "*"
     end
-    
+
     table.insert(choices, {["text"] = niceText .. ": " .. strength .. symbolAddition, ["belief"] = index, ["value"] = strength, ["name"] = niceText})
   end
-  
+
   self.subviews.beliefs:setChoices(choices)
 end
 
@@ -1177,7 +1300,7 @@ function editor_belief:init(args)
   if self.target_unit==nil then
       qerror("invalid unit")
   end
-  
+
   self:addviews{
     widgets.List{
       frame = {t=0, b=2,l=1},
@@ -1203,7 +1326,7 @@ function editor_belief:init(args)
       }
     },
   }
-  
+
   self:updateChoices()
 end
 add_editor(editor_belief)
@@ -1219,32 +1342,32 @@ editor_personality.ATTRS = {
 
 function editor_personality:randomiseSelected()
   local index, choice = self.subviews.traits:getSelected()
-  
+
   setpersonality.randomiseUnitTrait(self.target_unit, choice.trait)
   self:updateChoices()
 end
 
 function editor_personality:step(amount)
   local index, choice = self.subviews.traits:getSelected()
-  
+
   setpersonality.stepUnitTrait(self.target_unit, choice.trait, amount)
   self:updateChoices()
 end
 
 function editor_personality:updateChoices()
   local choices = {}
-  
+
   for index, traitName in ipairs(df.personality_facet_type) do
     local niceText = traitName
     niceText = niceText:lower()
     niceText = niceText:gsub("_", " ")
     niceText = niceText:gsub("^%l", string.upper)
-    
+
     local strength = setpersonality.getUnitTraitBase(self.target_unit, index)
-    
+
     table.insert(choices, {["text"] = niceText .. ": " .. strength, ["trait"] = index, ["value"] = strength, ["name"] = niceText})
   end
-  
+
   self.subviews.traits:setChoices(choices)
 end
 
@@ -1275,7 +1398,7 @@ function editor_personality:init(args)
   if self.target_unit==nil then
       qerror("invalid unit")
   end
-  
+
   self:addviews{
     widgets.List{
       frame = {t=0, b=2,l=1},
@@ -1300,7 +1423,7 @@ function editor_personality:init(args)
       }
     },
   }
-  
+
   self:updateChoices()
 end
 add_editor(editor_personality)

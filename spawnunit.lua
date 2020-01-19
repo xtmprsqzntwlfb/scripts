@@ -15,6 +15,9 @@ Any further arguments are simply passed on to `modtools/create-unit`.
 
 ]====]
 
+local guidm = require('gui.dwarfmode')
+local utils = require('utils')
+
 function extend(tbl, tbl2)
     for _, v in pairs(tbl2) do
         table.insert(tbl, v)
@@ -49,6 +52,12 @@ else
         table.insert(new_args, args[i])
     end
 end
+
+if not utils.invert(new_args)['-location'] then
+    local cursor = guidm.getCursorPos() or qerror('This script requires an active cursor.')
+    extend(new_args, {'-location', '[', cursor.x, cursor.y, cursor.z, ']'})
+end
+
 if show_command then
     print('modtools/create-unit ' .. table.concat(new_args, ' '))
     return
