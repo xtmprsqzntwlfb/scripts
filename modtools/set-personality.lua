@@ -43,10 +43,10 @@ Valid modifiers:
 
 :modify <amount>:
     Modify current base trait strength by given amount.
-    Negative values need a \ before the negative symbol e.g. \-1
+    Negative values need a ``\`` before the negative symbol e.g. ``\-1``
 :step <amount>:
     Modify current trait tier up/down by given amount.
-    Negative values need a \ before the negative symbol e.g. \-1
+    Negative values need a ``\`` before the negative symbol e.g. ``\-1``
 :random:
     Set the trait to a new random value.
 :average:

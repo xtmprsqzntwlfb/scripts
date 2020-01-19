@@ -41,10 +41,10 @@ Valid modifiers:
 
 :modify <amount>:
     Modify current belief strength by given amount.
-    Negative values need a \ before the negative symbol e.g. \-1
+    Negative values need a ``\`` before the negative symbol e.g. ``\-1``
 :step <amount>:
     Modify current belief tier up/down by given amount.
-    Negative values need a \ before the negative symbol e.g. \-1
+    Negative values need a ``\`` before the negative symbol e.g. ``\-1``
 :random:
     Use the default probabilities to set the belief to a new random value.
 :default:
