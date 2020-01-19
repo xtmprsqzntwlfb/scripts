@@ -58,7 +58,7 @@ Other arguments:
     By default, unit's needs will be recalculated to reflect new beliefs after every run.
     Use this argument to disable that functionality.
 :listunit:
-    Prints a list of all a unit's beliefs. Cultural defaults are marked with *.
+    Prints a list of all a unit's beliefs. Cultural defaults are marked with ``*``.
 
 ]====]
 
@@ -96,11 +96,11 @@ local function weightedRoll(weightedTable)
   for index, result in ipairs(weightedTable) do
     maxWeight = maxWeight + result.weight
   end
-  
+
   local roll = rng:random(maxWeight) + 1
   local currentNum = roll
   local result
-  
+
   for index, currentResult in ipairs(weightedTable) do
     currentNum = currentNum - currentResult.weight
     if currentNum <= 0 then
@@ -108,14 +108,14 @@ local function weightedRoll(weightedTable)
       break
     end
   end
-  
+
   return result
 end
 
 local function randomiseWithinBounds(min, max)
   local range = math.abs(min - max)
   local roll = rng:random(range+1)
-  
+
   return min + roll
 end
 
@@ -128,13 +128,13 @@ function setUnitBelief(unit, belief, value, forcePersonal)
 
   -- Remove current belief (if exists)
   removeUnitBelief(unit, belief)
-  
+
   -- We may want to avoid adding personal beliefs of the same strength as what's already represented by the unit's culture
   -- If the tiers match, forcePersonal must be true for the belief to be added
   local forcePersonal = forcePersonal or true
   local cultureTier = getBeliefTier(getUnitCultureBelief(unit, belief))
   local newBeliefTier = getBeliefTier(value)
-  
+
   if cultureTier ~= newBeliefTier or forcePersonal then
     addUnitBelief(unit, belief, value)
   end
@@ -148,14 +148,14 @@ end
 -- Returns true if the unit's belief of the given type is personal, rather than their culture's default. Otherwise, returns false.
 function isPersonalBelief(unit, belief)
   local found = false
-  
+
   for index, beliefInstance in ipairs(unit.status.current_soul.personality.values) do
     if beliefInstance.type == belief then
       found = true
       break
     end
   end
-  
+
   return found
 end
 
@@ -163,7 +163,7 @@ end
 function getUnitBelief(unit, belief)
   local found = false
   local strength = 0
-  
+
   for index, beliefInstance in ipairs(unit.status.current_soul.personality.values) do
     if beliefInstance.type == belief then
       found = true
@@ -171,11 +171,11 @@ function getUnitBelief(unit, belief)
       break
     end
   end
-  
+
   if not found then -- Is cultural belief
     strength = getUnitCultureBelief(unit, belief)
   end
-  
+
   return strength
 end
 
@@ -184,7 +184,7 @@ end
 function removeUnitBelief(unit, belief)
   local upers = unit.status.current_soul.personality
   local removed = false
-  
+
   for index, beliefInstance in ipairs(upers.values) do
     if beliefInstance.type == belief then
       upers.values:erase(index)
@@ -192,7 +192,7 @@ function removeUnitBelief(unit, belief)
       break
     end
   end
-  
+
   return removed
 end
 
@@ -210,17 +210,17 @@ end
 -- If tiers is true, the value is the tier of the belief instead of the trait's strength
 function getUnitBeliefList(unit, tiers)
   local list = {}
-  
+
   for id, beliefName in ipairs(df.value_type) do
     local strength = getUnitBelief(unit, id)
-    
+
     if tiers then
       list[beliefName] = getBeliefTier(strength)
     else
       list[beliefName] = strength
     end
   end
-  
+
   return list
 end
 
@@ -236,7 +236,7 @@ end
 function stepUnitBelief(unit, belief, modifier)
   local currentTier = getBeliefTier(getUnitBelief(unit, belief))
   local newTier = clamp(currentTier + modifier, 1, 7)
-  
+
   -- Only do so if new tier is different from the current one
   if currentTier ~= newTier then
     setUnitBeliefTier(unit, belief, newTier)
@@ -247,7 +247,7 @@ end
 function modifyUnitBelief(unit, belief, modifier)
   local currentStrength = getUnitBelief(unit, belief)
   local newStrength = clamp(currentStrength + modifier, -50, 50)
-  
+
   setUnitBelief(unit, belief, newStrength)
 end
 
@@ -255,7 +255,7 @@ end
 -- (Could alternatively use randomBeliefValue and setUnitBelief)
 function randomiseUnitBelief(unit, belief)
   local randomTier = randomBeliefTier()
-  
+
   setUnitBeliefTier(unit, belief, randomTier)
 end
 
@@ -263,7 +263,7 @@ end
 -- Priority is Cultural Identity -> Civ's values -> Nothing
 function getUnitCultureBelief(unit, belief)
   local upers = unit.status.current_soul.personality
-  
+
   if upers.cultural_identity ~= -1 then
     return df.cultural_identity.find(upers.cultural_identity).values[df.value_type[belief]]
   elseif upers.civ_id ~= -1 then
@@ -283,7 +283,7 @@ function getBeliefTier(strength)
       break
     end
   end
-  
+
   return range
 end
 
@@ -291,24 +291,24 @@ end
 -- Doesn't respect culture weights (if they have any impact)
 function randomBeliefTier()
   local weightedTable = {}
-  
+
   for rangeIndex, data in ipairs(tierRanges) do
     local addition = {}
     addition.id = rangeIndex
     addition.weight = data.weight
     table.insert(weightedTable, addition)
   end
-  
+
   -- Determine the range tier
   local result = weightedRoll(weightedTable)
-  
+
   return result
 end
 
 -- Uses above, but then gets a strength value within the tier's bounds
 function randomBeliefValue()
   local randomTier = randomBeliefTier()
-  
+
   -- Get a random value within that range
   return randomiseWithinBounds(tierRanges[randomTier].min, tierRanges[randomTier].max)
 end
@@ -319,13 +319,13 @@ function printUnitBeliefs(unit)
   for id, name in ipairs(df.value_type) do
     local strength = getUnitBelief(unit, id)
     local cultural = isCultureBelief(unit, id)
-    
+
     local out = name
     if cultural then
       out = out .. "*"
     end
     out = out .. " " .. strength
-    
+
     print(out)
   end
 end
@@ -338,14 +338,14 @@ function main(...)
     print(help)
     return
   end
-  
+
   if args.list then
     for index, valueName in ipairs(df.value_type) do
       print(index .. " (" .. valueName .. ")")
     end
     return
   end
-  
+
   -- Valid target check
   local unitsList = {}
   if not args.citizens then
@@ -356,13 +356,13 @@ function main(...)
             unit = df.unit.find(tonumber(args.unit))
         end
     end
-    
+
     -- If unit ID wasn't provided / unit couldn't be found,
     -- Try getting selected unit
     if unit == nil then
         unit = dfhack.gui.getSelectedUnit(true)
     end
-    
+
     if unit == nil then
         qerror("Couldn't find unit. If you don't want to target a specific unit, use -citizens.")
     else
@@ -371,19 +371,19 @@ function main(...)
   elseif args.citizens then
     -- Technically this will exclude insane citizens, but this is the
     -- easiest thing that dfhack provides
-    
+
     -- Abort if not in Fort mode
     if not dfhack.world.isFortressMode() then
         qerror("-citizens argument only available in Fortress Mode.")
     end
-    
+
     for _, unit in pairs(df.global.world.units.active) do
         if dfhack.units.isCitizen(unit) then
             table.insert(unitsList, unit)
         end
     end
   end
-  
+
   -- Belief check
   local beliefsList = {}
   if not args.belief and not args.all and not args.listunit then
@@ -402,7 +402,7 @@ function main(...)
       table.insert(beliefsList, id)
     end
   end
-  
+
   -- Modifier check
   local modifyStyle
   local value
@@ -427,7 +427,7 @@ function main(...)
   else
     qerror("Please provide a valid modifier.")
   end
-  
+
   -- Execute
   for index, unit in ipairs(unitsList) do
     for index, belief in ipairs(beliefsList) do
@@ -445,7 +445,7 @@ function main(...)
         removeUnitBelief(unit, belief)
       end
     end
-    
+
     if modifyStyle == "list" then
         printUnitBeliefs(unit)
     end

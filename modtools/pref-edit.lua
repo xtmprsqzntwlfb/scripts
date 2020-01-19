@@ -9,47 +9,54 @@ modtools/pref-edit
 Add, remove, or edit the preferences of a unit.
 Requires a modifier, a unit argument, and filters.
 
-:unit <UNIT ID>:
+- ``-unit <UNIT ID>``:
     The given unit will be affected.
     If not found/provided, the script will try defaulting to the currently selected unit.
 
 Valid modifiers:
 
-:add:
+- ``-add``:
     Add a new preference to the unit. Filters describe the preference's variables.
-:remove:
+- ``-remove``:
     Remove a preference from the unit. Filters describe what preference to remove.
-:has:
+- ``-has``:
     Checks if the unit has a preference matching the filters. Prints a message in the console.
-:removeall:
-    Remove all preferences from the unit. Doesn't requrie any filters.
-    
+- ``-removeall``:
+    Remove all preferences from the unit. Doesn't require any filters.
+
+
 Valid filters:
-:id <VALUE>:
+
+- ``-id <VALUE>``:
     This is the ID used for all preferences that require an ID.
     Represents item_type, creature_id, color_id, shape_id, plant_id, poetic_form_id, musical_form_id, and dance_form_id.
     Text IDs (e.g. "TOAD", "AMBER") can be used for all but poetic, musical, and dance.
-:item: :creature: :color: :shape: :plant: :poetic: :musical: :dance:
+- ``-item``, ``-creature``, ``-color``, ``-shape``, ``-plant``, ``-poetic``, ``-musical``, ``-dance``:
     Include one of these to describe what the id argument represents.
-:type <PREFERENCE TYPE>:
+- ``-type <PREFERENCE TYPE>``:
     This describes the type of the preference. Can be entered either using the numerical ID or text id. Valid values are:
     0 (LikeMaterial) | 1 (LikeCreature) | 2 (LikeFood) | 3 (HateCreature) | 4 (LikeItem) | 5 (LikePlant) | 6 (LikeTree) | 7 (LikeColor) | 8 (LikeShape) | 9 (LikePoeticForm) | 10 (LikeMusicalForm) | 11 (LikeDanceForm)
-:subtype <ID>:
+- ``-subtype <ID>``:
     The value for an item's subtype
-:material <ID>:
+- ``-material <ID>``:
     The id of the material. For example "MUSHROOM_HELMET_PLUMP:DRINK" or "INORGANIC:IRON".
-:state <STATE ID>:
+- ``-state <STATE ID>``:
     The state of the material. Values can be the numerical or text ID.
     -1 (None) | 0 (Solid) | 1 (Liquid) | 2 (Gas) | 3 (Powder) | 4 (Paste) | 5 (Pressed)
-:active <TRUE/FALSE>:
+- ``-active <TRUE/FALSE>``:
     Whether the preference is active or not (?)
 
+
 Other arguments:
-:help:
+
+- ``-help``:
     Shows this help page.
-    
+
 Example usage:
-Like drinking dwarf blood: modtools/pref-edit -add -item -id DRINK -material DWARF:BLOOD -type LikeFood
+
+- Like drinking dwarf blood::
+
+    modtools/pref-edit -add -item -id DRINK -material DWARF:BLOOD -type LikeFood
 ]====]
 
 local utils = require 'utils'
@@ -89,7 +96,7 @@ hasPreference = function(unit, details)
         break
       end
     end
-    
+
     if valid then
       return index
     end
@@ -106,10 +113,10 @@ function addPreference(unit, details)
   if hasPreference(unit, details) then
     return
   end
-  
+
   -- The same ID is used across multiple variables. Even if only wanting to modify the creature_id, you must set all others to the same value
   local id = details.id or details.item_type or details.creature_id or details.color_id or details.shape_id or details.plant_id or details.poetic_form_id or details.musical_form_id or details.dance_form_id or -1
-  
+
   local info = {
     new = true,
     type = details.type or 0,
@@ -128,10 +135,10 @@ function addPreference(unit, details)
     active = details.active or true,
     prefstring_seed = details.prefstring_seed or 1, --?
   }
-  
+
   -- Do prefstring_seed randomisation?
   -- TODO
-  
+
   unit.status.current_soul.preferences:insert("#", info)
 end
 
@@ -146,7 +153,7 @@ end
 -- Returns true if preference existed and was removed, false if not
 function removePreference(unit, details)
   local index = hasPreference(unit, details)
-  
+
   if index then
     unit.status.current_soul.preferences:erase(index)
     return true
@@ -198,13 +205,13 @@ function main(...)
   else
     qerror("Please provide a valid modifier.")
   end
-  
+
   -- Handle IDs
   local id
   if args.id and tonumber(args.id) then
     id = tonumber(args.id)
   end
-    
+
   if args.id and not id then -- Gotta find what the ID was representing...
     if args.item then
       id = df.item_type[args.id]
@@ -226,7 +233,7 @@ function main(...)
           break
         end
       end
-      
+
       if not id then
         qerror("Couldn't find provided color")
       end
@@ -237,7 +244,7 @@ function main(...)
           break
         end
       end
-      
+
       if not id then
         qerror("Couldn't find provided shape")
       end
@@ -254,7 +261,7 @@ function main(...)
       end
     end
   end
-  
+
   -- Handle type
   local type
   if args.type and tonumber(args.type) then
@@ -262,7 +269,7 @@ function main(...)
   elseif args.type then
     type = df.unit_preference.T_type[args.type]
   end
-  
+
   -- Handle material
   local mattype
   local matindex
@@ -271,7 +278,7 @@ function main(...)
     mattype = material.type
     matindex = material.index
   end
-  
+
   -- Handle mat_state
   local state
   if args.state and tonumber(args.state) then
@@ -279,7 +286,7 @@ function main(...)
   elseif args.mat_state then
     state = df.matter_state[state]
   end
-  
+
   -- Handle active
   local active
   if args.active then
@@ -289,7 +296,7 @@ function main(...)
       active = false
     end
   end
-  
+
   -- Build the details table to pass on to other functions
   -- It's fine (and expected) if entries in here are nil
   local details = {
@@ -305,7 +312,7 @@ function main(...)
   for index, addId in ipairs(idsList) do
     details[addId] = id
   end
-  
+
   if modifier == "add" then
     addPreference(unit, details)
   elseif modifier == "remove" then
