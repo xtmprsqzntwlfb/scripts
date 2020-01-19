@@ -145,6 +145,7 @@ end
 
 -- Returns the value of the unit's base personality trait (ignoring current modifiers)
 function getUnitTraitBase(unit, trait)
+  if trait == df.personality_facet_type.NONE then return 0 end
   local value = unit.status.current_soul.personality.traits[trait]
 
   return value
@@ -169,18 +170,20 @@ function getUnitTraitList(unit, current, tiers)
   local list = {}
 
   for index, traitName in ipairs(df.personality_facet_type) do
-    local strength
+    if traitName ~= 'NONE' then
+      local strength
 
-    if current then
-      strength = getUnitTraitCurrent(unit, traitName)
-    else
-      strength = getUnitTraitBase(unit, traitName)
-    end
+      if current then
+        strength = getUnitTraitCurrent(unit, traitName)
+      else
+        strength = getUnitTraitBase(unit, traitName)
+      end
 
-    if tiers then
-      list[traitName] = getTraitTier(strength)
-    else
-      list[traitName] = strength
+      if tiers then
+        list[traitName] = getTraitTier(strength)
+      else
+        list[traitName] = strength
+      end
     end
   end
 
@@ -313,10 +316,12 @@ end
 function printUnitTraits(unit)
   print("Traits of " .. dfhack.TranslateName(unit.name) .. ":")
   for id, name in ipairs(df.personality_facet_type) do
-    local baseValue = getUnitTraitBase(unit, id)
-    local currentValue = getUnitTraitCurrent(unit, id)
+    if name ~= 'NONE' then
+      local baseValue = getUnitTraitBase(unit, id)
+      local currentValue = getUnitTraitCurrent(unit, id)
 
-    print(name .. ": " .. baseValue .. " (" .. currentValue .. ")")
+      print(name .. ": " .. baseValue .. " (" .. currentValue .. ")")
+    end
   end
 end
 
@@ -331,7 +336,9 @@ function main(...)
 
   if args.list then
     for index, traitName in ipairs(df.personality_facet_type) do
-      print(index .. " (" .. traitName .. ")")
+      if traitName ~= 'NONE' then
+        print(index .. " (" .. traitName .. ")")
+      end
     end
     return
   end
@@ -390,7 +397,9 @@ function main(...)
     table.insert(traitsList,traitId)
   else -- To modify: all
     for id, traitName in ipairs(df.personality_facet_type) do
-      table.insert(traitsList, id)
+      if traitName ~= 'NONE' then
+        table.insert(traitsList, id)
+      end
     end
   end
 

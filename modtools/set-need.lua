@@ -30,7 +30,7 @@ Valid commands:
     Revert a unit's needs list back to its original selection and need strengths.
     Focus levels are preserved if the unit has a need before and after.
     Requires a target.
-    
+
 Valid need targets:
 
 :need <ID>:
@@ -40,7 +40,7 @@ Valid need targets:
     Required when using PrayOrMedidate needs. This value should be the historical figure ID of the deity in question.
 :all:
     All of the target's needs will be affected.
-    
+
 Valid effects:
 
 :focus <NUMBER>:
@@ -48,7 +48,7 @@ Valid effects:
 :level <NUMBER>:
     Set the need level of the targeted need. Default game values are:
     1 (Slight need), 2 (Moderate need), 5 (Strong need), 10 (Intense need)
-    
+
 Valid targets:
 
 :citizens:
@@ -58,7 +58,7 @@ Valid targets:
 
 If no target is given, the provided unit can't be found, or no unit id is given with the unit
 argument, the script will try and default to targeting the currently selected unit.
-    
+
 Other arguments:
 
 :help:
@@ -67,7 +67,7 @@ Other arguments:
     Prints a list of all needs + their IDs.
 :listunit:
     Prints a list of all a unit's needs, their strengths, and their current focus.
-    
+
 Usage example - Satisfy all citizen's needs:
     modtools/set-need -edit -all -focus 400 -citizens
 ]====]
@@ -113,7 +113,7 @@ function getUnitNeed(unit, need, deityId)
       end
     end
   end
-  
+
   -- If we get here, unit doesn't have it
   return false
 end
@@ -122,7 +122,7 @@ end
 -- deityId is an optional argument that records the deity's historical figure ID for PrayOrMeditate needs
 function getFocus(unit, need, deityId)
   local needInstance = getUnitNeed(unit, need, deityId)
-  
+
   if needInstance == false then
     return false
   else
@@ -135,7 +135,7 @@ end
 -- You can use getNeedLevelString to get the label that the game uses for that level e.g. "Strong", "Slight"
 function getNeedLevel(unit, need, deityId)
   local needInstance = getUnitNeed(unit, need, deityId)
-  
+
   if needInstance == false then
     return false
   else
@@ -149,21 +149,21 @@ function addNeed(unit, need, focus, level, deityId)
   if not tonumber(need) then
     need = df.need_type[need]
   end
-  
+
   local focus = focus or focusDefault -- focusDefault defined earlier in script: default is 0
   local level = level or 1 -- 1 = Slight need
   local deityId = deityId or -1
-  
+
   -- Remove existing need of type
   removeNeed(unit, need, deityId)
-  
+
   -- Add new need
   unit.status.current_soul.personality.needs:insert("#", {new = true, id = need, focus_level = focus, need_level = level, deity_id = deityId})
 end
 
 function removeNeed(unit, need, deityId)
   local needInstance, index = getUnitNeed(unit, need, deityId)
-  
+
   if needInstance == false then
     return false
   else
@@ -208,7 +208,7 @@ end
 function setFocus(unit, need, focus, deityId)
   local focus = focus or focusDefault
   local needInstance = getUnitNeed(unit, need, deityId)
-  
+
   -- Only modify the need if the unit actually has it
   if needInstance then
     needInstance.focus_level = focus
@@ -252,18 +252,19 @@ local needDefaultsInfo = {
 local needLevelValues = {1, 2, 5, 10} --Value for need level for each need level tier
 function getUnitDefaultNeedStrength(unit, need, deityId)
   local entry = needDefaultsInfo[need]
+  if entry == nil then return 0 end
   local setbelief = dfhack.reqscript("modtools/set-belief")
   local setpersonality = dfhack.reqscript("modtools/set-personality")
-  
+
   if entry.special ~= true then
     -- Record strength of need granted by the need's associated belief +/ trait
     -- The highest value will represent the need's need level tier
     local beliefStrength = 0
     local traitStrength = 0
-    
+
     if entry.trait ~= nil then
       local traitTier = setpersonality.getTraitTier(setpersonality.getUnitTraitBase(unit, df.personality_facet_type[entry.trait.id]))
-      
+
       -- Need level for a trait is based on how far the trait's tier is divorced from 4 in its required direction
       -- A trait tier of 4 gives a value of 1, plus one for each level divorce
       if traitTier == 4 then
@@ -276,7 +277,7 @@ function getUnitDefaultNeedStrength(unit, need, deityId)
     end
     if entry.belief ~= nil then
       local beliefTier = setbelief.getBeliefTier(setbelief.getUnitBelief(unit, df.value_type[entry.belief.id]))
-      
+
       -- Need level for a belief is based on how far the trait's tier is beyond 4 in its required direction
       -- A need tier of 4 gives a value of 0, plus one for each level of divorce
       if entry.belief.negative and beliefTier < 4 then -- The need uses a negative belief value to boost, and unit has
@@ -285,25 +286,25 @@ function getUnitDefaultNeedStrength(unit, need, deityId)
         beliefStrength = math.abs(beliefTier - 4)
       end
     end
-    
+
     -- Highest value of the two is used - there is no interaction with one being lower / even set in the opposite direction.
     if beliefStrength ~= 0 or traitStrength ~= 0 then
       return needLevelValues[math.max(beliefStrength, traitStrength)]
     else
       return 0
     end
-    
-  
+
+
   else --There are a couple of needs that don't conform to the regular setup
-  
+
     if need == df.need_type.PrayOrMeditate then
       -- Worship uses the strength of the unit's link to their deity to determine the strength of their need
       -- Fun fact: The thresholds used to change the unit's relationship to the deity (e.g. "casual worshipper")
       -- aren't the same as the ones used to change need strength!
-      
+
       -- Find the deity listing in the historical unit's links (if applicable)
       local linkStrength = 0
-      
+
       if unit.hist_figure_id ~= -1 then
         for index, link in ipairs(df.historical_figure.find(unit.hist_figure_id).histfig_links) do
           if df.histfig_hf_link_deityst:is_instance(link) and link.target_hf == deityId then
@@ -312,11 +313,11 @@ function getUnitDefaultNeedStrength(unit, need, deityId)
           end
         end
       end
-      
+
       -- The following are the ranges for each need strength tier
       -- Most of the values are exact, but some are educated guesses based on experimentation
       local needTier = 0
-      
+
       if linkStrength <= 24 then
         needTier = 0
       elseif linkStrength >= 25 and linkStrength <= 49 then
@@ -328,26 +329,26 @@ function getUnitDefaultNeedStrength(unit, need, deityId)
       else
         needTier = 4
       end
-      
+
       if needTier ~= 0 then
         return needLevelValues[needTier]
       else
         return 0
       end
-    
+
     elseif need == df.need_type.SeeGreatBeast then
       -- See great beast need uses the excitement trait and nature belief, but not in the usual way.
       -- Excitement increases need tier for every tier it is above base, but the need will only appear if nature is at least 2 levels above base.
       -- As such, unlike other needs that get their strength from traits, this need can't go up to intense need.
-      
+
       local strength = 0
       local natureTier = setbelief.getBeliefTier(setbelief.getUnitBelief(unit, df.value_type.NATURE))
       local excitementTier = setpersonality.getTraitTier(setpersonality.getUnitTraitBase(unit, df.personality_facet_type.EXCITEMENT_SEEKING))
-      
+
       if natureTier >= 6 and excitementTier > 4 then
         strength = excitementTier - 4
       end
-      
+
       if strength > 0 then
         return needLevelValues[strength]
       else
@@ -363,13 +364,13 @@ end
 function rebuildNeeds(unit)
   local oldLevels = {}
   local oldWorshipLevels = {}
-  
+
   local beliefs = {} -- Stores beliefs and their tiers
   local traits = {} -- Stores traits and their tiers
-  
+
   local setbelief = dfhack.reqscript("modtools/set-belief")
   local setpersonality = dfhack.reqscript("modtools/set-personality")
-  
+
   -- Record current focus levels.
   for index, needInstance in ipairs(unit.status.current_soul.personality.needs) do
     if df.need_type[needInstance.id] ~= df.need_type.PrayOrMeditate then
@@ -378,27 +379,27 @@ function rebuildNeeds(unit)
       oldWorshipLevels[needInstance.deity_id] = needInstance.focus_level
     end
   end
-  
+
   -- Remove all needs
   removeNeedAll(unit)
-  
+
   -- Go through all non-worship needs and add any that the unit should have, while also setting the focus to what it was before (if applicable)
   for needId, needName in ipairs(df.need_type) do
     if needId ~= df.need_type.PrayOrMeditate then
       local needLevel = getUnitDefaultNeedStrength(unit, needId)
-      
+
       if needLevel > 0 then -- Only add the need if it has a strength
         addNeed(unit, needId, oldLevels[needId] or focusDefault, needLevel)
       end
     end
   end
-  
+
   -- Now, handle all worship needs (provided unit is historical figure)
   if unit.hist_figure_id ~= -1 then
     for index, link in ipairs(df.historical_figure.find(unit.hist_figure_id).histfig_links) do
       if df.histfig_hf_link_deityst:is_instance(link) then
         local needLevel = getUnitDefaultNeedStrength(unit, df.need_type.PrayOrMeditate, link.target_hf)
-        
+
         if needLevel > 0 then
           addNeed(unit, df.need_type.PrayOrMeditate, oldWorshipLevels[link.target_hf] or focusDefault, needLevel, link.target_hf)
         end
@@ -462,7 +463,7 @@ function printUnitNeeds(unit)
     local name = df.need_type[needInstance.id]
     local level = needInstance.need_level
     local focus = needInstance.focus_level
-    
+
     print(name .. ": Focus = " .. focus .. " Level = " .. level)
   end
 end
@@ -508,13 +509,13 @@ function main(...)
             unit = df.unit.find(tonumber(args.unit))
         end
     end
-    
+
     -- If unit ID wasn't provided / unit couldn't be found,
     -- Try getting selected unit
     if unit == nil then
         unit = dfhack.gui.getSelectedUnit(true)
     end
-    
+
     if unit == nil then
         qerror("Couldn't find unit. If you don't want to target a specific unit, use -citizens.")
     else
@@ -523,12 +524,12 @@ function main(...)
   elseif args.citizens then
     -- Technically this will exclude insane citizens, but this is the
     -- easiest thing that dfhack provides
-    
+
     -- Abort if not in Fort mode
     if not dfhack.world.isFortressMode() then
         qerror("-citizens argument only available in Fortress Mode.")
     end
-    
+
     for _, unit in pairs(df.global.world.units.active) do
         if dfhack.units.isCitizen(unit) then
             table.insert(unitsList, unit)
@@ -545,24 +546,24 @@ function main(...)
       need = df.need_type[args.need]
     end
   end
-  
+
   local deity
   if args.deity then
     deity = tonumber(args.deity)
   end
-  
+
   local focus
   if args.focus then
     focus = tonumber(args.focus)
   end
-  
+
   local level
   if args.level then
     level = tonumber(args.level)
   end
-  
+
   -- Execute / finish checks
-  
+
   for index, unit in ipairs(unitsList) do
     if command == "add" then
       if not need then
@@ -577,7 +578,7 @@ function main(...)
         if not need then
           qerror("-remove requires a need target.")
         end
-        
+
         removeNeed(unit, need, deity)
       end
     elseif command == "edit" then
@@ -592,7 +593,7 @@ function main(...)
         if not need then
           qerror("-edit requires a need target.")
         end
-        
+
         if focus then
           setFocus(unit, need, focus, deity)
         end

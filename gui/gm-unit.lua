@@ -1258,18 +1258,20 @@ function editor_belief:updateChoices()
   local choices = {}
 
   for index, belief in ipairs(df.value_type) do
-    local niceText = belief
-    niceText = niceText:lower()
-    niceText = niceText:gsub("_", " ")
-    niceText = niceText:gsub("^%l", string.upper)
+    if belief ~= 'NONE' then
+      local niceText = belief
+      niceText = niceText:lower()
+      niceText = niceText:gsub("_", " ")
+      niceText = niceText:gsub("^%l", string.upper)
 
-    local strength = setbelief.getUnitBelief(self.target_unit, index)
-    local symbolAddition = ""
-    if setbelief.isCultureBelief(self.target_unit, index) then
-      symbolAddition = "*"
+      local strength = setbelief.getUnitBelief(self.target_unit, index)
+      local symbolAddition = ""
+      if setbelief.isCultureBelief(self.target_unit, index) then
+        symbolAddition = "*"
+      end
+
+      table.insert(choices, {["text"] = niceText .. ": " .. strength .. symbolAddition, ["belief"] = index, ["value"] = strength, ["name"] = niceText})
     end
-
-    table.insert(choices, {["text"] = niceText .. ": " .. strength .. symbolAddition, ["belief"] = index, ["value"] = strength, ["name"] = niceText})
   end
 
   self.subviews.beliefs:setChoices(choices)
@@ -1360,14 +1362,16 @@ function editor_personality:updateChoices()
   local choices = {}
 
   for index, traitName in ipairs(df.personality_facet_type) do
-    local niceText = traitName
-    niceText = niceText:lower()
-    niceText = niceText:gsub("_", " ")
-    niceText = niceText:gsub("^%l", string.upper)
+    if traitName ~= 'NONE' then
+      local niceText = traitName
+      niceText = niceText:lower()
+      niceText = niceText:gsub("_", " ")
+      niceText = niceText:gsub("^%l", string.upper)
 
-    local strength = setpersonality.getUnitTraitBase(self.target_unit, index)
+      local strength = setpersonality.getUnitTraitBase(self.target_unit, index)
 
-    table.insert(choices, {["text"] = niceText .. ": " .. strength, ["trait"] = index, ["value"] = strength, ["name"] = niceText})
+      table.insert(choices, {["text"] = niceText .. ": " .. strength, ["trait"] = index, ["value"] = strength, ["name"] = niceText})
+    end
   end
 
   self.subviews.traits:setChoices(choices)

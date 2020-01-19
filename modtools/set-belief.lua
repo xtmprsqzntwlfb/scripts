@@ -224,12 +224,14 @@ function getUnitBeliefList(unit, tiers)
   local list = {}
 
   for id, beliefName in ipairs(df.value_type) do
-    local strength = getUnitBelief(unit, id)
+    if beliefName ~= 'NONE' then
+      local strength = getUnitBelief(unit, id)
 
-    if tiers then
-      list[beliefName] = getBeliefTier(strength)
-    else
-      list[beliefName] = strength
+      if tiers then
+        list[beliefName] = getBeliefTier(strength)
+      else
+        list[beliefName] = strength
+      end
     end
   end
 
@@ -274,6 +276,7 @@ end
 -- Get the "default" belief that the unit uses, based on their culture
 -- Priority is Cultural Identity -> Civ's values -> Nothing
 function getUnitCultureBelief(unit, belief)
+  if belief == df.value_type.NONE then return 0 end
   local upers = unit.status.current_soul.personality
 
   if upers.cultural_identity ~= -1 then
@@ -329,16 +332,18 @@ end
 function printUnitBeliefs(unit)
   print("Beliefs for " .. dfhack.TranslateName(unit.name) .. ":")
   for id, name in ipairs(df.value_type) do
-    local strength = getUnitBelief(unit, id)
-    local cultural = isCultureBelief(unit, id)
+    if name ~= 'NONE' then
+      local strength = getUnitBelief(unit, id)
+      local cultural = isCultureBelief(unit, id)
 
-    local out = name
-    if cultural then
-      out = out .. "*"
+      local out = name
+      if cultural then
+        out = out .. "*"
+      end
+      out = out .. " " .. strength
+
+      print(out)
     end
-    out = out .. " " .. strength
-
-    print(out)
   end
 end
 
@@ -353,7 +358,9 @@ function main(...)
 
   if args.list then
     for index, valueName in ipairs(df.value_type) do
-      print(index .. " (" .. valueName .. ")")
+      if valueName ~= 'NONE' then
+        print(index .. " (" .. valueName .. ")")
+      end
     end
     return
   end
@@ -411,7 +418,9 @@ function main(...)
     table.insert(beliefsList, beliefId)
   else -- To modify: all
     for id, keyName in ipairs(df.value_type) do
-      table.insert(beliefsList, id)
+      if keyName ~= 'NONE' then
+        table.insert(beliefsList, id)
+      end
     end
   end
 
