@@ -1,13 +1,30 @@
+-- Displays the raw memory of a structure, separated by field.
+--author BenLubar
+--
+--[====[
+
+devel/visualize-structure
+=========================
+Displays the raw memory of a structure, separated by field.
+Useful for checking if structures are aligned.
+
+]====]
+
 local args = {...}
 
 if #args ~= 1 then
-    qerror('TODO: help message')
+    qerror([[Usage: devel/visualize-structure [path]
+
+Displays the raw memory of a structure, separated by field.
+Useful for checking if structures are aligned.]])
 end
 
 local utils = require('utils')
 
 local ref = utils.df_expr_to_ref(args[1])
 local size, baseaddr = ref:sizeof()
+
+local ptrsz = dfhack.getArchitecture() / 8
 
 local intptr = df.reinterpret_cast('uint' .. dfhack.getArchitecture() .. '_t', ref)
 if intptr:_displace(-1).value & 0xffffffff == 0xdfdf4ac8 then
@@ -36,15 +53,22 @@ for k,v in pairs(ref) do
     local fsize, faddr = ref:_field(k):sizeof()
     local foff = faddr - baseaddr
     if offset < foff then
-        print('(padding)')
+        print()
+        if offset == 0 and foff == ptrsz then
+            print('(vtable)')
+        else
+            print('(padding)')
+        end
         bytes_until(foff)
     end
 
+    print()
     print(tostring(ref:_field(k)._type) .. ' ' .. k)
     bytes_until(foff + fsize)
-    end
+end
 
 if offset < size then
+    print()
     print('(padding)')
     bytes_until(size)
 end
