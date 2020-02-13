@@ -194,6 +194,18 @@ function export_more_legends_xml()
     end
     file:write("</rivers>\n")
 
+    file:write("<creature_raw>\n")
+    for creatureK, creatureV in ipairs (df.global.world.raws.creatures.all) do
+        file:write("\t<creature>\n")
+        file:write("\t\t<creature_id>"..creatureV.creature_id.."</creature_id>\n")
+        file:write("\t\t<name_singular>"..creatureV.name[0].."</name_singular>\n")
+        file:write("\t\t<name_plural>"..creatureV.name[1].."</name_plural>\n")
+        for flagK, flagV in ipairs (df.creature_raw_flags) do
+            file:write("\t\t<"..flagV:lower()..">"..tostring(creatureV.flags[flagV]).."</"..flagV:lower()..">\n")
+        end
+        file:write("\t</creature>\n")
+    end
+    file:write("</creature_raw>\n")
 
     file:write("<sites>\n")
     for siteK, siteV in progress_ipairs(df.global.world.world_data.sites, 'site') do
