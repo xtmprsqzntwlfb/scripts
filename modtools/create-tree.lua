@@ -23,7 +23,6 @@ Usage::
 
     -location [ x y z ]
         create the tree at the specified coordinates
-        if omitted, the cursor position is used instead
 
     example:
         modtools/create-tree -tree OAK -age 100 -location [ 33 145 137 ]
