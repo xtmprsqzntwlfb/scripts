@@ -160,6 +160,9 @@ function createUnitInner(race_id, caste_id, caste_id_choices, pos, age, domestic
   local oldInteractionEffect
   oldInteractionEffect = arenaSpawn.interaction
   arenaSpawn.interaction = -1
+  local oldSpawnTame
+  oldSpawnTame = arenaSpawn.tame
+  arenaSpawn.tame = df.world.T_arena_spawn.T_tame.NotTame -- prevent interference by the tame/mountable setting (which isn't particularly useful as it only appears to set unit.flags1.tame)
 
   local equipment = arenaSpawn.equipment
 
@@ -256,6 +259,7 @@ function createUnitInner(race_id, caste_id, caste_id_choices, pos, age, domestic
   arenaSpawn.filter = oldSpawnFilter
   arenaSpawn.type = oldSpawnType
   arenaSpawn.interaction = oldInteractionEffect
+  arenaSpawn.tame = oldSpawnTame
 
   for _,i in pairs(old_item_types) do
     equipment.item_types:insert('#',i)
