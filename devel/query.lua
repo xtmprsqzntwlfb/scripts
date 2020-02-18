@@ -5,7 +5,9 @@ local validArgs = utils.invert({
  'unit',
  'table',
  'query',
+ 'listkeys',
  'help',
+ 'set',
 })
 local args = utils.processArgs({...}, validArgs)
 local help = [====[
@@ -31,6 +33,19 @@ Usage: ``query -unit <global_value> -query <query>``
 or ``query -table <global_value> -query <query>``
 
 ]====]
+newvalue=nil
+if args.set then
+    newvalue=tonumber(args.set)
+    if type(newvalue) ~= 'number' then
+        if args.set == 'true' then
+            newvalue=true
+        elseif args.set == 'false' then
+            newvalue=false
+        else
+            newvalue=args.set
+        end
+    end
+end
 
 --thanks goes mostly to the internet for this function. thanks internet you da real mvp
 function safe_pairs(item, keys_only)
@@ -65,6 +80,18 @@ function Query(table, query, parent)
         if not tonumber(k) and type(k) ~= "table" and not string.find(tostring(k), 'script') then
             if string.find(tostring(k), query) then
                 print(parent .. "." .. k .. ":", v)
+                if args.listkeys then
+                    for k2,v2 in safe_pairs(table[k]) do
+                        print(parent .. "." .. k .."." .. k2 .. ":", v2)
+                    end
+                elseif args.set and type(table[k]) == type(newvalue) then
+                    table[k] = newvalue
+                    print("new value:", newvalue)
+                elseif args.set then
+                    print("error: invalid type given")
+                    print("given: " .. type(newvalue))
+                    print("expected: " .. type(table[k]))
+                end
             end
             --print(parent .. "." .. k)
             if not string.find(parent, tostring(k)) then
