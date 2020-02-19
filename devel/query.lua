@@ -9,6 +9,7 @@ local validArgs = utils.invert({
  'listkeys',
  'help',
  'set',
+ 'depth'
 })
 local args = utils.processArgs({...}, validArgs)
 local help = [====[
@@ -35,6 +36,7 @@ or ``query -table <global_value> -query <query>``
 
 ]====]
 newvalue=nil
+depth=nil
 if args.set then
     newvalue=tonumber(args.set)
     if type(newvalue) ~= 'number' then
@@ -46,6 +48,8 @@ if args.set then
             newvalue=args.set
         end
     end
+elseif args.depth then
+    depth = tonumber(args.depth)
 end
 
 --thanks goes mostly to the internet for this function. thanks internet you da real mvp
@@ -72,18 +76,51 @@ function safe_pairs(item, keys_only)
     end
 end
 
+function FormatMyString(str,width)
+
+end
+
+cur_depth = -1
+N=0
 function Query(table, query, parent)
+    cur_depth = cur_depth + 1
     if not parent then
         parent = ""
     end
     for k,v in safe_pairs(table) do
         -- avoid infinite recursion
         if not tonumber(k) and type(k) ~= "table" and not string.find(tostring(k), 'script') then
+            --print(parent .. "." .. k)
+            if not string.find(parent, tostring(k)) then
+                if not args.depth or (depth and cur_depth < depth) then
+                    if parent then
+                        N=Query(v, query, parent .. "." .. k)
+                    else
+                        N=Query(v, query, k)
+                    end
+                end
+            end
             if string.find(tostring(k), query) then
-                print(parent .. "." .. k .. ":", v)
+                p=string.format("%s.%s: ",parent,k)
+                cN=string.len(p)
+                N = cN >= N and cN or N
+                f="%-"..(N+5).."s"
+                if (N - cN) >= 20 then
+                    print(string.gsub(string.format(f,p),"   "," ~ ") .. tostring(v))
+                else
+                    print(string.format(f,p) .. tostring(v))
+                end
                 if args.listkeys then
                     for k2,v2 in safe_pairs(table[k]) do
-                        print(parent .. "." .. k .."." .. k2 .. ":", v2)
+                        p=string.format("%s.%s.%s:",parent,k,k2)
+                        cN=string.len(p)
+                        N = cN >= N and cN or N
+                        f="%-"..(N+5).."s"
+                        if (N - cN) >= 20 then
+                            print(string.gsub(string.format(f,p),"   "," ~ ") .. tostring(v2))
+                        else
+                            print(string.format(f,p) .. tostring(v2))
+                        end
                     end
                 elseif args.set and type(table[k]) == type(newvalue) then
                     table[k] = newvalue
@@ -94,16 +131,10 @@ function Query(table, query, parent)
                     print("expected: " .. type(table[k]))
                 end
             end
-            --print(parent .. "." .. k)
-            if not string.find(parent, tostring(k)) then
-                if parent then
-                    Query(v, query, parent .. "." .. k)
-                else
-                    Query(v, query, k)
-                end
-            end
         end
     end
+    cur_depth = cur_depth - 1
+    return N
 end
 
 function parseTableString(str)
