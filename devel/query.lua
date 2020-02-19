@@ -1,10 +1,11 @@
 -- Query is a script useful for finding and reading values of data structure fields. Purposes will likely be exclusive to writing lua script code.
--- Written by Josh Cooper(cppcooper) on 2017-12-21, last modified: 2018-10-19
+-- Written by Josh Cooper(cppcooper) on 2017-12-21, last modified: 2020-02-18
 local utils=require('utils')
 local validArgs = utils.invert({
  'unit',
  'table',
  'query',
+ 'getkey',
  'listkeys',
  'help',
  'set',
@@ -129,6 +130,22 @@ function parseTableString(str)
     return curTable
 end
 
+function parseKeyString(t,str)
+    curTable = t
+    keyParts = {}
+    for word in string.gmatch(str, '([^.]+)') do --thanks stack overflow
+        table.insert(keyParts, word)
+    end
+    for k,v in pairs(keyParts) do
+        if curTable[v] ~= nil then
+            curTable = curTable[v]
+        else
+            qerror("Table" .. v .. " does not exist.")
+        end
+    end
+    return curTable
+end
+
 local selection = nil
 if args.help then
     print(help)
@@ -138,21 +155,25 @@ elseif args.unit then
     else
         selection = dfhack.gui.getSelectedUnit()
     end
-    if selection == nil then
-        qerror("Selected unit is null. Invalid selection.")
-    elseif args.query ~= nil then
-        Query(selection, args.query, 'selected-unit')
+    if args.getkey then
+        print("selected-unit."..args.getkey..": ",parseKeyString(selection,args.getkey))
     else
-        print("The query is empty, the output is probably gonna be large. Start your engines.")
-        Query(selection, '', 'selected-unit')
+        if selection == nil then
+            qerror("Selected unit is null. Invalid selection.")
+        elseif args.query ~= nil then
+            Query(selection, args.query, 'selected-unit')
+        else
+            print("The query is empty, the output is probably gonna be large. Start your engines.")
+            Query(selection, '', 'selected-unit')
+        end
     end
 elseif args.table then
     local t = parseTableString(args.table)
     if args.query ~= nil then
-        Query(_G[args.table], args.query, args.table)
+        Query(t, args.query, args.table)
     else
         print("The query is empty, the output is probably gonna be large. Start your engines.")
-        Query(_G[args.table], '', args.table)
+        Query(t, '', args.table)
     end
 else
     print(help)
