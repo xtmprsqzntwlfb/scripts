@@ -2,14 +2,14 @@
 -- Written by Josh Cooper(cppcooper) on 2017-12-21, last modified: 2020-02-18
 local utils=require('utils')
 local validArgs = utils.invert({
+ 'help',
  'unit',
  'table',
  'query',
- 'getkey',
+ 'depth',
  'listkeys',
- 'help',
+ 'getkey',
  'set',
- 'depth'
 })
 local args = utils.processArgs({...}, validArgs)
 local help = [====[
@@ -18,21 +18,40 @@ devel/query
 Query is a script useful for finding and reading values of data structure fields.
 Purposes will likely be exclusive to writing lua script code.
 
-This script will recursively search an input for fields matching your query.
-Matching fields will be printed along with their values. When a match is a
-table the entire table will not be printed, only the reference to it.
+This script can recursively search tables for fields matching the input query.
+The root table can be specified explicitly, or a unit can be searched instead.
+Any matching fields will be printed alongside their value.
+If a match has sub-fields they too can be printed.
 
 When performing table queries, use dot notation to denote sub-tables.
 The script has to parse the input string and separate each table.
 
-example: "query -unit -query profession" will print all fields matching
-'*profession*' inside the highlighted unit.
+Examples:
+  [DFHack]# devel/query -table df -query dead
+  [DFHack]# devel/query -table df.global.ui.main -depth 0
+  [DFHack]# devel/query -unit -query STRENGTH
+  [DFHack]# devel/query -unit -query physical_attrs -listkeys
+  [DFHack]# devel/query -unit -getkey id
+~~~~~~~~~~~~~
+selection options:
+  These options are used to specify where the query will run, or specifically what key to print inside a unit.
+    unit <value>   - Selects the highlighted unit when no value is provided.
+                     With a value provided, _G[value] must exist.
+    table <value>  - Selects the specivied table (ie. 'value').
+                     Must use dot notation to denot sub-tables. (eg. -table df.global.world)
+    getkey <value> - Gets the specified key from the selected unit.
+                     Note: Must use the 'unit' option and doesn't support the options below.
+                     Useful if there would be several matching fields with the key as a substring (eg. 'id')
+~~~~~~~~~~~~~
+query options:
+    query <value>  - Searches the selection for fields with substrings matching the specified value.
+    depth <value>  - Limits the query to the specified recursion depth.
+    listkeys       - Lists all keys in any fields matching the query.
 
-The values input to -unit or -table must be global identifiers
-(ie. _G[identifier] must exist).
-
-Usage: ``query -unit <global_value> -query <query>``
-or ``query -table <global_value> -query <query>``
+command options:
+    set            - *CAREFUL* You can use this to set the value of matches.
+                     Be advised there is minimal safety when using this option.
+    help           - Prints this help information.
 
 ]====]
 newvalue=nil
@@ -76,10 +95,6 @@ function safe_pairs(item, keys_only)
     end
 end
 
-function FormatMyString(str,width)
-
-end
-
 cur_depth = -1
 N=0
 function Query(table, query, parent)
@@ -89,7 +104,7 @@ function Query(table, query, parent)
     end
     for k,v in safe_pairs(table) do
         -- avoid infinite recursion
-        if not tonumber(k) and type(k) ~= "table" and not string.find(tostring(k), 'script') then
+        if not tonumber(k) and (type(k) ~= "table" or args.depth) and not string.find(tostring(k), 'script') then
             --print(parent .. "." .. k)
             if not string.find(parent, tostring(k)) then
                 if not args.depth or (depth and cur_depth < depth) then
