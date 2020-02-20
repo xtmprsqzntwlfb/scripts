@@ -11,8 +11,9 @@ local validArgs = utils.invert({
 })
 local args = utils.processArgs({...}, validArgs)
 local help = [====[
+============
 getwaves
-===========
+~~~~~~~~~~~~
 Get waves is a script useful for finding migration waves information for citizen dwarfs.
 
 The script must loop through all active units in df.global.world.units.active and build
@@ -31,13 +32,12 @@ Examples:
   [DFHack]# getwaves -unit -granularity days
   [DFHack]# getwaves -unit
   [DFHack]# getwaves -unit -all -showarrival -granularity days
-
-~~~~~~~~~~~~~
+~~~~~~~~~~~~
 selection options:
   These options are used to specify what wave information to display
     unit                 - Displays the highlighted unit's arrival wave information
     all                  - Displays all citizens' arrival wave information
-~~~~~~~~~~~~~
+~~~~~~~~~~~~
 other options:
     granularity <value>  - Specifies the granularity of wave enumeration
                            (ie. years, seasons, months, days)
@@ -47,7 +47,7 @@ other options:
                            If '-all' is specified the info displayed will be
                            relative to the granularity used.
                            Note: this option is always used when '-unit' is used
-
+~~~~~~~~~~~~
 ]====]
 
 selected = dfhack.gui.getSelectedUnit()
