@@ -1,4 +1,4 @@
--- Optimize dwarves for fort-mode work. Buff your dwarves and make your life easier in managing labours.
+-- Optimize dwarves for fort-mode work. Buff(read: pimp-out) your dwarves and make your life easier in managing labours.
 -- written by josh cooper(cppcooper) [created: 12-2017 | last edited: 12-2019]
 --[====[
 dwopit
@@ -17,7 +17,7 @@ Usage: ``dwopit -help`` or ``dwopit -select <sel-opt> -<command> <args>``
 :select <option>:    Indicates the next parameter will be indicate which dwarves to select
 ]====]
 
-print("v1.3.1")
+print("v1.3.3")
 utils ={}
 utils = require('utils')
 json = require('json')
@@ -291,12 +291,12 @@ function FindValueKey(t, value, depth)
         return nil
     end
     for k,v in pairs(t) do
-        if type(v) == 'table' then
+        if v == value then
+            return k
+        elseif type(v) == 'table' then
             if FindValueKey(v, value, depth + 1) ~= nil then
                 return k
             end
-        elseif v == value then
-            return k
         end
     end
     return nil
@@ -343,7 +343,7 @@ function isValidJob(job)
         local jobName = FindValueKey(cloned.jobs, job)
         local jd = cloned.distributions[jobName]
         if not jd then
-            error("Job distribution not found. Job: " .. jobName)
+            error(string.format("Job distribution not found. Job: %s; jobName: %s",job,jobName))
         end
         if OpData[jobName].count < jd.max then
             return true
@@ -450,8 +450,8 @@ function ApplyProfession(dwf, profession, min, max)
         local points = rng.rollInt(engineID, min, max)
         sTable.rating = sTable.rating < points and points or sTable.rating
         sTable.rating = sTable.rating + bonus
-        sTable.rating = sTable.rating > 20 and 20 or sTable.rating
-        sTable.rating = sTable.rating < 0 and 0 or sTable.rating
+        sTable.rating = sTable.rating >= 20 and 20 or sTable.rating
+        sTable.rating = sTable.rating <= 2 and 2 or sTable.rating
         if args.debug and tonumber(args.debug) >= 2 then print(skill .. ".rating = " .. sTable.rating) end
     end
     return true
@@ -586,6 +586,7 @@ end
 
 --Returns true if a job was found and applied, returns false otherwise
 function FindJob(dwf, recursive)
+
     if isDwarfOptimized(dwf) then
         return false
     end
@@ -722,12 +723,8 @@ function GetWave(dwf)
     arrival_time = current_tick - dwf.curse.time_on_site;
     --print(string.format("Current year %s, arrival_time = %s, ticks_per_year = %s", df.global.cur_year, arrival_time, ticks_per_year))
     arrival_year = df.global.cur_year + (arrival_time // ticks_per_year);
-    arrival_season = (arrival_time % ticks_per_year) // ticks_per_season;
+    arrival_season = 1 + (arrival_time % ticks_per_year) // ticks_per_season;
     wave = 10 * arrival_year + arrival_season
-    day = (wave % 100) + 1;
-    month = (wave // 100) % 100;
-    season = (wave // 10000) % 10;
-    year = wave // 100000;
     if waves[wave] == nil then
         waves[wave] = {}
     end
@@ -738,7 +735,7 @@ end
 function Show(dwf)
     local name_ptr = dfhack.units.getVisibleName(dwf)
     local name = dfhack.TranslateName(name_ptr)
-    print(string.format("%6d - %-23s [wave:%2d]  %3d %s", dwf.id, name, tonumber(FindValueKey(zwaves,dwf)), dwf.profession, dwf.custom_profession))
+    print(string.format("%6d [wave:%2d] - %-23s (%3d,%3d) %s", dwf.id, tonumber(FindValueKey(zwaves,dwf)), name, dwf.profession, dwf.profession2, dwf.custom_profession))
     --print('('..dwf.id..') - '..name..spaces..dwf.profession,dwf.custom_profession)
 end
 
@@ -844,8 +841,8 @@ function CheckWorker(dwf, option)
     if CanWork(dwf) then
         --check option data type (string/table)
             --string:
+                --check if option specifies a pattern which matches the name of this dwf
                 --check if we want highlighted dwf & whether that is this dwf
-                --check if option specifies a pattern which matches the name of a dwarf
                 --check if option starts with 'p'
                 --check all the possible options
             --table:
@@ -1057,15 +1054,16 @@ Examples:
                   dorf_tables.lua).
                   usage `-select [ jobs job1 job2 etc. ]` eg. `-select [ jobs Miner Trader ]`
     waves       - selects dwarves from the specified migration waves. Waves are enumerated
-                  starting at 0 and increasing by 1 with each wave. If two waves came in a month
-                  they will be grouped together (sorry)
+                  starting at 0 and increasing by 1 with each wave. The waves go by season and
+                  year and thus should match what you see in Dwarf Therapist.
+                  Note: I recommend you -show the selected dwarves before modifying.
                   usage `-select [ waves 0 1 3 5 7 13 ]`
 ~~~~~~~~~~~~
  general commands:
     reset              - deletes json file containing session data (bug: might not delete session
                          data, no idea why)
-    resetall           - deletes both json files. session data and existing persistent data (bug:
-                         might not delete session data, no idea why)
+    resetall           - deletes both json files. session data and existing persistent data
+                         bug: might not delete session data, no idea why
     show               - displays affected dwarves (id, name, migration wave, primary job). useful
                          for previewing selected dwarves before modifying them, or looking up the
                          migration wave number for a group of dwarves.
