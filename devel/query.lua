@@ -8,6 +8,7 @@ local validArgs = utils.invert({
  'query',
  'depth',
  'listkeys',
+ 'querykeys',
  'getkey',
  'set',
 })
@@ -29,29 +30,37 @@ The script has to parse the input string and separate each table.
 Examples:
   [DFHack]# devel/query -table df -query dead
   [DFHack]# devel/query -table df.global.ui.main -depth 0
+  [DFHack]# devel/query -table df.profession -querykeys WAR
   [DFHack]# devel/query -unit -query STRENGTH
   [DFHack]# devel/query -unit -query physical_attrs -listkeys
   [DFHack]# devel/query -unit -getkey id
 ~~~~~~~~~~~~~
 selection options:
-  These options are used to specify where the query will run, or specifically what key to print inside a unit.
-    unit <value>   - Selects the highlighted unit when no value is provided.
-                     With a value provided, _G[value] must exist.
-    table <value>  - Selects the specivied table (ie. 'value').
-                     Must use dot notation to denot sub-tables. (eg. -table df.global.world)
-    getkey <value> - Gets the specified key from the selected unit.
-                     Note: Must use the 'unit' option and doesn't support the options below.
-                     Useful if there would be several matching fields with the key as a substring (eg. 'id')
+  These options are used to specify where the query will run,
+  or specifically what key to print inside a unit.
+    unit <value>       - Selects the highlighted unit when no value is provided.
+                         With a value provided, _G[value] must exist.
+    table <value>      - Selects the specivied table (ie. 'value').
+                         Must use dot notation to denote sub-tables.
+                         (eg. -table df.global.world)
+    getkey <value>     - Gets the specified key from the selected unit.
+                         Note: Must use the 'unit' option and doesn't support the
+                         options below. Useful if there would be several matching
+                         fields with the key as a substring (eg. 'id')
 ~~~~~~~~~~~~~
 query options:
-    query <value>  - Searches the selection for fields with substrings matching the specified value.
-    depth <value>  - Limits the query to the specified recursion depth.
-    listkeys       - Lists all keys in any fields matching the query.
+    query <value>      - Searches the selection for fields with substrings matching
+                         the specified value.
+    depth <value>      - Limits the query to the specified recursion depth.
+    listkeys           - Lists all keys in any fields matching the query.
+    querykeys <value>  - Lists only keys matching the specified value.
+
+    NOTE: query and query keys are mutually exclusive.
 
 command options:
-    set            - *CAREFUL* You can use this to set the value of matches.
-                     Be advised there is minimal safety when using this option.
-    help           - Prints this help information.
+    set                - *CAREFUL* You can use this to set the value of matches.
+                         Be advised there is minimal safety when using this option.
+    help               - Prints this help information.
 
 ]====]
 newvalue=nil
@@ -102,8 +111,8 @@ function Query(t, query, parent)
     if not parent then
         parent = ""
     end
-    if cur_depth == 0 and args.listkeys then
-        list_keys(nil,nil,t)
+    if cur_depth == 0 and (args.listkeys or args.querykeys) then
+        list_keys(nil,nil,t,parent)
     end
     for k,v in safe_pairs(t) do
         -- avoid infinite recursion
@@ -118,7 +127,7 @@ function Query(t, query, parent)
                     end
                 end
             end
-            if string.find(tostring(k), query) then
+            if args.query and string.find(tostring(k), query) then
                 p=string.format("%s.%s: ",parent,k)
                 cN=string.len(p)
                 N = cN >= N and cN or N
@@ -129,7 +138,7 @@ function Query(t, query, parent)
                 else
                     print(string.format(f,p) .. tostring(v))
                 end
-                if args.listkeys then
+                if args.query and (args.listkeys or args.querykeys) then
                     list_keys(t,k,v,parent)
                 elseif args.set and type(t[k]) == type(newvalue) then
                     t[k] = newvalue
@@ -140,6 +149,9 @@ function Query(t, query, parent)
                     print("expected: " .. type(t[k]))
                 end
             end
+            if not args.query and (args.listkeys or args.querykeys) then
+                list_keys(t,k,v,parent)
+            end
         end
     end
     cur_depth = cur_depth - 1
@@ -147,22 +159,47 @@ function Query(t, query, parent)
 end
 
 function list_keys(t,k,v,parent)
+    bprinted=false
+    if k ~= nil and parent ~= nil then
+        p=string.format("%s.%s",parent,k)
+    elseif parent ~= nil then
+        p=string.format("%s",parent)
+    else
+        p=""
+    end
     if v ~= nil and type(v) == "table" and v._kind == "enum-type" then
-        for i=0,400 do
-            if type(v[i]) ~= "nil" then
-                print(string.format(" %-3d %s",i,v[i]))
+        for i,e in ipairs(v) do
+            if args.querykeys and string.find(tostring(v[i]),args.querykeys) then
+                if not bprinted then
+                    print(p)
+                    bprinted = true
+                end
+                print(string.format(" %-3d %s",i,e))
+            elseif not args.querykeys then
+                if not bprinted then
+                    print(p)
+                    bprinted = true
+                end
+                print(string.format(" %-3d %s",i,e))
             end
         end
     elseif t ~= nil and k ~= nil then
         for k2,v2 in safe_pairs(t[k]) do
-            p=string.format("%s.%s.%s:",parent,k,k2)
-            cN=string.len(p)
-            N = cN >= N and cN or N
-            f="%-"..(N+5).."s"
-            if (N - cN) >= 20 then
-                print(string.gsub(string.format(f,p),"   "," ~ ") .. tostring(v2))
-            else
-                print(string.format(f,p) .. tostring(v2))
+            if not args.querykeys or (args.querykeys and string.find(tostring(k2),args.querykeys)) then
+                if not bprinted then
+                    print(p)
+                    bprinted = true
+                end
+                p=string.format("%s.%s.%s:",parent,k,k2)
+                cN=string.len(p)
+                N = cN >= N and cN or N
+                N = N >= 90 and 90 or N
+                f="%-"..(N+5).."s"
+                if (N - cN) >= 20 then
+                    print(string.gsub(string.format(f,p),"   "," ~ ") .. tostring(v2))
+                else
+                    print(string.format(f,p) .. tostring(v2))
+                end
             end
         end
     end
@@ -225,7 +262,6 @@ elseif args.unit then
         elseif args.query ~= nil then
             Query(selection, args.query, 'selected-unit')
         else
-            print("The query is empty, the output is probably gonna be large. Start your engines.")
             Query(selection, '', 'selected-unit')
         end
     end
@@ -234,7 +270,6 @@ elseif args.table then
     if args.query ~= nil then
         Query(t, args.query, args.table)
     else
-        print("The query is empty, the output is probably gonna be large. Start your engines.")
         Query(t, '', args.table)
     end
 else
