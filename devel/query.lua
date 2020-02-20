@@ -97,12 +97,15 @@ end
 
 cur_depth = -1
 N=0
-function Query(table, query, parent)
+function Query(t, query, parent)
     cur_depth = cur_depth + 1
     if not parent then
         parent = ""
     end
-    for k,v in safe_pairs(table) do
+    if cur_depth == 0 and args.listkeys then
+        list_keys(nil,nil,t)
+    end
+    for k,v in safe_pairs(t) do
         -- avoid infinite recursion
         if not tonumber(k) and (type(k) ~= "table" or args.depth) and not string.find(tostring(k), 'script') then
             --print(parent .. "." .. k)
@@ -119,6 +122,7 @@ function Query(table, query, parent)
                 p=string.format("%s.%s: ",parent,k)
                 cN=string.len(p)
                 N = cN >= N and cN or N
+                N = N >= 90 and 90 or N
                 f="%-"..(N+5).."s"
                 if (N - cN) >= 20 then
                     print(string.gsub(string.format(f,p),"   "," ~ ") .. tostring(v))
@@ -126,30 +130,42 @@ function Query(table, query, parent)
                     print(string.format(f,p) .. tostring(v))
                 end
                 if args.listkeys then
-                    for k2,v2 in safe_pairs(table[k]) do
-                        p=string.format("%s.%s.%s:",parent,k,k2)
-                        cN=string.len(p)
-                        N = cN >= N and cN or N
-                        f="%-"..(N+5).."s"
-                        if (N - cN) >= 20 then
-                            print(string.gsub(string.format(f,p),"   "," ~ ") .. tostring(v2))
-                        else
-                            print(string.format(f,p) .. tostring(v2))
-                        end
-                    end
-                elseif args.set and type(table[k]) == type(newvalue) then
-                    table[k] = newvalue
+                    list_keys(t,k,v,parent)
+                elseif args.set and type(t[k]) == type(newvalue) then
+                    t[k] = newvalue
                     print("new value:", newvalue)
                 elseif args.set then
                     print("error: invalid type given")
                     print("given: " .. type(newvalue))
-                    print("expected: " .. type(table[k]))
+                    print("expected: " .. type(t[k]))
                 end
             end
         end
     end
     cur_depth = cur_depth - 1
     return N
+end
+
+function list_keys(t,k,v,parent)
+    if v ~= nil and type(v) == "table" and v._kind == "enum-type" then
+        for i=0,400 do
+            if type(v[i]) ~= "nil" then
+                print(string.format(" %-3d %s",i,v[i]))
+            end
+        end
+    elseif t ~= nil and k ~= nil then
+        for k2,v2 in safe_pairs(t[k]) do
+            p=string.format("%s.%s.%s:",parent,k,k2)
+            cN=string.len(p)
+            N = cN >= N and cN or N
+            f="%-"..(N+5).."s"
+            if (N - cN) >= 20 then
+                print(string.gsub(string.format(f,p),"   "," ~ ") .. tostring(v2))
+            else
+                print(string.format(f,p) .. tostring(v2))
+            end
+        end
+    end
 end
 
 function parseTableString(str)
