@@ -1,6 +1,6 @@
 -- dorf_tables has job distribution configurations, random number information for attributes generation, job configurations, profession configurations, dwarf types(ie. attributes/characteristic) configurations
--- usage: loaded by pimp-it.lua
--- by josh cooper(cppcooper) [created: 12-2017 | last edited: 12-2019]
+-- usage: loaded by dwopit.lua
+-- by josh cooper(cppcooper) [created: Dec. 2017 | last modified: 2020-02-21]
 --@ module = true
 
 local help = [====[
@@ -8,45 +8,100 @@ local help = [====[
 dorf_tables
 ===========
 Data tables for dwopit.lua.
+Usage: none, loaded inside secondary script (dwopit.lua)
 
-Usage: load inside secondary script (dwopit.lua)
+-~~~~~~~~~~
+The data tables defined are described below.
+
+job_distributions:
+    Defines thresholds for each column of distributions. The columns must
+    add up to the values in the thresholds row for that column.
+    Every other row references an entry in 'jobs'
+
+jobs:
+    Defines dwopit's nameable jobs. This is preferable to taking every
+    profession and making a distribution that covers all 100+ profs.
+
+    Each job is comprised of required professions, optional professions,
+    probabilities for each optional profession, a 'max' number of
+    optional professions, and a list of type(s) to apply to dwarves in
+    the defined job.
+
+professions:
+    These are a subset of the professions DF has. All professions listed
+    will match a profession dwarf fortress has built in, however not all
+    the built-ins are defined here.
+
+    Each profession is defined with a set of job skills, these match
+    the skills built in to dwarf fortress. Each skill is given a value
+    which represents the bonus a dwarf will get to this skill. The skills
+    are added in a random order, with the first few receiving the highest
+    values (excluding the bonus just mentioned). Thus the bonuses are to
+    ensure a minimum threshold is passed for certain skills deemed
+    critical to a profession.
+
+    To see a full list of built-in professions and jobs you can run
+    these commands:
+    # devel/query -table df.profession -listkeys
+    # devel/query -table df.job_skill -listkeys
+
+types:
+    These are a sort of archetype system for applying to dwarves. It
+    primarily includes physical attributes, but can include skills as well.
+
+    Each type has a probability of being applied to a dwarf just by pure
+    luck - this is in addition to types applied by other means. Each type
+    also has a list of attribute(s) each attribute has a attribute_level
+    associated to it. Additionally each type may define a list of skills
+    from the aforementioned job_skill listing, each skill is defined with
+    a minimum value and maximum value, the given value is an evening
+    distributed random number between these two numbers (inclusive).
+
+-~~~~~~~~~~
+    To see a full list of built-in professions and jobs you can run
+    these commands:
+    # devel/query -table df.profession -listkeys
+    # devel/query -table df.job_skill -listkeys
 
 ]====]
 
 if not moduleMode then
+    print(help)
     print("scripts/dorf_tables.lua is a content library; calling it does nothing.")
     do return end
+else
+    print("Loading data tables..")
 end
-print("Loading data tables..")
 
 -- p denotes probability, always.
 local O = 0
 job_distributions = {
     Thresholds      = { 7,  14, 21, 28, 30, 35, 42, 49, 56, 63, 70, 77, 80, 110, 1000 }, --Don't touch unless you wanna recalculate the distributions,
-    _Grunt          = { O,  1,  3,  4,  O,  4,  2,  O,  4,  1,  1,  4,  O,  10,  880; cur = 0; max = nil },
-    Miner           = { 2,  1,  O,  O,  O,  1,  O,  O,  O,  O,  2,  O,  O,  3,   O;   cur = 0; max = nil },
-    Admin           = { 1,  1,  O,  O,  O,  O,  O,  O,  O,  O,  O,  O,  1,  1,   O;   cur = 0; max = nil },
-    General         = { O,  O,  O,  1,  O,  O,  O,  O,  O,  1,  O,  O,  O,  2,   10;  cur = 0; max = nil },
-    Doctor          = { O,  1,  O,  O,  O,  O,  O,  O,  O,  O,  O,  O,  1,  2,   O;   cur = 0; max = nil },
-    Architect       = { 1,  O,  O,  O,  O,  O,  1,  1,  O,  1,  O,  O,  O,  2,   O;   cur = 0; max = nil },
+    _hauler         = { O,  1,  3,  3,  O,  3,  2,  O,  4,  1,  1,  4,  O,  10,  413; cur = 0; max = nil },
+    _soldier        = { O,  1,  O,  O,  O,  1,  O,  1,  O,  1,  O,  O,  1,  4,   413; cur = 0; max = nil },
+    Miner           = { 2,  1,  O,  O,  O,  1,  O,  O,  O,  O,  2,  O,  O,  O,   10;  cur = 0; max = nil },
+    Admin           = { 1,  O,  O,  1,  O,  O,  O,  O,  O,  O,  O,  O,  O,  1,   2;   cur = 0; max = nil },
+    General         = { O,  O,  O,  1,  O,  O,  O,  O,  O,  1,  O,  O,  O,  2,   1;   cur = 0; max = nil },
+    Doctor          = { O,  1,  O,  O,  O,  O,  O,  O,  O,  O,  O,  O,  1,  1,   3;   cur = 0; max = nil },
+    Architect       = { 1,  O,  O,  O,  O,  O,  1,  O,  O,  O,  O,  O,  O,  2,   5;   cur = 0; max = nil },
 
-    Farmer          = { 1,  O,  O,  O,  O,  O,  1,  O,  1,  1,  O,  O,  O,  2,   O;   cur = 0; max = nil },
-    Rancher         = { O,  1,  O,  O,  O,  O,  O,  O,  O,  1,  O,  O,  O,  O,   O;   cur = 0; max = nil },
-    Brewer          = { 1,  O,  O,  O,  O,  O,  O,  O,  O,  1,  O,  O,  O,  1,   O;   cur = 0; max = nil },
-    Woodworker      = { 1,  O,  O,  O,  O,  O,  O,  1,  O,  O,  O,  O,  O,  O,   O;   cur = 0; max = nil },
-    Stoneworker     = { O,  1,  O,  O,  O,  O,  O,  1,  O,  O,  2,  O,  O,  O,   O;   cur = 0; max = nil },
-    Smelter         = { O,  1,  O,  O,  O,  O,  1,  O,  O,  O,  O,  O,  O,  1,   O;   cur = 0; max = nil },
-    Blacksmith      = { O,  O,  1,  O,  O,  O,  O,  O,  O,  O,  O,  1,  O,  1,   O;   cur = 0; max = nil },
+    Farmer          = { 1,  O,  O,  O,  O,  O,  1,  O,  1,  1,  O,  O,  O,  2,   2;   cur = 0; max = nil },
+    Rancher         = { O,  1,  O,  O,  O,  O,  O,  O,  O,  1,  O,  O,  O,  O,   2;   cur = 0; max = nil },
+    Brewer          = { 1,  O,  O,  O,  O,  O,  O,  O,  O,  1,  O,  O,  O,  1,   5;   cur = 0; max = nil },
+    Woodworker      = { 1,  O,  O,  O,  O,  O,  O,  1,  O,  O,  O,  O,  O,  O,   2;   cur = 0; max = nil },
+    Stoneworker     = { O,  1,  O,  O,  O,  O,  O,  1,  O,  O,  2,  O,  O,  O,   2;   cur = 0; max = nil },
+    Smelter         = { O,  1,  O,  O,  O,  O,  1,  O,  O,  O,  O,  O,  O,  1,   2;   cur = 0; max = nil },
+    Blacksmith      = { O,  O,  1,  O,  O,  O,  O,  O,  O,  O,  O,  1,  O,  1,   2;   cur = 0; max = nil },
 
-    Artison         = { O,  O,  O,  1,  O,  O,  O,  2,  O,  O,  2,  2,  O,  3,   O;   cur = 0; max = nil },
-    Jeweler         = { O,  O,  O,  O,  1,  O,  O,  1,  O,  O,  O,  O,  O,  1,   O;   cur = 0; max = nil },
-    Textileworker   = { O,  O,  O,  O,  1,  O,  1,  O,  O,  O,  O,  O,  O,  O,   O;   cur = 0; max = nil },
+    Artison         = { O,  O,  O,  1,  O,  O,  O,  2,  O,  O,  2,  2,  O,  3,   5;   cur = 0; max = nil },
+    Jeweler         = { O,  O,  O,  O,  1,  O,  O,  1,  O,  O,  O,  O,  O,  1,   1;   cur = 0; max = nil },
+    Textileworker   = { O,  O,  O,  O,  1,  O,  1,  O,  O,  O,  O,  O,  O,  O,   1;   cur = 0; max = nil },
 
-    Hunter          = { O,  O,  1,  O,  O,  O,  O,  O,  1,  O,  O,  O,  O,  O,   O;   cur = 0; max = nil },
-    Fisher          = { O,  O,  1,  O,  O,  O,  1,  O,  1,  O,  O,  O,  O,  O,   O;   cur = 0; max = nil },
-    Butcher         = { O,  O,  1,  O,  O,  O,  O,  O,  O,  O,  O,  O,  O,  O,   O;   cur = 0; max = nil },
+    Hunter          = { O,  O,  1,  O,  O,  O,  O,  O,  1,  O,  O,  O,  O,  O,   2;   cur = 0; max = nil },
+    Fisher          = { O,  O,  1,  O,  O,  O,  1,  O,  1,  O,  O,  O,  O,  O,   2;   cur = 0; max = nil },
+    Butcher         = { O,  O,  1,  O,  O,  O,  O,  O,  O,  O,  O,  O,  O,  O,   2;   cur = 0; max = nil },
 
-    Engineer        = { O,  O,  O,  1,  O,  O,  O,  1,  O,  1,  O,  O,  1,  1,   O;   cur = 0; max = nil }
+    Engineer        = { O,  O,  O,  1,  O,  O,  O,  1,  O,  1,  O,  O,  1,  1,   3;   cur = 0; max = nil }
 }
 --[[
 Stat Rolling:
@@ -99,9 +154,14 @@ dorf_jobs = {
 }
 --]]
 jobs = {
-    _Grunt = {
-        req={'RECRUIT'}, max={1988},
-        types={'strong2','strong2','fast3','spaceaware3','soldier','fighter', 'social','social'}},
+    _hauler = {
+        req={'STANDARD'}, max={1988},
+        RECRUIT=0.2,
+        types={'strong5','strong4','fast3','spaceaware3','social','social'}},
+    _soldier = {
+        req={'TRAINED_WAR','STANDARD'}, max={1988},
+        RECRUIT=0.5,
+        types={'strong6','strong5','fast3','spaceaware3','soldier','fighter','social','social'}},
     Miner = {
         req={'MINER'}, max={1},
         BREWER=0.2, STONEWORKER=0.12, ENGRAVER=0.333,
@@ -153,7 +213,7 @@ jobs = {
 
     Artison = {
         req={'CRAFTSMAN','ENGRAVER','WOODCRAFTER','STONECRAFTER'}, max={2},
-        BONE_CARVER=0.66, POTTER=0.75,
+        BONE_CARVER=0.66, POTTER=0.75, GLASSMAKER=0.5,
         types={'fast3','buff','creative2','social','artistic'}},
     Jeweler = {
         req={'JEWELER','GEM_CUTTER','GEM_SETTER'}, max={1988},
@@ -182,10 +242,17 @@ jobs = {
         types={'genius3','intuitive2','leader'}}
 }
 
+--[[
+professions:
+    devel/query -table df.profession -listkeys
+skills:
+    devel/query -table df.job_skill -listkeys
+--]]
+
 professions = {
+
 --Basic Dwarfing
-    MINER =             { skills = {MINING=3} },
-    RECRUIT =           { skills = {KNOWLEDGE_ACQUISITION=2, INTIMIDATION=1, DISCIPLINE=3} },
+    STANDARD =          { skills = {SHIELD=1, SPEAKING=4, FLATTERY=1, COMEDY=1, COOK=1, DISSECT_FISH=1, PROCESSFISH=1, BITE=1, PRESSING=1, SING_MUSIC=1, WRESTLING=1, GRASP_STRIKE=1, STANCE_STRIKE=1} },
     ADMINISTRATOR =     { skills = {RECORD_KEEPING=3, ORGANIZATION=2, APPRAISAL=1} },
     TRADER =            { skills = {APPRAISAL=5, NEGOTIATION=4, JUDGING_INTENT=3, LYING=2} },
     CLERK =             { skills = {RECORD_KEEPING=3, ORGANIZATION=3} },
@@ -194,6 +261,7 @@ professions = {
     ARCHITECT =         { skills = {DESIGNBUILDING=5, MASONRY=4, CARPENTRY=1} },
 
 --Resource Economy
+    MINER =             { skills = {MINING=3} },
     WOODCUTTER =        { skills = {WOODCUTTING=3} },
     WOOD_BURNER =       { skills = {WOOD_BURNING=2} },
     FURNACE_OPERATOR =  { skills = {SMELT=4} },
@@ -237,9 +305,11 @@ professions = {
     HUNTER =            { skills = {SNEAK=4, TRACKING=5, RANGED_COMBAT=3, CROSSBOW=1} },
     TRAPPER =           { skills = {TRAPPING=3} },
     FISHERMAN =         { skills = {FISH=5, DISSECT_FISH=2, PROCESSFISH=2} },
+    FISHERY_WORKER =    { skills = {DISSECT_FISH=5, PROCESSFISH=5}},
     --Dead Thing Science
     BUTCHER =           { skills = {BUTCHER=3, TANNER=2, COOK=1, GELD=-3} }, --the '-3' is not a typo, it is just to populate the field [for DwarfTherapist auto-assigning]
-    TANNER =            { skills = {TANNER=3,LEATHERWORK=1} },
+    TANNER =            { skills = {TANNER=3, LEATHERWORK=1} },
+    BONE_CARVER =       { skills = {BONECARVE=7} },
 
 --Textile & Clothing & Leather Industry
     SPINNER =           { skills = {SPINNING=4, SHEARING=3} },
@@ -249,6 +319,8 @@ professions = {
     LEATHERWORKER =     { skills = {LEATHERWORK=3, TANNER=1} },
 
 --War
+    RECRUIT =           { skills = {KNOWLEDGE_ACQUISITION=5, DISCIPLINE=3} },
+    TRAINED_WAR =       { skills = {MILITARY_TACTICS=7, MELEE_COMBAT=5, RANGED_COMBAT=1, COORDINATION=3, CONCENTRATION=5, DISCIPLINE=5, SITUATIONAL_AWARENESS=4, ARMOR=3, SHIELD=3, DODGING=3, STANCE_STRIKE=3, GRASP_STRIKE=3, SIEGEOPERATE=1, AXE=3, SWORD=2, MACE=1, HAMMER=2, SPEAR=1, PIKE=2, CROSSBOW=2, BOW=1} },
     SIEGE_ENGINEER =    { skills = {SIEGECRAFT=3, SIEGEOPERATE=1} },
     SIEGE_OPERATOR =    { skills = {SIEGEOPERATE=3} },
     PUMP_OPERATOR =     { skills = {OPERATE_PUMP=3} },
@@ -267,23 +339,10 @@ professions = {
     SUTURER =           { skills = {SUTURE=5} },
     SURGEON =           { skills = {SURGERY=5, GELD=2} },
 
-    BONE_CARVER =       { skills = {BONECARVE=3} },
-    POTTER =            { skills = {POTTERY=3} },
-    GLAZER =            { skills = {GLAZING=3} }
+    GLASSMAKER =        { skills = {GLASSMAKER=7, POTTERY=5, GLAZING=5} },
+    POTTER =            { skills = {POTTERY=7, GLASSMAKER=5, GLAZING=5} },
+    GLAZER =            { skills = {GLAZING=7, GLASSMAKER=5, POTTERY=5} },
 
-
---[[
-    (not used)
-    MERCHANT
-    METALCRAFTER
-    HAMMERMAN
-    SPEARMAN
-    CROSSBOWMAN
-    WRESTLER
-    AXEMAN
-    SWORDSMAN
-    MACEMAN
---]]
 }
 
 --probability is used for randomly applying types to any and all dwarves
@@ -315,15 +374,30 @@ types = {
     fast3 = {
         p = 0.08,
         attribs = {AGILITY={'incredible'}}},
+    strong0 = {
+        p = 0.16,
+        attribs = {STRENGTH={'bad'},TOUGHNESS={'bad'},WILLPOWER={'average'}}},
     strong1 = {
-        p = 0.1,
-        attribs = {STRENGTH={'verygood'},TOUGHNESS={'good'},WILLPOWER={'good'}}},
+        p = 0.5,
+        attribs = {STRENGTH={'average'},TOUGHNESS={'average'},WILLPOWER={'good'}}},
     strong2 = {
-        p = 0.05,
-        attribs = {STRENGTH={'amazing'},TOUGHNESS={'superb'},WILLPOWER={'verygood'}}},
+        p = 0.2,
+        attribs = {STRENGTH={'good'},TOUGHNESS={'verygood'},WILLPOWER={'verygood'}}},
     strong3 = {
+        p = 0.1,
+        attribs = {STRENGTH={'verygood'},TOUGHNESS={'superb'},WILLPOWER={'verygood'}}},
+    strong4 = {
+        p = 0.08,
+        attribs = {STRENGTH={'superb'},TOUGHNESS={'superb'},WILLPOWER={'verygood'}}},
+    strong5 = {
+        p = 0.04,
+        attribs = {STRENGTH={'amazing'},TOUGHNESS={'superb'},WILLPOWER={'superb'}}},
+    strong6 = {
+        p = 0.02,
+        attribs = {STRENGTH={'incredible'},TOUGHNESS={'amazing'},WILLPOWER={'superb'}}},
+    strong7 = {
         p = 0.01,
-        attribs = {STRENGTH={'unbelievable'},TOUGHNESS={'amazing'},WILLPOWER={'superb'}}},
+        attribs = {STRENGTH={'unbelievable'},TOUGHNESS={'amazing'},WILLPOWER={'amazing'}}},
     creative1 = {
         p = 0.05,
         attribs = {CREATIVITY={'superb'}}},
