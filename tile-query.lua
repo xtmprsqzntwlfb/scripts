@@ -2,11 +2,34 @@
 -- Written by Josh Cooper(cppcooper) on 2017-12-21, last modified: 2020-02-20
 local utils=require('utils')
 local validArgs = utils.invert({
- 'query',
- 'querykeys'
+    'query',
+    'querykeys',
+    'help'
 })
-local args = utils.processArgs({...}, validArgs)
 
+local args = utils.processArgs({...}, validArgs)
+local help = [====[
+tile-query
+==========
+Tile Query is a script useful for finding and reading fields for a highlighted
+tile. I've found it useful in conjunction with 'settile' for turning dirt walls
+into smooth walls, or at least so that they share the same sprite.
+
+This script can recursively search tables for fields matching the input query.
+Any matching fields will be printed alongside their value.
+If a match has sub-fields(keys) they too will be printed.
+
+When performing table queries, use dot notation to denote sub-tables.
+The script has to parse the input string and separate each table.
+
+Examples:
+  [DFHack]# tile-query
+  [DFHack]# tile-query -query type
+  [DFHack]# tile-query -querykeys temp
+  [DFHack]# tile-query -query designation -querykeys liquid
+~~~~~~~~~~
+
+]====]
 space_field="   "
 space_key="     "
 fN=70
