@@ -11,6 +11,7 @@ local validArgs = utils.invert({
  'querykeys',
  'getkey',
  'set',
+ 'debug'
 })
 local args = utils.processArgs({...}, validArgs)
 local help = [====[
@@ -55,8 +56,6 @@ query options:
     listkeys           - Lists all keys in any fields matching the query.
     querykeys <value>  - Lists only keys matching the specified value.
 
-    NOTE: query and query keys are mutually exclusive.
-
 command options:
     set                - *CAREFUL* You can use this to set the value of matches.
                          Be advised there is minimal safety when using this option.
@@ -79,6 +78,10 @@ if args.set then
 elseif args.depth then
     depth = tonumber(args.depth)
 end
+space_field="   "
+space_key="     "
+fN=0
+--kN=25
 
 --thanks goes mostly to the internet for this function. thanks internet you da real mvp
 function safe_pairs(item, keys_only)
@@ -104,6 +107,16 @@ function safe_pairs(item, keys_only)
     end
 end
 
+function debugf(level,...)
+    if args.debug and level <= tonumber(args.debug) then
+        str=""
+        for i = 1, select('#', ...) do
+            str=string.format("%s\t%s",str,select(i, ...))
+        end
+        print(str)
+    end
+end
+
 cur_depth = -1
 N=0
 function Query(t, query, parent)
@@ -112,7 +125,9 @@ function Query(t, query, parent)
         parent = ""
     end
     if cur_depth == 0 and (args.listkeys or args.querykeys) then
-        list_keys(nil,nil,t,parent)
+        if not args.query or string.find(tostring(parent), args.query) then
+            print_keys(parent,t,true)
+        end
     end
     for k,v in safe_pairs(t) do
         -- avoid infinite recursion
@@ -121,86 +136,87 @@ function Query(t, query, parent)
             if not string.find(parent, tostring(k)) then
                 if not args.depth or (depth and cur_depth < depth) then
                     if parent then
-                        N=Query(v, query, parent .. "." .. k)
+                        Query(v, query, parent .. "." .. k)
                     else
-                        N=Query(v, query, k)
+                        Query(v, query, k)
                     end
                 end
             end
-            if args.query and string.find(tostring(k), query) then
-                p=string.format("%s.%s: ",parent,k)
-                cN=string.len(p)
-                N = cN >= N and cN or N
-                N = N >= 90 and 90 or N
-                f="%-"..(N+5).."s"
-                if (N - cN) >= 20 then
-                    print(string.gsub(string.format(f,p),"   "," ~ ") .. tostring(v))
-                else
-                    print(string.format(f,p) .. tostring(v))
+            debugf(6,"main",parent,k,args.query)
+            if not args.query or string.find(tostring(k), args.query) then
+                if args.query or not args.querykeys then
+                    debugf(5,"main->print_field")
+                    print_field(string.format("%s.%s",parent,k),v,true)
                 end
-                if args.query and (args.listkeys or args.querykeys) then
-                    list_keys(t,k,v,parent)
-                elseif args.set and type(t[k]) == type(newvalue) then
-                    t[k] = newvalue
-                    print("new value:", newvalue)
-                elseif args.set then
-                    print("error: invalid type given")
-                    print("given: " .. type(newvalue))
-                    print("expected: " .. type(t[k]))
+                if args.querykeys or args.listkeys then
+                    debugf(3,"main->print_keys")
+                    if not args.query and args.querykeys then
+                        print_keys(string.format("%s.%s",parent,k),v,true)
+                    else
+                        print_keys(string.format("%s.%s",parent,k),v,false)
+                    end
                 end
-            end
-            if not args.query and (args.listkeys or args.querykeys) then
-                list_keys(t,k,v,parent)
             end
         end
     end
     cur_depth = cur_depth - 1
-    return N
 end
 
-function list_keys(t,k,v,parent)
-    bprinted=false
-    if k ~= nil and parent ~= nil then
-        p=string.format("%s.%s",parent,k)
-    elseif parent ~= nil then
-        p=string.format("%s",parent)
-    else
-        p=""
+function print_field(field,v,ignoretype)
+    debugf(5,"print_field")
+    if ignoretype or not (type(v) == "userdata") then
+        --print("Field","."..field)
+        field=string.format("%s: ",field)
+        cN=string.len(field)
+        fN = cN >= fN and cN or fN
+        fN = fN >= 90 and 90 or fN
+        f="%-"..(fN+5).."s"
+        print(space_field .. string.gsub(string.format(f,field),"   "," ~ ") .. tostring(v))
     end
-    if v ~= nil and type(v) == "table" and v._kind == "enum-type" then
+end
+
+bprinted=false
+function print_key(k,v,bprint,parent,v0)
+    debugf(5,"print_key")
+    if not args.querykeys or string.find(tostring(k), args.querykeys) then
+        debugf(4,k,v,bprint,parent,v0)
+        if not bprinted and bprint then
+            debugf(3,"print_key->print_field")
+            print_field(parent,v0,true)
+            bprinted=true
+        end
+        key=string.format("%s: ",k)
+        -- cN=string.len(key)
+        -- kN = cN >= kN and cN or kN
+        -- kN = kN >= 90 and 90 or kN
+        -- f="%-"..(kN+5).."s"
+        print(space_key .. string.format("%s",key) .. tostring(v))
+    end
+end
+
+function print_keys(parent,v,bprint)
+    bprinted=false
+    if type(v) == "table" and v._kind == "enum-type" then
+        debugf(4,"keys.A")
         for i,e in ipairs(v) do
-            if args.querykeys and string.find(tostring(v[i]),args.querykeys) then
-                if not bprinted then
-                    print(p)
-                    bprinted = true
+            if not args.querykeys or string.find(tostring(v[i]), args.querykeys) then
+                if not bprinted and bprint then
+                    print_field(parent,v,true)
+                    bprinted=true
                 end
-                print(string.format(" %-3d %s",i,e))
-            elseif not args.querykeys then
-                if not bprinted then
-                    print(p)
-                    bprinted = true
-                end
-                print(string.format(" %-3d %s",i,e))
+                print(string.format("%s%-3d %s",space_key,i,e))
             end
         end
-    elseif t ~= nil and k ~= nil then
-        for k2,v2 in safe_pairs(t[k]) do
-            if not args.querykeys or (args.querykeys and string.find(tostring(k2),args.querykeys)) then
-                if not bprinted then
-                    print(p)
-                    bprinted = true
-                end
-                p=string.format("%s.%s.%s:",parent,k,k2)
-                cN=string.len(p)
-                N = cN >= N and cN or N
-                N = N >= 90 and 90 or N
-                f="%-"..(N+5).."s"
-                if (N - cN) >= 20 then
-                    print(string.gsub(string.format(f,p),"   "," ~ ") .. tostring(v2))
-                else
-                    print(string.format(f,p) .. tostring(v2))
-                end
-            end
+    elseif type(v) == "userdata" and not string.find(tostring(v),"userdata") and v._kind then
+        --crash fix: string.find(...,"userdata") it seems that the crash was from hitting some ultra-primitive type (void* ?)
+            --Not the best solution, but if duct tape works, why bother with sutures....
+        --too much information, and it seems largely useless
+        --todo: figure out a way to prune useless info OR add option (option suggestion: -floodconsole)
+    else
+        debugf(4,"keys.B",parent,v,type(v),bprint,bprinted)
+        for k2,v2 in safe_pairs(v) do
+            debugf(3,"keys.B.1")
+            print_key(k2,v2,bprint,parent,v)
         end
     end
 end
