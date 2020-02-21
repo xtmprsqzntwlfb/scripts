@@ -1017,9 +1017,9 @@ function ShowHelp()
     print([====[
 usage: dwopit [-help|-select]
                -select <sel-opt> -<command> <args>
-============
+=============
 dwopit script
-~~~~~~~~~~~~
+=============
 To use this script, you need to select a subset of your dwarves. Then run commands on those dwarves.
 Please report any bugs or crashes you experience here [https://github.com/cppcooper/dfhack-scripts/issues]
 Examples:
