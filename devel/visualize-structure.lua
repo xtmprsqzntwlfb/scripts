@@ -68,7 +68,21 @@ local function bytes_until(target, expect)
     end
     print()
 end
-for k,v in pairs(ref) do
+
+-- adapted from devel/query
+local function key_pairs(item)
+    local mt = debug.getmetatable(item)
+    if mt and mt._index_table then
+        local idx = 0
+        return function()
+            idx = idx + 1
+            if mt._index_table[idx] then
+                return mt._index_table[idx]
+            end
+        end
+    end
+end
+for k in key_pairs(ref) do
     local fsize, faddr = ref:_field(k):sizeof()
     local foff = faddr - baseaddr
     if offset < foff then
