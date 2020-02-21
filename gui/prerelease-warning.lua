@@ -95,10 +95,22 @@ end
 
 for _, v in pairs(utils.split_string([[
 
-REMINDER: Please REPORT any issues you encounter while
-using this DFHack build on GitHub or the Bay12 Forums.]], '\n')) do
+REMINDER: Please report any issues you encounter while
+using this DFHack build on GitHub (github.com/dfhack/dfhack/issues)
+or the Bay12 forums (dfhack.org/bay12).]], '\n')) do
     table.insert(message, NEWLINE)
     table.insert(message, {text=v, pen=COLOR_LIGHTCYAN})
+end
+
+nightly_message = [[
+
+You appear to be using a nightly build of DFHack. If you
+experience problems, check dfhack.org/builds for updates.]]
+if dfhack.getDFHackBuildID() ~= '' then
+    for _, v in pairs(utils.split_string(nightly_message, '\n')) do
+        table.insert(message, NEWLINE)
+        table.insert(message, {text=v, pen=COLOR_LIGHTGREEN})
+    end
 end
 
 dfhack.print('\n')

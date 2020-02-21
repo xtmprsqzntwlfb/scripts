@@ -194,6 +194,18 @@ function export_more_legends_xml()
     end
     file:write("</rivers>\n")
 
+    file:write("<creature_raw>\n")
+    for creatureK, creatureV in ipairs (df.global.world.raws.creatures.all) do
+        file:write("\t<creature>\n")
+        file:write("\t\t<creature_id>"..creatureV.creature_id.."</creature_id>\n")
+        file:write("\t\t<name_singular>"..creatureV.name[0].."</name_singular>\n")
+        file:write("\t\t<name_plural>"..creatureV.name[1].."</name_plural>\n")
+        for flagK, flagV in ipairs (df.creature_raw_flags) do
+            file:write("\t\t<"..flagV:lower()..">"..tostring(creatureV.flags[flagV]).."</"..flagV:lower()..">\n")
+        end
+        file:write("\t</creature>\n")
+    end
+    file:write("</creature_raw>\n")
 
     file:write("<sites>\n")
     for siteK, siteV in progress_ipairs(df.global.world.world_data.sites, 'site') do
@@ -289,6 +301,22 @@ function export_more_legends_xml()
         file:write("\t</historical_figure>\n")
     end
     file:write("</historical_figures>\n")
+
+    file:write("<identities>\n")
+    for idK, idV in progress_ipairs(df.global.world.identities.all, 'identity') do
+        file:write("\t<identity>\n")
+        file:write("\t\t<id>"..idV.id.."</id>\n")
+        file:write("\t\t<name>"..dfhack.df2utf(dfhack.TranslateName(idV.name,1)).."</name>\n")
+        file:write("\t\t<histfig_id>"..idV.histfig_id.."</histfig_id>\n")
+        if idV.race >= 0 then file:write("\t\t<race>"..(df.global.world.raws.creatures.all[idV.race].creature_id):lower().."</race>\n") end
+        if idV.race >= 0  and idV.caste >= 0 then file:write("\t\t<caste>"..(df.global.world.raws.creatures.all[idV.race].caste[idV.caste].caste_id):lower().."</caste>\n") end
+        file:write("\t\t<birth_year>"..idV.birth_year.."</birth_year>\n")
+        file:write("\t\t<birth_second>"..idV.birth_year.."</birth_second>\n")
+        if idV.profession >= 0 then file:write("\t\t<profession>"..(df_enums.profession[idV.profession]):lower().."</profession>\n") end
+        file:write("\t\t<entity_id>"..idV.civ.."</entity_id>\n")
+        file:write("\t</identity>\n")
+    end
+    file:write("</identities>\n")
 
     file:write("<entity_populations>\n")
     for entityPopK, entityPopV in progress_ipairs(df.global.world.entity_populations, 'entity population') do

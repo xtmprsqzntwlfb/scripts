@@ -18,15 +18,23 @@ See `gui/teleport` for an in-game UI.
 ]====]
 
 function teleport(unit,pos)
- local unitoccupancy = dfhack.maps.getTileBlock(unit.pos).occupancy[unit.pos.x%16][unit.pos.y%16]
- local newoccupancy = dfhack.maps.getTileBlock(pos).occupancy[tonumber(pos.x)%16][tonumber(pos.y)%16]
- if newoccupancy.unit then
-  unit.flags1.on_ground=true
- end
+ local oldOccupancy = dfhack.maps.getTileBlock(unit.pos).occupancy[unit.pos.x%16][unit.pos.y%16]
+ local newOccupancy = dfhack.maps.getTileBlock(pos).occupancy[tonumber(pos.x)%16][tonumber(pos.y)%16]
  unit.pos.x = tonumber(pos.x)
  unit.pos.y = tonumber(pos.y)
  unit.pos.z = tonumber(pos.z)
- if not unit.flags1.on_ground then unitoccupancy.unit = false else unitoccupancy.unit_grounded = false end
+ if unit.flags1.on_ground then
+  oldOccupancy.unit_grounded = false
+  newOccupancy.unit_grounded = true
+ else
+  oldOccupancy.unit = false
+  if newOccupancy.unit then -- only 1 non-prone unit is normally allowed to occupy a tile
+   unit.flags1.on_ground = true
+   newOccupancy.unit_grounded = true
+  else
+   newOccupancy.unit = true
+  end
+ end
 end
 
 local utils = require('utils')
