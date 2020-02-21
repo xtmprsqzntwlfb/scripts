@@ -50,6 +50,126 @@ local validArgs = utils.invert({
     'renamejob'
 })
 local args = utils.processArgs({...}, validArgs)
+
+local help = [====[
+
+dwopit script
+=============
+To use this script, you need to select a subset of your dwarves. Then run commands on those dwarves.
+Please report any bugs or crashes you experience here [https://github.com/cppcooper/dfhack-scripts/issues]
+
+usage: dwopit [-help|-select]
+               -select <sel-opt> -<command> <args>
+
+Examples:
+  [DFHack]# dwopit -select [ jobs Trader Miner Leader Rancher ] -applytype adaptable
+  [DFHack]# dwopit -select all -clear -optimize
+  [DFHack]# dwopit -select pall -clear -optimize
+  [DFHack]# dwopit -select optimized -reroll
+  [DFHack]# dwopit -select named -reroll inclusive -applyprofession RECRUIT
+
+-~~~~~~~~~~~
+ select options:
+
+   (prepend the letter p to any option to include protected dwarves in selection)
+    (none)      - same as typing `-select highlighted`
+    all         - selects all dwarves.
+
+    highlighted - selects only the in-game highlighted dwarf (from any screen).
+                  [Ignores protection status]
+
+    <name>      - selects any dwarf with <name> in their name or nickname. (sub-string match)
+                  [Ignores protection status]
+
+    named       - selects dwarves with user-given names.
+    unnamed     - selects dwarves without user-given names.
+    employed    - selects dwarves with custom professions. Excludes optimized dwarves.
+
+    optimized   - selects dwarves based on session data. Dwarves who have been optimized, should
+                  be listed in this data.
+
+    unoptimized - selects any dwarves that don't appear in session data.
+
+    protected   - selects any dwarves which use protection signals in their name or profession.
+                  (ie. {'.', 'c', 'j', 'p'})
+
+    unprotected - selects any dwarves which don't use protection signals in their name or
+                  profession.
+
+    drunks      - selects any dwarves which are currently zeroed, or were originally drunks as
+                  their profession.
+
+    jobs        - selects any dwarves with the listed jobs. This will only match with custom
+                  professions, or optimized dwarves (for optimized dwarves see: jobs in
+                  dorf_tables.lua).
+                  usage `-select [ jobs job1 job2 etc. ]` eg. `-select [ jobs Miner Trader ]`
+
+    waves       - selects dwarves from the specified migration waves. Waves are enumerated
+                  starting at 0 and increasing by 1 with each wave. The waves go by season and
+                  year and thus should match what you see in Dwarf Therapist.
+                  Note: I recommend you -show the selected dwarves before modifying.
+                  usage `-select [ waves 0 1 3 5 7 13 ]`
+
+-~~~~~~~~~~~
+ general commands:
+
+    reset              - deletes json file containing session data (bug: might not delete session
+                         data, no idea why)
+
+    resetall           - deletes both json files. session data and existing persistent data
+                         bug: might not delete session data, no idea why
+
+    show               - displays affected dwarves (id, name, migration wave, primary job). useful
+                         for previewing selected dwarves before modifying them, or looking up the
+                         migration wave number for a group of dwarves.
+
+ dwarf commands:
+
+    clear              - zeroes selected dwarves, or zeroes all dwarves if no selection is given.
+                         No attributes, no labours. Assigns 'DRUNK' profession.
+
+    reroll <inclusive> - zeroes selected dwarves, then rerolls that dwarf based on its job.
+                         Ignores dwarves with unlisted jobs.
+                         optional argument: inclusive. Meaning your dorf(s) get the best of N
+                         rolls.
+                         see attrib_levels table in dorf_tables.lua for p values describing the
+                         normal distribution of stats(each p value has a sub distribution, which
+                         makes the bell curve not so bell shaped). Labours do not follow the same
+                         stat system and are more uniformly random, which I've compensated for in
+                         the description of jobs/professions.
+
+    optimize           - performs a job search for unoptimized dwarves. Each dwarf will be found a
+                         job according to the job_distribution table in dorf_tables.lua
+
+    applyjobs          - applies the listed jobs to the selected dwarves. list format:
+                         `[ job1 job2 jobn ]` brackets and jobs all separated by spaces.
+                         see jobs table in dorf_tables.lua for available jobs."
+
+    applyprofessions   - applies the listed professions to the selected dwarves. list format:
+                         `[ prof1 prof2 profn ]` brackets and professions all separated by spaces.
+                         see professions table in dorf_tables.lua for available professions.
+
+    applytypes         - applies the listed types to the selected dwarves. list format:
+                         `[ type1 type2 typen ]` brackets and types all separated by spaces.
+                         see dwf_types table in dorf_tables.lua for available types.
+
+    renamejob <name>   - renames the selected dwarves custom profession to whatever is specified
+
+-~~~~~~~~~~~
+    Other Arguments:
+    
+      help - displays this help information.
+      debug - enables debugging print lines
+
+No dorfs were harmed in the building of this help screen.
+
+]====]
+
+if args.help then
+    ShowHelp()
+    do return end
+end
+
 if args.debug and tonumber(args.debug) >= 0 then print("Debug info [ON]") end
 protected_dwarf_signals = {'.', 'c', 'j', 'p'}
 if args.select and args.select == 'optimized' then
@@ -430,7 +550,7 @@ function ApplyType(dwf, dwf_type)
             local points = rng.rollInt(engineID, skillRange[1], skillRange[2])
             sTable.rating = sTable.rating < points and points or sTable.rating
             sTable.rating = sTable.rating > 20 and 20 or sTable.rating
-            sTable.rating = sTable.rating < 0 and 0 or sTable.rating
+            sTable.rating = sTable.rating <= 1 and 1 or sTable.rating
             if args.debug and tonumber(args.debug) >= 2 then print(skill .. ".rating = " .. sTable.rating) end
         end
     end
@@ -1014,91 +1134,7 @@ function GetWaves()
 end
 
 function ShowHelp()
-    print([====[
-usage: dwopit [-help|-select]
-               -select <sel-opt> -<command> <args>
-=============
-dwopit script
-=============
-To use this script, you need to select a subset of your dwarves. Then run commands on those dwarves.
-Please report any bugs or crashes you experience here [https://github.com/cppcooper/dfhack-scripts/issues]
-Examples:
-  [DFHack]# dwopit -select [ jobs Trader Miner Leader Rancher ] -applytype adaptable
-  [DFHack]# dwopit -select all -clear -optimize
-  [DFHack]# dwopit -select pall -clear -optimize
-  [DFHack]# dwopit -select optimized -reroll
-  [DFHack]# dwopit -select named -reroll inclusive -applyprofession RECRUIT
-~~~~~~~~~~~~
- select options:
-   (prepend the letter p to any option to include protected dwarves in selection)
-    (none)      - same as typing `-select highlighted`
-    all         - selects all dwarves.
-    highlighted - selects only the in-game highlighted dwarf (from any screen).
-                  [Ignores protection status]
-    <name>      - selects any dwarf with <name> in their name or nickname. (sub-string match)
-                  [Ignores protection status]
-    named       - selects dwarves with user-given names.
-    unnamed     - selects dwarves without user-given names.
-    employed    - selects dwarves with custom professions. Excludes optimized dwarves.
-    optimized   - selects dwarves based on session data. Dwarves who have been optimized, should
-                  be listed in this data.
-    unoptimized - selects any dwarves that don't appear in session data.
-    protected   - selects any dwarves which use protection signals in their name or profession.
-                  (ie. {'.', 'c', 'j', 'p'})
-    unprotected - selects any dwarves which don't use protection signals in their name or
-                  profession.
-    drunks      - selects any dwarves which are currently zeroed, or were originally drunks as
-                  their profession.
-    jobs        - selects any dwarves with the listed jobs. This will only match with custom
-                  professions, or optimized dwarves (for optimized dwarves see: jobs in
-                  dorf_tables.lua).
-                  usage `-select [ jobs job1 job2 etc. ]` eg. `-select [ jobs Miner Trader ]`
-    waves       - selects dwarves from the specified migration waves. Waves are enumerated
-                  starting at 0 and increasing by 1 with each wave. The waves go by season and
-                  year and thus should match what you see in Dwarf Therapist.
-                  Note: I recommend you -show the selected dwarves before modifying.
-                  usage `-select [ waves 0 1 3 5 7 13 ]`
-~~~~~~~~~~~~
- general commands:
-    reset              - deletes json file containing session data (bug: might not delete session
-                         data, no idea why)
-    resetall           - deletes both json files. session data and existing persistent data
-                         bug: might not delete session data, no idea why
-    show               - displays affected dwarves (id, name, migration wave, primary job). useful
-                         for previewing selected dwarves before modifying them, or looking up the
-                         migration wave number for a group of dwarves.
-
- dwarf commands:
-    clear              - zeroes selected dwarves, or zeroes all dwarves if no selection is given.
-                         No attributes, no labours. Assigns 'DRUNK' profession.
-    reroll <inclusive> - zeroes selected dwarves, then rerolls that dwarf based on its job.
-                         Ignores dwarves with unlisted jobs.
-                         optional argument: inclusive. Meaning your dorf(s) get the best of N
-                         rolls.
-                         see attrib_levels table in dorf_tables.lua for p values describing the
-                         normal distribution of stats(each p value has a sub distribution, which
-                         makes the bell curve not so bell shaped). Labours do not follow the same
-                         stat system and are more uniformly random, which I've compensated for in
-                         the description of jobs/professions.
-    optimize           - performs a job search for unoptimized dwarves. Each dwarf will be found a
-                         job according to the job_distribution table in dorf_tables.lua
-    applyjobs          - applies the listed jobs to the selected dwarves. list format:
-                         `[ job1 job2 jobn ]` brackets and jobs all separated by spaces.
-                         see jobs table in dorf_tables.lua for available jobs."
-    applyprofessions   - applies the listed professions to the selected dwarves. list format:
-                         `[ prof1 prof2 profn ]` brackets and professions all separated by spaces.
-                         see professions table in dorf_tables.lua for available professions.
-    applytypes         - applies the listed types to the selected dwarves. list format:
-                         `[ type1 type2 typen ]` brackets and types all separated by spaces.
-                         see dwf_types table in dorf_tables.lua for available types.
-    renamejob <name>   - renames the selected dwarves custom profession to whatever is specified
-~~~~~~~~~~~~
-    Other Arguments:
-      help - displays this help information.
-      debug - enables debugging print lines
-
-No dorfs were harmed in the building of this help screen.
-]====])
+    print(help)
 end
 
 function ShowHint()

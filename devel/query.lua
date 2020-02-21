@@ -36,30 +36,40 @@ Examples:
   [DFHack]# devel/query -unit -query STRENGTH
   [DFHack]# devel/query -unit -query physical_attrs -listkeys
   [DFHack]# devel/query -unit -getkey id
-~~~~~~~~~~~~~
+
+-~~~~~~~~~~~~
 selection options:
+
   These options are used to specify where the query will run,
   or specifically what key to print inside a unit.
+
     unit <value>       - Selects the highlighted unit when no value is provided.
                          With a value provided, _G[value] must exist.
+
     table <value>      - Selects the specivied table (ie. 'value').
                          Must use dot notation to denote sub-tables.
                          (eg. -table df.global.world)
+
     getkey <value>     - Gets the specified key from the selected unit.
                          Note: Must use the 'unit' option and doesn't support the
                          options below. Useful if there would be several matching
                          fields with the key as a substring (eg. 'id')
-~~~~~~~~~~~~~
+
+-~~~~~~~~~~~~
 query options:
+
     query <value>      - Searches the selection for fields with substrings matching
                          the specified value.
+
     depth <value>      - Limits the query to the specified recursion depth.
     listkeys           - Lists all keys in any fields matching the query.
     querykeys <value>  - Lists only keys matching the specified value.
 
 command options:
+
     set                - *CAREFUL* You can use this to set the value of matches.
                          Be advised there is minimal safety when using this option.
+
     help               - Prints this help information.
 
 ]====]

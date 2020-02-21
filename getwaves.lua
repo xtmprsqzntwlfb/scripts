@@ -32,17 +32,22 @@ Examples:
   [DFHack]# getwaves -unit -granularity days
   [DFHack]# getwaves -unit
   [DFHack]# getwaves -unit -all -showarrival -granularity days
-~~~~~~~~~~~~
+
+-~~~~~~~~~~~
 selection options:
+
   These options are used to specify what wave information to display
     unit                 - Displays the highlighted unit's arrival wave information
     all                  - Displays all citizens' arrival wave information
-~~~~~~~~~~~~
+
+-~~~~~~~~~~~
 other options:
+
     granularity <value>  - Specifies the granularity of wave enumeration
                            (ie. years, seasons, months, days)
                             Note: if omitted the default granularity is the same as
                             Dwarf Therapist, ie. 'seasons'
+                            
     showarrival          - Shows the arrival information for the selected unit
                            If '-all' is specified the info displayed will be
                            relative to the granularity used.

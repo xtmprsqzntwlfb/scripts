@@ -14,7 +14,9 @@ local help = [====[
 geld
 ====
 Geld allows the user to geld and ungeld animals.
+
 Valid options:
+
     toggle  - Changes the geld status to the opposite of its current state
     ungeld  - Sets the geld status to false
     help    - Shows this help information

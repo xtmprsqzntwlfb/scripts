@@ -40,28 +40,39 @@ Examples:
   [DFHack]# animalcontrol -markfor gelding -id 1988
   [DFHack]# animalcontrol -markfor slaughter -id 1988
   [DFHack]# animalcontrol -gelded -markedfor slaughter -unmarkfor slaughter
-~~~~~~~~~~~~
+
+-~~~~~~~~~~~
 selection options:
+
   These options are used to specify what animals you want or do not want to select.
     all                  - Selects all units
                            Note: cannot be used in conjunction with other selection options.
+
     id <value>           - Selects the unit with the specified id value provided.
     race <value>         - Selects units which match the race value provided.
+
     markedfor <value>    - Selects units which have been marked for the value provided.
                            valid values: slaughter, gelding
+
     notmarkedfor <value> - Selects units which have not been marked for the value provided.
                            valid values: slaughter, gelding
+
     gelded               - Selects units which have already been gelded.
     notgelded            - Selects units which have not been gelded.
     male                 - Selects units which are male.
     female               - Selects units which are female.
-~~~~~~~~~~~~
+
+-~~~~~~~~~~~
 command options:
+
     showstats            - Displays physical attributes of the selected animals.
+
     markfor <value>      - Marks selected animals for the value provided.
                            valid values: slaughter, gelding
+
     unmarkfor <value>    - Unmarks selected animals for the value provided.
                            valid values: slaughter, gelding
+
 other options:
     help                 - Displays this information
 
