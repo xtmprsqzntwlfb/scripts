@@ -9,6 +9,7 @@ local validArgs = utils.invert({
 
 local args = utils.processArgs({...}, validArgs)
 local help = [====[
+
 tile-query
 ==========
 Tile Query is a script useful for finding and reading fields for a highlighted
@@ -27,7 +28,6 @@ Examples:
   [DFHack]# tile-query -query type
   [DFHack]# tile-query -querykeys temp
   [DFHack]# tile-query -query designation -querykeys liquid
-~~~~~~~~~~
 
 ]====]
 space_field="   "

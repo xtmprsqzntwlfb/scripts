@@ -15,6 +15,7 @@ local validArgs = utils.invert({
 })
 local args = utils.processArgs({...}, validArgs)
 local help = [====[
+
 devel/query
 ===========
 Query is a script useful for finding and reading values of data structure fields.

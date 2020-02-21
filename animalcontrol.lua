@@ -20,6 +20,7 @@ local validArgs = utils.invert({
 })
 local args = utils.processArgs({...}, validArgs)
 local help = [====[
+
 animalcontrol
 =============
 Animal control is a script useful for deciding what animals to butcher and geld.
@@ -63,6 +64,7 @@ command options:
                            valid values: slaughter, gelding
 other options:
     help                 - Displays this information
+
 ]====]
 
 local Units = df.global.world.units.all

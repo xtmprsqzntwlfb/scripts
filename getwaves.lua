@@ -11,9 +11,9 @@ local validArgs = utils.invert({
 })
 local args = utils.processArgs({...}, validArgs)
 local help = [====[
-============
+
 getwaves
-~~~~~~~~~~~~
+========
 Get waves is a script useful for finding migration waves information for citizen dwarfs.
 
 The script must loop through all active units in df.global.world.units.active and build
@@ -47,7 +47,7 @@ other options:
                            If '-all' is specified the info displayed will be
                            relative to the granularity used.
                            Note: this option is always used when '-unit' is used
-~~~~~~~~~~~~
+
 ]====]
 
 selected = dfhack.gui.getSelectedUnit()
