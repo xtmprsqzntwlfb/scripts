@@ -1,5 +1,5 @@
 -- Tile is a script useful reading fields for a highlighted tile. It can be used to query specific fields also.
--- Written by Josh Cooper(cppcooper) on 2017-12-21, last modified: 2020-02-18
+-- Written by Josh Cooper(cppcooper) on 2017-12-21, last modified: 2020-02-20
 local utils=require('utils')
 local validArgs = utils.invert({
  'query',
