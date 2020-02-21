@@ -1,3 +1,4 @@
+-- Gelds animals by default. Optional args: -toggle or -ungeld
 -- Written by Josh Cooper(cppcooper) on 2019-12-10, last modified: 2020-02-15
 utils ={}
 utils = require('utils')

@@ -1,3 +1,4 @@
+-- sets the selected tile's 'tiletype' ie. changes the tileset you see
 args = {...}
 pos = copyall(df.global.cursor)
 x = pos.x%16

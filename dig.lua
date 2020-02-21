@@ -1,7 +1,8 @@
+-- digs a square channel around the tile selected (use: dig x y z, dig 3 3 3 -> 7x7x3 channel)
 args = {...}
 width = tonumber(args[1])
 height = tonumber(args[2])
-depth = tonumber(args[3])
+depth = tonumber(args[3])-1
 
 
 pos = copyall(df.global.cursor)
