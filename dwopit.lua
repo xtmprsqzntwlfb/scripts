@@ -1,5 +1,5 @@
 -- Optimize dwarves for fort-mode work. Buff(read: pimp-out) your dwarves and make your life easier in managing labours.
--- written by josh cooper(cppcooper) [created: 12-2017 | last edited: 12-2019]
+-- written by josh cooper(cppcooper) [created: Dec. 2017 | last modified: 2020-02-20]
 --[====[
 dwopit
 ========
