@@ -1043,7 +1043,7 @@ Examples:
     optimized   - selects dwarves based on session data. Dwarves who have been optimized, should
                   be listed in this data.
     unoptimized - selects any dwarves that don't appear in session data.
-    protected   - selects any dwarves which use protection signals in their name or profession. 
+    protected   - selects any dwarves which use protection signals in their name or profession.
                   (ie. {'.', 'c', 'j', 'p'})
     unprotected - selects any dwarves which don't use protection signals in their name or
                   profession.
