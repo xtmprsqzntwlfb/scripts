@@ -4,6 +4,18 @@ width = tonumber(args[1])
 height = tonumber(args[2])
 depth = tonumber(args[3])-1
 
+local help = [====[
+
+dig
+===
+Digs a channel around the tile selected (inclusive).
+If no arguements are provided dig will channel the highlighted tile only.
+
+Usage: dig <x-radius> <y-radius> <depth>
+        When specifying a size, depth is optional.
+
+]====]
+
 
 pos = copyall(df.global.cursor)
 x = pos.x%16
