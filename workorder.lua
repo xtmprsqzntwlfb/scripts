@@ -7,10 +7,13 @@
 -- a creature can be sheared?!!"
 
 local function print_help()
-    print [==[
-Creates a work order as in j-m menu.
-Doesn't set any materials (yet)!!!
-Use this to queue shearing or milking jobs (automate using `repeat`).
+    print [====[
+workorder
+=============
+workorder is a script to queue work orders as in j-m-q menu.
+It can automatically count how many creatures can be milked or sheared.
+
+It doesn't set any materials in the orders.
 
 Example usage:
     workorder ShearCreature 10
@@ -33,7 +36,7 @@ workorder [-? | --help | --listtypes | <jobtype> [<amount>]]
     <amount>       optional number; if omitted, the script will try to
                    determine amount automatically for some jobs. Currently
                    supported are MilkCreature and ShearCreature jobs.
-]==]
+]====]
 end
 
 local function print_job_types()
