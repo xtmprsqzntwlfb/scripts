@@ -46,6 +46,9 @@ Usage::
         (there's no need to specify this if running
         the script directly from the console)
 
+    -clear
+        re-enable normal surface embarks
+
 ]====]
 
 local utils = require 'utils'
@@ -333,6 +336,7 @@ local validArgs = utils.invert({
   'depth',
   'atReclaim',
   'blockDemons',
+  'clear',
   'help'
 })
 local args = utils.processArgs({...}, validArgs)
@@ -343,6 +347,12 @@ end
 
 if args.help then
   print(usage)
+  return
+end
+
+if args.clear then
+  dfhack.onStateChange.DeepEmbarkMonitor = nil
+  print("Cleared settings; now embarking normally.")
   return
 end
 
