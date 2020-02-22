@@ -8,6 +8,7 @@
 
 local function print_help()
     print [====[
+
 workorder
 =============
 workorder is a script to queue work orders as in j-m-q menu.
@@ -15,27 +16,26 @@ It can automatically count how many creatures can be milked or sheared.
 
 It doesn't set any materials in the orders.
 
-Example usage:
-    workorder ShearCreature 10
-        queues a job to shear 10 creatures
-    workorder ShearCreature
-        queues a job to shear all creatures currently needing shearing
-    workorder MilkCreature 10
-        queues a job to milk 10 creatures
-    workorder MilkCreature
-        queues a job to milk all creatures currently needing milking
-    workorder --listtypes
-        prints a list of all job types in the game; not all of them may be
-        valid for manager.
+Examples:
+  workorder ShearCreature 10
+  workorder ShearCreature
+  workorder MilkCreature
 
-workorder [-? | --help | --listtypes | <jobtype> [<amount>]]
-    -?, --help     this help
-    --listtypes    print all possible values for <jobtype>
-    <jobtype>      number or name from df.job_type
-                   (use `workorder --listtypes` to get all possible types
-    <amount>       optional number; if omitted, the script will try to
-                   determine amount automatically for some jobs. Currently
-                   supported are MilkCreature and ShearCreature jobs.
+-~~~~~~~~~~~
+Usage:
+
+    workorder [-? | --help | --listtypes | <jobtype> [<amount>]]
+
+    -?, --help    - this help
+
+    --listtypes   - print all possible values for <jobtype>
+
+    <jobtype>     - number or name from df.job_type
+                    (use ``workorder --listtypes`` to get all possible types
+
+    <amount>      - optional number; if omitted, the script will try to
+                    determine amount automatically for some jobs. Currently
+                    supported are MilkCreature and ShearCreature jobs.
 ]====]
 end
 
