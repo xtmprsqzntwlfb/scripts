@@ -10,9 +10,15 @@ deep-embark
 Moves the starting units and equipment to
 a specific underground region upon embarking.
 
-To use, create a file called "onMapLoad.init"
-in the DF raw folder and enter within it the name of
-this script followed by any of the args listed below.
+This script can be run directly from the console
+at any point whilst setting up an embark.
+
+Alternatively, create a file called "onLoad.init"
+in the DF raw folder (if one does not exist already)
+and enter the script command within it. Doing so will
+cause the script to run automatically and should hence
+be especially useful for modders who want their mod
+to include underground embarks by default.
 
 example:
     deep-embark -depth CAVERN_2
@@ -27,15 +33,18 @@ Usage::
             CAVERN_3
             UNDERWORLD
 
-    -atReclaim
-        including this arg will enable deep embarking
-        when reclaiming sites too
-
     -blockDemons
         including this arg will prevent demon surges
         in the context of breached underworld spires
         (intended mainly for UNDERWORLD embarks)
         ("wildlife" demon spawning will be unaffected)
+
+    -atReclaim
+        if the script is being run from onLoad.init,
+        including this arg will enable deep embarks
+        when reclaiming sites
+        (there's no need to specify this if running
+        the script directly from the console)
 
 ]====]
 
@@ -267,7 +276,11 @@ function moveEmbarkStuff(selectedBlock, embarkTiles)
   end
 end
 
-function deepEmbark(cavernType)
+function deepEmbark(cavernType, blockDemons)
+  if not cavernType then
+    qerror('Cavern type not specified!')
+  end
+
   local cavernBlocks = getFeatureBlocks(getFeatureID(cavernType))
   if #cavernBlocks == 0 then
     qerror(cavernType .. " not found!")
@@ -288,6 +301,10 @@ function deepEmbark(cavernType)
   if not moved then
     qerror('Insufficient space at ' .. cavernType)
   end
+
+  if blockDemons then
+    disableSpireDemons()
+  end
 end
 
 function disableSpireDemons()
@@ -295,6 +312,21 @@ function disableSpireDemons()
   for _, spire in ipairs(df.global.world.deep_vein_hollows) do
     spire.triggered = true
   end
+end
+
+function inEmbarkMode()
+  local embarkViewScreens = {
+    df.viewscreen_adopt_regionst, -- onLoad.init kicks in early; this is the viewscreen present at this stage
+    df.viewscreen_choose_start_sitest,
+    df.viewscreen_setupdwarfgamest
+  }
+  local view = dfhack.gui.getCurViewscreen()
+  for _, valid in ipairs(embarkViewScreens) do
+    if view._type == valid or view.parent._type == valid and view._type ~= df.viewscreen_textviewerst then -- df.viewscreen_textviewerst is present right after embarking (displays the embark message) and has .parent._type == df.viewscreen_setupdwarfgamest
+      return true
+    end
+  end
+  return false
 end
 
 local validArgs = utils.invert({
@@ -314,21 +346,6 @@ if args.help then
   return
 end
 
-if df.global.gamemode ~= df.game_mode.DWARF then -- no need to run in adventure/legends mode
-  qerror('This script requires fortress mode')
-end
-local gametype = df.global.gametype
-if gametype == df.game_type.DWARF_ARENA or gametype == DWARF_UNRETIRE then -- because unretiring forts ~= embarking
-  qerror('This script requires a new fortress in fortress mode')
-end
-if gametype == df.game_type.DWARF_RECLAIM and not args.atReclaim then -- some might prefer being able to reclaim sites in a cavern-raiding style, so this is an option
-  qerror('Reclaiming a fortress with this script requires the atReclaim option')
-end
-
-if df.global.ui.fortress_age > 0 then -- reclaimed fortresses also start at fortress_age 0
-  qerror('This appears to be a reclaimed fortress, which is not supported')
-end
-
 if not args.depth then
   qerror('Depth not specified! Enter "deep-embark -help" for more information.')
 end
@@ -341,11 +358,36 @@ local validDepths = {
 }
 
 if not validDepths[args.depth] then
-  qerror("Invalid depth: " .. tostring(args.depth))
+  qerror("Invalid depth: " .. args.depth)
 end
 
-if args.blockDemons then
-  disableSpireDemons()
+local consoleMode = dfhack.is_interactive() -- true if the script has been called directly from the DFHack console, false if called from onLoad.init
+
+if not inEmbarkMode() then
+  if consoleMode then
+    qerror('This script must be run prior to embarking! Enter "deep-embark -help" for more information.')
+  else
+    return -- terminate silently to prevent unwanted error messages every time onLoad.init is run in non-embark scenarios
+  end
 end
 
-deepEmbark(tostring(args.depth))
+if consoleMode then
+  print("Embarking at: " .. tostring(args.depth))
+end
+
+dfhack.onStateChange.DeepEmbarkMonitor = function(event)
+  if event == SC_VIEWSCREEN_CHANGED then -- I initially tried using SC_MAP_LOADED, but the map appears to be loaded too early when reclaiming sites
+    if dfhack.gui.getCurViewscreen()._type ~= df.viewscreen_textviewerst then -- embark message; map should have been loaded by the time this is presented
+      return
+    end
+    if not consoleMode and not args.atReclaim and df.global.gametype == df.game_type.DWARF_RECLAIM then -- it's assumed that a player who chooses to run the script from console whilst reclaiming knows what they're doing, so there's no need to check for -atReclaim in this scenario
+      dfhack.onStateChange.DeepEmbarkMonitor = nil -- stop monitoring
+      return -- don't deepEmbark if running from onLoad.init and in reclaim mode without -atReclaim
+    else
+      deepEmbark(args.depth, args.blockDemons)
+      dfhack.onStateChange.DeepEmbarkMonitor = nil
+    end
+  elseif event == SC_WORLD_UNLOADED then -- embark aborted
+    dfhack.onStateChange.DeepEmbarkMonitor = nil
+  end
+end
