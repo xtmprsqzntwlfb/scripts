@@ -14,6 +14,7 @@ Usage examples::
 
     repeat -name jim -time delay -timeUnits units -command [ printArgs 3 1 2 ]
     repeat -time 1 -timeUnits months -command [ multicmd cleanowned scattered x; clean all ] -name clean
+    repeat list
 
 The first example is abstract; the second will regularly remove all contaminants
 and worn items from the game.
@@ -33,6 +34,8 @@ Arguments:
     ``...`` specifies the command to be run
 ``-cancel NAME``
     cancels the repetition with the name NAME
+``list``
+    prints names of scheduled commands
 
 ]====]
 
@@ -47,6 +50,13 @@ local validArgs = utils.invert({
  'timeUnits',
  'command'
 })
+
+if (...) == 'list' then
+    for k in pairs(repeatUtil.repeating) do
+        print(k)
+    end
+    return
+end
 
 local args = utils.processArgs({...}, validArgs)
 
