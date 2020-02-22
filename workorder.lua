@@ -133,7 +133,7 @@ local function default_action(...)
         print ("Unknown jobtype: " .. tostring(v))
         return
     end
-    
+
     local amount = tonumber(n)
     local reduce = false
     if not amount then
@@ -146,7 +146,7 @@ local function default_action(...)
             amount = fn(table.unpack(args))
         end
     end
-     
+
     if not amount then
         print ("Missing amount (got "..tostring(n)..")")
         return
@@ -209,7 +209,7 @@ local function canShearCreature(u)
     for _, stl in ipairs(stls) do
         if stl.length > 0 then
             any = true
-            
+
             for _, bpi in ipairs(stl.bp_modifiers_idx) do
                 if u.appearance.bp_modifiers[bpi] >= stl.length then
                     return true
@@ -218,7 +218,7 @@ local function canShearCreature(u)
 
         end
     end
-    
+
     if any then return false end
     -- otherwise: nil
 end
@@ -227,11 +227,11 @@ calcAmountFor_ShearCreature = function ()
     local cnt = 0
     --print "Shearable units:"
     for i, u in pairs(world.units.active) do
-        if isValidUnit(u) 
+        if isValidUnit(u)
         and canShearCreature(u)
         then
             cnt = cnt + 1
-            
+
             -- debug:
             --local can = canShearCreature(u)
             --if (can ~= nil) then
