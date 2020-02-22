@@ -120,8 +120,8 @@ end
 
 function debugf(level,...)
     if args.debug and level <= tonumber(args.debug) then
-        str=""
-        for i = 1, select('#', ...) do
+        str=string.format(" #  %s",select(1, ...))
+        for i = 2, select('#', ...) do
             str=string.format("%s\t%s",str,select(i, ...))
         end
         print(str)
@@ -218,15 +218,22 @@ function print_keys(parent,v,bprint)
                 print(string.format("%s%-3d %s",space_key,i,e))
             end
         end
-    elseif type(v) == "userdata" and not string.find(tostring(v),"userdata") and v._kind then
+    elseif type(v) == "userdata" and not string.find(tostring(v),"userdata") then
         --crash fix: string.find(...,"userdata") it seems that the crash was from hitting some ultra-primitive type (void* ?)
             --Not the best solution, but if duct tape works, why bother with sutures....
+        debugf(4,"keys.B")
+        if args.query or args.querykeys then
+            for k2,v2 in safe_pairs(v) do
+                debugf(3,"keys.B.1")
+                print_key(k2,v2,bprint,parent,v)
+            end
+        end
         --too much information, and it seems largely useless
-        --todo: figure out a way to prune useless info OR add option (option suggestion: -floodconsole)
+        --todo: figure out an even better way to prune useless info OR add option (option suggestion: -floodconsole)
     else
-        debugf(4,"keys.B",parent,v,type(v),bprint,bprinted)
+        debugf(4,"keys.C",parent,v,type(v),bprint,bprinted)
         for k2,v2 in safe_pairs(v) do
-            debugf(3,"keys.B.1")
+            debugf(3,"keys.C.1")
             print_key(k2,v2,bprint,parent,v)
         end
     end
