@@ -10,7 +10,7 @@ local function print_help()
     print [====[
 
 workorder
-=============
+=========
 workorder is a script to queue work orders as in j-m-q menu.
 It can automatically count how many creatures can be milked or sheared.
 
