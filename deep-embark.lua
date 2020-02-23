@@ -42,7 +42,7 @@ Usage::
     -atReclaim
         if the script is being run from onLoad.init,
         including this arg will enable deep embarks
-        when reclaiming sites
+        when reclaiming sites too
         (there's no need to specify this if running
         the script directly from the console)
 
@@ -251,11 +251,11 @@ function moveEmbarkStuff(selectedBlock, embarkTiles)
           selectedBlock.occupancy[pos.x%16][pos.y%16].item = true
         end
       end
+      dfhack.buildings.deconstruct(wagon)
+      wagon.flags.almost_deleted = true -- wagon vanishes a tick later
+      wagonFound = true
+      break
     end
-    dfhack.buildings.deconstruct(wagon)
-    wagon.flags.almost_deleted = true -- wagon vanishes a tick later
-    wagonFound = true
-    break
   end
 
 -- Move items scattered around the spawn point if there's no wagon:
