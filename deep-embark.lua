@@ -318,8 +318,11 @@ function disableSpireDemons()
 end
 
 function inEmbarkMode()
+  if df.global.gametype ~= df.game_type.DWARF_MAIN then -- is always set at fortress mode setup
+    return false
+  end
   local embarkViewScreens = {
-    df.viewscreen_adopt_regionst, -- onLoad.init kicks in early; this is the viewscreen present at this stage
+    df.viewscreen_adopt_regionst, -- onLoad.init kicks in early; this is the viewscreen present at this stage (the 'loading world' viewscreen is also present at adventure mode setup and legends mode, hence the game_type check above)
     df.viewscreen_choose_start_sitest,
     df.viewscreen_setupdwarfgamest
   }
