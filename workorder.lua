@@ -489,8 +489,8 @@ local function create_orders(orders)
 
         local amount = it.amount_total
         if it.__reduce_amount then
-		    -- reduce if there are identical orders
-			-- with some amount_left.
+            -- reduce if there are identical orders
+            -- with some amount_left.
             amount = order_quantity(order, amount)
         end
 
@@ -529,7 +529,7 @@ local function preprocess_orders(orders)
         -- allow smart choices
         if not order.amount_total then
             order.__reduce_amount = (order.__reduce_amount == nil) and true
-								or order.__reduce_amount
+                                or order.__reduce_amount
             local fn = _ENV[ "calcAmountFor_" .. tostring(ensure_df_string(df.job_type, order.job)) ]
             if fn and type(fn)=="function" then
                 order.amount_total = fn(order)
