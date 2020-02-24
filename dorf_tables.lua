@@ -3,12 +3,26 @@
 -- by josh cooper(cppcooper) [created: Dec. 2017 | last modified: 2020-02-21]
 --@ module = true
 
+local utils=require('utils')
+local validArgs = utils.invert({
+ 'help',
+ 'list'
+})
+local args = utils.processArgs({...}, validArgs)
+
 local help = [====[
 
 dorf_tables
 ===========
 Data tables for dwopit.lua.
-Usage: none, loaded inside secondary script (dwopit.lua)
+
+Arguments:
+    list [jobs|professions|types]
+
+Examples
+    # dorf_tables -list jobs
+    # dorf_tables -list professions
+    # dorf_tables -list types
 
 -~~~~~~~~~~
 The data tables defined are described below.
@@ -65,7 +79,7 @@ types:
 
 ]====]
 
-if not moduleMode then
+if not args.list and not moduleMode then
     print(help)
     print("scripts/dorf_tables.lua is a content library; calling it does nothing.")
     do return end
@@ -155,12 +169,12 @@ dorf_jobs = {
 --]]
 jobs = {
     _hauler = {
-        req={'STANDARD'}, max={1988},
+        req={'STANDARD','STANDARD'}, max={1988},
         RECRUIT=0.2,
         types={'strong5','strong4','fast3','spaceaware3','social','social'}},
     _soldier = {
-        req={'TRAINED_WAR','STANDARD'}, max={1988},
-        RECRUIT=0.5,
+        req={'TRAINED_WAR','TRAINED_WAR'}, max={1988},
+        STANDARD=1.0, RECRUIT=0.5,
         types={'strong6','strong5','fast3','spaceaware3','soldier','fighter','social','social'}},
     Miner = {
         req={'MINER'}, max={1},
@@ -188,8 +202,8 @@ jobs = {
         POTASH_MAKER=0.43333, MILLER=0.3333, BREWER=0.5, THRESHER=0.42,
         types={'fast3','strong1','spaceaware1','resilient1','intuitive1'}},
     Rancher = {
-        req={'ANIMAL_CARETAKER'}, max={6},
-        SHEARER=0.775, MILKER=0.2333, CHEESE_MAKER=0.115, BUTCHER=0.199, TANNER=0.27333, ANIMAL_TRAINER=0.9711,
+        req={'ANIMAL_CARETAKER','GELDER'}, max={6},
+        SHEARER=0.775, MILKER=0.2333, CHEESE_MAKER=0.115, BUTCHER=0.399, TANNER=0.47333, ANIMAL_TRAINER=0.9711,
         types={'fast3','strong3','intuitive2','resilient2','spaceaware1'}},
     Brewer = {
         req={'BREWER'}, max={2},
@@ -252,7 +266,7 @@ skills:
 professions = {
 
 --Basic Dwarfing
-    STANDARD =          { skills = {SHIELD=1, SPEAKING=4, FLATTERY=1, COMEDY=1, COOK=1, DISSECT_FISH=1, PROCESSFISH=1, BITE=1, PRESSING=1, SING_MUSIC=1, WRESTLING=1, GRASP_STRIKE=1, STANCE_STRIKE=1} },
+    STANDARD =          { skills = {SHIELD=1, SPEAKING=4, FLATTERY=1, COMEDY=1, WOOD_BURNING=-9, COOK=-9, DISSECT_FISH=-10, PROCESSFISH=-11, BITE=1, PRESSING=-10, SING_MUSIC=1, WRESTLING=1, GRASP_STRIKE=1, STANCE_STRIKE=1} },
     ADMINISTRATOR =     { skills = {RECORD_KEEPING=3, ORGANIZATION=2, APPRAISAL=1} },
     TRADER =            { skills = {APPRAISAL=5, NEGOTIATION=4, JUDGING_INTENT=3, LYING=2} },
     CLERK =             { skills = {RECORD_KEEPING=3, ORGANIZATION=3} },
@@ -296,8 +310,9 @@ professions = {
     HERBALIST =         { skills = {HERBALISM=3} },
     THRESHER =          { skills = {PROCESSPLANTS=3} },
     --Ranching
-    ANIMAL_CARETAKER =  { skills = {ANIMALCARE=3, SHEARING=2, MILK=1, ANIMALTRAIN=1} },
+    ANIMAL_CARETAKER =  { skills = {ANIMALCARE=3, GELD=3, SHEARING=2, MILK=1, ANIMALTRAIN=1} },
     ANIMAL_TRAINER =    { skills = {ANIMALTRAIN=5} },
+    GELDER =            { skills = {GELD=7} },
     MILKER =            { skills = {MILK=3} },
     SHEARER =           { skills = {SHEARING=3, SPINNING=2} },
     CHEESE_MAKER =      { skills = {CHEESEMAKING=3} },
@@ -307,7 +322,7 @@ professions = {
     FISHERMAN =         { skills = {FISH=5, DISSECT_FISH=2, PROCESSFISH=2} },
     FISHERY_WORKER =    { skills = {DISSECT_FISH=5, PROCESSFISH=5}},
     --Dead Thing Science
-    BUTCHER =           { skills = {BUTCHER=3, TANNER=2, COOK=1, GELD=-3} }, --the '-3' is not a typo, it is just to populate the field [for DwarfTherapist auto-assigning]
+    BUTCHER =           { skills = {BUTCHER=3, TANNER=2, COOK=-5, GELD=-8} }, --the '-3' is not a typo, it is just to populate the field [for DwarfTherapist auto-assigning]
     TANNER =            { skills = {TANNER=3, LEATHERWORK=1} },
     BONE_CARVER =       { skills = {BONECARVE=7} },
 
@@ -457,3 +472,21 @@ types = {
         attribs = {STRENGTH={'verygood'},AGILITY={'verygood'},ENDURANCE={'verygood'},RECUPERATION={'verygood'},FOCUS={'superb'}},
         skills  = {DISCIPLINE={7,14},SITUATIONAL_AWARENESS={5,10},MELEE_COMBAT={4,6},RANGED_COMBAT={4,6},ARMOR={4,6},HAMMER={4,6},CROSSBOW={4,6},COORDINATION={4,6},BALANCE={4,6},MILITARY_TACTICS={5,8}}}
 }
+
+function ListFields(t)
+    for k,_ in pairs(t) do
+        print("  " .. tostring(k))
+    end
+end
+
+if args.list then
+    if args.list == "jobs" then
+        ListFields(jobs)
+    elseif args.list == "professions" then
+        ListFields(professions)
+    elseif args.list == "types" then
+        ListFields(types)
+    else
+        print("invalid argument provided. valid arguments: 'jobs','professions','types'")
+    end
+end
