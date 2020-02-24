@@ -98,6 +98,7 @@ local path_json = "dfhack-config/workorder/"
 
 local df = df
 local world = df.global.world
+local printerr = dfhack.printerr
 
 local verbose = false
 local debug_verbose = false
@@ -251,14 +252,14 @@ end
 local function get_itemdef(item_type, subtype)
     item_type = ensure_df_string(df.item_type, item_type)
     if not item_type then
-        print ("Unknown item_type: " .. tostring(item_type))
+        printerr ("Unknown item_type: " .. tostring(item_type))
         return
     end
 
     local itemdef_st_name = 'itemdef_'.. string.lower ( item_type ) .. 'st'
     local def = df[ itemdef_st_name ]
     if not def then
-        print ("Type df." .. itemdef_st_name .. " doesn't exist!" )
+        printerr ("Type df." .. itemdef_st_name .. " doesn't exist!" )
         return
     end
 
@@ -288,12 +289,17 @@ local function create_orders(orders)
 
     for _, it in ipairs (orders) do
         local order = df.manager_order:new()
-        dfhack.with_onerror(function() order:delete() end, -- cleanup in case of errors
+        dfhack.with_onerror(function() order:delete() -- cleanup in case of errors
+                                       if debug_verbose then
+                                           printerr("Error in order:")
+                                           printall_recurse(it)
+                                       end
+                            end,
         function()
         order.id = id_mapping[ it["id"] ]
 
         order.job_type = ensure_df_id(df.job_type, it["job"])
-                    or error("Invalid job type for manager order: " .. it["job"])
+                    or qerror("Invalid job type for manager order: " .. it["job"])
 
         if it["reaction"] then
             order.reaction_name = it["reaction"]
@@ -302,7 +308,7 @@ local function create_orders(orders)
         if it["item_type"] then
             local tmp = ensure_df_id(df.job_type, it["item_type"])
             if not tmp or tmp == ensure_df_id(df.job_type, 'NONE') then
-                error("Invalid item type for manager order: " .. it["item_type"])
+                qerror("Invalid item type for manager order: " .. it["item_type"])
             end
             order.item_type = tmp
         end
@@ -314,19 +320,19 @@ local function create_orders(orders)
                         or tmp_item_type
             local def = get_itemdef(tmp_item_type, it["item_subtype"]);
             order.item_subtype = def and def.subtype
-                        or error( "Invalid item subtype for manager order: "
+                        or qerror( "Invalid item subtype for manager order: "
                                .. df.item_type[order.item_type] .. ":" .. it["item_subtype"] )
         end
 
         if it["meal_ingredients"] then
             order.mat_type = tonumber(it["meal_ingredients"])
-                        or error ( "Invalid meal ingredients for managed order: " .. it["meal_ingredients"]
+                        or qerror ( "Invalid meal ingredients for managed order: " .. it["meal_ingredients"]
                                 .. " (is not a number). ")
             order.mat_index = -1
         elseif it["material"] then
             local mat = dfhack.matinfo.find(it["material"])
             if not mat then
-                error( "Invalid material for manager order: " .. it["material"] )
+                qerror( "Invalid material for manager order: " .. it["material"] )
             end
             order.mat_type = mat.type
             order.mat_index = mat.index
@@ -335,13 +341,13 @@ local function create_orders(orders)
         if it["item_category"] then
             local ok, bad = set_flags_from_list(it["item_category"], order.item_category)
             if not ok then
-                error ("Invalid item_category value for manager order: " .. bad)
+                qerror ("Invalid item_category value for manager order: " .. bad)
             end
         end
 
         if it["hist_figure"] then
             if not df.historical_figure.find(tonumber(it["hist_figure"])) then
-                error("Missing historical figure for manager order: " .. it["hist_figure"])
+                qerror("Missing historical figure for manager order: " .. it["hist_figure"])
             end
 
             order.hist_figure_id = tonumber(it["hist_figure"])
@@ -350,13 +356,13 @@ local function create_orders(orders)
         if it["material_category"] then
             local ok, bad = set_flags_from_list(it["material_category"], order.material_category)
             if not ok then
-                error("Invalid material_category value for manager order: " .. bad)
+                qerror("Invalid material_category value for manager order: " .. bad)
             end
         end
 
         if it["art"] then
             order.art_spec.type = ensure_df_id(df.job_art_specification.T_type, it["art"]["type"])
-                        or error ("Invalid art type value for manager order: " .. it["art"]["type"])
+                        or qerror ("Invalid art type value for manager order: " .. it["art"]["type"])
             order.art_spec.id = tonumber( it["art"]["id"] )
             if it["art"]["subid"] then
                 order.art_spec.subid = tonumber( it["art"]["subid"] )
@@ -369,14 +375,14 @@ local function create_orders(orders)
         --order.status.active = it["is_active"] -- ignoring
 
         order.frequency = ensure_df_id(df.manager_order.T_frequency, it["frequency"])
-                        or error("Invalid frequency value for manager order: " .. it["frequency"])
+                        or qerror("Invalid frequency value for manager order: " .. it["frequency"])
 
         -- finished_year, finished_year_tick
 
         if it["workshop_id"] then
             local ws = df.building.find(tonumber(it["workshop_id"]))
             if not ws then
-                error( "Missing workshop for manager order: " .. it["workshop_id"] )
+                qerror( "Missing workshop for manager order: " .. it["workshop_id"] )
             end
             order.workshop_id = tonumber(it["workshop_id"])
         end
@@ -391,7 +397,7 @@ local function create_orders(orders)
                 dfhack.with_onerror(function() condition:delete() end, -- cleanup in case of errors
                 function()
                 condition.compare_type = ensure_df_id(df.manager_order_condition_item.T_compare_type, it2["condition"])
-                                    or error ("Invalid item condition for manager order: " .. it2["condition"] )
+                                    or qerror ("Invalid item condition for manager order: " .. it2["condition"] )
                 condition.compare_val = tonumber(it2["value"])
 
                 if it2["flags"] then
@@ -400,14 +406,14 @@ local function create_orders(orders)
                                             condition.flags2,
                                             condition.flags3) -- flags4, flags5
                     if not ok then
-                        error("Invalid item condition flags for manager order: " .. bad)
+                        qerror("Invalid item condition flags for manager order: " .. bad)
                     end
                 end
 
                 if it2["item_type"] then
                     local tmp = ensure_df_id(df.item_type, it2["item_type"])
                     if not tmp or tmp == ensure_df_id(df.item_type, 'NONE') then
-                        error("Invalid item condition item type for manager order: " .. it2["item_type"])
+                        qerror("Invalid item condition item type for manager order: " .. it2["item_type"])
                     end
                     condition.item_type = tmp
                 end
@@ -415,7 +421,7 @@ local function create_orders(orders)
                 if it2["item_subtype"] then
                     local def = get_itemdef(condition.item_type, it2["item_subtype"]);
                     condition.item_subtype = def and def.subtype
-                                    or error ( "Invalid item condition item subtype for manager order: "
+                                    or qerror ( "Invalid item condition item subtype for manager order: "
                                             .. df.item_type[condition.item_type]
                                             .. ":" .. it2["item_subtype"] )
                 end
@@ -423,7 +429,7 @@ local function create_orders(orders)
                 if it2["material"] then
                     local mat = dfhack.matinfo.find(it2["material"])
                     if not mat then
-                        error( "Invalid item condition material for manager order: " .. it2["material"] )
+                        qerror( "Invalid item condition material for manager order: " .. it2["material"] )
                     end
                     condition.mat_type = mat.type
                     condition.mat_index = mat.index
@@ -439,7 +445,7 @@ local function create_orders(orders)
                         end
                     end
                     condition.inorganic_bearing = idx
-                                            or error( "Invalid item condition inorganic bearing type for manager order: " .. it2["bearing"] )
+                                            or qerror( "Invalid item condition inorganic bearing type for manager order: " .. it2["bearing"] )
                 end
 
                 if it2["reaction_class"] then
@@ -453,7 +459,7 @@ local function create_orders(orders)
                 if it2["tool"] then
                     local tmp = ensure_df_id(df.tool_uses, it2["tool"])
                     if not tmp or tmp == ensure_df_id(df.tool_uses, 'NONE') then
-                        error("Invalid item condition tool use for manager order: " .. it2["tool"])
+                        qerror("Invalid item condition tool use for manager order: " .. it2["tool"])
                     end
                     condition.has_tool_use = tmp
                 end
@@ -474,10 +480,10 @@ local function create_orders(orders)
                 function()
                 local id = tonumber(it2["order"])
                 condition.order_id = id ~= it["id"] and id_mapping[id]
-                                    or error("Missing order condition target for manager order: " .. it2["order"])
+                                    or qerror("Missing order condition target for manager order: " .. it2["order"])
 
                 condition.condition = ensure_df_id(df.manager_order_condition_order.T_condition, it2["condition"])
-                                    or error ( "Invalid order condition type for manager order: " .. it2["condition"] )
+                                    or qerror ( "Invalid order condition type for manager order: " .. it2["condition"] )
 
                 -- condition.anon_1
 
@@ -552,7 +558,7 @@ local function preprocess_orders(orders)
                     print ("Missing amount_total, set to " .. (amount==0 and "infinity" or amount))
                 end
             else
-                print ("Invalid amount_total: " .. tostring(order.amount_total)
+                printerr ("Invalid amount_total: " .. tostring(order.amount_total)
                     .. " changed to " .. (amount==0 and "infinity" or amount))
             end
         end
@@ -596,7 +602,7 @@ default_action = function (...)
     end
 
     if not has_manager() then
-        print "You should assign a manager first."
+        printerr "You should assign a manager first."
         return
     end
 
@@ -611,7 +617,7 @@ default_action = function (...)
     end
 
     if not (jobtype or orders) then
-        print ("Unknown jobtype: " .. tostring(v))
+        printerr ("Unknown jobtype: " .. tostring(v))
         return
     end
 
