@@ -1,5 +1,5 @@
 -- Optimize dwarves for fort-mode work. Buff(read: pimp-out) your dwarves and make your life easier in managing labours.
--- written by josh cooper(cppcooper) [created: Dec. 2017 | last modified: 2020-02-20]
+-- written by josh cooper(cppcooper) [created: Dec. 2017 | last modified: 2020-02-23]
 --[====[
 dwopit
 ========
@@ -32,6 +32,7 @@ cloned = {
     jobs = utils.clone(dorf_tables.jobs, true),
     professions = utils.clone(dorf_tables.professions, true),
 }
+protected_dwarf_signals = {'.', ','}
 local validArgs = utils.invert({
     'help',
     'debug',
@@ -40,6 +41,7 @@ local validArgs = utils.invert({
     'resetall',
 
     'select', --highlighted --all --named --unnamed --employed --optimized --unoptimized --protected --unprotected --drunks --jobs
+    'clean',
     'clear',
     'reroll',
     'optimize',
@@ -91,7 +93,7 @@ Examples:
     unoptimized - selects any dwarves that don't appear in session data.
 
     protected   - selects any dwarves which use protection signals in their name or profession.
-                  (ie. {'.', 'c', 'j', 'p'})
+                  (ie. {'.', ','})
 
     unprotected - selects any dwarves which don't use protection signals in their name or
                   profession.
@@ -125,10 +127,13 @@ Examples:
 
  dwarf commands:
 
+    clean <value>      - cleans selected dwarves, checks for skills with a rating of <value> and
+                         deletes them from the dwarf's skill list
+
     clear              - zeroes selected dwarves, or zeroes all dwarves if no selection is given.
                          No attributes, no labours. Assigns 'DRUNK' profession.
 
-    reroll <inclusive> - zeroes selected dwarves, then rerolls that dwarf based on its job.
+    reroll [inclusive] - zeroes selected dwarves, then rerolls that dwarf based on its job.
                          Ignores dwarves with unlisted jobs.
                          optional argument: inclusive. Meaning your dorf(s) get the best of N
                          rolls.
@@ -171,7 +176,6 @@ if args.help then
 end
 
 if args.debug and tonumber(args.debug) >= 0 then print("Debug info [ON]") end
-protected_dwarf_signals = {'.', 'c', 'j', 'p'}
 if args.select and args.select == 'optimized' then
     if args.optimize and not args.clear then
         error("Invalid arguments detected. You've selected only optimized dwarves, and are attempting to optimize them without clearing them. This will not work, so I'm warning you about it with this lovely error.")
@@ -569,6 +573,7 @@ function ApplyProfession(dwf, profession, min, max)
         end
         local points = rng.rollInt(engineID, min, max)
         sTable.rating = sTable.rating < points and points or sTable.rating
+        --sTable.natural_skill_lvl =
         sTable.rating = sTable.rating + bonus
         sTable.rating = sTable.rating >= 20 and 20 or sTable.rating
         sTable.rating = sTable.rating <= 2 and 2 or sTable.rating
@@ -608,7 +613,7 @@ function ApplyJob(dwf, jobName) --job = dorf_jobs[X]
     job_req_sequence:add(0) --adding an out of bounds key (ie. 0) to ensure rpairs won't keep going forever
     --[note it is added after shuffling]
     local i = 0
-    for _, prof in rpairs(job.req, gen) do
+    for _, prof in pairs(job.req) do
         --> Set Profession(s) (by #)
         i = i + 1 --since the key can't tell us what iteration we're on
         if i == 1 then
@@ -771,6 +776,27 @@ function TrySecondPassExpansion() --Tries to expand distribution maximums
     return false
 end
 
+function CleanDwarf(dwf)
+    threshold=tonumber(args.clean)
+    if threshold then
+        N=-1
+        for _,_ in ipairs(dwf.status.current_soul.skills) do
+            N = N + 1
+        end
+        utils.sort_vector(dwf.status.current_soul.skills, 'id')
+        for i=N,0,-1 do
+            v=dwf.status.current_soul.skills[i]
+            --print(i)
+            --print(v.rating,v.id,df.job_skill[v.id])
+            if v.rating <= threshold then
+                utils.erase_sorted_key(dwf.status.current_soul.skills, v.id, 'id')
+            end
+        end
+        return true
+    end
+    error("invalid value given for argument '-clean <value>'")
+end
+
 function ZeroDwarf(dwf)
     LoopStatsTable(dwf.body.physical_attrs, function(attribute) attribute.value = 0 end)
     LoopStatsTable(dwf.status.current_soul.mental_attrs, function(attribute) attribute.value = 0 end)
@@ -928,14 +954,14 @@ end
 function isDwarfProtected(dwf)
     if dwf.custom_profession ~= "" then
         for _,signal in pairs(protected_dwarf_signals) do
-            if GetChar(dwf.custom_profession, 1) == signal then
+            if string.find(dwf.custom_profession, signal, 1, true) then
                 return true
             end
         end
     end
     if dwf.status.current_soul.name.nickname ~= "" then
         for _,signal in pairs(protected_dwarf_signals) do
-            if GetChar(dwf.status.current_soul.name.nickname, 1) == signal then
+            if string.find(dwf.status.current_soul.name.nickname, signal, 1, true) then
                 return true
             end
         end
@@ -1004,8 +1030,6 @@ function CheckWorker(dwf, option)
                     return isDwarfUnprotected(dwf)
                 elseif option == 'drunks' or option == 'drunk' then
                     return dwf.profession == df.profession['DRUNK'] and dwf.profession2 == df.profession['DRUNK']
-                else
-                    error("Invalid select option specified.")
                 end
             end
         elseif type(option) == 'table' then
@@ -1014,18 +1038,18 @@ function CheckWorker(dwf, option)
                 option[1] = string.sub(option[1],2)
             end
             --print(includeProtectedDwfs)
-            if includeProtectedDwfs or isDwarfUnprotected(dwf) then
-                if option[1] == 'job' or option[1] == 'jobs' then
-                    n=0
-                    for _,v in pairs(option) do
-                        n=n+1
-                        --print(dwf.custom_profession, v)
-                        if n > 1 and dwf.custom_profession == v then
-                            return true
-                        end
+            if option[1] == 'job' or option[1] == 'jobs' then
+                n=0
+                for _,v in pairs(option) do
+                    n=n+1
+                    --print(dwf.custom_profession, v)
+                    if n > 1 and dwf.custom_profession == v then
+                        return true
                     end
-                elseif option[1] == 'wave' or option[1] == 'waves' then
-                    n=0
+                end
+            elseif option[1] == 'wave' or option[1] == 'waves' then
+                n=0
+                if includeProtectedDwfs or isDwarfUnprotected(dwf) then
                     for _,v in pairs(option) do
                         n=n+1
                         if n > 1 and TableContainsValue(zwaves[tonumber(v)],dwf) then
@@ -1172,9 +1196,11 @@ if not args.select then
     end
 end
 
+bRanCommands=true
+
 if args.help then
     ShowHelp()
-elseif args.select and (args.debug or args.clear or args.optimize or args.reroll or args.applyjobs or args.applyprofessions or args.applytypes or args.renamejob) then
+elseif args.select and (args.debug or args.clean or args.clear or args.optimize or args.reroll or args.applyjobs or args.applyprofessions or args.applytypes or args.renamejob) then
     selection = {}
     count = 0
     print("Selected Dwarves: " .. LoopUnits(ActiveUnits, CheckWorker, SelectDwarf, args.select))
@@ -1205,6 +1231,12 @@ elseif args.select and (args.debug or args.clear or args.optimize or args.reroll
             elseif args.reroll then
                 print("\nRerolling selected dwarves..")
                 temp = LoopUnits(selection, nil, Reroll)
+                affected = affected < temp and temp or affected
+            end
+
+            if args.clean then
+                print("\nCleaning skills list of selected dwarves..")
+                temp = LoopUnits(selection, nil, CleanDwarf)
                 affected = affected < temp and temp or affected
             end
 
@@ -1270,15 +1302,16 @@ elseif args.select and (args.debug or args.clear or args.optimize or args.reroll
     else
         error("Clear is implied with Reroll. Choose one, not both.")
     end
-    if args.show then
-        LoopUnits(selection, nil, Show)
-    end
+else
+    bRanCommands=false
 end
 
 if args.show then
     selection = {}
     print("Selected Dwarves: " .. LoopUnits(ActiveUnits, CheckWorker, SelectDwarf, args.select))
     LoopUnits(selection, nil, Show)
+elseif not bRanCommands then
+    print("It looks like you may have entered an invalid combination of arguments. Check -help or report a bug.")
 end
 SavePersistentData()
 print('\n')
