@@ -11,7 +11,7 @@ local validArgs = utils.invert({
  'keydepth',
  'listkeys',
  'querykeys',
- 'getkey',
+ 'getfield',
  'debug'
 })
 local args = utils.processArgs({...}, validArgs)
@@ -36,7 +36,7 @@ Examples:
   [DFHack]# devel/query -table df.profession -querykeys WAR
   [DFHack]# devel/query -unit -query STRENGTH
   [DFHack]# devel/query -unit -query physical_attrs -listkeys
-  [DFHack]# devel/query -unit -getkey id
+  [DFHack]# devel/query -unit -getfield id
 
 -~~~~~~~~~~~~
 selection options:
@@ -52,7 +52,7 @@ selection options:
                          Must use dot notation to denote sub-tables.
                          (eg. -table df.global.world)
 
-    getkey <value>     - Gets the specified key from the selected unit.
+    getfield <value>   - Gets the specified key from the selected unit.
                          Note: Must use the 'unit' option and doesn't support the
                          options below. Useful if there would be several matching
                          fields with the key as a substring (eg. 'id')
@@ -228,7 +228,7 @@ function print_keys(parent,v,bprint)
         --crash fix: string.find(...,"userdata") it seems that the crash was from hitting some ultra-primitive type (void* ?)
             --Not the best solution, but if duct tape works, why bother with sutures....
         debugf(4,"keys.B")
-        if args.query or args.querykeys or args.getkey then
+        if args.query or args.querykeys or args.getfield then
             debugf(3,"keys.B.0", v, type(v))
             for k2,v2 in safe_pairs(v) do
                 debugf(3,"keys.B.1")
@@ -299,21 +299,6 @@ end
 local selection = nil
 if args.help then
     print(help)
-elseif args.unit then
-    selection = dfhack.gui.getSelectedUnit()
-    if args.getkey then
-        --t=parseKeyString(selection,args.getkey)
-        print("selected-unit."..args.getkey..": ",parseKeyString(selection,args.getkey))
-        Query(parseKeyString(selection,args.getkey),args.query,"selected-unit."..args.getkey)
-    else
-        if selection == nil then
-            qerror("Selected unit is null. Invalid selection.")
-        elseif args.query ~= nil then
-            Query(selection, args.query, 'selected-unit')
-        else
-            Query(selection, '', 'selected-unit')
-        end
-    end
 elseif args.table then
     local t = parseTableString(args.table)
     if args.query ~= nil then
@@ -321,17 +306,33 @@ elseif args.table then
     else
         Query(t, '', args.table)
     end
-elseif args.item then
-    selection = dfhack.gui.getSelectedItem()
-    if args.getkey then
-        print("selected-item."..args.getkey..": ",parseKeyString(selection,args.getkey))
+elseif args.item or args.unit then
+    info=""
+    if args.unit then
+        selection = dfhack.gui.getSelectedUnit()
+        info="unit"
+    else
+        selection = dfhack.gui.getSelectedItem()
+        info="item"
+    end
+    info_selection="selected-"..info.."."
+    msg=string.format("Selected %s is null. Invalid selection.",info)
+    if args.getfield then
+        X=parseKeyString(selection,args.getfield)
+        if type(X) == 'number' or type(X) == "string" or type(X) == "boolean" or type(X) == "nil" then
+            print(info_selection..args.getfield..": ",parseKeyString(selection,args.getfield))
+        elseif args.listkeys or args.querykeys or args.keydepth or args.query or args.depth then
+            Query(parseKeyString(selection,args.getfield),args.query,info_selection..args.getfield)
+        else
+            print(info_selection..args.getfield..": ",parseKeyString(selection,args.getfield))
+        end
     else
         if selection == nil then
-            qerror("Selected item is null. Invalid selection.")
+            qerror(msg)
         elseif args.query ~= nil then
-            Query(selection, args.query, 'selected-item')
+            Query(selection, args.query, info_selection)
         else
-            Query(selection, '', 'selected-item')
+            Query(selection, '', info_selection)
         end
     end
 else
