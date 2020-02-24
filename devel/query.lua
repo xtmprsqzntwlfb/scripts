@@ -1,16 +1,17 @@
 -- Query is a script useful for finding and reading values of data structure fields. Purposes will likely be exclusive to writing lua script code.
--- Written by Josh Cooper(cppcooper) on 2017-12-21, last modified: 2020-02-20
+-- Written by Josh Cooper(cppcooper) on 2017-12-21, last modified: 2020-02-23
 local utils=require('utils')
 local validArgs = utils.invert({
  'help',
  'unit',
+ 'item',
  'table',
  'query',
  'depth',
+ 'keydepth',
  'listkeys',
  'querykeys',
  'getkey',
- 'set',
  'debug'
 })
 local args = utils.processArgs({...}, validArgs)
@@ -43,10 +44,11 @@ selection options:
   These options are used to specify where the query will run,
   or specifically what key to print inside a unit.
 
-    unit <value>       - Selects the highlighted unit when no value is provided.
-                         With a value provided, _G[value] must exist.
+    unit               - Selects the highlighted unit
 
-    table <value>      - Selects the specivied table (ie. 'value').
+    item               - Selects the highlighted item.
+
+    table <value>      - Selects the specified table (ie. 'value').
                          Must use dot notation to denote sub-tables.
                          (eg. -table df.global.world)
 
@@ -62,13 +64,11 @@ query options:
                          the specified value.
 
     depth <value>      - Limits the query to the specified recursion depth.
+    keydepth <value>   - Enables recursive key searche
     listkeys           - Lists all keys in any fields matching the query.
     querykeys <value>  - Lists only keys matching the specified value.
 
 command options:
-
-    set                - *CAREFUL* You can use this to set the value of matches.
-                         Be advised there is minimal safety when using this option.
 
     help               - Prints this help information.
 
@@ -201,11 +201,17 @@ function print_key(k,v,bprint,parent,v0)
         -- kN = cN >= kN and cN or kN
         -- kN = kN >= 90 and 90 or kN
         -- f="%-"..(kN+5).."s"
-        print(space_key .. string.format("%s",key) .. tostring(v))
+        indent=""
+        for i=1,cur_keydepth do
+            indent=string.format("%s ",indent)
+        end
+        print(indent .. space_key .. string.format("%s",key) .. tostring(v))
     end
 end
 
+cur_keydepth = -1
 function print_keys(parent,v,bprint)
+    cur_keydepth = cur_keydepth + 1
     bprinted=false
     if type(v) == "table" and v._kind == "enum-type" then
         debugf(4,"keys.A")
@@ -222,10 +228,15 @@ function print_keys(parent,v,bprint)
         --crash fix: string.find(...,"userdata") it seems that the crash was from hitting some ultra-primitive type (void* ?)
             --Not the best solution, but if duct tape works, why bother with sutures....
         debugf(4,"keys.B")
-        if args.query or args.querykeys then
+        if args.query or args.querykeys or args.getkey then
+            debugf(3,"keys.B.0", v, type(v))
             for k2,v2 in safe_pairs(v) do
                 debugf(3,"keys.B.1")
                 print_key(k2,v2,bprint,parent,v)
+                if args.keydepth and tonumber(args.keydepth) and cur_keydepth < tonumber(args.keydepth) then
+                    debugf(2,"print_keys->recurse")
+                    print_keys(parent..k2,v2,false)
+                end
             end
         end
         --too much information, and it seems largely useless
@@ -235,8 +246,14 @@ function print_keys(parent,v,bprint)
         for k2,v2 in safe_pairs(v) do
             debugf(3,"keys.C.1")
             print_key(k2,v2,bprint,parent,v)
+            print("yo")
+            if args.keydepth and tonumber(args.keydepth) and cur_keydepth < tonumber(args.keydepth) then
+                debugf(2,"print_keys->recurse")
+                print_keys(parent..k2,v2,false)
+            end
         end
     end
+    cur_keydepth = cur_keydepth - 1
 end
 
 function parseTableString(str)
@@ -283,13 +300,11 @@ local selection = nil
 if args.help then
     print(help)
 elseif args.unit then
-    if _G[args.unit] ~= nil then
-        selection = _G[args.unit]
-    else
-        selection = dfhack.gui.getSelectedUnit()
-    end
+    selection = dfhack.gui.getSelectedUnit()
     if args.getkey then
+        --t=parseKeyString(selection,args.getkey)
         print("selected-unit."..args.getkey..": ",parseKeyString(selection,args.getkey))
+        Query(parseKeyString(selection,args.getkey),args.query,"selected-unit."..args.getkey)
     else
         if selection == nil then
             qerror("Selected unit is null. Invalid selection.")
@@ -305,6 +320,19 @@ elseif args.table then
         Query(t, args.query, args.table)
     else
         Query(t, '', args.table)
+    end
+elseif args.item then
+    selection = dfhack.gui.getSelectedItem()
+    if args.getkey then
+        print("selected-item."..args.getkey..": ",parseKeyString(selection,args.getkey))
+    else
+        if selection == nil then
+            qerror("Selected item is null. Invalid selection.")
+        elseif args.query ~= nil then
+            Query(selection, args.query, 'selected-item')
+        else
+            Query(selection, '', 'selected-item')
+        end
     end
 else
     print(help)
