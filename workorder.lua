@@ -674,7 +674,7 @@ calcAmountFor_MilkCreature = function ()
         end
     end
     if debug_verbose then print ("Milking jobs needed: " .. cnt) end
-    return cnt
+    return (cnt==0 and -1 or cnt)
 end
 
 -- true/false or nil if no shearable_tissue_layer with length > 0.
@@ -721,7 +721,7 @@ calcAmountFor_ShearCreature = function ()
     end
     if debug_verbose then print ("Shearing jobs needed: " .. cnt) end
 
-    return cnt
+    return (cnt==0 and -1 or cnt)
 end
 
 actions = {
