@@ -99,13 +99,14 @@ function heal(unit,resurrect,keep_corpse)
                         end
                     end
                 end
+            end
 
-                if not keep_corpse then
-                    local corpses = df.global.world.items.other.CORPSE
-                    for i = #corpses-1,0,-1 do --as:df.item_body_component
-                        if corpses[i].unit_id == unit.id then
-                            dfhack.items.remove(corpses[i])
-                        end
+            if not keep_corpse then
+                local corpses = df.global.world.items.other.CORPSE
+                for i = #corpses-1,0,-1 do
+                    local corpse = corpses[i] --as:df.item_body_component
+                    if corpse.unit_id == unit.id then
+                        dfhack.items.remove(corpse)
                     end
                 end
             end
