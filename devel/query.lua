@@ -266,7 +266,7 @@ function print_keys(parent,v,bprint)
                 end
             end
         elseif type(v) == "userdata" then
-            debugf(4,"keys.B")
+            debugf(4,"keys.B",tostring(v),type(v),v._kind)
             if args.tile then
                 --too much information, and it seems largely useless
                 --todo: figure out an even better way to prune useless info OR add option (option suggestion: -floodconsole)
@@ -289,7 +289,7 @@ function print_keys(parent,v,bprint)
                         end
                     end
                 end
-            elseif not string.find(tostring(v),"userdata") and not v._kind == "bitfield" then
+            elseif not string.find(tostring(v),"userdata") and v._kind ~= "bitfield" then
                 --crash fix: string.find(...,"userdata") it seems that the crash was from hitting some ultra-primitive type (void* ?)
                     --Not the best solution, but if duct tape works, why bother with sutures....
                 debugf(3,"keys.B.a.0", v, type(v))
