@@ -245,6 +245,13 @@ function print_key(k,v,bprint,parent,v0)
     end
 end
 
+function isDefinitelyNotHumanReadable(k,v)
+    if type(k) == "number" and (type(v) == "userdata" or type(v) == "number" or type(v) == "boolean" or type(v) == "nil") then
+        return true
+    end
+    return false
+end
+
 cur_keydepth = -1
 function print_keys(parent,v,bprint)
     cur_keydepth = cur_keydepth + 1
@@ -253,7 +260,7 @@ function print_keys(parent,v,bprint)
         if type(v) == "table" and v._kind == "enum-type" then
             debugf(4,"keys.A")
             for i,e in ipairs(v) do
-                if type(k2) == "number" and type(v2) == "number" then
+                if isDefinitelyNotHumanReadable(k2,v2) then
                     debugf(0,"keys.A.break")
                     break
                 end
@@ -266,7 +273,7 @@ function print_keys(parent,v,bprint)
                 end
             end
         elseif type(v) == "userdata" then
-            debugf(4,"keys.B",tostring(v),type(v),v._kind)
+            debugf(4,"keys.B",tostring(v),type(v))
             if args.tile then
                 --too much information, and it seems largely useless
                 --todo: figure out an even better way to prune useless info OR add option (option suggestion: -floodconsole)
@@ -294,7 +301,7 @@ function print_keys(parent,v,bprint)
                     --Not the best solution, but if duct tape works, why bother with sutures....
                 debugf(3,"keys.B.a.0", v, type(v))
                 for k2,v2 in safe_pairs(v) do
-                    if type(k2) == "number" and (type(v2) == "number" or type(v2) == "boolean") then
+                    if isDefinitelyNotHumanReadable(k2,v2) then
                         debugf(0,"keys.B.a.break")
                         break
                     end
@@ -306,7 +313,7 @@ function print_keys(parent,v,bprint)
         else
             debugf(4,"keys.C",parent,v,type(v),bprint,bprinted)
             for k2,v2 in safe_pairs(v) do
-                if type(k2) == "number" and type(v2) == "number" then
+                if isDefinitelyNotHumanReadable(k2,v2) then
                     debugf(0,"keys.C.break")
                     break
                 end
