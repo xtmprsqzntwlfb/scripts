@@ -10,6 +10,7 @@ local validArgs = utils.invert({
  'query',
  'depth',
  'keydepth',
+ 'listfields',
  'listkeys',
  'querykeys',
  'getfield',
@@ -35,6 +36,21 @@ fields and keys to help filter information out of the output.
 
 When performing table queries, use dot notation to denote sub-tables.
 The script has to parse the input string and separate each table.
+
+Note 1: This script walks recursively through data structures, some fields and keys
+ are not printed, or delved into to avoid flooding the console and to
+ avoid crashing the game and dfhack. For more information see the code.
+
+Note 2: Most of the focus was given to finding and printing useful fields/keys,
+ things most of us can probably just read and understand.
+ So situations where the data is probably not user friendly tend to be skipped,
+ but I can't deal with everything.
+
+Warning: Careful what you run, you may need to kill Dwarf Fortress before you
+ run out of memory and your computer grinds to a halt.. or you may just need
+ to sit and wait for 10 minutes for the query to finish printing. The default
+ recursion values should prevent this, but no guarantees, and if you increase
+ the defaults all bets are off.
 
 Examples:
   [DFHack]# devel/query -table df -query dead
@@ -72,31 +88,40 @@ query options:
     query <value>      - Searches the selection for fields with substrings matching
                          the specified value.
 
-    depth <value>      - Limits the query to the specified recursion depth.
-    keydepth <value>   - Enables recursive key searche
-    listkeys           - Lists all keys in any fields matching the query.
     querykeys <value>  - Lists only keys matching the specified value.
+
+    listfields         - Lists most~ fields found in the query target.
+    listkeys           - Lists most~ keys in most~ fields matching any query.
+
+    depth <value>      - Limits the field recursion depth (default: 100)
+    keydepth <value>   - Limits the key recursion depth (default: 3)
 
 command options:
 
     help               - Prints this help information.
 
 ]====]
-newvalue=nil
 depth=nil
-if args.set then
-    newvalue=tonumber(args.set)
-    if type(newvalue) ~= 'number' then
-        if args.set == 'true' then
-            newvalue=true
-        elseif args.set == 'false' then
-            newvalue=false
-        else
-            newvalue=args.set
-        end
-    end
-elseif args.depth then
+keydepth=nil
+bprintfields=(args.query or args.listfields or args.depth) and true or false
+bprintkeys=(args.querykeys or args.listkeys or args.keydepth) and true or false
+if args.depth then
     depth = tonumber(args.depth)
+    if not depth then
+        qerror(string.format("Must provide a number with -depth"))
+    end
+else
+    depth = 100
+    args.depth = depth
+end
+if args.keydepth then
+    keydepth = tonumber(args.keydepth)
+    if not keydepth then
+        qerror(string.format("Must provide a number with -keydepth"))
+    end
+else
+    keydepth = 2
+    args.keydepth = keydepth
 end
 space_field="   "
 space_key="     "
@@ -139,22 +164,15 @@ end
 
 cur_depth = -1
 N=0
-bprintfields=(args.query or args.depth)
-bprintkeys=(args.querykeys or args.listkeys or args.keydepth)
 function Query(t, query, parent)
     cur_depth = cur_depth + 1
-    if not args.depth or (depth and cur_depth <= depth) then
+    if not depth or (depth and cur_depth <= depth) then
         if not parent then
             parent = ""
         end
-        if cur_depth == 0 and (bprintkeys) then
-            if not args.query or string.find(tostring(parent), args.query) then
-                print_keys(parent,t,true)
-            end
-        end
         for k,v in safe_pairs(t) do
             -- avoid infinite recursion
-            if not tonumber(k) and (type(k) ~= "table" or args.depth) and not string.find(tostring(k), 'script') then
+            if not tonumber(k) and (type(k) ~= "table" or depth) and not string.find(tostring(k), 'script') then
                 --print(parent .. "." .. k)
                 if not string.find(parent, tostring(k)) then
                     if parent then
@@ -230,11 +248,15 @@ end
 cur_keydepth = -1
 function print_keys(parent,v,bprint)
     cur_keydepth = cur_keydepth + 1
-    if not args.keydepth or (args.keydepth and tonumber(args.keydepth) and cur_keydepth <= tonumber(args.keydepth)) then
+    if not keydepth or (keydepth and cur_keydepth <= keydepth) then
         bprinted=false
         if type(v) == "table" and v._kind == "enum-type" then
             debugf(4,"keys.A")
             for i,e in ipairs(v) do
+                if type(k2) == "number" and type(v2) == "number" then
+                    debugf(0,"keys.A.break")
+                    break
+                end
                 if not args.querykeys or string.find(tostring(v[i]), args.querykeys) then
                     if not bprinted and bprint then
                         print_field(parent,v,true)
@@ -244,16 +266,17 @@ function print_keys(parent,v,bprint)
                 end
             end
         elseif type(v) == "userdata" then
+            debugf(4,"keys.B")
             if args.tile then
                 --too much information, and it seems largely useless
                 --todo: figure out an even better way to prune useless info OR add option (option suggestion: -floodconsole)
                 if v._kind == "container" then
-                    debugf(4,"keys.B.b.0")
+                    debugf(4,"keys.B.a.0")
                     for ix,v2 in ipairs(v) do
                         if ix == x and type(v2) == "userdata" and v2._kind == "container" then
                             for iy,v3 in ipairs(v2) do
                                 if iy == y then
-                                    debugf(4,"keys.B.b.1")
+                                    debugf(4,"keys.B.a.1")
                                     if type(v3) == "userdata" then
                                         for k4,v4 in pairs(v3) do
                                             print_key(k4,v4,true,parent,v3)
@@ -265,24 +288,28 @@ function print_keys(parent,v,bprint)
                             end
                         end
                     end
-                elseif v._kind == "bitfield" then
                 end
-            elseif not string.find(tostring(v),"userdata") then
+            elseif not string.find(tostring(v),"userdata") and not v._kind == "bitfield" then
                 --crash fix: string.find(...,"userdata") it seems that the crash was from hitting some ultra-primitive type (void* ?)
                     --Not the best solution, but if duct tape works, why bother with sutures....
-                debugf(4,"keys.B")
-                if args.query or args.querykeys or args.getfield or args.keydepth then
-                    debugf(3,"keys.B.a.0", v, type(v))
-                    for k2,v2 in safe_pairs(v) do
-                        debugf(3,"keys.B.a.1")
-                        print_key(k2,v2,bprint,parent,v)
-                        print_keys(parent..k2,v2,false)
+                debugf(3,"keys.B.a.0", v, type(v))
+                for k2,v2 in safe_pairs(v) do
+                    if type(k2) == "number" and (type(v2) == "number" or type(v2) == "boolean") then
+                        debugf(0,"keys.B.a.break")
+                        break
                     end
+                    debugf(3,"keys.B.a.1")
+                    print_key(k2,v2,bprint,parent,v)
+                    print_keys(parent..k2,v2,false)
                 end
             end
         else
             debugf(4,"keys.C",parent,v,type(v),bprint,bprinted)
             for k2,v2 in safe_pairs(v) do
+                if type(k2) == "number" and type(v2) == "number" then
+                    debugf(0,"keys.C.break")
+                    break
+                end
                 debugf(3,"keys.C.1")
                 print_key(k2,v2,bprint,parent,v)
                 print_keys(parent..k2,v2,false)
