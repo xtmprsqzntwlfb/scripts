@@ -82,23 +82,25 @@ local function key_pairs(item)
         end
     end
 end
-for k in key_pairs(ref) do
-    local fsize, faddr = ref:_field(k):sizeof()
-    local foff = faddr - baseaddr
-    if offset < foff then
-        print()
-        if offset == 0 and foff == ptrsz then
-            print('(vtable)')
-            bytes_until(foff, 'vtable')
-        else
-            print('(padding)')
-            bytes_until(foff, 'padding')
+if ref._field then
+    for k in key_pairs(ref) do
+        local fsize, faddr = ref:_field(k):sizeof()
+        local foff = faddr - baseaddr
+        if offset < foff then
+            print()
+            if offset == 0 and foff == ptrsz then
+                print('(vtable)')
+                bytes_until(foff, 'vtable')
+            else
+                print('(padding)')
+                bytes_until(foff, 'padding')
+            end
         end
-    end
 
-    print()
-    print(tostring(ref:_field(k)._type) .. ' ' .. k)
-    bytes_until(foff + fsize)
+        print()
+        print(tostring(ref:_field(k)._type) .. ' ' .. k)
+        bytes_until(foff + fsize)
+    end
 end
 
 if offset < size then
