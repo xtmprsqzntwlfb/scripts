@@ -78,7 +78,7 @@ other options:
 
 ]====]
 
-local Units = df.global.world.units.all
+local Units = df.global.world.units.active
 function safe_pairs(item, keys_only)
     if keys_only then
         local mt = debug.getmetatable(item)

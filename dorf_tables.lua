@@ -90,32 +90,32 @@ end
 -- p denotes probability, always.
 local O = 0
 job_distributions = {
-    Thresholds      = { 7,  14, 21, 28, 30, 35, 42, 49, 56, 63, 70, 77, 80, 110, 1000 }, --Don't touch unless you wanna recalculate the distributions,
-    _hauler         = { O,  1,  3,  3,  O,  3,  2,  O,  4,  1,  1,  4,  O,  10,  413; cur = 0; max = nil },
-    _soldier        = { O,  1,  O,  O,  O,  1,  O,  1,  O,  1,  O,  O,  1,  4,   413; cur = 0; max = nil },
-    Miner           = { 2,  1,  O,  O,  O,  1,  O,  O,  O,  O,  2,  O,  O,  O,   10;  cur = 0; max = nil },
-    Admin           = { 1,  O,  O,  1,  O,  O,  O,  O,  O,  O,  O,  O,  O,  1,   2;   cur = 0; max = nil },
-    General         = { O,  O,  O,  1,  O,  O,  O,  O,  O,  1,  O,  O,  O,  2,   1;   cur = 0; max = nil },
-    Doctor          = { O,  1,  O,  O,  O,  O,  O,  O,  O,  O,  O,  O,  1,  1,   3;   cur = 0; max = nil },
-    Architect       = { 1,  O,  O,  O,  O,  O,  1,  O,  O,  O,  O,  O,  O,  2,   5;   cur = 0; max = nil },
+    Thresholds      = { 7,  14, 21, 28, 30, 35, 42, 49, 56, 63, 70, 77, 80, 110, 120, 200, 770 }, --Don't touch unless you wanna recalculate the distributions,
+    _hauler         = { O,  1,  3,  3,  O,  3,  2,  O,  4,  1,  1,  4,  O,  10,  O,   20,  70;   cur = 0; max = nil },
+    _soldier        = { O,  1,  O,  O,  O,  1,  O,  1,  O,  1,  O,  O,  1,  4,   3,   10,  40;   cur = 0; max = nil },
+    Miner           = { 2,  1,  O,  O,  O,  1,  O,  O,  O,  O,  2,  O,  O,  O,   7,   5,   80;   cur = 0; max = nil },
+    Admin           = { 1,  O,  O,  1,  O,  O,  O,  O,  O,  O,  O,  O,  O,  1,   O,   2,   30;   cur = 0; max = nil },
+    General         = { O,  O,  O,  1,  O,  O,  O,  O,  O,  1,  O,  O,  O,  2,   O,   1,   30;   cur = 0; max = nil },
+    Doctor          = { O,  1,  O,  O,  O,  O,  O,  O,  O,  O,  O,  O,  1,  1,   O,   2,   30;   cur = 0; max = nil },
+    Architect       = { 1,  O,  O,  O,  O,  O,  1,  O,  O,  O,  O,  O,  O,  2,   O,   2,   20;   cur = 0; max = nil },
 
-    Farmer          = { 1,  O,  O,  O,  O,  O,  1,  O,  1,  1,  O,  O,  O,  2,   2;   cur = 0; max = nil },
-    Rancher         = { O,  1,  O,  O,  O,  O,  O,  O,  O,  1,  O,  O,  O,  O,   2;   cur = 0; max = nil },
-    Brewer          = { 1,  O,  O,  O,  O,  O,  O,  O,  O,  1,  O,  O,  O,  1,   5;   cur = 0; max = nil },
-    Woodworker      = { 1,  O,  O,  O,  O,  O,  O,  1,  O,  O,  O,  O,  O,  O,   2;   cur = 0; max = nil },
-    Stoneworker     = { O,  1,  O,  O,  O,  O,  O,  1,  O,  O,  2,  O,  O,  O,   2;   cur = 0; max = nil },
-    Smelter         = { O,  1,  O,  O,  O,  O,  1,  O,  O,  O,  O,  O,  O,  1,   2;   cur = 0; max = nil },
-    Blacksmith      = { O,  O,  1,  O,  O,  O,  O,  O,  O,  O,  O,  1,  O,  1,   2;   cur = 0; max = nil },
+    Farmer          = { 1,  O,  O,  O,  O,  O,  1,  O,  1,  1,  O,  O,  O,  2,   O,   2,   30;   cur = 0; max = nil },
+    Rancher         = { O,  1,  O,  O,  O,  O,  O,  O,  O,  1,  O,  O,  O,  O,   O,   2,   30;   cur = 0; max = nil },
+    Brewer          = { 1,  O,  O,  O,  O,  O,  O,  O,  O,  1,  O,  O,  O,  1,   O,   3,   30;   cur = 0; max = nil },
+    Woodworker      = { 1,  O,  O,  O,  O,  O,  O,  1,  O,  O,  O,  O,  O,  O,   O,   1,   50;   cur = 0; max = nil },
+    Stoneworker     = { O,  1,  O,  O,  O,  O,  O,  1,  O,  O,  2,  O,  O,  O,   O,   5,   50;   cur = 0; max = nil },
+    Smelter         = { O,  1,  O,  O,  O,  O,  1,  O,  O,  O,  O,  O,  O,  1,   O,   5,   80;   cur = 0; max = nil },
+    Blacksmith      = { O,  O,  1,  O,  O,  O,  O,  O,  O,  O,  O,  1,  O,  1,   O,   5,   50;   cur = 0; max = nil },
 
-    Artison         = { O,  O,  O,  1,  O,  O,  O,  2,  O,  O,  2,  2,  O,  3,   5;   cur = 0; max = nil },
-    Jeweler         = { O,  O,  O,  O,  1,  O,  O,  1,  O,  O,  O,  O,  O,  1,   1;   cur = 0; max = nil },
-    Textileworker   = { O,  O,  O,  O,  1,  O,  1,  O,  O,  O,  O,  O,  O,  O,   1;   cur = 0; max = nil },
+    Artison         = { O,  O,  O,  1,  O,  O,  O,  2,  O,  O,  2,  2,  O,  3,   O,   2,   40;   cur = 0; max = nil },
+    Jeweler         = { O,  O,  O,  O,  1,  O,  O,  1,  O,  O,  O,  O,  O,  1,   O,   2,   30;   cur = 0; max = nil },
+    Textileworker   = { O,  O,  O,  O,  1,  O,  1,  O,  O,  O,  O,  O,  O,  O,   O,   5,   20;   cur = 0; max = nil },
 
-    Hunter          = { O,  O,  1,  O,  O,  O,  O,  O,  1,  O,  O,  O,  O,  O,   2;   cur = 0; max = nil },
-    Fisher          = { O,  O,  1,  O,  O,  O,  1,  O,  1,  O,  O,  O,  O,  O,   2;   cur = 0; max = nil },
-    Butcher         = { O,  O,  1,  O,  O,  O,  O,  O,  O,  O,  O,  O,  O,  O,   2;   cur = 0; max = nil },
+    Hunter          = { O,  O,  1,  O,  O,  O,  O,  O,  1,  O,  O,  O,  O,  O,   O,   2,   20;   cur = 0; max = nil },
+    Fisher          = { O,  O,  1,  O,  O,  O,  1,  O,  1,  O,  O,  O,  O,  O,   O,   1,   20;   cur = 0; max = nil },
+    Butcher         = { O,  O,  1,  O,  O,  O,  O,  O,  O,  O,  O,  O,  O,  O,   O,   2,   20;   cur = 0; max = nil },
 
-    Engineer        = { O,  O,  O,  1,  O,  O,  O,  1,  O,  1,  O,  O,  1,  1,   3;   cur = 0; max = nil }
+    Engineer        = { O,  O,  O,  1,  O,  O,  O,  1,  O,  1,  O,  O,  1,  1,   O,   1,   30;   cur = 0; max = nil }
 }
 --[[
 Stat Rolling:
