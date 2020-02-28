@@ -88,24 +88,25 @@ function heal(unit,resurrect,keep_corpse)
                 hf.died_year = -1
                 hf.died_seconds = -1
                 hf.flags.ghost = false
+            end
 
-                if dfhack.world.isFortressMode() and isFortCivMember(unit) then
-                    unit.flags2.resident = false -- appears to be set to true for dead citizens in a reclaimed fortress, which causes them to be marked as hostile when resurrected
+            if dfhack.world.isFortressMode() and isFortCivMember(unit) then
+                unit.flags2.resident = false -- appears to be set to true for dead citizens in a reclaimed fortress, which causes them to be marked as hostile when resurrected
 
-                    local deadCitizens = df.global.ui.main.dead_citizens
-                    for i = #deadCitizens-1,0,-1 do
-                        if deadCitizens[i].unit_id == unit.id then
-                            deadCitizens:erase(i)
-                        end
+                local deadCitizens = df.global.ui.main.dead_citizens
+                for i = #deadCitizens-1,0,-1 do
+                    if deadCitizens[i].unit_id == unit.id then
+                        deadCitizens:erase(i)
                     end
                 end
+            end
 
-                if not keep_corpse then
-                    local corpses = df.global.world.items.other.CORPSE
-                    for i = #corpses-1,0,-1 do --as:df.item_body_component
-                        if corpses[i].unit_id == unit.id then
-                            dfhack.items.remove(corpses[i])
-                        end
+            if not keep_corpse then
+                local corpses = df.global.world.items.other.CORPSE
+                for i = #corpses-1,0,-1 do
+                    local corpse = corpses[i] --as:df.item_body_component
+                    if corpse.unit_id == unit.id then
+                        dfhack.items.remove(corpse)
                     end
                 end
             end
