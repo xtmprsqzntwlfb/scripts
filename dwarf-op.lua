@@ -1,5 +1,5 @@
 -- Optimizes dwarves for labor. Very flexible. Very robust. Check the help.
--- written by josh cooper(cppcooper) [created: Dec. 2017 | last modified: 2020-02-23]
+-- written by josh cooper(cppcooper) [created: Dec. 2017 | last modified: 2020-03-01]
 
 print("v1.4")
 utils ={}

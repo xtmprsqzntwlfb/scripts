@@ -1,5 +1,5 @@
 -- animalcontrol helps manage the butchery and gelding of animals
--- Written by Josh Cooper(cppcooper) on 2020-02-18, last modified: 2020-02-19
+-- Written by Josh Cooper(cppcooper) on 2020-02-18, last modified: 2020-03-01
 local utils=require('utils')
 local validArgs = utils.invert({
  'all',
@@ -79,6 +79,22 @@ other options:
 ]====]
 
 local Units = df.global.world.units.active
+
+if args.race and not tonumber(args.race) then
+    args.race=string.upper(args.race)
+    local raceID
+    for i,c in ipairs(df.global.world.raws.creatures.all) do
+      if c.creature_id == args.race then
+        raceID = i
+        break
+      end
+    end
+    if not raceID then
+      qerror('Invalid race: ' .. args.race)
+    end
+    args.race = raceID
+end
+
 function safe_pairs(item, keys_only)
     if keys_only then
         local mt = debug.getmetatable(item)
