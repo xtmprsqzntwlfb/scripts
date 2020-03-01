@@ -43,6 +43,7 @@ dwarf-op
 ========
 Dwarf optimization is a script of several hundred lines, designed to provide a robust solution
 to hacking dwarves to be better at work. The primary use case is as follows:
+
  1) take a dwarf
  2) delete their ability to do anything, even walk (job skills, phyiscal/mental attributes)
  3) load the job distribution table from dorf_tables
