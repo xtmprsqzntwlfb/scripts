@@ -79,7 +79,7 @@ Examples:
  select options:
 
    (prepend the letter p to any option to include protected dwarves in selection)
-    (none)      - same as typing `-select highlighted`
+    (none)      - same as typing '-select highlighted'
     all         - selects all dwarves.
 
     highlighted - selects only the in-game highlighted dwarf (from any screen).
@@ -109,13 +109,13 @@ Examples:
     jobs        - selects any dwarves with the listed jobs. This will only match with custom
                   professions, or optimized dwarves (for optimized dwarves see: jobs in
                   dorf_tables.lua).
-                  usage `-select [ jobs job1 job2 etc. ]` eg. `-select [ jobs Miner Trader ]`
+                  usage '-select [ jobs job1 job2 etc. ]' eg. '-select [ jobs Miner Trader ]'
 
     waves       - selects dwarves from the specified migration waves. Waves are enumerated
                   starting at 0 and increasing by 1 with each wave. The waves go by season and
                   year and thus should match what you see in Dwarf Therapist.
                   Note: I recommend you -show the selected dwarves before modifying.
-                  usage `-select [ waves 0 1 3 5 7 13 ]`
+                  usage '-select [ waves 0 1 3 5 7 13 ]'
 
 -~~~~~~~~~~~
  general commands:
@@ -152,15 +152,15 @@ Examples:
                          job according to the job_distribution table in dorf_tables.lua
 
     applyjobs          - applies the listed jobs to the selected dwarves. list format:
-                         `[ job1 job2 jobn ]` brackets and jobs all separated by spaces.
+                         '[ job1 job2 jobn ]' brackets and jobs all separated by spaces.
                          see jobs table in dorf_tables.lua for available jobs."
 
     applyprofessions   - applies the listed professions to the selected dwarves. list format:
-                         `[ prof1 prof2 profn ]` brackets and professions all separated by spaces.
+                         '[ prof1 prof2 profn ]' brackets and professions all separated by spaces.
                          see professions table in dorf_tables.lua for available professions.
 
     applytypes         - applies the listed types to the selected dwarves. list format:
-                         `[ type1 type2 typen ]` brackets and types all separated by spaces.
+                         '[ type1 type2 typen ]' brackets and types all separated by spaces.
                          see dwf_types table in dorf_tables.lua for available types.
 
     renamejob <name>   - renames the selected dwarves custom profession to whatever is specified
