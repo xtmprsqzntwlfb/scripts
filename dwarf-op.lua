@@ -1,23 +1,7 @@
--- Optimize dwarves for fort-mode work. Buff(read: pimp-out) your dwarves and make your life easier in managing labours.
+-- Optimizes dwarves for labor. Very flexible. Very robust. Check the help.
 -- written by josh cooper(cppcooper) [created: Dec. 2017 | last modified: 2020-02-23]
---[====[
-dwopit
-========
-Optimize dwarves for fort-mode work.
-The core function takes dwarves and allocates a "job" to each dwarf.
-This decision takes into account current counts for each job, in
-relation to how many should be allocated based on the working population
-size. Jobs involve required professions, tertiary professions (may or
-may not be applied), and types which come along with attribute buffs
-and characteristics (eg. strength, speed, focus, dodging, etc)
 
-Usage: ``dwopit -help`` or ``dwopit -select <sel-opt> -<command> <args>``
-
-:help:               Highly detailed help documentation.
-:select <option>:    Indicates the next parameter will be indicate which dwarves to select
-]====]
-
-print("v1.3.3")
+print("v1.4")
 utils ={}
 utils = require('utils')
 json = require('json')
@@ -55,20 +39,40 @@ local args = utils.processArgs({...}, validArgs)
 
 local help = [====[
 
-dwopit script
-=============
-To use this script, you need to select a subset of your dwarves. Then run commands on those dwarves.
+dwarf-op
+========
+Dwarf optimization is a script of several hundred lines, designed to provide a robust solution
+to hacking dwarves to be better at work. The primary use case is as follows:
+ 1) take a dwarf
+ 2) delete their ability to do anything, even walk (job skills, phyiscal/mental attributes)
+ 3) load the job distribution table from dorf_tables
+ 4) update values in said table so the table accurately represents the distribution of your dwarves
+ 5) pick an under-represented job from the table
+ 6) apply the job to the dwarf, which means:
+     -apply professions
+     -provide custom profession name
+     -add job skills
+     -apply dwarf types
+     -etc.
+
+Beyond this use case of optimizing dwarves according to the tables in dorf_tables, this script
+offers up each function in the process as an end in of itself if you so chose. I mean you
+almost certainly had to scroll past all the argument options to read this.
+
+The basics to use this script:
+You need to select a subset of your dwarves.
+Then run commands on those dwarves.
 Please report any bugs or crashes you experience here [https://github.com/cppcooper/dfhack-scripts/issues]
 
-usage: dwopit [-help|-select]
-               -select <sel-opt> -<command> <args>
+usage: dwarf-op [-help|-select]
+                       -select <sel-opt> -<command> <args>
 
 Examples:
-  [DFHack]# dwopit -select [ jobs Trader Miner Leader Rancher ] -applytype adaptable
-  [DFHack]# dwopit -select all -clear -optimize
-  [DFHack]# dwopit -select pall -clear -optimize
-  [DFHack]# dwopit -select optimized -reroll
-  [DFHack]# dwopit -select named -reroll inclusive -applyprofession RECRUIT
+  [DFHack]# dwarf-op -select [ jobs Trader Miner Leader Rancher ] -applytype adaptable
+  [DFHack]# dwarf-op -select all -clear -optimize
+  [DFHack]# dwarf-op -select pall -clear -optimize
+  [DFHack]# dwarf-op -select optimized -reroll
+  [DFHack]# dwarf-op -select named -reroll inclusive -applyprofession RECRUIT
 
 -~~~~~~~~~~~
  select options:
@@ -165,8 +169,6 @@ Examples:
     
       help - displays this help information.
       debug - enables debugging print lines
-
-No dorfs were harmed in the building of this help screen.
 
 ]====]
 
@@ -1159,17 +1161,18 @@ end
 
 function ShowHelp()
     print(help)
+    print("No dorfs were harmed in the building of this help screen.")
 end
 
 function ShowHint()
-    print("\n============\ndwopit script")
+    print("\n============\ndwarf-op script")
     print("~~~~~~~~~~~~")
     print("To use this script, you need to select a subset of your dwarves. Then run commands on those dwarves.")
     print("Examples:")
-    print("  [DFHack]# dwopit -select [ jobs Trader Miner Leader Rancher ] -applytype adaptable")
-    print("  [DFHack]# dwopit -select all -clear -optimize")
-    print("  [DFHack]# dwopit -select optimized -reroll")
-    print("  [DFHack]# dwopit -select Urist -reroll inclusive -applyprofession RECRUIT")
+    print("  [DFHack]# dwarf-op -select [ jobs Trader Miner Leader Rancher ] -applytype adaptable")
+    print("  [DFHack]# dwarf-op -select all -clear -optimize")
+    print("  [DFHack]# dwarf-op -select optimized -reroll")
+    print("  [DFHack]# dwarf-op -select Urist -reroll inclusive -applyprofession RECRUIT")
 end
 
 local ActiveUnits = df.global.world.units.active
