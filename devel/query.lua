@@ -176,35 +176,45 @@ function Query(t, query, parent)
                 --print(parent .. "." .. k)
                 if not string.find(parent, tostring(k)) then
                     if parent then
-                        Query(v, query, parent .. "." .. k)
+                        Query(v, query, parent .. "." .. tostring(k))
                     else
                         Query(v, query, k)
                     end
                 end
-                debugf(6,"main",parent,k,args.query)
-                if not args.query or string.find(tostring(k), args.query) then
-                    debugf(5,"main",parent,k,args.query)
-                    if bprintfields and not args.querykeys then
-                        debugf(5,"main->print_field")
-                        print_field(string.format("%s.%s",parent,k),v,true)
-                        if bprintkeys then
-                            debugf(5,"main->print_keys (without parents)")
-                            print_keys(string.format("%s.%s",parent,k),v,false)
-                        end
-                    elseif bprintkeys then
-                        debugf(5,"main->print_keys (with parents)")
-                        if not (args.query or args.querykeys) then
-                            print_field(string.format("%s.%s",parent,k),v,true)
-                            print_keys(string.format("%s.%s",parent,k),v,false)
-                        else
-                            print_keys(string.format("%s.%s",parent,k),v,true)
-                        end
-                    else
-                        qerror("You either forgot to provide a query of some form, or there is malformed logic at play.")
+            else
+                if not tonumber(k) then
+                    debugf(4,"Query blocked, queried field was not a number")
+                elseif (type(k) ~= "table" or depth) then
+                    debugf(4,"Query blocked, queried field was not a table")
+                elseif not string.find(tostring(k), 'script') then
+                    debugf(4,"Query blocked, queried field was a script")
+                end
+            end
+            debugf(6,"main",parent,k,args.query)
+            if not args.query or string.find(tostring(k), args.query) then
+                debugf(5,"main",parent,tostring(k),args.query)
+                if bprintfields and not args.querykeys then
+                    debugf(5,"main->print_field")
+                    print_field(string.format("%s.%s",parent,tostring(k)),v,true)
+                    if bprintkeys then
+                        debugf(5,"main->print_keys (without parents)")
+                        print_keys(string.format("%s.%s",parent,tostring(k)),v,false)
                     end
+                elseif bprintkeys then
+                    debugf(5,"main->print_keys (with parents)")
+                    if not (args.query or args.querykeys) then
+                        print_field(string.format("%s.%s",parent,tostring(k)),v,true)
+                        print_keys(string.format("%s.%s",parent,tostring(k)),v,false)
+                    else
+                        print_keys(string.format("%s.%s",parent,tostring(k)),v,true)
+                    end
+                else
+                    qerror("You either forgot to provide a query of some form, or there is malformed logic at play.")
                 end
             end
         end
+    else
+        debugf(4,"Query blocked, max depth reached")
     end
     cur_depth = cur_depth - 1
 end
@@ -213,7 +223,7 @@ function print_field(field,v,ignoretype)
     debugf(5,"print_field")
     if ignoretype or not (type(v) == "userdata") then
         --print("Field","."..field)
-        field=string.format("%s: ",field)
+        field=string.format("%s: ",tostring(field))
         cN=string.len(field)
         fN = cN >= fN and cN or fN
         fN = fN >= 90 and 90 or fN
@@ -226,13 +236,13 @@ bprinted=false
 function print_key(k,v,bprint,parent,v0)
     debugf(3,"print_key")
     if not args.querykeys or string.find(tostring(k), args.querykeys) or string.find(tostring(parent), args.querykeys) then
-        debugf(2,k,v,bprint,parent,v0)
+        debugf(2,tostring(k),v,bprint,parent,v0)
         if not bprinted and bprint then
             debugf(1,"print_key->print_field")
             print_field(parent,v0,true)
             bprinted=true
         end
-        key=string.format("%s: ",k)
+        key=string.format("%s: ",tostring(k))
         -- cN=string.len(key)
         -- kN = cN >= kN and cN or kN
         -- kN = kN >= 90 and 90 or kN
@@ -307,7 +317,7 @@ function print_keys(parent,v,bprint)
                     end
                     debugf(3,"keys.B.a.1")
                     print_key(k2,v2,bprint,parent,v)
-                    print_keys(parent..k2,v2,false)
+                    print_keys(parent..tostring(k2),v2,false)
                 end
             end
         else
@@ -319,7 +329,7 @@ function print_keys(parent,v,bprint)
                 end
                 debugf(3,"keys.C.1")
                 print_key(k2,v2,bprint,parent,v)
-                print_keys(parent..k2,v2,false)
+                print_keys(parent..tostring(k2),v2,false)
             end
         end
     end
