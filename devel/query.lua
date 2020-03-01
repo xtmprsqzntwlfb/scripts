@@ -14,6 +14,7 @@ local validArgs = utils.invert({
  'listkeys',
  'querykeys',
  'getfield',
+ 'getkey',
  'debug'
 })
 local args = utils.processArgs({...}, validArgs)
@@ -93,8 +94,8 @@ query options:
     listfields         - Lists most~ fields found in the query target.
     listkeys           - Lists most~ keys in most~ fields matching any query.
 
-    depth <value>      - Limits the field recursion depth (default: 100)
-    keydepth <value>   - Limits the key recursion depth (default: 3)
+    depth <value>      - Limits the field recursion depth (default: 10)
+    keydepth <value>   - Limits the key recursion depth (default: 2)
 
 command options:
 
@@ -111,7 +112,7 @@ if args.depth then
         qerror(string.format("Must provide a number with -depth"))
     end
 else
-    depth = 100
+    depth = 10
     args.depth = depth
 end
 if args.keydepth then
@@ -170,6 +171,10 @@ function Query(t, query, parent)
         if not parent then
             parent = ""
         end
+        debugf(7,"main",parent,t)
+        if cur_depth == 0 and bprintkeys then
+            print_keys(parent,t,true)
+        end
         for k,v in safe_pairs(t) do
             -- avoid infinite recursion
             if not tonumber(k) and (type(k) ~= "table" or depth) and not string.find(tostring(k), 'script') then
@@ -190,7 +195,7 @@ function Query(t, query, parent)
                     debugf(4,"Query blocked, queried field was a script")
                 end
             end
-            debugf(6,"main",parent,k,args.query)
+            debugf(6,"main.loop",parent,k,args.query)
             if not args.query or string.find(tostring(k), args.query) then
                 debugf(5,"main",parent,tostring(k),args.query)
                 if bprintfields and not args.querykeys then
@@ -274,7 +279,7 @@ function print_keys(parent,v,bprint)
                     debugf(0,"keys.A.break")
                     break
                 end
-                if not args.querykeys or string.find(tostring(v[i]), args.querykeys) then
+                if not args.querykeys or string.find(tostring(v[i]), args.querykeys) or i == tonumber(args.querykeys) then
                     if not bprinted and bprint then
                         print_field(parent,v,true)
                         bprinted=true
