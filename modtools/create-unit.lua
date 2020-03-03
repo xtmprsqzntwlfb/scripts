@@ -578,11 +578,11 @@ function setAge(unit, age)
 -- Turn into a child or baby if appropriate:
   local getAge = age or dfhack.units.getAge(unit,true)
   local cr = df.creature_raw.find(unit.race).caste[unit.caste]
-  if cr.flags.BABY and (getAge < cr.misc.baby_age) then
+  if cr.flags.HAS_BABYSTATE and (getAge < cr.misc.baby_age) then
     unit.profession = df.profession.BABY
     --unit.profession2 = df.profession.BABY
     unit.mood = df.mood_type.Baby
-  elseif cr.flags.CHILD and (getAge < cr.misc.child_age) then
+  elseif cr.flags.HAS_CHILDSTATE and (getAge < cr.misc.child_age) then
     unit.profession = df.profession.CHILD
     --unit.profession2 = df.profession.CHILD
   end
@@ -602,8 +602,8 @@ end
 
 function domesticateUnit(unit)
   -- If a friendly animal, make it domesticated.  From Boltgun & Dirst
-  local caste = df.creature_raw.find(unit.race).caste[unit.caste]
-  if not(caste.flags.CAN_SPEAK and caste.flags.CAN_LEARN) then
+  local casteFlags = unit.enemy.caste_flags
+  if not(casteFlags.CAN_SPEAK and casteFlags.CAN_LEARN) then
     -- Fix friendly animals (from Boltgun)
     unit.flags2.resident = false
     unit.population_id = -1
@@ -620,11 +620,11 @@ function domesticateUnit(unit)
 end
 
 function wildUnit(unit)
-  local caste = df.creature_raw.find(unit.race).caste[unit.caste]
+  local casteFlags = unit.enemy.caste_flags
   -- x = df.global.world.world_data.active_site[0].pos.x
   -- y = df.global.world.world_data.active_site[0].pos.y
   -- region = df.global.map.map_blocks[df.global.map.x_count_block*x+y]
-  if not(caste.flags.CAN_SPEAK and caste.flags.CAN_LEARN) then
+  if not(casteFlags.CAN_SPEAK and casteFlags.CAN_LEARN) then
     if #df.global.world.world_data.active_site > 0 then -- empty in adventure mode
       unit.animal.population.region_x = df.global.world.world_data.active_site[0].pos.x
       unit.animal.population.region_y = df.global.world.world_data.active_site[0].pos.y
@@ -643,7 +643,7 @@ function enableDefaultLabors(unit)
   if unit.profession == df.profession.BABY or unit.profession == df.profession.CHILD then
     return
   end
-  if df.creature_raw.find(unit.race).caste[unit.caste].flags.CAN_LEARN then
+  if unit.enemy.caste_flags.CAN_LEARN then
     local labors = unit.status.labors
     labors.HAUL_STONE = true
     labors.HAUL_WOOD = true
