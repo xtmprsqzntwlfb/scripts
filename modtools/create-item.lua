@@ -44,6 +44,8 @@ local validArgs = utils.invert({
  'item',
 -- 'creature',
 -- 'caste',
+ 'leftHand',
+ 'rightHand',
  'matchingGloves',
  'matchingShoes',
  'quality'
