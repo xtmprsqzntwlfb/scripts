@@ -172,7 +172,7 @@ function Query(t, query, parent)
             parent = ""
         end
         debugf(7,"main",parent,t)
-        if cur_depth == 0 and bprintkeys then
+        if cur_depth == 0 and bprintkeys and not args.query then
             print_keys(parent,t,true)
         end
         for k,v in safe_pairs(t) do
@@ -196,6 +196,7 @@ function Query(t, query, parent)
                 end
             end
             debugf(6,"main.loop",parent,k,args.query)
+            bprinted=false
             if not args.query or string.find(tostring(k), args.query) then
                 debugf(5,"main",parent,tostring(k),args.query)
                 if bprintfields and not args.querykeys then
@@ -206,11 +207,13 @@ function Query(t, query, parent)
                         print_keys(string.format("%s.%s",parent,tostring(k)),v,false)
                     end
                 elseif bprintkeys then
-                    debugf(5,"main->print_keys (with parents)")
                     if not (args.query or args.querykeys) then
+                        debugf(5,"main->print_field")
                         print_field(string.format("%s.%s",parent,tostring(k)),v,true)
+                        debugf(5,"main->print_keys (without parents)")
                         print_keys(string.format("%s.%s",parent,tostring(k)),v,false)
                     else
+                        debugf(5,"main->print_keys (with parents)")
                         print_keys(string.format("%s.%s",parent,tostring(k)),v,true)
                     end
                 else
@@ -271,7 +274,6 @@ cur_keydepth = -1
 function print_keys(parent,v,bprint)
     cur_keydepth = cur_keydepth + 1
     if not keydepth or (keydepth and cur_keydepth <= keydepth) then
-        bprinted=false
         if type(v) == "table" and v._kind == "enum-type" then
             debugf(4,"keys.A")
             for i,e in ipairs(v) do
@@ -322,7 +324,7 @@ function print_keys(parent,v,bprint)
                     end
                     debugf(3,"keys.B.a.1")
                     print_key(k2,v2,bprint,parent,v)
-                    print_keys(parent..tostring(k2),v2,false)
+                    print_keys(parent.."."..tostring(k2),v2,bprint)
                 end
             end
         else
