@@ -15,6 +15,7 @@ local validArgs = utils.invert({
  'querykeys',
  'getfield',
  'getkey',
+ 'setkey',
  'debug'
 })
 local args = utils.processArgs({...}, validArgs)
@@ -124,6 +125,13 @@ else
     keydepth = 2
     args.keydepth = keydepth
 end
+newkeyvalue=nil
+if args.setkey == "true" then
+    newkeyvalue=true
+elseif args.setkey == "false" then
+    newkeyvalue=false
+end
+
 space_field="   "
 space_key="     "
 fN=0
@@ -171,7 +179,7 @@ function Query(t, query, parent)
         if not parent then
             parent = ""
         end
-        debugf(7,"main",parent,t)
+        debugf(0,"main.begin",parent,t)
         if cur_depth == 0 and bprintkeys and not args.query then
             print_keys(parent,t,true)
         end
@@ -188,32 +196,32 @@ function Query(t, query, parent)
                 end
             else
                 if not tonumber(k) then
-                    debugf(4,"Query blocked, queried field was not a number")
+                    debugf(5,"Query blocked, queried field was not a number")
                 elseif (type(k) ~= "table" or depth) then
-                    debugf(4,"Query blocked, queried field was not a table")
+                    debugf(5,"Query blocked, queried field was not a table")
                 elseif not string.find(tostring(k), 'script') then
-                    debugf(4,"Query blocked, queried field was a script")
+                    debugf(5,"Query blocked, queried field was a script")
                 end
             end
-            debugf(6,"main.loop",parent,k,args.query)
+            debugf(5,"main.loop",parent,k,args.query)
             bprinted=false
             if not args.query or string.find(tostring(k), args.query) then
-                debugf(5,"main",parent,tostring(k),args.query)
+                debugf(1,"main.loop.print-logic",parent,tostring(k),args.query)
                 if bprintfields and not args.querykeys then
-                    debugf(5,"main->print_field")
+                    debugf(1,"main->print_field")
                     print_field(string.format("%s.%s",parent,tostring(k)),v,true)
                     if bprintkeys then
-                        debugf(5,"main->print_keys (without parents)")
+                        debugf(1,"main->print_keys (without parents)")
                         print_keys(string.format("%s.%s",parent,tostring(k)),v,false)
                     end
                 elseif bprintkeys then
                     if not (args.query or args.querykeys) then
-                        debugf(5,"main->print_field")
+                        debugf(1,"main->print_field")
                         print_field(string.format("%s.%s",parent,tostring(k)),v,true)
-                        debugf(5,"main->print_keys (without parents)")
+                        debugf(1,"main->print_keys (without parents)")
                         print_keys(string.format("%s.%s",parent,tostring(k)),v,false)
                     else
-                        debugf(5,"main->print_keys (with parents)")
+                        debugf(1,"main->print_keys (with parents)")
                         print_keys(string.format("%s.%s",parent,tostring(k)),v,true)
                     end
                 else
@@ -222,13 +230,13 @@ function Query(t, query, parent)
             end
         end
     else
-        debugf(4,"Query blocked, max depth reached")
+        debugf(5,"Query blocked, max depth reached")
     end
     cur_depth = cur_depth - 1
 end
 
 function print_field(field,v,ignoretype)
-    debugf(5,"print_field")
+    debugf(3,"print_field")
     if ignoretype or not (type(v) == "userdata") then
         --print("Field","."..field)
         field=string.format("%s: ",tostring(field))
@@ -244,11 +252,24 @@ bprinted=false
 function print_key(k,v,bprint,parent,v0)
     debugf(3,"print_key")
     if not args.querykeys or string.find(tostring(k), args.querykeys) or string.find(tostring(parent), args.querykeys) then
-        debugf(2,tostring(k),v,bprint,parent,v0)
+        debugf(4,tostring(k),v,bprint,parent,v0)
         if not bprinted and bprint then
-            debugf(1,"print_key->print_field")
+            debugf(2,"print_key->print_field")
             print_field(parent,v0,true)
             bprinted=true
+        end
+        if args.setkey then
+            key_type=type(v)
+            if key_type == "number" and tonumber(args.setkey) then
+                v0[k]=tonumber(args.setkey)
+                v=v0[k]
+            elseif key_type == "boolean" and newkeyvalue then
+                v0[k]=newkeyvalue
+                v=v0[k]
+            elseif key_type == "string" then
+                v0[k]=args.setkey
+                v=v0[k]
+            end
         end
         key=string.format("%s: ",tostring(k))
         -- cN=string.len(key)
@@ -275,10 +296,10 @@ function print_keys(parent,v,bprint)
     cur_keydepth = cur_keydepth + 1
     if not keydepth or (keydepth and cur_keydepth <= keydepth) then
         if type(v) == "table" and v._kind == "enum-type" then
-            debugf(4,"keys.A")
+            debugf(2,"keys.A")
             for i,e in ipairs(v) do
                 if isDefinitelyNotHumanReadable(k2,v2) then
-                    debugf(0,"keys.A.break")
+                    debugf(5,"keys.A.break")
                     break
                 end
                 if not args.querykeys or string.find(tostring(v[i]), args.querykeys) or i == tonumber(args.querykeys) then
@@ -290,17 +311,17 @@ function print_keys(parent,v,bprint)
                 end
             end
         elseif type(v) == "userdata" then
-            debugf(4,"keys.B",tostring(v),type(v))
+            debugf(2,"keys.B",tostring(v),type(v))
             if args.tile then
                 --too much information, and it seems largely useless
                 --todo: figure out an even better way to prune useless info OR add option (option suggestion: -floodconsole)
                 if v._kind == "container" then
-                    debugf(4,"keys.B.a.0")
+                    debugf(3,"keys.B.a.0")
                     for ix,v2 in ipairs(v) do
                         if ix == x and type(v2) == "userdata" and v2._kind == "container" then
                             for iy,v3 in ipairs(v2) do
                                 if iy == y then
-                                    debugf(4,"keys.B.a.1")
+                                    debugf(3,"keys.B.a.1")
                                     if type(v3) == "userdata" then
                                         for k4,v4 in pairs(v3) do
                                             print_key(k4,v4,true,parent,v3)
@@ -328,10 +349,10 @@ function print_keys(parent,v,bprint)
                 end
             end
         else
-            debugf(4,"keys.C",parent,v,type(v),bprint,bprinted)
+            debugf(2,"keys.C",parent,v,type(v),bprint,bprinted)
             for k2,v2 in safe_pairs(v) do
                 if isDefinitelyNotHumanReadable(k2,v2) then
-                    debugf(0,"keys.C.break")
+                    debugf(5,"keys.C.break")
                     break
                 end
                 debugf(3,"keys.C.1")
