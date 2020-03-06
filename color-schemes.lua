@@ -889,7 +889,9 @@ default_cmd:command()
     :argument()
         :name("name"):description("Color scheme name")
 
-local result = parser:parse({...})
+local args = {...}
+if #args == 0 then print(parser:help()) return _ENV end
+local result = parser:parse(args)
 -- result table isn't used here since logic is inside parsing actions
 
 return _ENV
