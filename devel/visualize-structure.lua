@@ -48,12 +48,24 @@ end
 
 print(ref._type)
 
+local expected_padding_byte = 0xd2
+
+for _, g in pairs(df.global) do
+    if type(g) == 'userdata' then
+        local global_size, global_start = g:sizeof()
+        if baseaddr >= global_start and baseaddr < global_start + global_size then
+            expected_padding_byte = 0
+            break
+        end
+    end
+end
+
 local byteptr = df.reinterpret_cast('uint8_t', baseaddr)
 local offset = 0
 local function bytes_until(target, expect)
     while offset < target do
         if expect == 'padding' then
-            if byteptr:_displace(offset).value == 0xd2 then
+            if byteptr:_displace(offset).value == expected_padding_byte then
                 dfhack.color(COLOR_DARKGREY)
             else
                 dfhack.color(COLOR_LIGHTRED)
