@@ -57,7 +57,7 @@ function namescr:init()
     elseif df.global.ui_advmode.menu == df.ui_advmode_menu.Look then
         local t_look = df.global.ui_look_list.items[df.global.ui_look_cursor]
         if t_look.type == df.ui_look_list.T_items.T_type.Unit then
-            trg = t_look.unit --luacheck: retype
+            trg = t_look.data.Unit --luacheck: retype
         end
     else
         qerror('Could not find valid target')
