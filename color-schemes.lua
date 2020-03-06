@@ -758,7 +758,7 @@ function Parser:help()
         if value then
             help_format = help_format .. item.format
             local value_str
-            if type(value) == "table" then 
+            if type(value) == "table" then
                 value_str = "   " .. concat(value, tostring, "\n   ")
             elseif type(value) == "string" then
                 value_str = value
@@ -773,11 +773,11 @@ function Parser:parse(args, result)
     local result = result or {}
     local arg = args[1]
     if not arg then
-        if self._commands and self._req_command then 
-            self:error("a command is required") 
+        if self._commands and self._req_command then
+            self:error("a command is required")
         elseif self._arguments then
             for _,argument in ipairs(self._arguments) do
-                if not result[argument._name] then 
+                if not result[argument._name] then
                     self:error("missing argument `%s`", argument._name)
                 end
             end
@@ -796,7 +796,7 @@ function Parser:parse(args, result)
                 return self:parse(sub_args, result)
             end
         end
-        self:error("unknown option `%s`", o) 
+        self:error("unknown option `%s`", o)
     end
 
     -- Arguments
@@ -852,7 +852,7 @@ list_cmd
     :name("list"):description("List registered color schemes")
     :add_help()
     :action(
-        function() 
+        function()
             printSchemes(
                 list(),
                 function(item)

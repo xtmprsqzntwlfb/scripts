@@ -171,7 +171,7 @@ function HLayout:postComputeFrame(frame_body)
         if not views[i].visible or i == #views or not views[i+1].visible then
             return 0
         else
-            return space 
+            return space
         end
     end
     local avail_w = frame_body.width -- Available width
@@ -204,7 +204,7 @@ function HLayout:postComputeFrame(frame_body)
             end
         end
         if space ~= 0 then
-            table.insert(self.separators, l_offset + math.floor(space / 2)) 
+            table.insert(self.separators, l_offset + math.floor(space / 2))
         end
         l_offset = l_offset + space
     end
