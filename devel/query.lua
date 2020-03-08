@@ -1,6 +1,6 @@
 -- Query is a script useful for finding and reading values of data structure fields. Purposes will likely be exclusive to writing lua script code.
 -- Written by Josh Cooper(cppcooper) on 2017-12-21, last modified: 2020-03-03
--- Version: 2.0
+-- Version: 2.x
 local utils=require('utils')
 local validArgs = utils.invert({
  'help',
@@ -386,26 +386,27 @@ function hasPairs(value)
         --debugf(11,"hasPairs: stage 2")
         if getmetatable(value) then
             --debugf(11,"hasPairs: stage 3")
-            if value._kind == "container" then
+            if value._kind == "primitive" then
+                return false
+            elseif value._kind == "container" or value._kind == "bitfield" then
                 --debugf(11,"hasPairs: stage 4")
                 return true
-            elseif value._kind == "struct" and args.safer then
-                return false
+            elseif value._kind == "struct" and not df.isnull(value) then
+                --debugf(11,"hasPairs: stage 5. struct is not null")
+                if args.safer then
+                    return false
+                else
+                    return true
+                end
             end
-            if TableLength(value) ~= 0 then
-                debugf(0,string.format("userdata with a metatable that isn't a container\n   input-value: %s, type: %s, _kind: %s",value,type(value),value._kind))
-                return true
-            elseif not df.isnull(value) then
-                --todo debug this seems to make some things work properly, and others crash
-                --qerror("yoohoo")
-                debugf(0,"hasPairs: value is null")
-                return true
-            end
+            debugf(11,"hasPairs: stage 6")
+            debugf(0,string.format("This shouldn't be reached.\n   input-value: %s, type: %s, _kind: %s",value,type(value),value._kind))
+            return (TableLength(value) ~= 0)
         end
     else
-        --debugf(11,"hasPairs: stage 5")
+        --debugf(11,"hasPairs: stage 7")
         for k,v in safe_pairs(value) do
-            --debugf(11,"hasPairs: stage 6")
+            --debugf(11,"hasPairs: stage 8")
             debugf(0,string.format("Pretty sure this is never going to proc, except on structs.\n   table-length: %d, input-value: %s, type: %s, k: %s, v: %s",TableLength(value),value,type(value),k,v))
             return true
         end
