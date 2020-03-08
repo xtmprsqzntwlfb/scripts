@@ -50,7 +50,7 @@ Purposes will likely be exclusive to writing lua script code.
 Fields: contents of tables
 Keys:   contents of userdata containers
 
-Keys and fields are essentially the same thing. The real difference is what 
+Keys and fields are essentially the same thing. The real difference is what
 code checks need to be in place for queries on keys vs fields. This is why
 they are differentiated.
 
@@ -60,9 +60,9 @@ this recursively until it has walked over everything it is allowed. Everything
 it walks over it checks against any (optional) string/value queries, and if it
 finds a match it then prints it to the console.
 
-You can control most aspects of this process, the script is fairly flexible. So 
+You can control most aspects of this process, the script is fairly flexible. So
 much so that you can easily create an infinitely recursing query and/or potentially
-crash dwarf fortress and dfhack. In previous iterations memory bloat was even a 
+crash dwarf fortress and dfhack. In previous iterations memory bloat was even a
 concern, where RAM would be used up in mere minutes or seconds; you can probably
 get this to happen as well if you are careless with the depth settings and don't
 print everything walked over (ie. have a search term).
@@ -126,7 +126,7 @@ query options:
     maxtablelength <value> - Limits the table sizes that will be walked (default: 257)
 
     includeitall       - Removes blacklist filtering, and disregards readabiliy of output.
-    
+
     dumb               - Disables intelligent checks for things such as reasonable recursion
                          depth(ie. depth maxes are increased, not removed) and also checks
                          for recursive data structures.
@@ -172,7 +172,7 @@ function init_parameters()
         ]]
         if not args.depth then
             depth = 25
-            args.depth = depth 
+            args.depth = depth
         end
         if not args.keydepth then
             keydepth = 25
@@ -273,7 +273,7 @@ function TableLength(t)
     local count = 0
     --debugf(11,"TableLength: stage 5 (for loop)")
     for i,k in pairs(t) do
-        count = count + 1 
+        count = count + 1
     end
     return count
 end
@@ -352,7 +352,7 @@ function isFieldValueMatch(field,value)
         return true
     end
     --debugf(11,"isFieldValueMatch: stage 2,0")
-    bFieldMatches = not args.query or (args.query and string.find(field,args.query))
+    bFieldMatches = not args.query or (args.query and string.find(tostring(field),args.query))
     bValueMatches = not args.queryvalues or (args.queryvalues and string.find(tostring(value),args.queryvalues))
     return bFieldMatches and bValueMatches
 end
@@ -746,7 +746,7 @@ function main()
             debugf(0,"getfield: simple print")
             print(string.format("%s: %s",info,selection))
         end
-    else    
+    else
         if args.query then
             debugf(0,"regular query")
             Query(selection, args.query, info)
