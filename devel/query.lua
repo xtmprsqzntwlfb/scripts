@@ -24,6 +24,7 @@ local validArgs = utils.invert({
 
  'includeitall',
  
+ 'safer',
  'dumb',
  'disableprint',
  'debug'
@@ -48,7 +49,7 @@ Query is a script useful for finding and reading values of data structure fields
 Purposes will likely be exclusive to writing lua script code.
 
 Fields: contents of tables
-Keys:   contents of userdata containers
+Keys:   contents below non-table containers
 
 Keys and fields are essentially the same thing. The real difference is what
 code checks need to be in place for queries on keys vs fields. This is why
@@ -127,9 +128,13 @@ query options:
 
     includeitall       - Removes blacklist filtering, and disregards readabiliy of output.
 
+    safer              - Disables walking struct data. I figure this is probably the most
+                         likely to be misaligned, and it could crash dfhack so consider
+                         using this if you're running an alpha or beta build of dfhack.
+
     dumb               - Disables intelligent checks for things such as reasonable recursion
-                         depth(ie. depth maxes are increased, not removed) and also checks
-                         for recursive data structures.
+                         depth(ie. depth maxes are increased, not removed. [25,25]) and also
+                         checks for recursive data structures.
                          (ie. to avoid walking a child that goes to a parent)
 
 command options:
@@ -154,9 +159,12 @@ command options:
         3. devel/query -depth 10 -keydepth 3 -includeitall -dumb -table df -listfields
         4. devel/query -depth 10 -keydepth 5 -includeitall -dumb -unit -listall
     [validity] make sure the query output is not malformed, and does what is expected
-        1. devel/query -table df -query job_skill -listfields -includeitall -dumb
-        2. devel/query -table df -query job_skill -listall -includeitall -dumb
-        3. devel/query -table df -getfield job_skill -listall -includeitall -dumb
+        1. devel/query -dumb -includeitall -listfields -unit
+        2. devel/query -dumb -includeitall -listfields -table dfhack
+        3. devel/query -dumb -includeitall -listfields -table df
+        4. devel/query -dumb -includeitall -listfields -table df -query job_skill
+        5. devel/query -dumb -includeitall -listall -table df -query job_skill
+        6. devel/query -dumb -includeitall -listall -table df -getfield job_skill
 ]]
 
 
@@ -381,7 +389,10 @@ function hasPairs(value)
             if value._kind == "container" then
                 --debugf(11,"hasPairs: stage 4")
                 return true
-            elseif TableLength(value) ~= 0 then
+            elseif value._kind == "struct" and args.safer then
+                return false
+            end
+            if TableLength(value) ~= 0 then
                 debugf(0,string.format("userdata with a metatable that isn't a container\n   input-value: %s, type: %s, _kind: %s",value,type(value),value._kind))
                 return true
             elseif not df.isnull(value) then
