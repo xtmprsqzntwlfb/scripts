@@ -700,7 +700,7 @@ function handleUnitFlags(unit,flagSet,flagClear)
   end
 end
 
-validArgs = utils.invert({
+local validArgs = utils.invert({
   'help',
   'race',
   'caste',
