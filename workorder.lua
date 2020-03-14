@@ -22,8 +22,8 @@ It can automatically count how many creatures can be milked or sheared.
 The most simple and obvious usage is automating shearing and milking of creatures
 using ``repeat``::
 
-  repeat -time 1 -timeUnits days -command [ workorder ShearCreature ] -name autoShearCreature
-  repeat -time 1 -timeUnits days -command [ workorder MilkCreature ] -name autoMilkCreature
+  repeat -time 14 -timeUnits days -command [ workorder ShearCreature ] -name autoShearCreature
+  repeat -time 14 -timeUnits days -command [ workorder MilkCreature ] -name autoMilkCreature
 
 It is also possible to define complete work orders using ``json``. It is very similar to
 what ``orders import filename`` does, with a few key differences. ``workorder`` is a planning
@@ -684,21 +684,21 @@ local function canShearCreature(u)
             .caste[u.caste]
             .shearable_tissue_layer
 
-    local any = false
+    local any
     for _, stl in ipairs(stls) do
         if stl.length > 0 then
-            any = true
 
             for _, bpi in ipairs(stl.bp_modifiers_idx) do
+                any = {u.appearance.bp_modifiers[bpi], stl.length}
                 if u.appearance.bp_modifiers[bpi] >= stl.length then
-                    return true
+                    return true, any
                 end
             end
 
         end
     end
 
-    if any then return false end
+    if any then return false, any end
     -- otherwise: nil
 end
 
@@ -707,15 +707,12 @@ calcAmountFor_ShearCreature = function ()
     if debug_verbose then print "Shearable units:" end
     for i, u in pairs(world.units.active) do
         if isValidUnit(u)
-        and canShearCreature(u)
         then
-            cnt = cnt + 1
+            local can, info = canShearCreature(u)
+            if can then cnt = cnt + 1 end
 
-            if debug_verbose then
-                local can = canShearCreature(u)
-                if (can ~= nil) then
-                    print(i, uu.getRaceName(u), can)
-                end
+            if debug_verbose and (can ~= nil) then
+                print(i, uu.getRaceName(u), can, tostring(info[1]) .. '/' .. tostring(info[2]))
             end
         end
     end
