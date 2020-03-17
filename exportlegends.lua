@@ -119,6 +119,7 @@ function export_more_legends_xml()
     local day = dfhack.world.ReadCurrentDay()
     local year_str = string.format('%0'..math.max(5, string.len(''..df.global.cur_year))..'d', df.global.cur_year)
     local date_str = year_str..string.format('-%02d-%02d', month, day)
+    local problem_elements = {}
 
     local filename = df.global.world.cur_savegame.save_dir.."-"..date_str.."-legends_plus.xml"
     local file = io.open(filename, 'w')
@@ -791,6 +792,13 @@ function export_more_legends_xml()
                 elseif df.history_event_change_creature_typest:is_instance(event) and (k == "old_race" or k == "new_race")  and v >= 0 then
                     file:write("\t\t<"..k..">"..escape_xml(df.global.world.raws.creatures.all[v].name[0]).."</"..k..">\n")
                 elseif tostring(v):find ("<") then
+                    if not problem_elements[tostring(event._type)] then
+                        problem_elements[tostring(event._type)] = {}
+                    end
+                    if not problem_elements[tostring(event._type)][k] then
+                        dfhack.printerr (tostring(event._type).." element '"..k.."' attempted to be processed as smple type. Please report (XML should still be valid)")
+                        problem_elements [tostring(event._type)][k] = true
+                    end
                     file:write("\t\t<"..k..">please report compound element for correction</"..k..">\n")
                 else
                     file:write("\t\t<"..k..">"..tostring(v).."</"..k..">\n")
