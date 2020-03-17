@@ -566,7 +566,7 @@ function export_more_legends_xml()
                         df.history_event_entity_dissolvedst:is_instance(event) or
                         df.history_event_item_stolenst:is_instance(event)) and k == "circumstance" then
                     file:write("\t\t<circumstance>\n")
-                    file:write("\t\t\t<type>"..df.unit_thought_type[event.circumstance.type].."</type>\n")
+                    file:write("\t\t\t<type>"..event.circumstance.type.."</type>\n")
                     if event.circumstance.type == df.unit_thought_type.Death then
                         file:write("\t\t\t<Death>"..event.circumstance.data.Death.."</Death>\n")
                     elseif event.circumstance.type == df.unit_thought_type.Prayer then
