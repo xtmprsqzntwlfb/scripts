@@ -556,6 +556,50 @@ function export_more_legends_xml()
                             file:write("\t\t<mat>"..dfhack.matinfo.toString(dfhack.matinfo.decode(event.mattype, event.matindex)).."</mat>\n")
                         end
                     end
+                elseif (df.history_event_artifact_possessedst:is_instance(event) or
+                        df.history_event_poetic_form_createdst:is_instance(event) or
+                        df.history_event_musical_form_createdst:is_instance(event) or
+                        df.history_event_dance_form_createdst:is_instance(event) or
+                        df.history_event_written_content_composedst:is_instance(event) or
+                        df.history_event_artifact_claim_formedst:is_instance(event) or
+                        df.history_event_artifact_givenst:is_instance(event) or
+                        df.history_event_entity_dissolvedst:is_instance(event) or
+                        df.history_event_item_stolenst:is_instance(event)) and k == "circumstance" then
+                    file:write("\t\t<circumstance>\n")
+                    file:write("\t\t\t<type>"..df.unit_thought_type[event.circumstance.type].."</type>\n")
+                    if event.circumstance.type == df.unit_thought_type.Death then
+                        file:write("\t\t\t<Death>"..event.circumstance.data.Death.."</Death>\n")
+                    elseif event.circumstance.type == df.unit_thought_type.Prayer then
+                        file:write("\t\t\t<Prayer>"..event.circumstance.data.Prayer.."</Prayer>\n")
+                    elseif event.circumstance.type == df.unit_thought_type.DreamAbout then
+                        file:write("\t\t\t<DreamAbout>"..event.circumstance.data.DreamAbout.."</DreamAbout>\n")
+                    elseif event.circumstance.type == df.unit_thought_type.Defeated then
+                        file:write("\t\t\t<Defeated>"..event.circumstance.data.Defeated.."</Defeated>\n")
+                    elseif event.circumstance.type == df.unit_thought_type.Murdered then
+                        file:write("\t\t\t<Murdered>"..event.circumstance.data.Murdered.."</Murdered>\n")
+                    elseif event.circumstance.type == df.unit_thought_type.HistEventCollection then
+                        file:write("\t\t\t<HistEventCollection>"..event.circumstance.data.HistEventCollection.."</HistEventCollection>\n")
+                    end
+                    file:write("\t\t</circumstance>\n")
+                elseif (df.history_event_artifact_possessedst:is_instance(event) or
+                        df.history_event_poetic_form_createdst:is_instance(event) or
+                        df.history_event_musical_form_createdst:is_instance(event) or
+                        df.history_event_dance_form_createdst:is_instance(event) or
+                        df.history_event_written_content_composedst:is_instance(event) or
+                        df.history_event_artifact_claim_formedst:is_instance(event) or
+                        df.history_event_artifact_givenst:is_instance(event) or
+                        df.history_event_entity_dissolvedst:is_instance(event) or
+                        df.history_event_item_stolenst:is_instance(event)) and k == "reason" then
+                    file:write("\t\t<reason>\n")
+                    file:write("\t\t\t<type>"..df.history_event_reason[event.reason.type].."</type>\n")
+                    if event.reason.type == df.history_event_reason.glorify_hf then
+                        file:write("\t\t\t<glorify_hf>"..event.reason.data.glorify_hf.."</glorify_hf>\n")
+                    elseif event.reason.type == df.history_event_reason.artifact_is_heirloom_of_family_hfid then
+                        file:write("\t\t\t<artifact_is_heirloom_of_family_hfid>"..event.reason.data.artifact_is_heirloom_of_family_hfid.."</artifact_is_heirloom_of_family_hfid>\n")
+                    elseif event.reason.type == df.history_event_reason.artifact_is_symbol_of_entity_position then
+                        file:write("\t\t\t<artifact_is_symbol_of_entity_position>"..event.reason.data.artifact_is_symbol_of_entity_position.."</artifact_is_symbol_of_entity_position>\n")
+                    end
+                    file:write("\t\t</reason>\n")
                 elseif (df.history_event_masterpiece_created_itemst:is_instance(event) or
                         df.history_event_masterpiece_created_item_improvementst:is_instance(event) or
                         df.history_event_masterpiece_created_foodst:is_instance(event) or
@@ -746,6 +790,8 @@ function export_more_legends_xml()
                     file:write("\t\t<"..k..">"..df_enums.profession[v]:lower().."</"..k..">\n")
                 elseif df.history_event_change_creature_typest:is_instance(event) and (k == "old_race" or k == "new_race")  and v >= 0 then
                     file:write("\t\t<"..k..">"..escape_xml(df.global.world.raws.creatures.all[v].name[0]).."</"..k..">\n")
+                elseif tostring(v):find ("<") then
+                    file:write("\t\t<"..k..">please report compound element for correction</"..k..">\n")
                 else
                     file:write("\t\t<"..k..">"..tostring(v).."</"..k..">\n")
                 end
