@@ -796,7 +796,6 @@ function export_more_legends_xml()
                         problem_elements[tostring(event._type)] = {}
                     end
                     if not problem_elements[tostring(event._type)][k] then
-                        dfhack.printerr (tostring(event._type).." element '"..k.."' attempted to be processed as smple type. Please report (XML should still be valid)")
                         problem_elements [tostring(event._type)][k] = true
                     end
                     file:write("\t\t<"..k..">please report compound element for correction</"..k..">\n")
@@ -882,6 +881,19 @@ function export_more_legends_xml()
 
     file:write("</df_world>\n")
     file:close()
+    
+    local problem_elements_exist = false
+    for i, element in pairs (problem_elements) do
+        for k, field in pairs (element) do
+          dfhack.printerr (i.." element '"..k.."' attempted to be processed as simple type.")
+        end
+        problem_elements_exist = true
+    end
+    if problem_elements_exist then
+        dfhack.printerr ("Some elements could not be interpreted correctly because they were not simple elements.")
+        dfhack.printerr ("These elements are reported above. Please notify the DFHack community of these value pairs.")
+        dfhack.printerr ("Note that these issues have not invalidated the XML file: it ought to still be usable.")
+    end
 end
 
 -- export information and XML ('p, x')
