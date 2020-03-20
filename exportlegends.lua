@@ -225,8 +225,12 @@ function export_more_legends_xml()
                             file:write("\t\t\t\t<name2>"..escape_xml(dfhack.df2utf(dfhack.TranslateName(buildingV.name))).."</name2>\n")
                         end
                         if df.abstract_building_templest:is_instance(buildingV) then
-                            file:write("\t\t\t\t<deity>"..buildingV.deity.."</deity>\n")
-                            file:write("\t\t\t\t<religion>"..buildingV.religion.."</religion>\n")
+                            file:write("\t\t\t\t<deity_type>"..buildingV.deity_type.."</deity_type>\n")
+                            if buildingV.deity_type == df.temple_deity_type.Deity then
+                                file:write("\t\t\t\t<deity>"..buildingV.deity_data.Deity.."</deity>\n")
+                            elseif buildingV.deity_type == df.temple_deity_type.Religion then
+                                file:write("\t\t\t\t<religion>"..buildingV.deity_data.Religion.."</religion>\n")
+                            end
                         end
                         if df.abstract_building_dungeonst:is_instance(buildingV) then
                             file:write("\t\t\t\t<dungeon_type>"..buildingV.dungeon_type.."</dungeon_type>\n")
@@ -613,20 +617,30 @@ function export_more_legends_xml()
                     for detailK,detailV in pairs(v) do
                         file:write("\t\t<"..k..">"..escape_xml(df.global.world.raws.creatures.all[detailV].name[0]).."</"..k..">\n")
                     end
-                elseif df.history_event_body_abusedst:is_instance(event) and (k == "props") then
-                    file:write("\t\t<props_item_type>"..tostring(df_enums.item_type[event.props.item.item_type]):lower().."</props_item_type>\n")
-                    file:write("\t\t<props_item_subtype>"..getItemSubTypeName(event.props.item.item_type,event.props.item.item_subtype).."</props_item_subtype>\n")
-                    if (event.props.item.mat_type > -1) then
-                        if (dfhack.matinfo.decode(event.props.item.mat_type, event.props.item.mat_index) == nil) then
-                            file:write("\t\t<props_item_mat_type>"..event.props.item.mat_type.."</props_item_mat_type>\n")
-                            file:write("\t\t<props_item_mat_index>"..event.props.item.mat_index.."</props_item_mat_index>\n")
-                        else
-                            file:write("\t\t<props_item_mat>"..dfhack.matinfo.toString(dfhack.matinfo.decode(event.props.item.mat_type, event.props.item.mat_index)).."</props_item_mat>\n")
+                elseif df.history_event_body_abusedst:is_instance(event) and (k == "abuse_data") then
+                    if event.abuse_type == df.history_event_body_abusedst.T_abuse_type.Impaled then
+                        file:write("\t\t<item_type>"..tostring(df_enums.item_type[event.abuse_data.Impaled.item_type]):lower().."</item_type>\n")
+                        file:write("\t\t<item_subtype>"..getItemSubTypeName(event.abuse_data.Impaled.item_type,event.abuse_data.Impaled.item_subtype).."</item_subtype>\n")
+                        if (event.abuse_data.Impaled.mat_type > -1) then
+                            if (dfhack.matinfo.decode(event.abuse_data.Impaled.mat_type, event.abuse_data.Impaled.mat_index) == nil) then
+                                file:write("\t\t<mat_type>"..event.abuse_data.Impaled.mat_type.."</mat_type>\n")
+                                file:write("\t\t<mat_index>"..event.abuse_data.Impaled.mat_index.."</mat_index>\n")
+                            else
+                                file:write("\t\t<item_mat>"..dfhack.matinfo.toString(dfhack.matinfo.decode(event.abuse_data.Impaled.mat_type, event.abuse_data.Impaled.mat_index)).."</item_mat>\n")
+                            end
                         end
+                    elseif event.abuse_type == df.history_event_body_abusedst.T_abuse_type.Piled then
+                        file:write("\t\t<pile_type>"..df.history_event_body_abusedst.T_abuse_data.T_Piled.T_pile_type [event.abuse_data.Piled.pile_type].."</pile_type>\n")
+                    elseif event.abuse_type == df.history_event_body_abusedst.T_abuse_type.Flayed then
+                        file:write("\t\t<structure>"..tostring(event.abuse_data.Flayed.structure).."</structure>\n")
+                    elseif event.abuse_type == df.history_event_body_abusedst.T_abuse_type.Hung then
+                        file:write("\t\t<tree>"..tostring(event.abuse_data.Hung.tree).."</tree>\n")
+                        file:write("\t\t<mat_type>"..event.abuse_data.Hung.mat_type.."</mat_type>\n")
+                        file:write("\t\t<mat_index>"..event.abuse_data.Hung.mat_index.."</mat_index>\n")
+                    elseif event.abuse_type == df.history_event_body_abusedst.T_abuse_type.Mutilated then  --  For completeness. No fields
+                    elseif event.abuse_type == df.history_event_body_abusedst.T_abuse_type.Animated then
+                        file:write("\t\t<interaction>"..tostring(event.abuse_data.Animated.interaction).."</interaction>\n")
                     end
-                    --file:write("\t\t<"..k.."_item_mat_type>"..tostring(event.props.item.mat_type).."</"..k.."_item_mat_index>\n")
-                    --file:write("\t\t<"..k.."_item_mat_index>"..tostring(event.props.item.mat_index).."</"..k.."_item_mat_index>\n")
-                    file:write("\t\t<"..k.."_pile_type>"..tostring(event.props.pile_type).."</"..k.."_pile_type>\n")
                 elseif df.history_event_assume_identityst:is_instance(event) and k == "identity" then
                     if (table_contains(df.global.world.identities.all,v)) then
                         if (df.global.world.identities.all[v].histfig_id == -1) then

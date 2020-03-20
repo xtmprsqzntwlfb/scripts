@@ -146,7 +146,7 @@ function getUnit_byVS(silent)    -- by view screen mode
     -- context: @dwarfmode/LookAround/Unit
     tmp = df.global.ui_look_list.items[df.global.ui_look_cursor]
     if tmp.type == 2 then -- 0:item 1:terrain >>2: unit<< 3:building 4:colony/vermin 7:spatter
-     u = tmp.unit
+     u = tmp.data.Unit
     end
    end
   elseif df.viewscreen_unitlistst:is_instance(v.parent) then -- (u)nit list -> (v)iew unit (not citizen)

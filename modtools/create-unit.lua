@@ -23,6 +23,7 @@ modtools/create-unit
 Creates a unit.  Usage::
 
     -race raceName
+        (obligatory)
         specify the race of the unit to be created
         examples:
             DWARF
@@ -64,16 +65,50 @@ Creates a unit.  Usage::
     -nick nickname
         set the unit's nickname directly
 
-    -location [ x y z ]
-        create the unit at the specified coordinates
-
     -age howOld
         set the birth date of the unit by current age
-        chosen randomly if not specified
+        chosen randomly if this argument is omitted
+
+    -duration ticks
+        if this is included, the unit will vanish in a puff of smoke
+        once the specified number of ticks has elapsed
+        "ticks" must be an integer greater than 0
 
     -quantity howMany
         replace "howMany" with the number of creatures you want to create
-        defaults to 1 if not specified
+        defaults to 1 if this argument is omitted
+
+    -location [ x y z ]
+        (obligatory)
+        specify the coordinates where you want the unit to appear
+
+    -locationRange [ x_offset y_offset z_offset ]
+        if included, the unit will be spawned at a random location
+        centred around the position specified in the -location argument
+        z_offset defaults to 0 if omitted
+        the location is randomised each time when creating multiple units
+        example:
+            -locationRange [ 4 3 1 ]
+                attempts to place the unit anywhere within
+                -4 to +4 tiles on the x-axis
+                -3 to +3 tiles on the y-axis
+                -1 to +1 tiles on the z-axis
+                from the specified -location coordinates
+
+    -locationType type
+        may be used with -locationRange
+        to specify what counts as a valid tile for unit spawning
+        unit creation will not occur if no valid tiles are available
+        replace "type" with one of the following:
+            Walkable
+                units will only be placed on walkable ground tiles
+                this is the default used if -locationType is omitted
+            Open
+                open spaces are also valid spawn points
+                this is intended for flying units
+            Any
+                all tiles, including solid walls, are valid
+                this is only recommended for ghosts not carrying items
 
     -flagSet [ flag1 flag2 ... ]
         set the specified unit flags in the new unit to true
@@ -89,7 +124,7 @@ Creates a unit.  Usage::
 
 local utils = require 'utils'
 
-function createUnit(raceStr, casteStr, pos, age, domesticate, civ_id, group_id, entityRawName, nickname, quantity, flagSet, flagClear)
+function createUnit(raceStr, casteStr, pos, locationRange, locationType, age, domesticate, civ_id, group_id, entityRawName, nickname, vanishDelay, quantity, flagSet, flagClear)
 --  creates the desired unit(s) at the specified location
 --  returns a table containing the created unit(s)
   if not pos then
@@ -98,9 +133,23 @@ function createUnit(raceStr, casteStr, pos, age, domesticate, civ_id, group_id, 
   if not dfhack.maps.isValidTilePos(pos) then
     qerror("Invalid location!")
   end
+  if locationType and locationType ~= 'Walkable' and locationType ~= 'Open' and locationType ~= 'Any' then
+    qerror('Invalid location type: ' .. locationType)
+  end
+  local locationChoices
+  if locationRange then
+    locationType = locationType or 'Walkable'
+    locationChoices = getLocationChoices(pos, locationRange.offset_x, locationRange.offset_y, locationRange.offset_z)
+  end
+
   if age then
     if not tonumber(age) or age < 0 then
       qerror('Invalid age: ' .. age)
+    end
+  end
+  if vanishDelay then
+    if not tonumber(vanishDelay) or tonumber(vanishDelay) < 1 then
+      qerror('Invalid duration: ' .. vanishDelay)
     end
   end
   local spawnNumber = 1
@@ -111,17 +160,17 @@ function createUnit(raceStr, casteStr, pos, age, domesticate, civ_id, group_id, 
     end
   end
   local race_id, caste_id, caste_id_choices = getRaceCasteIDs(raceStr, casteStr)
-  return createUnitBase(race_id, caste_id, caste_id_choices, pos, age, domesticate, civ_id, group_id, entityRawName, nickname, flagSet, flagClear, spawnNumber)
+  return createUnitBase(race_id, caste_id, caste_id_choices, pos, locationChoices, locationType, age, domesticate, civ_id, group_id, entityRawName, nickname, vanishDelay, flagSet, flagClear, spawnNumber)
 end
 
 function createUnitBase(...)
   local old_gametype = df.global.gametype
   local old_mode = df.global.ui.main.mode
-  local old_popups = {}
+  local old_popups = {} --as:df.popup_message[]
   for _, popup in pairs(df.global.world.status.popups) do
     table.insert(old_popups, popup)
   end
-  df.global.world.status.popups:resize(0)
+  df.global.world.status.popups:resize(0) -- popups would prevent us from opening the creature creation menu, so remove them temporarily
 
   local ok, ret = dfhack.pcall(createUnitInner, ...)
 
@@ -138,12 +187,13 @@ function createUnitBase(...)
   return ret
 end
 
-function createUnitInner(race_id, caste_id, caste_id_choices, pos, age, domesticate, civ_id, group_id, entityRawName, nickname, flagSet, flagClear, spawnNumber)
+function createUnitInner(race_id, caste_id, caste_id_choices, pos, locationChoices, locationType, age, domesticate, civ_id, group_id, entityRawName, nickname, vanishDelay, flagSet, flagClear, spawnNumber)
   local gui = require 'gui'
 
   local view_x = df.global.window_x
   local view_y = df.global.window_y
   local view_z = df.global.window_z
+  local cursor = copyall(df.global.cursor)
 
   local isArena = dfhack.world.isArena()
   local arenaSpawn = df.global.world.arena_spawn
@@ -166,37 +216,37 @@ function createUnitInner(race_id, caste_id, caste_id_choices, pos, age, domestic
 
   local equipment = arenaSpawn.equipment
 
-  local old_item_types = {}
+  local old_item_types = {} --as:df.item_type[]
   for _, item_type in pairs(equipment.item_types) do
     table.insert(old_item_types, item_type)
   end
   equipment.item_types:resize(0)
 
-  local old_item_subtypes = {}
+  local old_item_subtypes = {} --as:number[]
   for _, item_subtype in pairs(equipment.item_subtypes) do
     table.insert(old_item_subtypes, item_subtype)
   end
   equipment.item_subtypes:resize(0)
 
-  local old_item_mat_types = {}
+  local old_item_mat_types = {} --as:number[]
   for _, item_mat_type in pairs(equipment.item_materials.mat_type) do
     table.insert(old_item_mat_types, item_mat_type)
   end
   equipment.item_materials.mat_type:resize(0)
 
-  local old_item_mat_indexes = {}
+  local old_item_mat_indexes = {} --as:number[]
   for _, item_mat_index in pairs(equipment.item_materials.mat_index) do
     table.insert(old_item_mat_indexes, item_mat_index)
   end
   equipment.item_materials.mat_index:resize(0)
 
-  local old_item_counts = {}
+  local old_item_counts = {} --as:number[]
   for _, item_count in pairs(equipment.item_counts) do
     table.insert(old_item_counts, item_count)
   end
   equipment.item_counts:resize(0)
 
-  local old_skill_levels = {}
+  local old_skill_levels = {} --as:number[]
   for k, skill_level in ipairs(equipment.skill_levels) do
     table.insert(old_skill_levels, skill_level)
     equipment.skill_levels[k] = 0
@@ -211,22 +261,45 @@ function createUnitInner(race_id, caste_id, caste_id_choices, pos, age, domestic
   arenaSpawn.creature_cnt:insert('#', 0)
 
   local curViewscreen = dfhack.gui.getCurViewscreen()
-  local dwarfmodeScreen = df.viewscreen_dwarfmodest:new()
+  local dwarfmodeScreen = df.viewscreen_dwarfmodest:new() -- the viewscreen present in arena "overseer" mode
   curViewscreen.child = dwarfmodeScreen
   dwarfmodeScreen.parent = curViewscreen
-  df.global.ui.main.mode = df.ui_sidebar_mode.LookAround
+  df.global.ui.main.mode = df.ui_sidebar_mode.LookAround -- produce the cursor
 
   df.global.gametype = df.game_type.DWARF_ARENA
 
+  if not locationChoices then -- otherwise randomise the cursor location for every unit spawned in the loop below
 --  move cursor to location instead of moving unit later, corrects issue of missing mapdata when moving the created unit.
-  df.global.cursor.x = tonumber(pos.x)
-  df.global.cursor.y = tonumber(pos.y)
-  df.global.cursor.z = tonumber(pos.z)
+    df.global.cursor.x = tonumber(pos.x)
+    df.global.cursor.y = tonumber(pos.y)
+    df.global.cursor.z = tonumber(pos.z)
+  end
 
   local createdUnits = {}
-  for n = 1,spawnNumber do -- loop here to avoid having to handle spawn data each time when creating multiple units
+  for n = 1, spawnNumber do -- loop here to avoid having to handle spawn data each time when creating multiple units
     if not caste_id then -- choose a random caste ID each time
       arenaSpawn.caste:insert(0, caste_id_choices[math.random(1, #caste_id_choices)])
+    end
+
+    if locationChoices then
+--    select a random spawn position within the specified location range, if available
+      local randomPos
+      for n = 1, #locationChoices do
+        local i = math.random(1, #locationChoices)
+        if locationType == 'Any' or isValidSpawnLocation(locationChoices[i], locationType) then
+          randomPos = locationChoices[i]
+          break
+        else
+          table.remove(locationChoices, i) -- remove invalid positions from the list to optimise subsequent spawning sequences
+        end
+      end
+      if randomPos then
+        df.global.cursor.x = tonumber(randomPos.x)
+        df.global.cursor.y = tonumber(randomPos.y)
+        df.global.cursor.z = tonumber(randomPos.z)
+      else
+        break -- no valid tiles available; terminate the spawn loop without creating any units
+      end
     end
 
     gui.simulateInput(dwarfmodeScreen, 'D_LOOK_ARENA_CREATURE') -- open the arena spawning menu
@@ -240,13 +313,14 @@ function createUnitInner(race_id, caste_id, caste_id_choices, pos, age, domestic
 --  Process the created unit:
     local unit = df.unit.find(df.global.unit_next_id-1)
     table.insert(createdUnits, unit)
-    processNewUnit(unit, age, domesticate, civ_id, group_id, entityRawName, nickname, flagSet, flagClear, isArena)
+    processNewUnit(unit, age, domesticate, civ_id, group_id, entityRawName, nickname, vanishDelay, flagSet, flagClear, isArena)
   end
 
   dfhack.screen.dismiss(dwarfmodeScreen)
-  df.global.window_x = view_x
+  df.global.window_x = view_x -- view moves whilst spawning units, so restore it here
   df.global.window_y = view_y
   df.global.window_z = view_z
+  df.global.cursor:assign(cursor) -- cursor sometimes persists in adventure mode, so ensure that it's reset
 
 -- Restore arena spawn data:
 
@@ -283,6 +357,48 @@ function createUnitInner(race_id, caste_id, caste_id_choices, pos, age, domestic
   return createdUnits -- table containing the created unit(s) (intended for module usage)
 end
 
+function getLocationChoices(pos, offset_x, offset_y, offset_z)
+  local spawnCoords = {}
+  local min_x = pos.x - offset_x
+  local max_x = pos.x + offset_x
+  local min_y = pos.y - offset_y
+  local max_y = pos.y + offset_y
+  local min_z = pos.z - offset_z
+  local max_z = pos.z + offset_z
+  local map = df.global.world.map
+  local map_x = map.x_count-1 -- maximum local coordinates on the loaded map
+  local map_y = map.y_count-1
+  local map_z = map.z_count-1
+
+  for x = min_x >= 0 and min_x or 0, max_x <= map_x and max_x or map_x do
+    for y = min_y >= 0 and min_y or 0, max_y <= map_y and max_y or map_y do
+      for z = min_z >= 0 and min_z or 0, max_z <= map_z and max_z or map_z do
+        table.insert(spawnCoords,{x = x, y = y, z = z})
+      end
+    end
+  end
+  return spawnCoords
+end
+
+function isValidSpawnLocation(pos, locationType)
+  if not dfhack.maps.isValidTilePos(pos) then
+    return false
+  end
+  local tiletype = dfhack.maps.getTileBlock(pos.x, pos.y, pos.z).tiletype[pos.x%16][pos.y%16]
+  local tileShapeAttrs = df.tiletype_shape.attrs[df.tiletype.attrs[tiletype].shape]
+  if locationType == 'Open' then
+    if tileShapeAttrs.basic_shape == df.tiletype_shape_basic.Open then
+      return true
+    end
+    return false
+  elseif locationType == 'Walkable' then
+    if tileShapeAttrs.walkable and tileShapeAttrs.basic_shape ~= df.tiletype_shape_basic.Open then
+      return true
+    end
+    return false
+  end
+end
+
 function getRaceCasteIDs(raceStr, casteStr)
 --  Takes a race name and a caste name and returns the appropriate race and caste IDs.
 --  Returns a table of valid caste IDs if casteStr is omitted.
@@ -303,7 +419,7 @@ function getRaceCasteIDs(raceStr, casteStr)
   end
 
   local casteIndex
-  local caste_id_choices = {}
+  local caste_id_choices = {} --as:number[]
   if casteStr then
     for i,c in ipairs(race.caste) do
       if c.caste_id == casteStr then
@@ -509,13 +625,13 @@ function nameUnit(unit, entityRawName)
   if unit.status.current_soul then
     unit.status.current_soul.name:assign(name)
   end
-  local hf = unit.hist_figure_id ~= -1 and df.historical_figure.find(unit.hist_figure_id)
+  local hf = df.historical_figure.find(unit.hist_figure_id)
   if hf then
     hf.name:assign(name)
   end
 end
 
-function processNewUnit(unit, age, domesticate, civ_id, group_id, entityRawName, nickname, flagSet, flagClear, isArena) -- isArena boolean is used for determining whether or not the arena name should be cleared
+function processNewUnit(unit, age, domesticate, civ_id, group_id, entityRawName, nickname, vanishDelay, flagSet, flagClear, isArena) -- isArena boolean is used for determining whether or not the arena name should be cleared
   if entityRawName and type(entityRawName) == 'string' then
     nameUnit(unit, entityRawName)
   elseif not isArena then -- arena mode ONLY displays the first_name of units; removing it would result in a blank space where you'd otherwise expect the caste name to show up
@@ -543,6 +659,9 @@ function processNewUnit(unit, age, domesticate, civ_id, group_id, entityRawName,
   elseif not civ_id then
     wildUnit(unit)
   end
+  if vanishDelay then
+    setVanishCountdown(unit, vanishDelay)
+  end
   enableDefaultLabors(unit)
   handleUnitFlags(unit,flagSet,flagClear)
 end
@@ -551,7 +670,7 @@ function setAge(unit, age)
 --  Shifts the unit's birth and death dates to match the specified age.
 --  Also checks for [BABY] and [CHILD] tokens and turns the unit into a baby/child if age-appropriate.
 
-  local hf = unit.hist_figure_id ~= -1 and df.historical_figure.find(unit.hist_figure_id)
+  local hf = df.historical_figure.find(unit.hist_figure_id)
 
   if age then
     if not tonumber(age) or age < 0 then -- this check is repeated for the sake of module usage
@@ -578,11 +697,11 @@ function setAge(unit, age)
 -- Turn into a child or baby if appropriate:
   local getAge = age or dfhack.units.getAge(unit,true)
   local cr = df.creature_raw.find(unit.race).caste[unit.caste]
-  if cr.flags.BABY and (getAge < cr.misc.baby_age) then
+  if cr.flags.HAS_BABYSTATE and (getAge < cr.misc.baby_age) then
     unit.profession = df.profession.BABY
     --unit.profession2 = df.profession.BABY
     unit.mood = df.mood_type.Baby
-  elseif cr.flags.CHILD and (getAge < cr.misc.child_age) then
+  elseif cr.flags.HAS_CHILDSTATE and (getAge < cr.misc.child_age) then
     unit.profession = df.profession.CHILD
     --unit.profession2 = df.profession.CHILD
   end
@@ -602,8 +721,8 @@ end
 
 function domesticateUnit(unit)
   -- If a friendly animal, make it domesticated.  From Boltgun & Dirst
-  local caste = df.creature_raw.find(unit.race).caste[unit.caste]
-  if not(caste.flags.CAN_SPEAK and caste.flags.CAN_LEARN) then
+  local casteFlags = unit.enemy.caste_flags
+  if not(casteFlags.CAN_SPEAK and casteFlags.CAN_LEARN) then
     -- Fix friendly animals (from Boltgun)
     unit.flags2.resident = false
     unit.population_id = -1
@@ -620,11 +739,11 @@ function domesticateUnit(unit)
 end
 
 function wildUnit(unit)
-  local caste = df.creature_raw.find(unit.race).caste[unit.caste]
+  local casteFlags = unit.enemy.caste_flags
   -- x = df.global.world.world_data.active_site[0].pos.x
   -- y = df.global.world.world_data.active_site[0].pos.y
   -- region = df.global.map.map_blocks[df.global.map.x_count_block*x+y]
-  if not(caste.flags.CAN_SPEAK and caste.flags.CAN_LEARN) then
+  if not(casteFlags.CAN_SPEAK and casteFlags.CAN_LEARN) then
     if #df.global.world.world_data.active_site > 0 then -- empty in adventure mode
       unit.animal.population.region_x = df.global.world.world_data.active_site[0].pos.x
       unit.animal.population.region_y = df.global.world.world_data.active_site[0].pos.y
@@ -643,7 +762,7 @@ function enableDefaultLabors(unit)
   if unit.profession == df.profession.BABY or unit.profession == df.profession.CHILD then
     return
   end
-  if df.creature_raw.find(unit.race).caste[unit.caste].flags.CAN_LEARN then
+  if unit.enemy.caste_flags.CAN_LEARN then
     local labors = unit.status.labors
     labors.HAUL_STONE = true
     labors.HAUL_WOOD = true
@@ -664,6 +783,13 @@ function enableDefaultLabors(unit)
     labors.BUILD_ROAD = true
     labors.BUILD_CONSTRUCTION = true
   end
+end
+
+function setVanishCountdown(unit, ticks)
+  if not tonumber(ticks) or tonumber(ticks) < 1 then
+    qerror('Invalid vanish delay: ' .. ticks)
+  end
+  unit.animal.vanish_countdown = ticks
 end
 
 function handleUnitFlags(unit,flagSet,flagClear)
@@ -700,7 +826,7 @@ function handleUnitFlags(unit,flagSet,flagClear)
   end
 end
 
-validArgs = utils.invert({
+local validArgs = utils.invert({
   'help',
   'race',
   'caste',
@@ -714,7 +840,10 @@ validArgs = utils.invert({
   'location',
   'age',
   'setUnitToFort', -- added by amostubal to get past an issue with \\LOCAL
-  'quantity'
+  'quantity',
+  'duration',
+  'locationRange',
+  'locationType'
 })
 
 if moduleMode then
@@ -737,6 +866,15 @@ if not args.location then
 end
 local pos = {x = tonumber(args.location[1]), y = tonumber(args.location[2]), z = tonumber(args.location[3])}
 
+if args.locationType and not args.locationRange then
+  qerror("-locationType cannot be used without -locationRange!")
+end
+
+local locationRange
+if args.locationRange then
+  locationRange = {offset_x = math.abs(tonumber(args.locationRange[1])), offset_y = math.abs(tonumber(args.locationRange[2])), offset_z = args.locationRange[3] and math.abs(tonumber(args.locationRange[3])) or 0} -- allow offset_z to be omitted
+end
+
 local isFortressMode = dfhack.world.isFortressMode()
 
 local civ_id
@@ -749,6 +887,7 @@ elseif args.civId and tonumber(args.civId) then
   civ_id = tonumber(args.civId)
 end
 
+local group_id
 if args.setUnitToFort or args.groupId == '\\LOCAL' then
   if not isFortressMode then
     qerror("The LOCAL group cannot be specified outside of Fortress mode!")
@@ -770,4 +909,4 @@ if args.name then
   end
 end
 
-createUnit(args.race, args.caste, pos, tonumber(args.age), args.domesticate, tonumber(civ_id), tonumber(group_id), entityRawName, args.nick, tonumber(args.quantity), args.flagSet, args.flagClear)
+createUnit(args.race, args.caste, pos, locationRange, args.locationType, tonumber(args.age), args.domesticate, tonumber(civ_id), tonumber(group_id), entityRawName, args.nick, tonumber(args.duration), tonumber(args.quantity), args.flagSet, args.flagClear)

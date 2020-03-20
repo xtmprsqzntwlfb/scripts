@@ -76,7 +76,7 @@ function getTargetFromScreens()
         my_trg=t_screen.orders[t_screen.sel_idx]
     elseif dfhack.gui.getCurFocus() == 'dwarfmode/LookAround/Flow' then
         local t_look=df.global.ui_look_list.items[df.global.ui_look_cursor]
-        my_trg=t_look.flow
+        my_trg=t_look.data.Flow
 
     elseif dfhack.gui.getSelectedUnit(true) then
         my_trg=dfhack.gui.getSelectedUnit(true)

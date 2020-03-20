@@ -1,5 +1,6 @@
 -- Displays the raw memory of a structure, separated by field.
 --author BenLubar
+--luacheck:skip-entirely
 --
 --[====[
 
@@ -29,10 +30,15 @@ end
 local size, baseaddr = ref:sizeof()
 local actual_size = -1
 
+if ref._type == 'void*' then
+    baseaddr = df.reinterpret_cast('uintptr_t', ref).value
+    size = 0
+end
+
 local ptrsz = dfhack.getArchitecture() / 8
 
 if baseaddr % 32 == 16 then
-    local intptr = df.reinterpret_cast('uint64_t', ref)
+    local intptr = df.reinterpret_cast('uint64_t', baseaddr)
     if intptr:_displace(-1).value == 0xdfdf4ac8 then
         actual_size = intptr:_displace(-2).value
         if size < actual_size then
@@ -43,12 +49,24 @@ end
 
 print(ref._type)
 
-local byteptr = df.reinterpret_cast('uint8_t', ref)
+local expected_padding_byte = 0xd2
+
+for _, g in pairs(df.global) do
+    if type(g) == 'userdata' then
+        local global_size, global_start = g:sizeof()
+        if baseaddr >= global_start and baseaddr < global_start + global_size then
+            expected_padding_byte = 0
+            break
+        end
+    end
+end
+
+local byteptr = df.reinterpret_cast('uint8_t', baseaddr)
 local offset = 0
 local function bytes_until(target, expect)
     while offset < target do
         if expect == 'padding' then
-            if byteptr:_displace(offset).value == 0xd2 then
+            if byteptr:_displace(offset).value == expected_padding_byte then
                 dfhack.color(COLOR_DARKGREY)
             else
                 dfhack.color(COLOR_LIGHTRED)
@@ -82,23 +100,25 @@ local function key_pairs(item)
         end
     end
 end
-for k in key_pairs(ref) do
-    local fsize, faddr = ref:_field(k):sizeof()
-    local foff = faddr - baseaddr
-    if offset < foff then
-        print()
-        if offset == 0 and foff == ptrsz then
-            print('(vtable)')
-            bytes_until(foff, 'vtable')
-        else
-            print('(padding)')
-            bytes_until(foff, 'padding')
+if ref._field then
+    for k in key_pairs(ref) do
+        local fsize, faddr = ref:_field(k):sizeof()
+        local foff = faddr - baseaddr
+        if offset < foff then
+            print()
+            if offset == 0 and foff == ptrsz then
+                print('(vtable)')
+                bytes_until(foff, 'vtable')
+            else
+                print('(padding)')
+                bytes_until(foff, 'padding')
+            end
         end
-    end
 
-    print()
-    print(tostring(ref:_field(k)._type) .. ' ' .. k)
-    bytes_until(foff + fsize)
+        print()
+        print(tostring(ref:_field(k)._type) .. ' ' .. k)
+        bytes_until(foff + fsize)
+    end
 end
 
 if offset < size then
