@@ -87,7 +87,7 @@ function progress_ipairs(vector, desc, interval)
     interval = interval or 10000
     local cb = ipairs(vector)
     return function(vector, k, ...)
-        if k and k > 0 and k % interval == 0 then
+        if k and #vector >= interval and k % interval == 0 then
             print(('        %s %i/%i (%0.f%%)'):format(desc, k, #vector, k * 100 / #vector))
         end
         return cb(vector, k)
@@ -881,7 +881,7 @@ function export_more_legends_xml()
 
     file:write("</df_world>\n")
     file:close()
-    
+
     local problem_elements_exist = false
     for i, element in pairs (problem_elements) do
         for k, field in pairs (element) do
