@@ -565,7 +565,8 @@ function export_more_legends_xml()
                         df.history_event_artifact_claim_formedst:is_instance(event) or
                         df.history_event_artifact_givenst:is_instance(event) or
                         df.history_event_entity_dissolvedst:is_instance(event) or
-                        df.history_event_item_stolenst:is_instance(event)) and k == "circumstance" then
+                        df.history_event_item_stolenst:is_instance(event) or
+                        df.history_event_artifact_createdst:is_instance(event)) and k == "circumstance" then
                     file:write("\t\t<circumstance>\n")
                     file:write("\t\t\t<type>"..event.circumstance.type.."</type>\n")
                     if event.circumstance.type == df.unit_thought_type.Death then
@@ -590,7 +591,8 @@ function export_more_legends_xml()
                         df.history_event_artifact_claim_formedst:is_instance(event) or
                         df.history_event_artifact_givenst:is_instance(event) or
                         df.history_event_entity_dissolvedst:is_instance(event) or
-                        df.history_event_item_stolenst:is_instance(event)) and k == "reason" then
+                        df.history_event_item_stolenst:is_instance(event) or
+                        df.history_event_artifact_createdst:is_instance(event)) and k == "reason" then
                     file:write("\t\t<reason>\n")
                     file:write("\t\t\t<type>"..df.history_event_reason[event.reason.type].."</type>\n")
                     if event.reason.type == df.history_event_reason.glorify_hf then
