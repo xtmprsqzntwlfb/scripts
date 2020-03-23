@@ -1,5 +1,6 @@
 -- Displays the raw memory of a structure, separated by field.
 --author BenLubar
+--luacheck:skip-entirely
 --
 --[====[
 
@@ -48,12 +49,24 @@ end
 
 print(ref._type)
 
+local expected_padding_byte = 0xd2
+
+for _, g in pairs(df.global) do
+    if type(g) == 'userdata' then
+        local global_size, global_start = g:sizeof()
+        if baseaddr >= global_start and baseaddr < global_start + global_size then
+            expected_padding_byte = 0
+            break
+        end
+    end
+end
+
 local byteptr = df.reinterpret_cast('uint8_t', baseaddr)
 local offset = 0
 local function bytes_until(target, expect)
     while offset < target do
         if expect == 'padding' then
-            if byteptr:_displace(offset).value == 0xd2 then
+            if byteptr:_displace(offset).value == expected_padding_byte then
                 dfhack.color(COLOR_DARKGREY)
             else
                 dfhack.color(COLOR_LIGHTRED)
@@ -89,7 +102,8 @@ local function key_pairs(item)
 end
 if ref._field then
     for k in key_pairs(ref) do
-        local fsize, faddr = ref:_field(k):sizeof()
+        local field = ref:_field(k)
+        local fsize, faddr = field:sizeof()
         local foff = faddr - baseaddr
         if offset < foff then
             print()
@@ -103,8 +117,11 @@ if ref._field then
         end
 
         print()
-        print(tostring(ref:_field(k)._type) .. ' ' .. k)
+        print(tostring(field._type) .. ' ' .. k)
         bytes_until(foff + fsize)
+        if field._kind == 'container' then
+            print('length: ' .. #field)
+        end
     end
 end
 

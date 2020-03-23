@@ -87,7 +87,7 @@ function progress_ipairs(vector, desc, interval)
     interval = interval or 10000
     local cb = ipairs(vector)
     return function(vector, k, ...)
-        if k and k > 0 and k % interval == 0 then
+        if k and #vector >= interval and k % interval == 0 then
             print(('        %s %i/%i (%0.f%%)'):format(desc, k, #vector, k * 100 / #vector))
         end
         return cb(vector, k)
@@ -119,6 +119,7 @@ function export_more_legends_xml()
     local day = dfhack.world.ReadCurrentDay()
     local year_str = string.format('%0'..math.max(5, string.len(''..df.global.cur_year))..'d', df.global.cur_year)
     local date_str = year_str..string.format('-%02d-%02d', month, day)
+    local problem_elements = {}
 
     local filename = df.global.world.cur_savegame.save_dir.."-"..date_str.."-legends_plus.xml"
     local file = io.open(filename, 'w')
@@ -225,8 +226,12 @@ function export_more_legends_xml()
                             file:write("\t\t\t\t<name2>"..escape_xml(dfhack.df2utf(dfhack.TranslateName(buildingV.name))).."</name2>\n")
                         end
                         if df.abstract_building_templest:is_instance(buildingV) then
-                            file:write("\t\t\t\t<deity>"..buildingV.deity.."</deity>\n")
-                            file:write("\t\t\t\t<religion>"..buildingV.religion.."</religion>\n")
+                            file:write("\t\t\t\t<deity_type>"..buildingV.deity_type.."</deity_type>\n")
+                            if buildingV.deity_type == df.temple_deity_type.Deity then
+                                file:write("\t\t\t\t<deity>"..buildingV.deity_data.Deity.."</deity>\n")
+                            elseif buildingV.deity_type == df.temple_deity_type.Religion then
+                                file:write("\t\t\t\t<religion>"..buildingV.deity_data.Religion.."</religion>\n")
+                            end
                         end
                         if df.abstract_building_dungeonst:is_instance(buildingV) then
                             file:write("\t\t\t\t<dungeon_type>"..buildingV.dungeon_type.."</dungeon_type>\n")
@@ -552,6 +557,50 @@ function export_more_legends_xml()
                             file:write("\t\t<mat>"..dfhack.matinfo.toString(dfhack.matinfo.decode(event.mattype, event.matindex)).."</mat>\n")
                         end
                     end
+                elseif (df.history_event_artifact_possessedst:is_instance(event) or
+                        df.history_event_poetic_form_createdst:is_instance(event) or
+                        df.history_event_musical_form_createdst:is_instance(event) or
+                        df.history_event_dance_form_createdst:is_instance(event) or
+                        df.history_event_written_content_composedst:is_instance(event) or
+                        df.history_event_artifact_claim_formedst:is_instance(event) or
+                        df.history_event_artifact_givenst:is_instance(event) or
+                        df.history_event_entity_dissolvedst:is_instance(event) or
+                        df.history_event_item_stolenst:is_instance(event)) and k == "circumstance" then
+                    file:write("\t\t<circumstance>\n")
+                    file:write("\t\t\t<type>"..event.circumstance.type.."</type>\n")
+                    if event.circumstance.type == df.unit_thought_type.Death then
+                        file:write("\t\t\t<Death>"..event.circumstance.data.Death.."</Death>\n")
+                    elseif event.circumstance.type == df.unit_thought_type.Prayer then
+                        file:write("\t\t\t<Prayer>"..event.circumstance.data.Prayer.."</Prayer>\n")
+                    elseif event.circumstance.type == df.unit_thought_type.DreamAbout then
+                        file:write("\t\t\t<DreamAbout>"..event.circumstance.data.DreamAbout.."</DreamAbout>\n")
+                    elseif event.circumstance.type == df.unit_thought_type.Defeated then
+                        file:write("\t\t\t<Defeated>"..event.circumstance.data.Defeated.."</Defeated>\n")
+                    elseif event.circumstance.type == df.unit_thought_type.Murdered then
+                        file:write("\t\t\t<Murdered>"..event.circumstance.data.Murdered.."</Murdered>\n")
+                    elseif event.circumstance.type == df.unit_thought_type.HistEventCollection then
+                        file:write("\t\t\t<HistEventCollection>"..event.circumstance.data.HistEventCollection.."</HistEventCollection>\n")
+                    end
+                    file:write("\t\t</circumstance>\n")
+                elseif (df.history_event_artifact_possessedst:is_instance(event) or
+                        df.history_event_poetic_form_createdst:is_instance(event) or
+                        df.history_event_musical_form_createdst:is_instance(event) or
+                        df.history_event_dance_form_createdst:is_instance(event) or
+                        df.history_event_written_content_composedst:is_instance(event) or
+                        df.history_event_artifact_claim_formedst:is_instance(event) or
+                        df.history_event_artifact_givenst:is_instance(event) or
+                        df.history_event_entity_dissolvedst:is_instance(event) or
+                        df.history_event_item_stolenst:is_instance(event)) and k == "reason" then
+                    file:write("\t\t<reason>\n")
+                    file:write("\t\t\t<type>"..df.history_event_reason[event.reason.type].."</type>\n")
+                    if event.reason.type == df.history_event_reason.glorify_hf then
+                        file:write("\t\t\t<glorify_hf>"..event.reason.data.glorify_hf.."</glorify_hf>\n")
+                    elseif event.reason.type == df.history_event_reason.artifact_is_heirloom_of_family_hfid then
+                        file:write("\t\t\t<artifact_is_heirloom_of_family_hfid>"..event.reason.data.artifact_is_heirloom_of_family_hfid.."</artifact_is_heirloom_of_family_hfid>\n")
+                    elseif event.reason.type == df.history_event_reason.artifact_is_symbol_of_entity_position then
+                        file:write("\t\t\t<artifact_is_symbol_of_entity_position>"..event.reason.data.artifact_is_symbol_of_entity_position.."</artifact_is_symbol_of_entity_position>\n")
+                    end
+                    file:write("\t\t</reason>\n")
                 elseif (df.history_event_masterpiece_created_itemst:is_instance(event) or
                         df.history_event_masterpiece_created_item_improvementst:is_instance(event) or
                         df.history_event_masterpiece_created_foodst:is_instance(event) or
@@ -613,20 +662,30 @@ function export_more_legends_xml()
                     for detailK,detailV in pairs(v) do
                         file:write("\t\t<"..k..">"..escape_xml(df.global.world.raws.creatures.all[detailV].name[0]).."</"..k..">\n")
                     end
-                elseif df.history_event_body_abusedst:is_instance(event) and (k == "props") then
-                    file:write("\t\t<props_item_type>"..tostring(df_enums.item_type[event.props.item.item_type]):lower().."</props_item_type>\n")
-                    file:write("\t\t<props_item_subtype>"..getItemSubTypeName(event.props.item.item_type,event.props.item.item_subtype).."</props_item_subtype>\n")
-                    if (event.props.item.mat_type > -1) then
-                        if (dfhack.matinfo.decode(event.props.item.mat_type, event.props.item.mat_index) == nil) then
-                            file:write("\t\t<props_item_mat_type>"..event.props.item.mat_type.."</props_item_mat_type>\n")
-                            file:write("\t\t<props_item_mat_index>"..event.props.item.mat_index.."</props_item_mat_index>\n")
-                        else
-                            file:write("\t\t<props_item_mat>"..dfhack.matinfo.toString(dfhack.matinfo.decode(event.props.item.mat_type, event.props.item.mat_index)).."</props_item_mat>\n")
+                elseif df.history_event_body_abusedst:is_instance(event) and (k == "abuse_data") then
+                    if event.abuse_type == df.history_event_body_abusedst.T_abuse_type.Impaled then
+                        file:write("\t\t<item_type>"..tostring(df_enums.item_type[event.abuse_data.Impaled.item_type]):lower().."</item_type>\n")
+                        file:write("\t\t<item_subtype>"..getItemSubTypeName(event.abuse_data.Impaled.item_type,event.abuse_data.Impaled.item_subtype).."</item_subtype>\n")
+                        if (event.abuse_data.Impaled.mat_type > -1) then
+                            if (dfhack.matinfo.decode(event.abuse_data.Impaled.mat_type, event.abuse_data.Impaled.mat_index) == nil) then
+                                file:write("\t\t<mat_type>"..event.abuse_data.Impaled.mat_type.."</mat_type>\n")
+                                file:write("\t\t<mat_index>"..event.abuse_data.Impaled.mat_index.."</mat_index>\n")
+                            else
+                                file:write("\t\t<item_mat>"..dfhack.matinfo.toString(dfhack.matinfo.decode(event.abuse_data.Impaled.mat_type, event.abuse_data.Impaled.mat_index)).."</item_mat>\n")
+                            end
                         end
+                    elseif event.abuse_type == df.history_event_body_abusedst.T_abuse_type.Piled then
+                        file:write("\t\t<pile_type>"..df.history_event_body_abusedst.T_abuse_data.T_Piled.T_pile_type [event.abuse_data.Piled.pile_type].."</pile_type>\n")
+                    elseif event.abuse_type == df.history_event_body_abusedst.T_abuse_type.Flayed then
+                        file:write("\t\t<structure>"..tostring(event.abuse_data.Flayed.structure).."</structure>\n")
+                    elseif event.abuse_type == df.history_event_body_abusedst.T_abuse_type.Hung then
+                        file:write("\t\t<tree>"..tostring(event.abuse_data.Hung.tree).."</tree>\n")
+                        file:write("\t\t<mat_type>"..event.abuse_data.Hung.mat_type.."</mat_type>\n")
+                        file:write("\t\t<mat_index>"..event.abuse_data.Hung.mat_index.."</mat_index>\n")
+                    elseif event.abuse_type == df.history_event_body_abusedst.T_abuse_type.Mutilated then  --  For completeness. No fields
+                    elseif event.abuse_type == df.history_event_body_abusedst.T_abuse_type.Animated then
+                        file:write("\t\t<interaction>"..tostring(event.abuse_data.Animated.interaction).."</interaction>\n")
                     end
-                    --file:write("\t\t<"..k.."_item_mat_type>"..tostring(event.props.item.mat_type).."</"..k.."_item_mat_index>\n")
-                    --file:write("\t\t<"..k.."_item_mat_index>"..tostring(event.props.item.mat_index).."</"..k.."_item_mat_index>\n")
-                    file:write("\t\t<"..k.."_pile_type>"..tostring(event.props.pile_type).."</"..k.."_pile_type>\n")
                 elseif df.history_event_assume_identityst:is_instance(event) and k == "identity" then
                     if (table_contains(df.global.world.identities.all,v)) then
                         if (df.global.world.identities.all[v].histfig_id == -1) then
@@ -732,6 +791,14 @@ function export_more_legends_xml()
                     file:write("\t\t<"..k..">"..df_enums.profession[v]:lower().."</"..k..">\n")
                 elseif df.history_event_change_creature_typest:is_instance(event) and (k == "old_race" or k == "new_race")  and v >= 0 then
                     file:write("\t\t<"..k..">"..escape_xml(df.global.world.raws.creatures.all[v].name[0]).."</"..k..">\n")
+                elseif tostring(v):find ("<") then
+                    if not problem_elements[tostring(event._type)] then
+                        problem_elements[tostring(event._type)] = {}
+                    end
+                    if not problem_elements[tostring(event._type)][k] then
+                        problem_elements [tostring(event._type)][k] = true
+                    end
+                    file:write("\t\t<"..k..">please report compound element for correction</"..k..">\n")
                 else
                     file:write("\t\t<"..k..">"..tostring(v).."</"..k..">\n")
                 end
@@ -814,6 +881,19 @@ function export_more_legends_xml()
 
     file:write("</df_world>\n")
     file:close()
+
+    local problem_elements_exist = false
+    for i, element in pairs (problem_elements) do
+        for k, field in pairs (element) do
+          dfhack.printerr (i.." element '"..k.."' attempted to be processed as simple type.")
+        end
+        problem_elements_exist = true
+    end
+    if problem_elements_exist then
+        dfhack.printerr ("Some elements could not be interpreted correctly because they were not simple elements.")
+        dfhack.printerr ("These elements are reported above. Please notify the DFHack community of these value pairs.")
+        dfhack.printerr ("Note that these issues have not invalidated the XML file: it ought to still be usable.")
+    end
 end
 
 -- export information and XML ('p, x')
