@@ -345,8 +345,8 @@ function export_more_legends_xml()
         end
         file:write("\t\t<type>"..(df_enums.historical_entity_type[entityV.type]):lower().."</type>\n")
         if entityV.type == df.historical_entity_type.Religion then -- Get worshipped figure
-            if (entityV.unknown1b ~= nil and entityV.unknown1b.worship ~= nil) then
-                for k,v in pairs(entityV.unknown1b.worship) do
+            if (entityV.relations ~= nil and entityV.relations.worship ~= nil) then
+                for k,v in pairs(entityV.relations.worship) do
                     file:write("\t\t<worship_id>"..v.."</worship_id>\n")
                 end
             end
