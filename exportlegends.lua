@@ -689,14 +689,16 @@ function export_more_legends_xml()
                         file:write("\t\t<interaction>"..tostring(event.abuse_data.Animated.interaction).."</interaction>\n")
                     end
                 elseif df.history_event_assume_identityst:is_instance(event) and k == "identity" then
-                    if (table_contains(df.global.world.identities.all,v)) then
-                        if (df.global.world.identities.all[v].histfig_id == -1) then
-                            local thisIdentity = df.global.world.identities.all[v]
-                            file:write("\t\t<identity_name>"..escape_xml(dfhack.df2utf(thisIdentity.name.first_name)).."</identity_name>\n")
-                            file:write("\t\t<identity_race>"..(df.global.world.raws.creatures.all[thisIdentity.race].creature_id):lower().."</identity_race>\n")
-                            file:write("\t\t<identity_caste>"..(df.global.world.raws.creatures.all[thisIdentity.race].caste[thisIdentity.caste].caste_id):lower().."</identity_caste>\n")
-                        else
-                            file:write("\t\t<identity_hf>"..df.global.world.identities.all[v].histfig_id.."</identity_hf>\n")
+                    local identity = df.identity.find(v)
+                    if identity then
+                        if identity.histfig_id ~= -1 then
+                            file:write("\t\t<identity_hf>"..identity.histfig_id.."</identity_hf>\n")
+                        end
+                        file:write("\t\t<identity_name>"..escape_xml(dfhack.df2utf(dfhack.TranslateName(identity.name))).."</identity_name>\n")
+                        local craw = df.creature_raw.find(identity.race)
+                        if craw then
+                            file:write("\t\t<identity_race>"..(craw.creature_id):lower().."</identity_race>\n")
+                            file:write("\t\t<identity_caste>"..(craw.caste[identity.caste].caste_id):lower().."</identity_caste>\n")
                         end
                     end
                 elseif df.history_event_masterpiece_created_arch_constructst:is_instance(event) and k == "building_type" then
