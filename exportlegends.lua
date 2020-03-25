@@ -199,8 +199,8 @@ function export_more_legends_xml()
     for creatureK, creatureV in ipairs (df.global.world.raws.creatures.all) do
         file:write("\t<creature>\n")
         file:write("\t\t<creature_id>"..creatureV.creature_id.."</creature_id>\n")
-        file:write("\t\t<name_singular>"..creatureV.name[0].."</name_singular>\n")
-        file:write("\t\t<name_plural>"..creatureV.name[1].."</name_plural>\n")
+        file:write("\t\t<name_singular>"..escape_xml(dfhack.df2utf(creatureV.name[0])).."</name_singular>\n")
+        file:write("\t\t<name_plural>"..escape_xml(dfhack.df2utf(creatureV.name[1])).."</name_plural>\n")
         for flagK, flagV in ipairs (df.creature_raw_flags) do
             file:write("\t\t<"..flagV:lower()..">"..tostring(creatureV.flags[flagV]).."</"..flagV:lower()..">\n")
         end
@@ -291,7 +291,7 @@ function export_more_legends_xml()
             file:write("\t\t<item_description>"..dfhack.df2utf(item.description:lower()).."</item_description>\n")
         end
         if item:getMaterial() ~= -1 then
-            file:write("\t\t<mat>"..dfhack.matinfo.toString(dfhack.matinfo.decode(item:getMaterial(), item:getMaterialIndex())).."</mat>\n")
+            file:write("\t\t<mat>"..dfhack.df2utf(dfhack.matinfo.toString(dfhack.matinfo.decode(item:getMaterial(), item:getMaterialIndex()))).."</mat>\n")
         end
         file:write("\t</artifact>\n")
     end
@@ -302,7 +302,7 @@ function export_more_legends_xml()
         file:write("\t<historical_figure>\n")
         file:write("\t\t<id>"..hfV.id.."</id>\n")
         file:write("\t\t<sex>"..hfV.sex.."</sex>\n")
-        if hfV.race >= 0 then file:write("\t\t<race>"..escape_xml(df.global.world.raws.creatures.all[hfV.race].name[0]).."</race>\n") end
+        if hfV.race >= 0 then file:write("\t\t<race>"..escape_xml(dfhack.df2utf(df.creature_raw.find(hfV.race).name[0])).."</race>\n") end
         file:write("\t</historical_figure>\n")
     end
     file:write("</historical_figures>\n")
@@ -311,7 +311,7 @@ function export_more_legends_xml()
     for idK, idV in progress_ipairs(df.global.world.identities.all, 'identity') do
         file:write("\t<identity>\n")
         file:write("\t\t<id>"..idV.id.."</id>\n")
-        file:write("\t\t<name>"..dfhack.df2utf(dfhack.TranslateName(idV.name,1)).."</name>\n")
+        file:write("\t\t<name>"..escape_xml(dfhack.df2utf(dfhack.TranslateName(idV.name,1))).."</name>\n")
         file:write("\t\t<histfig_id>"..idV.histfig_id.."</histfig_id>\n")
         if idV.race >= 0 then file:write("\t\t<race>"..(df.global.world.raws.creatures.all[idV.race].creature_id):lower().."</race>\n") end
         if idV.race >= 0  and idV.caste >= 0 then file:write("\t\t<caste>"..(df.global.world.raws.creatures.all[idV.race].caste[idV.caste].caste_id):lower().."</caste>\n") end
@@ -554,7 +554,7 @@ function export_more_legends_xml()
                             file:write("\t\t<mattype>"..event.mattype.."</mattype>\n")
                             file:write("\t\t<matindex>"..event.matindex.."</matindex>\n")
                         else
-                            file:write("\t\t<mat>"..dfhack.matinfo.toString(dfhack.matinfo.decode(event.mattype, event.matindex)).."</mat>\n")
+                            file:write("\t\t<mat>"..dfhack.df2utf(dfhack.matinfo.toString(dfhack.matinfo.decode(event.mattype, event.matindex))).."</mat>\n")
                         end
                     end
                 elseif (df.history_event_artifact_possessedst:is_instance(event) or
@@ -613,7 +613,7 @@ function export_more_legends_xml()
                             file:write("\t\t<mat_type>"..event.mat_type.."</mat_type>\n")
                             file:write("\t\t<mat_index>"..event.mat_index.."</mat_index>\n")
                         else
-                            file:write("\t\t<mat>"..dfhack.matinfo.toString(dfhack.matinfo.decode(event.mat_type, event.mat_index)).."</mat>\n")
+                            file:write("\t\t<mat>"..dfhack.df2utf(dfhack.matinfo.toString(dfhack.matinfo.decode(event.mat_type, event.mat_index))).."</mat>\n")
                         end
                     end
                 elseif df.history_event_masterpiece_created_item_improvementst:is_instance(event) and k == "imp_mat_type" then
@@ -622,7 +622,7 @@ function export_more_legends_xml()
                             file:write("\t\t<imp_mat_type>"..event.imp_mat_type.."</imp_mat_type>\n")
                             file:write("\t\t<imp_mat_index>"..event.imp_mat_index.."</imp_mat_index>\n")
                         else
-                            file:write("\t\t<imp_mat>"..dfhack.matinfo.toString(dfhack.matinfo.decode(event.imp_mat_type, event.imp_mat_index)).."</imp_mat>\n")
+                            file:write("\t\t<imp_mat>"..dfhack.df2utf(dfhack.matinfo.toString(dfhack.matinfo.decode(event.imp_mat_type, event.imp_mat_index))).."</imp_mat>\n")
                         end
                     end
                 elseif df.history_event_masterpiece_created_dye_itemst:is_instance(event) and k == "dye_mat_type" then
@@ -631,7 +631,7 @@ function export_more_legends_xml()
                             file:write("\t\t<dye_mat_type>"..event.dye_mat_type.."</dye_mat_type>\n")
                             file:write("\t\t<dye_mat_index>"..event.dye_mat_index.."</dye_mat_index>\n")
                         else
-                            file:write("\t\t<dye_mat>"..dfhack.matinfo.toString(dfhack.matinfo.decode(event.dye_mat_type, event.dye_mat_index)).."</dye_mat>\n")
+                            file:write("\t\t<dye_mat>"..dfhack.df2utf(dfhack.matinfo.toString(dfhack.matinfo.decode(event.dye_mat_type, event.dye_mat_index))).."</dye_mat>\n")
                         end
                     end
 
@@ -662,7 +662,7 @@ function export_more_legends_xml()
                     end
                 elseif  df.history_event_hist_figure_new_petst:is_instance(event) and k == "pets" then
                     for detailK,detailV in pairs(v) do
-                        file:write("\t\t<"..k..">"..escape_xml(df.global.world.raws.creatures.all[detailV].name[0]).."</"..k..">\n")
+                        file:write("\t\t<"..k..">"..escape_xml(dfhack.df2utf(df.creature_raw.find(detailV).name[0])).."</"..k..">\n")
                     end
                 elseif df.history_event_body_abusedst:is_instance(event) and (k == "abuse_data") then
                     if event.abuse_type == df.history_event_body_abusedst.T_abuse_type.Impaled then
@@ -673,7 +673,7 @@ function export_more_legends_xml()
                                 file:write("\t\t<mat_type>"..event.abuse_data.Impaled.mat_type.."</mat_type>\n")
                                 file:write("\t\t<mat_index>"..event.abuse_data.Impaled.mat_index.."</mat_index>\n")
                             else
-                                file:write("\t\t<item_mat>"..dfhack.matinfo.toString(dfhack.matinfo.decode(event.abuse_data.Impaled.mat_type, event.abuse_data.Impaled.mat_index)).."</item_mat>\n")
+                                file:write("\t\t<item_mat>"..dfhack.df2utf(dfhack.matinfo.toString(dfhack.matinfo.decode(event.abuse_data.Impaled.mat_type, event.abuse_data.Impaled.mat_index))).."</item_mat>\n")
                             end
                         end
                     elseif event.abuse_type == df.history_event_body_abusedst.T_abuse_type.Piled then
@@ -692,7 +692,7 @@ function export_more_legends_xml()
                     if (table_contains(df.global.world.identities.all,v)) then
                         if (df.global.world.identities.all[v].histfig_id == -1) then
                             local thisIdentity = df.global.world.identities.all[v]
-                            file:write("\t\t<identity_name>"..thisIdentity.name.first_name.."</identity_name>\n")
+                            file:write("\t\t<identity_name>"..escape_xml(dfhack.df2utf(thisIdentity.name.first_name)).."</identity_name>\n")
                             file:write("\t\t<identity_race>"..(df.global.world.raws.creatures.all[thisIdentity.race].creature_id):lower().."</identity_race>\n")
                             file:write("\t\t<identity_caste>"..(df.global.world.raws.creatures.all[thisIdentity.race].caste[thisIdentity.caste].caste_id):lower().."</identity_caste>\n")
                         else
@@ -709,7 +709,7 @@ function export_more_legends_xml()
                     end
                 elseif k == "race" then
                     if v > -1 then
-                        file:write("\t\t<race>"..escape_xml(df.global.world.raws.creatures.all[v].name[0]).."</race>\n")
+                        file:write("\t\t<race>"..escape_xml(dfhack.df2utf(df.global.world.raws.creatures.all[v].name[0])).."</race>\n")
                     end
                 elseif k == "caste" then
                     if v > -1 then
@@ -748,7 +748,7 @@ function export_more_legends_xml()
                             end
                         elseif (detailK == "mattype") then
                             if (detailV > -1) then
-                                file:write("\t\t<mat>"..dfhack.matinfo.toString(dfhack.matinfo.decode(event.weapon.mattype, event.weapon.matindex)).."</mat>\n")
+                                file:write("\t\t<mat>"..dfhack.df2utf(dfhack.matinfo.toString(dfhack.matinfo.decode(event.weapon.mattype, event.weapon.matindex))).."</mat>\n")
                             end
                         elseif (detailK == "matindex") then
 
@@ -777,7 +777,7 @@ function export_more_legends_xml()
                             end
                         elseif (detailK == "shooter_mattype") then
                             if (detailV > -1) then
-                                file:write("\t\t<shooter_mat>"..dfhack.matinfo.toString(dfhack.matinfo.decode(event.weapon.shooter_mattype, event.weapon.shooter_matindex)).."</shooter_mat>\n")
+                                file:write("\t\t<shooter_mat>"..dfhack.df2utf(dfhack.matinfo.toString(dfhack.matinfo.decode(event.weapon.shooter_mattype, event.weapon.shooter_matindex))).."</shooter_mat>\n")
                             end
                         elseif (detailK == "shooter_matindex") then
                             --skip
@@ -792,7 +792,7 @@ function export_more_legends_xml()
                 elseif df.history_event_change_hf_jobst:is_instance(event) and (k == "new_job" or k == "old_job") then
                     file:write("\t\t<"..k..">"..df_enums.profession[v]:lower().."</"..k..">\n")
                 elseif df.history_event_change_creature_typest:is_instance(event) and (k == "old_race" or k == "new_race")  and v >= 0 then
-                    file:write("\t\t<"..k..">"..escape_xml(df.global.world.raws.creatures.all[v].name[0]).."</"..k..">\n")
+                    file:write("\t\t<"..k..">"..escape_xml(dfhack.df2utf(df.global.world.raws.creatures.all[v].name[0])).."</"..k..">\n")
                 elseif tostring(v):find ("<") then
                     if not problem_elements[tostring(event._type)] then
                         problem_elements[tostring(event._type)] = {}
