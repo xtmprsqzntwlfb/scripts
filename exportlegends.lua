@@ -811,6 +811,29 @@ function export_more_legends_xml()
         end
     end
     file:write("</historical_events>\n")
+    file:write("<historical_event_relationships>\n")
+    for ID, set in progress_ipairs(df.global.world.history.relationship_events, 'relationship_event') do
+        for k = 0, set.next_element - 1 do
+            file:write("\t<historical_event_relationship>\n")
+            file:write("\t\t<event>"..set.event[k].."</event>\n")
+            file:write("\t\t<relationship>"..set.relationship[k].."</relationship>\n")
+            file:write("\t\t<source_hf>"..set.source_hf[k].."</source_hf>\n")
+            file:write("\t\t<target_hf>"..set.target_hf[k].."</target_hf>\n")
+            file:write("\t\t<year>"..set.year[k].."</year>\n")
+            file:write("\t</historical_event_relationship>\n")
+        end
+    end
+    file:write("</historical_event_relationships>\n")
+    file:write("<historical_event_relationship_supplements>\n")
+    for ID, event in progress_ipairs(df.global.world.history.relationship_event_supplements, 'relationship_event_supplement') do
+        file:write("\t<historical_event_relationship_supplement>\n")
+        file:write("\t\t<event>"..event.event.."</event>\n")
+        file:write("\t\t<occasion_type>"..event.occasion_type.."</occasion_type>\n")
+        file:write("\t\t<site>"..event.site.."</site>\n")
+        file:write("\t\t<unk_1>"..event.unk_1.."</unk_1>\n")
+        file:write("\t</historical_event_relationship_supplement>\n")
+    end
+    file:write("</historical_event_relationship_supplements>\n")
     file:write("<historical_event_collections>\n")
     file:write("</historical_event_collections>\n")
     file:write("<historical_eras>\n")
