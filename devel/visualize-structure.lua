@@ -22,9 +22,9 @@ end
 
 local utils = require('utils')
 
-local ok, ref, err = pcall(function() return utils.df_expr_to_ref(args[1]) end)
+local ok, ref = pcall(function() return utils.df_expr_to_ref(args[1]) end)
 if not ok then
-    qerror(err)
+    qerror(ref)
 end
 
 local size, baseaddr = ref:sizeof()
