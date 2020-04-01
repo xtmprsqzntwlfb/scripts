@@ -452,11 +452,17 @@ local function SetCarveDir(args)
         job.item_category[dirs.up]=true
     end
 end
+function is_grasping_item( item_bp,unit )
+    local bplan=unit.body.body_plan
+    local bpart=bplan.body_parts[item_bp]
+
+    return bpart.flags.GRASP
+end
 function MakePredicateWieldsItem(item_skill)
     local pred=function(args)
         local inv=args.unit.inventory
         for k,v in pairs(inv) do
-            if v.mode==1 and v.item:getMeleeSkill()==item_skill and args.unit.body.weapon_bp==v.body_part_id then
+            if v.mode==1 and v.item:getMeleeSkill()==item_skill and is_grasping_item(v.body_part_id,args.unit) then
                 return true
             end
         end
