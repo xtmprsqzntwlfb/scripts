@@ -157,10 +157,20 @@ function export_more_legends_xml()
         file:write("\t<region>\n")
         file:write("\t\t<id>"..regionV.index.."</id>\n")
         file:write("\t\t<coords>")
-            for xK, xVal in ipairs(regionV.region_coords.x) do
-                file:write(xVal..","..regionV.region_coords.y[xK].."|")
-            end
+        for xK, xVal in ipairs(regionV.region_coords.x) do
+           file:write(xVal..","..regionV.region_coords.y[xK].."|")
+        end
         file:write("</coords>\n")
+        local evilness = "neutral"
+        if regionV.evil then
+           evilness = "evil"
+        elseif regionV.good then
+           evilness = "good"
+        end
+        file:write("\t\t<evilness>"..evilness.."</evilness>\n")
+        for forceK, forceVal in ipairs(regionV.forces) do
+           file:write("\t\t<force_id>"..forceVal.."</force_id>\n")
+        end
         file:write("\t</region>\n")
     end
     file:write("</regions>\n")
@@ -344,12 +354,24 @@ function export_more_legends_xml()
             file:write("\t\t<race>"..(df.global.world.raws.creatures.all[entityV.race].creature_id):lower().."</race>\n")
         end
         file:write("\t\t<type>"..(df_enums.historical_entity_type[entityV.type]):lower().."</type>\n")
-        if entityV.type == df.historical_entity_type.Religion then -- Get worshipped figure
-            if (entityV.relations ~= nil and entityV.relations.worship ~= nil) then
-                for k,v in pairs(entityV.relations.worship) do
+        if entityV.type == df.historical_entity_type.Religion or entityV.type == df.historical_entity_type.MilitaryUnit then -- Get worshipped figures
+            if (entityV.relations ~= nil and entityV.relations.deities ~= nil) then
+                for k,v in pairs(entityV.relations.deities) do
                     file:write("\t\t<worship_id>"..v.."</worship_id>\n")
                 end
             end
+        end
+        if entityV.type == df.historical_entity_type.MilitaryUnit then -- Get favorite weapons
+            if (entityV.resources ~= nil and entityV.resources.weapon_type ~= nil) then
+                for weaponK,weaponID in pairs(entityV.resources.weapon_type) do
+                    file:write("\t\t<weapon>"..getItemSubTypeName(df.item_type.WEAPON, weaponID).."</weapon>\n")
+                end
+            end
+        end
+        if entityV.type == df.historical_entity_type.Guild then -- Get profession
+           for professionK,professionV in pairs(entityV.guild_professions) do
+              file:write("\t\t<profession>"..df_enums.profession[professionV.profession]:lower().."</profession>\n")
+           end
         end
         for id, link in pairs(entityV.entity_links) do
             file:write("\t\t<entity_link>\n")
