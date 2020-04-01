@@ -280,7 +280,7 @@ function addJobAction(job,unit) --what about job2?
     --local pos=copyall(job.pos)
     unit.path.dest:assign(pos)
     --job
-    local data={type=df.unit_action_type.Job,data={Job={x=pos.x,y=pos.y,z=pos.z,timer=10}}}
+    local data={type=df.unit_action_type.Job,data={job={x=pos.x,y=pos.y,z=pos.z,timer=10}}}
     --job2:
     --local data={type=df.unit_action_type.Job2,data={job2={timer=10}}}
     add_action(unit,data)
