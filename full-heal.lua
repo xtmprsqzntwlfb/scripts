@@ -70,6 +70,16 @@ function isFortCivMember(unit)
     end
 end
 
+function addResurrectionEvent(histFigID)
+    local event = df.history_event_hist_figure_revivedst:new()
+    event.histfig = histFigID
+    event.year = df.global.cur_year
+    event.seconds = df.global.cur_year_tick
+    event.id = df.global.hist_event_next_id
+    df.global.world.history.events:insert('#', event)
+    df.global.hist_event_next_id = df.global.hist_event_next_id + 1
+end
+
 function heal(unit,resurrect,keep_corpse)
     if not unit then
         return
@@ -83,11 +93,16 @@ function heal(unit,resurrect,keep_corpse)
             unit.flags3.ghostly = false -- TO DO: check whether ghost is currently walking through walls before removing ghostliness
             unit.ghost_info = nil
 
+            local _, occupancy = dfhack.maps.getTileFlags(pos2xyz(unit.pos))
+            occupancy.unit_grounded = true -- it's simpler to always set the tile occupancy to unit_grounded, as determining whether occupancy.unit is correct would require one to check for the presence of other units on that tile
+            unit.flags1.on_ground = true -- this also fits the script thematically
+
             if unit.hist_figure_id ~= -1 then
                 local hf = df.historical_figure.find(unit.hist_figure_id)
                 hf.died_year = -1
                 hf.died_seconds = -1
                 hf.flags.ghost = false
+                addResurrectionEvent(hf.id)
             end
 
             if dfhack.world.isFortressMode() and isFortCivMember(unit) then
@@ -285,18 +300,26 @@ if not dfhack_flags.module then
         end
 
     else
-        local item = dfhack.gui.getSelectedItem(true)
         local unit
         if args.unit then
             unit = df.unit.find(tonumber(args.unit))
-        elseif df.item_corpsest:is_instance(item) then
-            local item = item --as:df.item_corpsest
-            unit = df.unit.find(item.unit_id)
+            if not unit then
+                qerror('Invalid unit ID: ' .. args.unit)
+            end
         else
-            unit = dfhack.gui.getSelectedUnit()
+            local item = dfhack.gui.getSelectedItem(true)
+            if item and df.item_corpsest:is_instance(item) then
+                unit = df.unit.find(item.unit_id)
+                if not unit then
+                    qerror('This corpse can no longer be resurrected.') -- unit has been offloaded
+                end
+                unit.pos:assign(xyz2pos(dfhack.items.getPosition(item))) -- to make the unit resurrect at the location of the corpse, rather than the location of death
+            else
+                unit = dfhack.gui.getSelectedUnit()
+            end
         end
         if not unit then
-            qerror('Error: please select a unit or pass its ID as an argument.')
+            qerror('Please select a unit or corpse, or specify its ID via the -unit argument.')
         end
         heal(unit,args.r,args.keep_corpse)
     end
