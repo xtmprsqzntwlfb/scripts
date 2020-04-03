@@ -148,6 +148,7 @@ function export_more_legends_xml()
         file:write("\t\t<name>"..escape_xml(dfhack.df2utf(dfhack.TranslateName(mountainV.name,1))).."</name>\n")
         file:write("\t\t<coords>"..mountainV.pos.x..","..mountainV.pos.y.."</coords>\n")
         file:write("\t\t<height>"..mountainV.height.."</height>\n")
+        file:write("\t\t<is_volcano>"..tostring(mountainV.flags.is_volcano).."</is_volcano>\n")
         file:write("\t</mountain_peak>\n")
     end
     file:write("</mountain_peaks>\n")
