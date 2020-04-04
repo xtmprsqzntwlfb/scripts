@@ -968,7 +968,7 @@ function export_detailed_maps()
 
             vs = dfhack.gui.getViewscreenByType(df.viewscreen_export_graphical_mapst, 0)
                 or qerror("Could not find map export screen")
-            vs.sel_idx = i - 1
+            vs.sel_type = i - 1
             print('    Exporting map: ' .. MAPS[i])
             gui.simulateInput(vs, 'SELECT')
             while dfhack.gui.getCurViewscreen() == vs do
