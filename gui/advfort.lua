@@ -129,7 +129,7 @@ local tile_attrs = df.tiletype.attrs
 
 local settings={build_by_items=false,use_worn=false,check_inv=true,teleport_items=true,df_assign=false,gui_item_select=true,only_in_sites=false}
 
-local function hasValue(tbl,val)
+function hasValue(tbl,val)
     for k,v in pairs(tbl) do
         if v==val then
             return true
@@ -137,10 +137,10 @@ local function hasValue(tbl,val)
     end
     return false
 end
-local function reverseRaceLookup(id)
+function reverseRaceLookup(id)
     return df.global.world.raws.creatures.all[id].creature_id
 end
-local function deon_filter(name,type_id,subtype_id,custom_id, parent)
+function deon_filter(name,type_id,subtype_id,custom_id, parent)
     --print(name)
     local adv=df.global.world.units.active[0]
     local race_filter=build_filter[reverseRaceLookup(adv.race)]
@@ -407,7 +407,7 @@ function AssignUnitToJob(job,unit,unit_pos)
     unit.path.dest:assign(unit_pos)
     return true
 end
-local function SetCreatureRef(args)
+function SetCreatureRef(args)
     local job=args.job
     local pos=args.pos
     for k,v in pairs(df.global.world.units.active) do
@@ -418,7 +418,7 @@ local function SetCreatureRef(args)
     end
 end
 
-local function SetWebRef(args)
+function SetWebRef(args)
     local pos=args.pos
     for k,v in pairs(df.global.world.items.other.ANY_WEBS) do
         if v.pos.x==pos.x and v.pos.y==pos.y and v.pos.z==pos.z then
@@ -427,7 +427,7 @@ local function SetWebRef(args)
         end
     end
 end
-local function SetPatientRef(args)
+function SetPatientRef(args)
     local job=args.job
     local pos=args.pos
     for k,v in pairs(df.global.world.units.active) do
@@ -437,7 +437,7 @@ local function SetPatientRef(args)
         end
     end
 end
-local function SetCarveDir(args)
+function SetCarveDir(args)
     local job=args.job
     local pos=args.pos
     local from_pos=args.from_pos
@@ -471,14 +471,14 @@ function MakePredicateWieldsItem(item_skill)
     return pred
 end
 
-local function makeset(args)
+function makeset(args)
     local tbl={}
     for k,v in pairs(args) do
         tbl[v]=true
     end
     return tbl
 end
-local function NotConstruct(args)
+function NotConstruct(args)
     local tt=dfhack.maps.getTileType(args.pos)
     if tile_attrs[tt].material~=df.tiletype_material.CONSTRUCTION and dfhack.buildings.findAtTile(args.pos)==nil then
         return true
@@ -486,20 +486,20 @@ local function NotConstruct(args)
         return false, "Can only do it on non constructions"
     end
 end
-local function NoConstructedBuilding(args)
+function NoConstructedBuilding(args)
     local bld=dfhack.buildings.findAtTile(args.pos)
     if bld and bld.construction_stage==3 then
         return false, "Can only do it on clear area or non-finished buildings"
     end
     return true
 end
-local function IsBuilding(args)
+function IsBuilding(args)
     if dfhack.buildings.findAtTile(args.pos) then
         return true
     end
     return false, "Can only do it on buildings"
 end
-local function IsConstruct(args)
+function IsConstruct(args)
     local tt=dfhack.maps.getTileType(args.pos)
     if tile_attrs[tt].material==df.tiletype_material.CONSTRUCTION then
         return true
@@ -507,7 +507,7 @@ local function IsConstruct(args)
         return false, "Can only do it on constructions"
     end
 end
-local function SameSquare(args)
+function SameSquare(args)
     local pos1=args.pos
     local pos2=args.from_pos
     if pos1.x==pos2.x and pos1.y==pos2.y and pos1.z==pos2.z then
@@ -516,7 +516,7 @@ local function SameSquare(args)
         return false, "Can only do it on same square"
     end
 end
-local function IsHardMaterial(args)
+function IsHardMaterial(args)
     local tt=dfhack.maps.getTileType(args.pos)
     local mat=tile_attrs[tt].material
     local hard_materials=makeset{df.tiletype_material.STONE,df.tiletype_material.FEATURE,
@@ -527,7 +527,7 @@ local function IsHardMaterial(args)
         return false, "Can only do it on hard materials"
     end
 end
-local function IsStairs(args)
+function IsStairs(args)
     local tt=dfhack.maps.getTileType(args.pos)
     local shape=tile_attrs[tt].shape
     if shape==df.tiletype_shape.STAIR_UP or shape==df.tiletype_shape.STAIR_DOWN or shape==df.tiletype_shape.STAIR_UPDOWN or shape==df.tiletype_shape.RAMP then
@@ -536,7 +536,7 @@ local function IsStairs(args)
         return false,"Can only do it on stairs/ramps"
     end
 end
-local function IsFloor(args)
+function IsFloor(args)
     local tt=dfhack.maps.getTileType(args.pos)
     local shape=tile_attrs[tt].shape
     if shape==df.tiletype_shape.FLOOR or shape==df.tiletype_shape.BOULDER or shape==df.tiletype_shape.PEBBLES then
@@ -545,7 +545,7 @@ local function IsFloor(args)
         return false,"Can only do it on floors"
     end
 end
-local function IsWall(args)
+function IsWall(args)
     local tt=dfhack.maps.getTileType(args.pos)
     if tile_attrs[tt].shape==df.tiletype_shape.WALL then
         return true
@@ -553,7 +553,7 @@ local function IsWall(args)
         return false, "Can only do it on walls"
     end
 end
-local function IsTree(args)
+function IsTree(args)
     local tt=dfhack.maps.getTileType(args.pos)
     if tile_attrs[tt].material==df.tiletype_material.TREE then
         return true
@@ -561,7 +561,7 @@ local function IsTree(args)
         return false, "Can only do it on trees"
     end
 end
-local function IsPlant(args)
+function IsPlant(args)
     local tt=dfhack.maps.getTileType(args.pos)
     if tile_attrs[tt].shape==df.tiletype_shape.SHRUB then
         return true
@@ -569,11 +569,11 @@ local function IsPlant(args)
         return false, "Can only do it on plants"
     end
 end
-local function IsWater(args)
+function IsWater(args)
     return true
 end
 
-local function IsUnit(args)
+function IsUnit(args)
     local pos=args.pos
     for k,v in pairs(df.global.world.units.active) do
         if v.pos.x==pos.x and v.pos.y==pos.y and v.pos.z==pos.z then
@@ -582,7 +582,7 @@ local function IsUnit(args)
     end
     return false,"Unit must be present"
 end
-local function itemsAtPos(pos,tbl)
+function itemsAtPos(pos,tbl)
     local ret=tbl or {}
     for k,v in pairs(df.global.world.items.all) do
         if v.pos.x==pos.x and v.pos.y==pos.y and v.pos.z==pos.z and v.flags.on_ground then
@@ -591,14 +591,14 @@ local function itemsAtPos(pos,tbl)
     end
     return ret
 end
-local function AssignBuildingRef(args)
+function AssignBuildingRef(args)
     local bld=args.building or dfhack.buildings.findAtTile(args.pos)
     args.job.general_refs:insert("#",{new=df.general_ref_building_holderst,building_id=bld.id})
     bld.jobs:insert("#",args.job)
     args.building=args.building or bld
     return true
 end
-local function chooseBuildingWidthHeightDir(args) --TODO nicer selection dialog
+function chooseBuildingWidthHeightDir(args) --TODO nicer selection dialog
     local btype=df.building_type
     local area=makeset{"w","h"}
     local all=makeset{"w","h","d"}
@@ -628,7 +628,7 @@ local function chooseBuildingWidthHeightDir(args) --TODO nicer selection dialog
     return false
     --width = ..., height = ..., direction = ...
 end
-local function BuildingChosen(inp_args,type_id,subtype_id,custom_id)
+function BuildingChosen(inp_args,type_id,subtype_id,custom_id)
     local args=inp_args or {}
 
     args.type=type_id or args.type
@@ -652,7 +652,7 @@ local function BuildingChosen(inp_args,type_id,subtype_id,custom_id)
 end
 
 
-local function RemoveBuilding(args)
+function RemoveBuilding(args)
     local bld=dfhack.buildings.findAtTile(args.pos)
     if bld~=nil then
         bld:queueDestroy()
@@ -668,7 +668,7 @@ local function RemoveBuilding(args)
     end
 end
 
-local function isSuitableItem(job_item,item)
+function isSuitableItem(job_item,item)
     --todo butcher test
     if job_item.item_type~=-1 then
         if item:getType()~= job_item.item_type then
@@ -772,7 +772,7 @@ local function isSuitableItem(job_item,item)
     end
     return true
 end
-local function getItemsUncollected(job)
+function getItemsUncollected(job)
     local ret={}
     for id,jitem in pairs(job.items) do
         local x,y,z=dfhack.items.getPosition(jitem.item)
@@ -782,7 +782,7 @@ local function getItemsUncollected(job)
     end
     return ret
 end
-local function AddItem(tbl,item,recurse,skip_add)
+function AddItem(tbl,item,recurse,skip_add)
     if not skip_add then
         table.insert(tbl,item)
     end
@@ -795,7 +795,7 @@ local function AddItem(tbl,item,recurse,skip_add)
         end
     end
 end
-local function EnumItems(args)
+function EnumItems(args)
     local ret=args.table or {}
     if args.all then
         for k,v in pairs(df.global.world.items.all) do
@@ -821,7 +821,7 @@ local function EnumItems(args)
     end
     return ret
 end
-local function putItemsInBuilding(building,job_item_refs)
+function putItemsInBuilding(building,job_item_refs)
     for k,v in ipairs(job_item_refs) do
         --local pos=dfhack.items.getPosition(v)
         if not dfhack.items.moveToBuilding(v.item,building,0) then
@@ -830,7 +830,7 @@ local function putItemsInBuilding(building,job_item_refs)
         v.is_fetching=0
     end
 end
-local function putItemsInHauling(unit,job_item_refs)
+function putItemsInHauling(unit,job_item_refs)
     for k,v in ipairs(job_item_refs) do
         --local pos=dfhack.items.getPosition(v)
         print("moving:",tostring(v),tostring(v.item))
@@ -841,7 +841,7 @@ local function putItemsInHauling(unit,job_item_refs)
         v.is_fetching=0
     end
 end
-local function finish_item_assign(args)
+function finish_item_assign(args)
     local job=args.job
     local item_modes={
         [df.job_type.PlantSeeds]="haul",
@@ -863,7 +863,7 @@ local function finish_item_assign(args)
         uncollected[1].is_fetching=1
     end
 end
-local function EnumItems_with_settings( args )
+function EnumItems_with_settings( args )
     if settings.check_inv then
         return EnumItems{pos=args.from_pos,unit=args.unit,
                 inv={[df.unit_inventory_item.T_mode.Hauled]=settings.use_worn,[df.unit_inventory_item.T_mode.Worn]=settings.use_worn,
@@ -872,7 +872,7 @@ local function EnumItems_with_settings( args )
         return EnumItems{pos=args.from_pos}
     end
 end
-local function find_suitable_items(job,items,job_items)
+function find_suitable_items(job,items,job_items)
     job_items=job_items or job.job_items
 
     local item_counts={}
@@ -913,7 +913,7 @@ local function find_suitable_items(job,items,job_items)
 
     return item_suitability,item_counts
 end
-local function AssignJobItems(args)
+function AssignJobItems(args)
     if settings.df_assign then --use df default logic and hope that it would work
         return true
     end
@@ -968,7 +968,7 @@ local function AssignJobItems(args)
 
 end
 
-local function CheckAndFinishBuilding(args,bld)
+function CheckAndFinishBuilding(args,bld)
     args.building=args.building or bld
     for idx,job in pairs(bld.jobs) do
         if job.job_type==df.job_type.ConstructBuilding then
@@ -987,7 +987,7 @@ local function CheckAndFinishBuilding(args,bld)
     args.no_job_delete=true
     makeJob(args)
 end
-local function AssignJobToBuild(args)
+function AssignJobToBuild(args)
     local bld=args.building or dfhack.buildings.findAtTile(args.pos)
     args.building=bld
     args.job_type=df.job_type.ConstructBuilding
@@ -998,7 +998,7 @@ local function AssignJobToBuild(args)
     end
     return true
 end
-local function BuildLast(args)
+function BuildLast(args)
     local bld=dfhack.buildings.findAtTile(args.pos)
     args.job_type=df.job_type.ConstructBuilding
     if bld~=nil then
@@ -1011,7 +1011,7 @@ local function BuildLast(args)
     end
     return true
 end
-local function CancelJob(unit)
+function CancelJob(unit)
     local c_job=unit.job.current_job
     if c_job then
         unit.job.current_job =nil --todo add real cancelation
@@ -1024,7 +1024,7 @@ local function CancelJob(unit)
         end
     end
 end
-local function ContinueJob(unit)
+function ContinueJob(unit)
     local c_job=unit.job.current_job
     --no job to continue
     if not c_job then return end
@@ -1055,7 +1055,7 @@ end
 --     args.job.items[0].role=df.job_item_ref.T_role.LinkToTarget
 --     args.job.items[1].role=df.job_item_ref.T_role.LinkToTrigger
 -- end
-local function fake_linking(lever,building,slots)
+function fake_linking(lever,building,slots)
     local item1=slots[1].items[1]
     local item2=slots[2].items[1]
     if not dfhack.items.moveToBuilding(item1,lever,2) then
@@ -1075,7 +1075,7 @@ local function fake_linking(lever,building,slots)
 
     dfhack.gui.showAnnouncement("Linked!",COLOR_YELLOW,true)
 end
-local function LinkBuilding(args)
+function LinkBuilding(args)
     local bld=args.building or dfhack.buildings.findAtTile(args.pos)
     args.building=bld
 
@@ -1138,14 +1138,14 @@ local function LinkBuilding(args)
 
 end
 --[[ Plant gathering attemped fix No. 35]] --[=[ still did not work!]=]
-local function get_design_block_ev(blk)
+function get_design_block_ev(blk)
     for i,v in ipairs(blk.block_events) do
         if v:getType()==df.block_square_event_type.designation_priority then
             return v
         end
     end
 end
-local function PlantGatherFix(args)
+function PlantGatherFix(args)
     local pos=args.pos
     --[[args.job.flags[17]=false --??
 
@@ -1296,7 +1296,7 @@ end
 function usetool:onHelp()
     showHelp()
 end
-local function setFiltersUp(specific,args)
+function setFiltersUp(specific,args)
     local job=args.job
     if specific.job_fields~=nil then
         job:assign(specific.job_fields)
@@ -1310,7 +1310,7 @@ local function setFiltersUp(specific,args)
     end
     return true
 end
-local function onWorkShopJobChosen(args,idx,choice)
+function onWorkShopJobChosen(args,idx,choice)
     args.pos=args.from_pos
     args.building=args.building or dfhack.buildings.findAtTile(args.pos)
     args.job_type=choice.job_id
@@ -1318,7 +1318,7 @@ local function onWorkShopJobChosen(args,idx,choice)
     args.pre_actions={dfhack.curry(setFiltersUp,choice.filter),AssignJobItems}
     makeJob(args)
 end
-local function siegeWeaponActionChosen(args,actionid)
+function siegeWeaponActionChosen(args,actionid)
     local building=args.building
     if actionid==1 then --Turn
         building.facing=(args.building.facing+1)%4
@@ -1350,7 +1350,7 @@ local function siegeWeaponActionChosen(args,actionid)
     args.post_actions={AssignBuildingRef}
     makeJob(args)
 end
-local function putItemToBuilding(building,item)
+function putItemToBuilding(building,item)
     if building:getType()==df.building_type.Table then
         dfhack.items.moveToBuilding(item,building,0)
     else
@@ -1442,7 +1442,7 @@ function usetool:openShopWindow(building)
         qerror("No jobs for this workshop")
     end
 end
-local function track_stop_configure(bld) --TODO: dedicated widget with nice interface and current setting display
+function track_stop_configure(bld) --TODO: dedicated widget with nice interface and current setting display
     local dump_choices={
         {text="no dumping"},
         {text="N",x=0,y=-1},--{t="NE",x=1,y=-1},
