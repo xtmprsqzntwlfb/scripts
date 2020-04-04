@@ -17,3 +17,39 @@ that repo.
 
 ## New scripts
 - `color-schemes`: manages color schemes
+- `devel/print-event`: prints the description of an event by ID or index
+- `gui/color-schemes`: an in-game interface for `color-schemes`
+- `light-aquifers-only`: changes heavy aquifers to light aquifers
+- `on-new-fortress`: runs DFHack commands only in a new fortress
+- `once-per-save`: runs DFHack commands unless already run in the current save
+- `resurrect-adv`: brings your adventurer back to life
+- `reveal-hidden-units`: exposes all sneaking units
+- `workorder`: allows queuing manager jobs; smart about shear and milk creature jobs
+
+## Fixes
+- `devel/visualize-structure`: fixed padding detection for globals
+- `exportlegends`:
+    - added UTF-8 encoding and XML escaping for more fields
+    - added checking for unhandled structures to avoid generating invalid XML
+    - fixed missing fields in ``history_event_assume_identityst`` export
+- `full-heal`:
+    - when resurrected by specifying a corpse, units now appear at the location of the corpse rather than their location of death
+    - resurrected units now have their tile occupancy set (and are placed in the prone position to facilitate this)
+
+## Misc Improvements
+- `devel/export-dt-ini`: updated some field names for DT for 0.47
+- `devel/visualize-structure`: added human-readable lengths to containers
+- `exportlegends`:
+    - added evilness and force IDs to regions
+    - added profession and weapon info to relevant entities
+    - added support for many new history events in 0.47
+    - added historical event relationships and supplementary data
+- `full-heal`:
+    - made resurrection produce a historical event viewable in Legends mode
+    - made error messages more explanatory
+- `install-info`: added DFHack build ID to report
+- `modtools/create-item`: added ``-matchingGloves`` and ``-matchingShoes`` arguments
+- `modtools/create-unit`:
+    - added ``-duration`` argument to make the unit vanish after some time
+    - added ``-locationRange`` argument to allow spawning in a random position within a defined area
+    - added ``--locationType`` argument to specify the type of location to spawn in
