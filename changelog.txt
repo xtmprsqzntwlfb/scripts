@@ -1,0 +1,19 @@
+===[[[
+This file contains changes specific to the scripts repo. See docs/changelog.txt
+in the dfhack repo for a full description, or
+https://docs.dfhack.org/en/latest/docs/Compile.html#build-changelog
+
+NOTE: currently, gen_changelog.txt expects a "Future" section to exist at the
+top of this file (even if no changes are listed under it), or you will get a
+"Entry without section" error. Also, to maintain proper sorting in the generated
+changelogs when making a new release, docs/changelog.txt in the dfhack repo must
+have the new release listed in the right place, even if no changes were made in
+that repo.
+]]]
+
+# Future
+
+# 0.47.04-beta1
+
+## New scripts
+- `color-schemes`: manages color schemes
