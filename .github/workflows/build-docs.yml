@@ -18,11 +18,10 @@ jobs:
         ln -sv $(pwd) $HOME/dfhack/scripts
     - name: Build docs
       run: |
-        sphinx-build -qW -j3 $HOME/dfhack $HOME/dfhack/docs/html
-        zip -r docs.zip $HOME/dfhack/docs/html
+        sphinx-build -qW -j3 $HOME/dfhack html
     - name: Check for missing docs
       run: python3 $HOME/dfhack/travis/script-docs.py .
     - uses: actions/upload-artifact@master
       with:
         name: docs
-        path: docs.zip
+        path: html
