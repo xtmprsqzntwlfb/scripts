@@ -52,4 +52,4 @@ that repo.
 - `modtools/create-unit`:
     - added ``-duration`` argument to make the unit vanish after some time
     - added ``-locationRange`` argument to allow spawning in a random position within a defined area
-    - added ``--locationType`` argument to specify the type of location to spawn in
+    - added ``-locationType`` argument to specify the type of location to spawn in
