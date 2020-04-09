@@ -210,6 +210,20 @@ end
 function GmEditorUi:find_id()
     local key = tostring(self:getSelectedKey())
     local id = tonumber(self:getSelectedValue())
+    local field = self:getSelectedField()
+    if field and field.ref_target then
+        if not field.ref_target.find then
+            dialog.showMessage("Error!", ("Cannot look up %s by ID"):format(getmetatable(field.ref_target)), COLOR_LIGHTRED)
+            return
+        end
+        local obj = field.ref_target.find(id)
+        if obj then
+            self:pushTarget(obj)
+        else
+            dialog.showMessage("Error!", ("%s with ID %d not found"):format(getmetatable(field.ref_target), id), COLOR_LIGHTRED)
+        end
+        return
+    end
     if not id then return end
     local opts = {}
     for name, func in pairs(find_funcs) do
@@ -266,6 +280,14 @@ function GmEditorUi:getSelectedKey()
 end
 function GmEditorUi:getSelectedValue()
     return self:currentTarget().target[self:getSelectedKey()]
+end
+function GmEditorUi:getSelectedField()
+    local ok, ret = pcall(function()
+        return self:currentTarget().target:_field(self:getSelectedKey())
+    end)
+    if ok then
+        return ret
+    end
 end
 function GmEditorUi:currentTarget()
     return self.stack[#self.stack]
@@ -448,6 +470,10 @@ function getStringValue(trg,field)
         local enum=obj:_field(field)._type
         if enum._kind=="enum-type" then
             text=text.." ("..tostring(enum[obj[field]])..")"
+        end
+        local ref_target=obj:_field(field).ref_target
+        if ref_target then
+            text=text.. " (ref-target: "..getmetatable(ref_target)..")"
         end
     end
     end)
