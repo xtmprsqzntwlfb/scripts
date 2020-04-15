@@ -741,10 +741,17 @@ function export_more_legends_xml()
                         file:write("\t\t<caste>"..(df.global.world.raws.creatures.all[event.race].caste[v].caste_id):lower().."</caste>\n")
                     end
                 elseif k == "interaction" and df.history_event_hf_does_interactionst:is_instance(event) then
-                    file:write("\t\t<interaction_action>"..df.global.world.raws.interactions[v].str[3].value.."</interaction_action>\n")
-                    file:write("\t\t<interaction_string>"..df.global.world.raws.interactions[v].str[4].value.."</interaction_string>\n")
+                    if #df.global.world.raws.interactions[v].sources > 0 then
+                        local str_1 = df.global.world.raws.interactions[v].sources[0].hist_string_1
+                        if string.sub (str_1, 1, 1) == " " and string.sub (str_1, string.len (str_1), string.len (str_1)) == " " then
+                            str_1 = string.sub (str_1, 2, string.len (str_1) - 1)
+                        end
+                        file:write("\t\t<interaction_action>"..str_1..df.global.world.raws.interactions[v].sources[0].hist_string_2.."</interaction_action>\n")
+                    end
                 elseif k == "interaction" and df.history_event_hf_learns_secretst:is_instance(event) then
-                    file:write("\t\t<secret_text>"..df.global.world.raws.interactions[v].str[2].value.."</secret_text>\n")
+                    if #df.global.world.raws.interactions[v].sources > 0 then
+                        file:write("\t\t<secret_text>"..df.global.world.raws.interactions[v].sources[0].name.."</secret_text>\n")
+                    end
                 elseif df.history_event_hist_figure_diedst:is_instance(event) and k == "weapon" then
                     for detailK,detailV in pairs(v) do
                         if (detailK == "item") then
