@@ -323,13 +323,13 @@ function export_more_legends_xml()
         file:write("\t<identity>\n")
         file:write("\t\t<id>"..idV.id.."</id>\n")
         file:write("\t\t<name>"..escape_xml(dfhack.df2utf(dfhack.TranslateName(idV.name,1))).."</name>\n")
-        file:write("\t\t<histfig_id>"..idV.histfig_id.."</histfig_id>\n")
+        file:write("\t\t<histfig_id>"..idV.histfig_nemesis_id.."</histfig_id>\n")
         if idV.race >= 0 then file:write("\t\t<race>"..(df.global.world.raws.creatures.all[idV.race].creature_id):lower().."</race>\n") end
         if idV.race >= 0  and idV.caste >= 0 then file:write("\t\t<caste>"..(df.global.world.raws.creatures.all[idV.race].caste[idV.caste].caste_id):lower().."</caste>\n") end
         file:write("\t\t<birth_year>"..idV.birth_year.."</birth_year>\n")
         file:write("\t\t<birth_second>"..idV.birth_year.."</birth_second>\n")
         if idV.profession >= 0 then file:write("\t\t<profession>"..(df_enums.profession[idV.profession]):lower().."</profession>\n") end
-        file:write("\t\t<entity_id>"..idV.civ.."</entity_id>\n")
+        file:write("\t\t<entity_id>"..idV.entity_id.."</entity_id>\n")
         file:write("\t</identity>\n")
     end
     file:write("</identities>\n")
@@ -714,8 +714,8 @@ function export_more_legends_xml()
                 elseif df.history_event_assume_identityst:is_instance(event) and k == "identity" then
                     local identity = df.identity.find(v)
                     if identity then
-                        if identity.histfig_id ~= -1 then
-                            file:write("\t\t<identity_hf>"..identity.histfig_id.."</identity_hf>\n")
+                        if identity.histfig_nemesis_id ~= -1 then
+                            file:write("\t\t<identity_hf>"..identity.histfig_nemesis_id.."</identity_hf>\n")
                         end
                         file:write("\t\t<identity_name>"..escape_xml(dfhack.df2utf(dfhack.TranslateName(identity.name))).."</identity_name>\n")
                         local craw = df.creature_raw.find(identity.race)
