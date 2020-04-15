@@ -16,6 +16,9 @@ that repo.
 ## Fixes
 -@ `exportlegends`: fixed error when exporting maps
 
+## Misc Improvements
+- `exportlegends`: made interaction export more robust and human-readable
+
 # 0.47.04-beta1
 
 ## New scripts
