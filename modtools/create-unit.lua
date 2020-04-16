@@ -69,10 +69,32 @@ Creates a unit.  Usage::
         set the birth date of the unit by current age
         chosen randomly if this argument is omitted
 
+    -equip [ ITEM:MATERIAL:QUANTITY ... ]
+        The specified items will be created and equipped onto the unit
+            via the same logic used in arena mode. Such items will
+            therefore be sized to match the unit and equipped in a
+            manner that the game considers to be appropriate.
+        Note that this currently comes with some limitations,
+            such as arrows not being placed in quivers
+            and an inability to specify item quality.
+        Item quantity defaults to 1 if omitted.
+        When spaces are included in the item or material name,
+            the entire item description should be enclosed in
+            quotation marks. This can also be done to increase
+            legibility when specifying multiple items.
+        examples:
+            -equip [ RING:CREATURE:DWARF:BONE:3 ]
+                3 dwarf bone rings
+            -equip [ ITEM_WEAPON_PICK:INORGANIC:IRON ]
+                1 iron pick
+            -equip [ "ITEM_SHIELD_BUCKLER:PLANT:OAK:WOOD" "AMULET:AMBER" ]
+                1 oaken buckler and 1 amber amulet
+
     -duration ticks
         if this is included, the unit will vanish in a puff of smoke
         once the specified number of ticks has elapsed
         "ticks" must be an integer greater than 0
+        Note that the unit's equipment will not vanish.
 
     -quantity howMany
         replace "howMany" with the number of creatures you want to create
@@ -124,7 +146,7 @@ Creates a unit.  Usage::
 
 local utils = require 'utils'
 
-function createUnit(raceStr, casteStr, pos, locationRange, locationType, age, domesticate, civ_id, group_id, entityRawName, nickname, vanishDelay, quantity, flagSet, flagClear)
+function createUnit(raceStr, casteStr, pos, locationRange, locationType, age, domesticate, civ_id, group_id, entityRawName, nickname, vanishDelay, quantity, equip, flagSet, flagClear)
 --  creates the desired unit(s) at the specified location
 --  returns a table containing the created unit(s)
   if not pos then
@@ -147,11 +169,13 @@ function createUnit(raceStr, casteStr, pos, locationRange, locationType, age, do
       qerror('Invalid age: ' .. age)
     end
   end
+
   if vanishDelay then
     if not tonumber(vanishDelay) or tonumber(vanishDelay) < 1 then
       qerror('Invalid duration: ' .. vanishDelay)
     end
   end
+
   local spawnNumber = 1
   if quantity then
     spawnNumber = tonumber(quantity)
@@ -159,8 +183,17 @@ function createUnit(raceStr, casteStr, pos, locationRange, locationType, age, do
       qerror('Invalid spawn quantity: ' .. quantity)
     end
   end
+
+  local equipDetails
+  if equip then
+    equipDetails = {}
+    for _, equipStr in ipairs(equip) do
+      table.insert(equipDetails, extractEquipmentDetails(equipStr))
+    end
+  end
+
   local race_id, caste_id, caste_id_choices = getRaceCasteIDs(raceStr, casteStr)
-  return createUnitBase(race_id, caste_id, caste_id_choices, pos, locationChoices, locationType, age, domesticate, civ_id, group_id, entityRawName, nickname, vanishDelay, flagSet, flagClear, spawnNumber)
+  return createUnitBase(race_id, caste_id, caste_id_choices, pos, locationChoices, locationType, age, domesticate, civ_id, group_id, entityRawName, nickname, vanishDelay, equipDetails, flagSet, flagClear, spawnNumber)
 end
 
 function createUnitBase(...)
@@ -187,7 +220,7 @@ function createUnitBase(...)
   return ret
 end
 
-function createUnitInner(race_id, caste_id, caste_id_choices, pos, locationChoices, locationType, age, domesticate, civ_id, group_id, entityRawName, nickname, vanishDelay, flagSet, flagClear, spawnNumber)
+function createUnitInner(race_id, caste_id, caste_id_choices, pos, locationChoices, locationType, age, domesticate, civ_id, group_id, entityRawName, nickname, vanishDelay, equipDetails, flagSet, flagClear, spawnNumber)
   local gui = require 'gui'
 
   local view_x = df.global.window_x
@@ -275,6 +308,16 @@ function createUnitInner(race_id, caste_id, caste_id_choices, pos, locationChoic
     df.global.cursor.z = tonumber(pos.z)
   end
 
+  if equipDetails then
+    for _, equip in ipairs(equipDetails) do
+      equipment.item_types:insert('#', equip.itemType)
+      equipment.item_subtypes:insert('#', equip.subType)
+      equipment.item_materials.mat_type:insert('#', equip.matType)
+      equipment.item_materials.mat_index:insert('#', equip.matIndex)
+      equipment.item_counts:insert('#', equip.quantity)
+    end
+  end
+
   local createdUnits = {}
   for n = 1, spawnNumber do -- loop here to avoid having to handle spawn data each time when creating multiple units
     if not caste_id then -- choose a random caste ID each time
@@ -334,6 +377,14 @@ function createUnitInner(race_id, caste_id, caste_id_choices, pos, locationChoic
   arenaSpawn.type = oldSpawnType
   arenaSpawn.interaction = oldInteractionEffect
   arenaSpawn.tame = oldSpawnTame
+
+  if equipDetails then
+    equipment.item_types:resize(0)
+    equipment.item_subtypes:resize(0)
+    equipment.item_materials.mat_type:resize(0)
+    equipment.item_materials.mat_index:resize(0)
+    equipment.item_counts:resize(0)
+  end
 
   for _,i in pairs(old_item_types) do
     equipment.item_types:insert('#',i)
@@ -631,6 +682,88 @@ function nameUnit(unit, entityRawName)
   end
 end
 
+function getItemTypeFromStr(itemTypeStr)
+--returns itemType and subType when passed a string like "ITEM_WEAPON_CROSSBOW" or "BOULDER"
+
+  local itemType = df.item_type[itemTypeStr]
+  if itemType then
+    return itemType, -1
+  end
+
+  for i = 0, df.item_type._last_item do
+    local subTypeCount = dfhack.items.getSubtypeCount(i)
+    if subTypeCount ~= -1 then
+      for subType = 0, subTypeCount-1 do
+        if dfhack.items.getSubtypeDef(i, subType).id == itemTypeStr then
+          return i, subType
+        end
+      end
+    end
+  end
+  qerror("Invalid item type: " .. itemTypeStr)
+end
+
+function extractEquipmentDetails(equipmentStr)
+-- equipmentStr example: "ITEM_SHIELD_BUCKLER:PLANT:OAK:WOOD:2"
+  local equipDetails = {}
+  local raw = {}
+  for str in string.gmatch(equipmentStr, '([^:]+)') do -- break it up at colons
+    table.insert(raw, str) -- and list the segments here
+  end
+
+  if #raw < 2 then
+    qerror('Insufficient equipment details provided: ' .. equipmentStr)
+  end
+
+  equipDetails.itemType, equipDetails.subType = getItemTypeFromStr(raw[1])
+
+  local quantityIdx
+  local matStr = raw[2]
+  if matStr == 'INORGANIC' or matStr == 'PLANT' or matStr == 'CREATURE' then
+    if not raw[3] then
+      print(equipmentStr) -- print this first to help modders locate the issue
+      qerror('Invalid equipment material (missing detail): ' .. matStr)
+    end
+    if matStr == 'INORGANIC' then
+--    example: INORGANIC:IRON
+      matStr = matStr .. ":" .. raw[3]
+      quantityIdx = 4 -- expected position of the quantity str
+    else
+--    example: PLANT:OAK:WOOD
+--    example: CREATURE:DWARF:BONE
+      matStr = matStr .. ":" .. raw[3] -- placed here so as to make it show up in the following qerror message
+      if not raw[4] then
+        print(equipmentStr)
+        qerror('Invalid equipment material (missing detail): ' .. matStr)
+      end
+      matStr = matStr .. ":" .. raw[4]
+      quantityIdx = 5
+    end
+  else -- either an inbuilt material or an error
+--  example: GLASS_CLEAR
+    quantityIdx = 3
+  end
+  local matInfo = dfhack.matinfo.find(matStr)
+  if not matInfo then
+    print(equipmentStr)
+    qerror('Invalid equipment material: ' .. matStr)
+  end
+  equipDetails.matType = matInfo.type
+  equipDetails.matIndex = matInfo.index
+
+  if not raw[quantityIdx] then -- quantity not specified, default to 1
+    equipDetails.quantity = 1
+  else
+    local quantity = tonumber(raw[quantityIdx])
+    if not quantity or quantity < 0 then
+      print(equipmentStr)
+      qerror("Invalid equipment count: " .. raw[quantityIdx])
+    end
+    equipDetails.quantity = quantity
+  end
+  return equipDetails
+end
+
 function processNewUnit(unit, age, domesticate, civ_id, group_id, entityRawName, nickname, vanishDelay, flagSet, flagClear, isArena) -- isArena boolean is used for determining whether or not the arena name should be cleared
   if entityRawName and type(entityRawName) == 'string' then
     nameUnit(unit, entityRawName)
@@ -663,6 +796,7 @@ function processNewUnit(unit, age, domesticate, civ_id, group_id, entityRawName,
     setVanishCountdown(unit, vanishDelay)
   end
   enableDefaultLabors(unit)
+  setEquipmentOwnership(unit)
   handleUnitFlags(unit,flagSet,flagClear)
 end
 
@@ -792,6 +926,15 @@ function setVanishCountdown(unit, ticks)
   unit.animal.vanish_countdown = ticks
 end
 
+function setEquipmentOwnership(unit)
+  for _, inv in ipairs(unit.inventory) do
+    local item = inv.item
+    dfhack.items.setOwner(item, unit)
+    item.flags.foreign = true
+  end
+  unit.military.uniform_drop:resize(0) -- prevents new fortress mode citizens from dropping their equipment a tick after creation
+end
+
 function handleUnitFlags(unit,flagSet,flagClear)
   if flagSet or flagClear then
     local flagsToSet = {}
@@ -843,7 +986,8 @@ local validArgs = utils.invert({
   'quantity',
   'duration',
   'locationRange',
-  'locationType'
+  'locationType',
+  'equip'
 })
 
 if moduleMode then
@@ -909,4 +1053,4 @@ if args.name then
   end
 end
 
-createUnit(args.race, args.caste, pos, locationRange, args.locationType, tonumber(args.age), args.domesticate, tonumber(civ_id), tonumber(group_id), entityRawName, args.nick, tonumber(args.duration), tonumber(args.quantity), args.flagSet, args.flagClear)
+createUnit(args.race, args.caste, pos, locationRange, args.locationType, tonumber(args.age), args.domesticate, tonumber(civ_id), tonumber(group_id), entityRawName, args.nick, tonumber(args.duration), tonumber(args.quantity), args.equip, args.flagSet, args.flagClear)
