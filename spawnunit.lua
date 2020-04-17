@@ -38,10 +38,8 @@ end
 local new_args = {'-race', args[1], '-caste', args[2]}
 if #args == 3 then
     extend(new_args, {'-nick', args[3]})
-elseif #args == 6 then
-    if tonumber(args[4]) and tonumber(args[5]) and tonumber(args[6]) then
-        extend(new_args, {'-nick', args[3], '-location', '[', args[4], args[5], args[6], ']'})
-    end
+elseif #args == 6 and tonumber(args[4]) and tonumber(args[5]) and tonumber(args[6]) then
+    extend(new_args, {'-nick', args[3], '-location', '[', args[4], args[5], args[6], ']'})
 else
     local start = 3
     if #args >= 3 and args[3]:sub(1, 1) ~= '-' then

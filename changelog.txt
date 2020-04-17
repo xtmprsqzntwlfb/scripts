@@ -15,6 +15,7 @@ that repo.
 
 ## Fixes
 -@ `exportlegends`: fixed error when exporting maps
+- `spawnunit`: fixed an error when forwarding some arguments but not a location to `modtools/create-unit`
 
 ## Misc Improvements
 - `exportlegends`: made interaction export more robust and human-readable
