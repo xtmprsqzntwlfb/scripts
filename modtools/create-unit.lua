@@ -987,7 +987,7 @@ local validArgs = utils.invert({
   'duration',
   'locationRange',
   'locationType',
-  'equip'
+  'equip',
 })
 
 if moduleMode then
