@@ -78,7 +78,7 @@ for id in pairs(creatures) do
             preg.colors:assign(female.appearance.genes.colors)
             female.pregnancy_genes = preg
             female.pregnancy_timer = math.random(1, 100)
-            female.pregnancy_caste = 1
+            female.pregnancy_caste = unit.caste  -- To handle female only species
             total_created = total_created + 1
         end
     end
