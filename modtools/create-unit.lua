@@ -873,8 +873,8 @@ function processNewUnit(unit, age, domesticate, civ_id, group_id, entityRawName,
   if vanishDelay then
     setVanishCountdown(unit, vanishDelay)
   end
-  enableDefaultLabors(unit)
   setEquipmentOwnership(unit)
+  enableUnitLabors(unit, true, true)
   handleUnitFlags(unit,flagSet,flagClear)
 end
 
@@ -970,30 +970,43 @@ function wildUnit(unit)
   end
 end
 
-function enableDefaultLabors(unit)
+function enableUnitLabors(unit, default, skilled)
+-- enables relevant labors for adult units with CAN_LEARN
+-- if default is set, enable those labors that are typically enabled by default
+-- if skilled is set, enable any labors the unit is skilled in
   if unit.profession == df.profession.BABY or unit.profession == df.profession.CHILD then
     return
   end
   if unit.enemy.caste_flags.CAN_LEARN then
     local labors = unit.status.labors
-    labors.HAUL_STONE = true
-    labors.HAUL_WOOD = true
-    labors.HAUL_BODY = true
-    labors.HAUL_FOOD = true
-    labors.HAUL_REFUSE = true
-    labors.HAUL_ITEM = true
-    labors.HAUL_FURNITURE = true
-    labors.HAUL_ANIMALS = true
-    labors.CLEAN = true
-    labors.FEED_WATER_CIVILIANS = true
-    labors.RECOVER_WOUNDED = true
-    labors.HANDLE_VEHICLES = true
-    labors.HAUL_TRADE = true
-    labors.PULL_LEVER = true
-    labors.REMOVE_CONSTRUCTION = true
-    labors.HAUL_WATER = true
-    labors.BUILD_ROAD = true
-    labors.BUILD_CONSTRUCTION = true
+    if default then
+      labors.HAUL_STONE = true
+      labors.HAUL_WOOD = true
+      labors.HAUL_BODY = true
+      labors.HAUL_FOOD = true
+      labors.HAUL_REFUSE = true
+      labors.HAUL_ITEM = true
+      labors.HAUL_FURNITURE = true
+      labors.HAUL_ANIMALS = true
+      labors.CLEAN = true
+      labors.FEED_WATER_CIVILIANS = true
+      labors.RECOVER_WOUNDED = true
+      labors.HANDLE_VEHICLES = true
+      labors.HAUL_TRADE = true
+      labors.PULL_LEVER = true
+      labors.REMOVE_CONSTRUCTION = true
+      labors.HAUL_WATER = true
+      labors.BUILD_ROAD = true
+      labors.BUILD_CONSTRUCTION = true
+    end
+    if skilled and unit.status.current_soul then -- No skills if soulless. Typically undead units.
+      for _, skill in ipairs(unit.status.current_soul.skills) do
+        local job = df.job_skill.attrs[skill.id]
+        if job and job.labor ~= -1 then
+          labors[job.labor] = true
+        end
+      end
+    end
   end
 end
 
