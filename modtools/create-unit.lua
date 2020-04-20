@@ -209,8 +209,8 @@ function createUnit(raceStr, casteStr, pos, locationRange, locationType, age, do
   end
 
   if age then
-    if not tonumber(age) or age < 0 then
-      qerror('Invalid age (positive numbers only!): ' .. tostring(age))
+    if not tonumber(age) or tonumber(age) < 0 then
+      qerror('Invalid age (must be 0 or greater): ' .. tostring(age))
     end
   end
 
@@ -224,6 +224,7 @@ function createUnit(raceStr, casteStr, pos, locationRange, locationType, age, do
     if not tonumber(civ_id) then
       qerror('Invalid civId (must be a number): ' .. tostring(civ_id))
     end
+    civ_id = tonumber(civ_id)
     if civ_id ~= -1 and not df.historical_entity.find(civ_id) then
       qerror('Civilisation not found: ' .. tostring(civ_id))
     end
@@ -233,6 +234,7 @@ function createUnit(raceStr, casteStr, pos, locationRange, locationType, age, do
     if not tonumber(group_id) then
       qerror('Invalid groupId (must be a number): ' .. tostring(group_id))
     end
+    group_id = tonumber(group_id)
     if group_id ~= -1 and not df.historical_entity.find(civ_id) then
       qerror('Group not found: ' .. tostring(group_id))
     end
@@ -274,7 +276,7 @@ function createUnit(raceStr, casteStr, pos, locationRange, locationType, age, do
   end
 
   local race_id, caste_id, caste_id_choices = getRaceCasteIDs(raceStr, casteStr)
-  return createUnitBase(race_id, caste_id, caste_id_choices, pos, locationChoices, locationType, tonumber(age), domesticate, tonumber(civ_id), tonumber(group_id), entityRawName, nickname, tonumber(vanishDelay), equipDetails, skillDetails, profession, customProfession, flagSet, flagClear, spawnNumber)
+  return createUnitBase(race_id, caste_id, caste_id_choices, pos, locationChoices, locationType, tonumber(age), domesticate, civ_id, group_id, entityRawName, nickname, tonumber(vanishDelay), equipDetails, skillDetails, profession, customProfession, flagSet, flagClear, spawnNumber)
 end
 
 function createUnitBase(...)
