@@ -1119,9 +1119,9 @@ function handleUnitFlags(unit,flagSet,flagClear)
     end
     for _,k in ipairs(df.unit_flags4) do
       if flagsToSet[k] then
-        unit.flags3[k] = true
+        unit.flags4[k] = true
       elseif flagsToClear[k] then
-        unit.flags3[k] = false
+        unit.flags4[k] = false
       end
     end
   end
