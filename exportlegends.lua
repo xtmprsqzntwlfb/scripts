@@ -328,9 +328,9 @@ function export_more_legends_xml()
            idV.type == df.identity_type.TrueName or
            idV.type == df.identity_type.Unk_4 or
            idV.type == df.identity_type.Identity then           
-            file:write("\t\t<histfig_id>"..idV.figure.historical.."</histfig_id>\n")
+            file:write("\t\t<histfig_id>"..idV.histfig_id.."</histfig_id>\n")
         elseif idV.type == df.identity_type.FalseIdentity then
-            file:write("\t\t<nemesis_id>"..idV.figure.nemesis.."</nemesis_id>\n")
+            file:write("\t\t<nemesis_id>"..idV.nemesis_id.."</nemesis_id>\n")
         else
             dfhack.printerr ("Unknown df.identity_type value encountered:"..tostring (idV.type)..". Please report to DFHack team.")
         end
@@ -729,12 +729,12 @@ function export_more_legends_xml()
                            identity.type == df.identity_type.TrueName or
                            identity.type == df.identity_type.Unk_4 or
                            identity.type == df.identity_type.Identity then
-                            if identity.figure.historical ~= -1 then
-                                file:write("\t\t<identity_histfig_id>"..identity.figure.historical.."</identity_histfig_id>\n")
+                            if identity.histfig_id ~= -1 then
+                                file:write("\t\t<identity_histfig_id>"..identity.histfig_id.."</identity_histfig_id>\n")
                             end
                         elseif identity.type == df.identity_type.FalseIdentity then
-                            if identity.figure.nemesis ~= -1 then
-                                file:write("\t\t<identity_nemesis_id>"..identity.figure.nemesis.."</identity_nemesis_id>\n")
+                            if identity.nemesis_id ~= -1 then
+                                file:write("\t\t<identity_nemesis_id>"..identity.nemesis_id.."</identity_nemesis_id>\n")
                             end
                         else
                             dfhack.printerr ("Unknown df.identity_type value encountered:"..tostring (identity.type)..". Please report to DFHack team.")
