@@ -14,6 +14,7 @@ that repo.
 # Future
 
 ## Fixes
+- `catsplosion`: fixed error when handling races with only one caste (e.g. harpies)
 -@ `exportlegends`: fixed error when exporting maps
 - `spawnunit`: fixed an error when forwarding some arguments but not a location to `modtools/create-unit`
 
