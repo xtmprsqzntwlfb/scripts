@@ -19,6 +19,7 @@ that repo.
 
 ## Misc Improvements
 - `exportlegends`: made interaction export more robust and human-readable
+- `modtools/create-unit`: added ``-equip`` option to equip created units
 
 # 0.47.04-beta1
 
