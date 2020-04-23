@@ -323,16 +323,11 @@ function export_more_legends_xml()
         file:write("\t<identity>\n")
         file:write("\t\t<id>"..idV.id.."</id>\n")
         file:write("\t\t<name>"..escape_xml(dfhack.df2utf(dfhack.TranslateName(idV.name,1))).."</name>\n")
-        if idV.type == df.identity_type.HidingCurse or
-           idV.type == df.identity_type.Unk_1 or
-           idV.type == df.identity_type.TrueName or
-           idV.type == df.identity_type.Unk_4 or
-           idV.type == df.identity_type.Identity then           
-            file:write("\t\t<histfig_id>"..idV.histfig_id.."</histfig_id>\n")
-        elseif idV.type == df.identity_type.FalseIdentity then
-            file:write("\t\t<nemesis_id>"..idV.nemesis_id.."</nemesis_id>\n")
+        local id_tag = df.identity_type.attrs[idV.type].id_tag
+        if id_tag then
+            file:write("\t\t<"..id_tag..">"..idV[id_tag].."</"..id_tag..">\n")
         else
-            dfhack.printerr ("Unknown df.identity_type value encountered:"..tostring (idV.type)..". Please report to DFHack team.")
+            dfhack.printerr ("Unknown df.identity_type value encountered: "..tostring(idV.type)..". Please report to DFHack team.")
         end
         if idV.race >= 0 then file:write("\t\t<race>"..(df.global.world.raws.creatures.all[idV.race].creature_id):lower().."</race>\n") end
         if idV.race >= 0  and idV.caste >= 0 then file:write("\t\t<caste>"..(df.global.world.raws.creatures.all[idV.race].caste[idV.caste].caste_id):lower().."</caste>\n") end
