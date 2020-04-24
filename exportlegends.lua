@@ -421,7 +421,7 @@ function export_more_legends_xml()
         for xK, xVal in ipairs(entityV.claims.border.x) do
             file:write(xVal..","..entityV.claims.border.y[xK].."|")
         end
-        file:write("\t\t</claims>\n")
+        file:write("</claims>\n")
 
         if (table_containskey(entityV,"occasion_info") and entityV.occasion_info ~= nil) then
             for occasionK, occasionV in pairs(entityV.occasion_info.occasions) do
