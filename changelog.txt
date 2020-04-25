@@ -22,7 +22,10 @@ that repo.
 - `exportlegends`:
     - made interaction export more robust and human-readable
     - removed empty ``<item_subtype>`` and ``<claims>`` tags
-- `modtools/create-unit`: added ``-equip`` option to equip created units
+- `modtools/create-unit`:
+    - added ``-equip`` option to equip created units
+    - added ``-skills`` option to give skills to units
+    - added ``-profession`` and ``-customProfession`` options to adjust unit professions
 
 # 0.47.04-beta1
 
