@@ -24,24 +24,24 @@ Creates a unit.  Usage::
 
     -race raceName
         (obligatory)
-        specify the race of the unit to be created
+        Specify the race of the unit to be created.
         examples:
             DWARF
             HUMAN
 
     -caste casteName
-        specify the caste of the unit to be created
-        if omitted, the caste is randomly selected
+        Specify the caste of the unit to be created.
+        If omitted, the caste is randomly selected.
         examples:
             MALE
             FEMALE
             DEFAULT
 
     -domesticate
-        tames the unit if it lacks the CAN_LEARN and CAN_SPEAK tokens
+        Tames the unit if it lacks the CAN_LEARN and CAN_SPEAK tokens.
 
     -civId id
-        Make the created unit a member of the specified civ
+        Make the created unit a member of the specified civilisation
         (or none if id = -1).  If id is \\LOCAL, make it a member of the
         civ associated with the fort; otherwise id must be an integer
 
@@ -51,32 +51,37 @@ Creates a unit.  Usage::
         group associated with the fort; otherwise id must be an integer
 
     -setUnitToFort
-        Sets the groupId and civId to the local fort
-        Can be used instead of -civId \\LOCAL and -groupId \\LOCAL
+        Sets the groupId and civId to those of the player in Fortress mode.
+        Equivalent to -civId \\LOCAL and -groupId \\LOCAL.
 
     -name entityRawName
         Set the unit's name to be a random name appropriate for the
         given entity. \\LOCAL can be specified instead to automatically
-        use the fort group entity in fortress mode only
+        use the fort group entity in fortress mode only.
         examples:
             MOUNTAIN
             EVIL
 
     -nick nickname
-        set the unit's nickname directly
+        This can be included to nickname the unit.
+        Replace "nickname" with the desired name.
 
     -age howOld
-        set the birth date of the unit by current age
-        chosen randomly if this argument is omitted
+        This can be included to specify the unit's age.
+        Replace "howOld" with a (non-negative) number.
+        The unit's age is set randomly if this is omitted.
 
     -equip [ ITEM:MATERIAL:QUANTITY ... ]
-        The specified items will be created and equipped onto the unit
-            via the same logic used in arena mode. Such items will
-            therefore be sized to match the unit and equipped in a
-            manner that the game considers to be appropriate.
+        This can be included to create items and equip them onto
+            the created unit.
+        This is carried out via the same logic used in arena mode,
+            so equipment will always be sized correctly and placed
+            on what the game deems to be appropriate bodyparts.
+            Clothing is also layered in the appropriate order.
         Note that this currently comes with some limitations,
-            such as arrows not being placed in quivers
-            and an inability to specify item quality.
+            such as an inability to specify item quality
+            and objects not being placed in containers
+            (for example, arrows are not placed in quivers).
         Item quantity defaults to 1 if omitted.
         When spaces are included in the item or material name,
             the entire item description should be enclosed in
@@ -90,25 +95,59 @@ Creates a unit.  Usage::
             -equip [ "ITEM_SHIELD_BUCKLER:PLANT:OAK:WOOD" "AMULET:AMBER" ]
                 1 oaken buckler and 1 amber amulet
 
+    -skills [ SKILL:LEVEL ... ]
+        This can be included to add skills to the created unit.
+        Specify a skill token followed by a skill level value.
+        Look up "Skill Token" and "Skill" on the DF Wiki for a list
+            of valid tokens and levels respectively.
+        Note that the skill level provided must be a number greater than 0.
+        If the unit possesses a matching natural skill, this is added to it.
+        Quotation marks can be added for legibility as explained above.
+        example:
+            -skill [ SNEAK:1 EXTRACT_STRAND:15 ]
+                novice ambusher, legendary strand extractor
+
+    -profession token
+        This can be included to set the unit's profession.
+        Replace "token" with a Unit Type Token (check the DF Wiki for a list).
+        For skill-based professions, it is recommended to give the unit
+            the appropriate skill set via -skills.
+        This can also be used to make animals trained for war/hunting.
+        Note that this will be overridden if the unit has been given the age
+            of a baby or child, as these have a special "profession" set.
+        Using this for setting baby/child status is not recommended;
+            this should be done via -age instead.
+        examples:
+            STRAND_EXTRACTOR
+            MASTER_SWORDSMAN
+            TRAINED_WAR
+
+    -customProfession name
+        This can be included to give the unit a custom profession name.
+        Enclose the name in quotation marks if it includes spaces.
+        example:
+            -customProfession "Destroyer of Worlds"
+
     -duration ticks
-        if this is included, the unit will vanish in a puff of smoke
-        once the specified number of ticks has elapsed
-        "ticks" must be an integer greater than 0
+        If this is included, the unit will vanish in a puff of smoke
+            once the specified number of ticks has elapsed.
+        Replace "ticks" with an integer greater than 0.
         Note that the unit's equipment will not vanish.
 
     -quantity howMany
-        replace "howMany" with the number of creatures you want to create
-        defaults to 1 if this argument is omitted
+        This can be included to create multiple creatures simultaneously.
+        Replace "howMany" with the desired number of creatures.
+        Quantity defaults to 1 if this is omitted.
 
     -location [ x y z ]
         (obligatory)
-        specify the coordinates where you want the unit to appear
+        Specify the coordinates where you want the unit to appear.
 
     -locationRange [ x_offset y_offset z_offset ]
-        if included, the unit will be spawned at a random location
-        centred around the position specified in the -location argument
-        z_offset defaults to 0 if omitted
-        the location is randomised each time when creating multiple units
+        If included, the unit will be spawned at a random location
+            within the specified range relative to the target -location.
+        z_offset defaults to 0 if omitted.
+        When creating multiple units, the location is randomised each time.
         example:
             -locationRange [ 4 3 1 ]
                 attempts to place the unit anywhere within
@@ -118,10 +157,10 @@ Creates a unit.  Usage::
                 from the specified -location coordinates
 
     -locationType type
-        may be used with -locationRange
-        to specify what counts as a valid tile for unit spawning
-        unit creation will not occur if no valid tiles are available
-        replace "type" with one of the following:
+        May be used with -locationRange
+            to specify what counts as a valid tile for unit spawning.
+        Unit creation will not occur if no valid tiles are available.
+        Replace "type" with one of the following:
             Walkable
                 units will only be placed on walkable ground tiles
                 this is the default used if -locationType is omitted
@@ -133,20 +172,25 @@ Creates a unit.  Usage::
                 this is only recommended for ghosts not carrying items
 
     -flagSet [ flag1 flag2 ... ]
-        set the specified unit flags in the new unit to true
-        flags may be selected from df.unit_flags1, df.unit_flags2,
-        or df.unit_flags3
+        This can be used to set the specified unit flags to true.
+        Flags may be selected from:
+            df.unit_flags1
+            df.unit_flags2
+            df.unit_flags3
+            df.unit_flags4
+        example:
+            flagSet [ announce_titan ]
+                causes an announcement describing the unit to appear
+                when it is discovered ("[Unit] has come! ...")
 
     -flagClear [ flag1 flag2 ... ]
-        set the specified unit flags in the new unit to false
-        flags may be selected from df.unit_flags1, df.unit_flags2,
-        or df.unit_flags3
+        As above, but sets the specified unit flags to false.
 
 ]====]
 
 local utils = require 'utils'
 
-function createUnit(raceStr, casteStr, pos, locationRange, locationType, age, domesticate, civ_id, group_id, entityRawName, nickname, vanishDelay, quantity, equip, flagSet, flagClear)
+function createUnit(raceStr, casteStr, pos, locationRange, locationType, age, domesticate, civ_id, group_id, entityRawName, nickname, vanishDelay, quantity, equip, skills, profession, customProfession, flagSet, flagClear)
 --  creates the desired unit(s) at the specified location
 --  returns a table containing the created unit(s)
   if not pos then
@@ -165,22 +209,53 @@ function createUnit(raceStr, casteStr, pos, locationRange, locationType, age, do
   end
 
   if age then
-    if not tonumber(age) or age < 0 then
-      qerror('Invalid age: ' .. age)
+    if not tonumber(age) or tonumber(age) < 0 then
+      qerror('Invalid age (must be 0 or greater): ' .. tostring(age))
     end
   end
 
   if vanishDelay then
     if not tonumber(vanishDelay) or tonumber(vanishDelay) < 1 then
-      qerror('Invalid duration: ' .. vanishDelay)
+      qerror('Invalid duration (must be a number greater than 0): ' .. tostring(vanishDelay))
     end
+  end
+
+  if civ_id then
+    if not tonumber(civ_id) then
+      qerror('Invalid civId (must be a number): ' .. tostring(civ_id))
+    end
+    civ_id = tonumber(civ_id)
+    if civ_id ~= -1 and not df.historical_entity.find(civ_id) then
+      qerror('Civilisation not found: ' .. tostring(civ_id))
+    end
+  end
+
+  if group_id then
+    if not tonumber(group_id) then
+      qerror('Invalid groupId (must be a number): ' .. tostring(group_id))
+    end
+    group_id = tonumber(group_id)
+    if group_id ~= -1 and not df.historical_entity.find(civ_id) then
+      qerror('Group not found: ' .. tostring(group_id))
+    end
+  end
+
+  if nickname and type(nickname) ~= 'string' then
+    qerror('Invalid nickname: ' .. tostring(nickname))
+  end
+  if customProfession and (type(customProfession) ~= 'string') then
+    qerror('Invalid custom profession: ' .. tostring(customProfession))
+  end
+
+  if profession and not df.profession[profession] then
+    qerror('Invalid profession: ' .. tostring(profession))
   end
 
   local spawnNumber = 1
   if quantity then
     spawnNumber = tonumber(quantity)
     if not spawnNumber or spawnNumber < 1 then
-      qerror('Invalid spawn quantity: ' .. quantity)
+      qerror('Invalid spawn quantity (must be a number greater than 0): ' .. tostring(quantity))
     end
   end
 
@@ -188,12 +263,20 @@ function createUnit(raceStr, casteStr, pos, locationRange, locationType, age, do
   if equip then
     equipDetails = {}
     for _, equipStr in ipairs(equip) do
-      table.insert(equipDetails, extractEquipmentDetails(equipStr))
+      table.insert(equipDetails, extractEquipmentDetail(equipStr))
+    end
+  end
+
+  local skillDetails
+  if skills then
+    skillDetails = {}
+    for _, skillStr in ipairs(skills) do
+      table.insert(skillDetails, extractSkillDetail(skillStr))
     end
   end
 
   local race_id, caste_id, caste_id_choices = getRaceCasteIDs(raceStr, casteStr)
-  return createUnitBase(race_id, caste_id, caste_id_choices, pos, locationChoices, locationType, age, domesticate, civ_id, group_id, entityRawName, nickname, vanishDelay, equipDetails, flagSet, flagClear, spawnNumber)
+  return createUnitBase(race_id, caste_id, caste_id_choices, pos, locationChoices, locationType, tonumber(age), domesticate, civ_id, group_id, entityRawName, nickname, tonumber(vanishDelay), equipDetails, skillDetails, profession, customProfession, flagSet, flagClear, spawnNumber)
 end
 
 function createUnitBase(...)
@@ -220,7 +303,7 @@ function createUnitBase(...)
   return ret
 end
 
-function createUnitInner(race_id, caste_id, caste_id_choices, pos, locationChoices, locationType, age, domesticate, civ_id, group_id, entityRawName, nickname, vanishDelay, equipDetails, flagSet, flagClear, spawnNumber)
+function createUnitInner(race_id, caste_id, caste_id_choices, pos, locationChoices, locationType, age, domesticate, civ_id, group_id, entityRawName, nickname, vanishDelay, equipDetails, skillDetails, profession, customProfession, flagSet, flagClear, spawnNumber)
   local gui = require 'gui'
 
   local view_x = df.global.window_x
@@ -279,11 +362,17 @@ function createUnitInner(race_id, caste_id, caste_id_choices, pos, locationChoic
   end
   equipment.item_counts:resize(0)
 
-  local old_skill_levels = {} --as:number[]
-  for k, skill_level in ipairs(equipment.skill_levels) do
-    table.insert(old_skill_levels, skill_level)
-    equipment.skill_levels[k] = 0
+  local old_skills = {} --as:number[]
+  for _, skill in ipairs(equipment.skills) do
+    table.insert(old_skills, skill)
   end
+  equipment.skills:resize(0)
+
+  local old_skill_levels = {} --as:number[]
+  for _, skill_level in ipairs(equipment.skill_levels) do
+    table.insert(old_skill_levels, skill_level)
+  end
+  equipment.skill_levels:resize(0)
 
 -- Spawn the creature:
 
@@ -315,6 +404,13 @@ function createUnitInner(race_id, caste_id, caste_id_choices, pos, locationChoic
       equipment.item_materials.mat_type:insert('#', equip.matType)
       equipment.item_materials.mat_index:insert('#', equip.matIndex)
       equipment.item_counts:insert('#', equip.quantity)
+    end
+  end
+
+  if skillDetails then
+    for _, skill in ipairs(skillDetails) do
+      equipment.skills:insert('#', skill.skill)
+      equipment.skill_levels:insert('#', skill.level)
     end
   end
 
@@ -356,7 +452,7 @@ function createUnitInner(race_id, caste_id, caste_id_choices, pos, locationChoic
 --  Process the created unit:
     local unit = df.unit.find(df.global.unit_next_id-1)
     table.insert(createdUnits, unit)
-    processNewUnit(unit, age, domesticate, civ_id, group_id, entityRawName, nickname, vanishDelay, flagSet, flagClear, isArena)
+    processNewUnit(unit, age, domesticate, civ_id, group_id, entityRawName, nickname, vanishDelay, profession, customProfession, flagSet, flagClear, isArena)
   end
 
   dfhack.screen.dismiss(dwarfmodeScreen)
@@ -386,6 +482,11 @@ function createUnitInner(race_id, caste_id, caste_id_choices, pos, locationChoic
     equipment.item_counts:resize(0)
   end
 
+  if skillDetails then
+    equipment.skills:resize(0)
+    equipment.skill_levels:resize(0)
+  end
+
   for _,i in pairs(old_item_types) do
     equipment.item_types:insert('#',i)
   end
@@ -401,8 +502,11 @@ function createUnitInner(race_id, caste_id, caste_id_choices, pos, locationChoic
   for _,i in pairs(old_item_counts) do
     equipment.item_counts:insert('#',i)
   end
-  for k,i in ipairs(old_skill_levels) do
-    equipment.skill_levels[k-1] = i
+  for _,i in ipairs(old_skills) do
+    equipment.skills:insert('#',i)
+  end
+  for _,i in ipairs(old_skill_levels) do
+    equipment.skill_levels:insert('#',i)
   end
 
   return createdUnits -- table containing the created unit(s) (intended for module usage)
@@ -703,9 +807,9 @@ function getItemTypeFromStr(itemTypeStr)
   qerror("Invalid item type: " .. itemTypeStr)
 end
 
-function extractEquipmentDetails(equipmentStr)
+function extractEquipmentDetail(equipmentStr)
 -- equipmentStr example: "ITEM_SHIELD_BUCKLER:PLANT:OAK:WOOD:2"
-  local equipDetails = {}
+  local equipDetail = {}
   local raw = {}
   for str in string.gmatch(equipmentStr, '([^:]+)') do -- break it up at colons
     table.insert(raw, str) -- and list the segments here
@@ -715,7 +819,7 @@ function extractEquipmentDetails(equipmentStr)
     qerror('Insufficient equipment details provided: ' .. equipmentStr)
   end
 
-  equipDetails.itemType, equipDetails.subType = getItemTypeFromStr(raw[1])
+  equipDetail.itemType, equipDetail.subType = getItemTypeFromStr(raw[1])
 
   local quantityIdx
   local matStr = raw[2]
@@ -748,23 +852,49 @@ function extractEquipmentDetails(equipmentStr)
     print(equipmentStr)
     qerror('Invalid equipment material: ' .. matStr)
   end
-  equipDetails.matType = matInfo.type
-  equipDetails.matIndex = matInfo.index
+  equipDetail.matType = matInfo.type
+  equipDetail.matIndex = matInfo.index
 
   if not raw[quantityIdx] then -- quantity not specified, default to 1
-    equipDetails.quantity = 1
+    equipDetail.quantity = 1
   else
     local quantity = tonumber(raw[quantityIdx])
     if not quantity or quantity < 0 then
       print(equipmentStr)
       qerror("Invalid equipment count: " .. raw[quantityIdx])
     end
-    equipDetails.quantity = quantity
+    equipDetail.quantity = quantity
   end
-  return equipDetails
+  return equipDetail
 end
 
-function processNewUnit(unit, age, domesticate, civ_id, group_id, entityRawName, nickname, vanishDelay, flagSet, flagClear, isArena) -- isArena boolean is used for determining whether or not the arena name should be cleared
+function extractSkillDetail(skillStr)
+  local skillDetail = {}
+  local raw = {}
+  for str in string.gmatch(skillStr, '([^:]+)') do
+    table.insert(raw, str)
+  end
+
+  if #raw < 2 then
+    qerror('Insufficient skill details provided: ' .. skillStr)
+  end
+
+  local skill = df.job_skill[raw[1]]
+  if not skill then
+    qerror('Invalid skill token: ' .. raw[1])
+  end
+  skillDetail.skill = skill
+
+  local level = tonumber(raw[2])
+  if not level or level < 0 then
+    qerror('Invalid skill level (must be a number greater than 0): ' .. raw[2])
+  end
+  skillDetail.level = level
+
+  return skillDetail
+end
+
+function processNewUnit(unit, age, domesticate, civ_id, group_id, entityRawName, nickname, vanishDelay, profession, customProfession, flagSet, flagClear, isArena) -- isArena boolean is used for determining whether or not the arena name should be cleared
   if entityRawName and type(entityRawName) == 'string' then
     nameUnit(unit, entityRawName)
   elseif not isArena then -- arena mode ONLY displays the first_name of units; removing it would result in a blank space where you'd otherwise expect the caste name to show up
@@ -779,9 +909,17 @@ function processNewUnit(unit, age, domesticate, civ_id, group_id, entityRawName,
     dfhack.units.setNickname(unit, nickname)
   end
 
+  if customProfession then
+    unit.custom_profession = tostring(customProfession)
+  end
+  if profession then
+    unit.profession = df.profession[profession] -- will be overridden by setAge() below if the unit is turned into a BABY or CHILD
+  end
+
   if tonumber(civ_id) then
     unit.civ_id = civ_id
   end
+
   createNemesis(unit, tonumber(civ_id), tonumber(group_id))
 
   setAge(unit, age) -- run regardless of whether or not age has been specified so as to set baby/child status
@@ -795,8 +933,8 @@ function processNewUnit(unit, age, domesticate, civ_id, group_id, entityRawName,
   if vanishDelay then
     setVanishCountdown(unit, vanishDelay)
   end
-  enableDefaultLabors(unit)
   setEquipmentOwnership(unit)
+  enableUnitLabors(unit, true, true)
   handleUnitFlags(unit,flagSet,flagClear)
 end
 
@@ -892,30 +1030,43 @@ function wildUnit(unit)
   end
 end
 
-function enableDefaultLabors(unit)
+function enableUnitLabors(unit, default, skilled)
+-- enables relevant labors for adult units with CAN_LEARN
+-- if default is set, enable those labors that are typically enabled by default
+-- if skilled is set, enable any labors the unit is skilled in
   if unit.profession == df.profession.BABY or unit.profession == df.profession.CHILD then
     return
   end
   if unit.enemy.caste_flags.CAN_LEARN then
     local labors = unit.status.labors
-    labors.HAUL_STONE = true
-    labors.HAUL_WOOD = true
-    labors.HAUL_BODY = true
-    labors.HAUL_FOOD = true
-    labors.HAUL_REFUSE = true
-    labors.HAUL_ITEM = true
-    labors.HAUL_FURNITURE = true
-    labors.HAUL_ANIMALS = true
-    labors.CLEAN = true
-    labors.FEED_WATER_CIVILIANS = true
-    labors.RECOVER_WOUNDED = true
-    labors.HANDLE_VEHICLES = true
-    labors.HAUL_TRADE = true
-    labors.PULL_LEVER = true
-    labors.REMOVE_CONSTRUCTION = true
-    labors.HAUL_WATER = true
-    labors.BUILD_ROAD = true
-    labors.BUILD_CONSTRUCTION = true
+    if default then
+      labors.HAUL_STONE = true
+      labors.HAUL_WOOD = true
+      labors.HAUL_BODY = true
+      labors.HAUL_FOOD = true
+      labors.HAUL_REFUSE = true
+      labors.HAUL_ITEM = true
+      labors.HAUL_FURNITURE = true
+      labors.HAUL_ANIMALS = true
+      labors.CLEAN = true
+      labors.FEED_WATER_CIVILIANS = true
+      labors.RECOVER_WOUNDED = true
+      labors.HANDLE_VEHICLES = true
+      labors.HAUL_TRADE = true
+      labors.PULL_LEVER = true
+      labors.REMOVE_CONSTRUCTION = true
+      labors.HAUL_WATER = true
+      labors.BUILD_ROAD = true
+      labors.BUILD_CONSTRUCTION = true
+    end
+    if skilled and unit.status.current_soul then -- No skills if soulless. Typically undead units.
+      for _, skill in ipairs(unit.status.current_soul.skills) do
+        local job = df.job_skill.attrs[skill.id]
+        if job and job.labor ~= -1 then
+          labors[job.labor] = true
+        end
+      end
+    end
   end
 end
 
@@ -966,6 +1117,13 @@ function handleUnitFlags(unit,flagSet,flagClear)
         unit.flags3[k] = false
       end
     end
+    for _,k in ipairs(df.unit_flags4) do
+      if flagsToSet[k] then
+        unit.flags4[k] = true
+      elseif flagsToClear[k] then
+        unit.flags4[k] = false
+      end
+    end
   end
 end
 
@@ -988,6 +1146,9 @@ local validArgs = utils.invert({
   'locationRange',
   'locationType',
   'equip',
+  'skills',
+  'profession',
+  'customProfession',
 })
 
 if moduleMode then
@@ -1027,8 +1188,8 @@ if args.setUnitToFort or args.civId == '\\LOCAL' then
     qerror("The LOCAL civ cannot be specified outside of Fortress mode!")
   end
   civ_id = df.global.ui.civ_id
-elseif args.civId and tonumber(args.civId) then
-  civ_id = tonumber(args.civId)
+else
+  civ_id = args.civId
 end
 
 local group_id
@@ -1037,8 +1198,8 @@ if args.setUnitToFort or args.groupId == '\\LOCAL' then
     qerror("The LOCAL group cannot be specified outside of Fortress mode!")
   end
   group_id = df.global.ui.group_id
-elseif args.groupId and tonumber(args.groupId) then
-  group_id = tonumber(args.groupId)
+else
+  group_id = args.groupId
 end
 
 local entityRawName
@@ -1053,4 +1214,4 @@ if args.name then
   end
 end
 
-createUnit(args.race, args.caste, pos, locationRange, args.locationType, tonumber(args.age), args.domesticate, tonumber(civ_id), tonumber(group_id), entityRawName, args.nick, tonumber(args.duration), tonumber(args.quantity), args.equip, args.flagSet, args.flagClear)
+createUnit(args.race, args.caste, pos, locationRange, args.locationType, args.age, args.domesticate, civ_id, group_id, entityRawName, args.nick, args.duration, args.quantity, args.equip, args.skills, args.profession, args.customProfession, args.flagSet, args.flagClear)
