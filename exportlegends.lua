@@ -417,11 +417,13 @@ function export_more_legends_xml()
             file:write("\t\t<child>"..link.."</child>\n")
         end
 
-        file:write("\t\t<claims>")
-        for xK, xVal in ipairs(entityV.claims.border.x) do
-            file:write(xVal..","..entityV.claims.border.y[xK].."|")
+        if #entityV.claims.border.x > 0 then
+            file:write("\t\t<claims>")
+            for xK, xVal in ipairs(entityV.claims.border.x) do
+                file:write(xVal..","..entityV.claims.border.y[xK].."|")
+            end
+            file:write("</claims>\n")
         end
-        file:write("</claims>\n")
 
         if (table_containskey(entityV,"occasion_info") and entityV.occasion_info ~= nil) then
             for occasionK, occasionV in pairs(entityV.occasion_info.occasions) do
@@ -568,14 +570,14 @@ function export_more_legends_xml()
                         df.history_event_masterpiece_created_item_improvementst:is_instance(event) or
                         df.history_event_masterpiece_created_dye_itemst:is_instance(event)
                         ) and k == "item_subtype" then
-                    --if event.item_type > -1 and v > -1 then
+                    if event.item_type > -1 and v > -1 then
                         file:write("\t\t<"..k..">"..getItemSubTypeName(event.item_type,v).."</"..k..">\n")
+                    end
+                elseif df.history_event_masterpiece_created_foodst:is_instance(event) and k == "item_subtype" then
+                    --if event.item_type > -1 and v > -1 then
+                        file:write("\t\t<item_type>food</item_type>\n")
+                        file:write("\t\t<"..k..">"..getItemSubTypeName(df.item_type.FOOD,v).."</"..k..">\n")
                     --end
-                    elseif df.history_event_masterpiece_created_foodst:is_instance(event) and k == "item_subtype" then
-                        --if event.item_type > -1 and v > -1 then
-                            file:write("\t\t<item_type>food</item_type>\n")
-                            file:write("\t\t<"..k..">"..getItemSubTypeName(df.item_type.FOOD,v).."</"..k..">\n")
-                        --end
                 elseif df.history_event_item_stolenst:is_instance(event) and k == "mattype" then
                     if (v > -1) then
                         if (dfhack.matinfo.decode(event.mattype, event.matindex) == nil) then
