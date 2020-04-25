@@ -19,7 +19,9 @@ that repo.
 - `spawnunit`: fixed an error when forwarding some arguments but not a location to `modtools/create-unit`
 
 ## Misc Improvements
-- `exportlegends`: made interaction export more robust and human-readable
+- `exportlegends`:
+    - made interaction export more robust and human-readable
+    - removed empty ``<item_subtype>`` and ``<claims>`` tags
 - `modtools/create-unit`: added ``-equip`` option to equip created units
 
 # 0.47.04-beta1
