@@ -23,6 +23,7 @@ jobs:
     - name: Check for missing docs
       run: python3 $HOME/dfhack/travis/script-docs.py .
     - name: Upload docs
+      if: success() || failure()
       uses: actions/upload-artifact@master
       with:
         name: docs
@@ -44,6 +45,8 @@ jobs:
     - name: Check whitespace
       run: python3 $HOME/dfhack/travis/lint.py
     - name: Check Lua syntax
+      if: success() || failure()
       run: python3 $HOME/dfhack/travis/script-syntax.py --ext=lua --cmd="luac5.3 -p"
     - name: Check Ruby syntax
+      if: success() || failure()
       run: python3 $HOME/dfhack/travis/script-syntax.py --ext=rb --cmd="ruby -c"
