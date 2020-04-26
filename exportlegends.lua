@@ -47,6 +47,39 @@ local MAPS = {
     "Diplomacy",
 }
 
+-- Used for moving files, does NOT change the filenames
+local MAPS_POSTFIX = {
+    "-bm","-detailed","-dip","-drn","-el","-elw","-evil","-hyd","-nob",
+    "-rain","-sal","-sav","-str","-tmp","-trd","-veg","-vol"
+}
+
+-- check if a folder with this name could be created or already exists
+function get_world_date_str()
+    local month = dfhack.world.ReadCurrentMonth() + 1 --days and months are 1-indexed
+    local day = dfhack.world.ReadCurrentDay()
+    local year_str = string.format('%0'..math.max(5, string.len(''..df.global.cur_year))..'d', df.global.cur_year)
+    local date_str = year_str..string.format('-%02d-%02d', month, day)
+    return date_str
+end
+
+-- set current directory as main folder
+local main_folder = dfhack.filesystem.getcwd()
+-- go back to root folder so dfhack does not break, returns true if successfully
+function move_back_to_main_folder()
+    -- return dfhack.filesystem.chdir(dfhack.getDFPath())
+    return dfhack.filesystem.chdir(main_folder)
+end
+
+-- set default folder name
+local folder_name = df.global.world.cur_savegame.save_dir.."-"..get_world_date_str()
+-- go to save folder, returns true if successfully
+function move_to_save_folder()
+    if move_back_to_main_folder() then
+        return dfhack.filesystem.chdir(folder_name)
+    end
+    return false
+end
+
 function getItemSubTypeName(itemType, subType)
     if (dfhack.items.getSubtypeCount(itemType)) <= 0 then
         return tostring(-1)
@@ -115,15 +148,14 @@ setmetatable(df_enums, {
 
 --create an extra legends xml with extra data, by Mason11987 for World Viewer
 function export_more_legends_xml()
-    local month = dfhack.world.ReadCurrentMonth() + 1 --days and months are 1-indexed
-    local day = dfhack.world.ReadCurrentDay()
-    local year_str = string.format('%0'..math.max(5, string.len(''..df.global.cur_year))..'d', df.global.cur_year)
-    local date_str = year_str..string.format('-%02d-%02d', month, day)
     local problem_elements = {}
 
-    local filename = df.global.world.cur_savegame.save_dir.."-"..date_str.."-legends_plus.xml"
+    local filename = df.global.world.cur_savegame.save_dir.."-"..get_world_date_str().."-legends_plus.xml"
     local file = io.open(filename, 'w')
-    if not file then qerror("could not open file: " .. filename) end
+    if not file then
+      move_back_to_main_folder()
+      qerror("could not open file: " .. filename)
+    end
 
     file:write("<?xml version=\"1.0\" encoding='UTF-8'?>\n")
     file:write("<df_world>\n")
@@ -988,20 +1020,34 @@ function export_detailed_maps()
             local vs = dfhack.gui.getViewscreenByType(df.viewscreen_export_graphical_mapst, 0)
             if not vs then
                 local legends_vs = dfhack.gui.getViewscreenByType(df.viewscreen_legendsst, 0)
-                    or qerror("Could not find legends screen")
+                if not legends_vs then
+                    move_back_to_main_folder()
+                    qerror("Could not find legends screen")
+                end
+
                 gui.simulateInput(legends_vs, 'LEGENDS_EXPORT_DETAILED_MAP')
             end
 
             vs = dfhack.gui.getViewscreenByType(df.viewscreen_export_graphical_mapst, 0)
-                or qerror("Could not find map export screen")
+            if not vs then
+                move_back_to_main_folder()
+                qerror("Could not find map export screen")
+            end
+            
             vs.sel_type = i - 1
             print('    Exporting map: ' .. MAPS[i])
+            if not move_to_save_folder() then
+                qerror('The '..folder_name..' folder was created successfully. But could not move into the folder')
+            end
             gui.simulateInput(vs, 'SELECT')
             while dfhack.gui.getCurViewscreen() == vs do
                 script.sleep(10, 'frames')
             end
+            move_back_to_main_folder()
         end
+        print("    Done exporting")
     end)
+
 end
 
 -- export site maps
@@ -1020,28 +1066,64 @@ function export_site_maps()
         end
         gui.simulateInput(vs, 'LEAVESCREEN')
     else
+        move_back_to_main_folder()
         qerror('this command can only be used in Legends mode')
+    end
+end
+
+-- check if a folder with this name could be created or already exists
+function create_folder(folder_name)
+    -- check if it is a file, not a folder
+    if dfhack.filesystem.isfile(folder_name) then
+      qerror(folder_name..' is a file, not a folder')
+      return false
+    end
+    if dfhack.filesystem.exists(folder_name) then
+      return true
+    else
+      return dfhack.filesystem.mkdir(folder_name)
     end
 end
 
 -- main()
 if dfhack.gui.getCurFocus() == "legends" or dfhack.gui.getCurFocus() == "dfhack/lua/legends" then
     -- either native legends mode, or using the open-legends.lua script
+    if #args >= 2 then
+        folder_name = args[2]
+    end
+    if not create_folder(folder_name) then
+        -- no valid folder name or could not create folder
+        qerror('The foldername '..folder_name..' could not be created')
+    end
+    -- Move into the export folder
+    if not move_to_save_folder() then
+        qerror('The '..folder_name..' folder was created successfully. But could not move into the folder')
+    end
+    -- Uncomment the line below if you want to test if it changed directory properly
+    -- print(dfhack.filesystem.getcwd())
+    print("    Writing all files in: "..folder_name)
     if args[1] == "all" then
         export_legends_info()
         export_site_maps()
+        move_back_to_main_folder() -- Move back out of the subfolder
         export_detailed_maps()
     elseif args[1] == "info" then
         export_legends_info()
+        move_back_to_main_folder() -- Move back out of the subfolder
     elseif args[1] == "custom" then
         export_more_legends_xml()
+        move_back_to_main_folder() -- Move back out of the subfolder
     elseif args[1] == "maps" then
+        move_back_to_main_folder() -- Move back out of the subfolder
         export_detailed_maps()
     elseif args[1] == "sites" then
         export_site_maps()
+        move_back_to_main_folder() -- Move back out of the subfolder
     else
+        move_back_to_main_folder()
         qerror('Valid arguments are "all", "info", "custom", "maps" or "sites"')
     end
+    print("    Exported files can be found in the \""..folder_name.."\" folder.")
 elseif args[1] == "maps" and dfhack.gui.getCurFocus() == "export_graphical_map" then
     export_detailed_maps()
 else
