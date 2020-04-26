@@ -512,7 +512,7 @@ function export_more_legends_xml()
                     or (k == "region" and not df.history_event_hf_does_interactionst:is_instance(event))
                     or k == "region_pos" or k == "layer" or k == "feature_layer" or k == "subregion"
                     or k == "anon_1" or k == "anon_2" or k == "flags2" or k == "unk1" then
-
+                    -- do notting for these keys
                 elseif df.history_event_add_hf_entity_linkst:is_instance(event) and k == "link_type" then
                     file:write("\t\t<"..k..">"..df_enums.histfig_entity_link_type[v]:lower().."</"..k..">\n")
                 elseif df.history_event_add_hf_entity_linkst:is_instance(event) and k == "position_id" then
@@ -600,17 +600,17 @@ function export_more_legends_xml()
                     file:write("\t\t<circumstance>\n")
                     file:write("\t\t\t<type>"..event.circumstance.type.."</type>\n")
                     if event.circumstance.type == df.unit_thought_type.Death then
-                        file:write("\t\t\t<Death>"..event.circumstance.data.Death.."</Death>\n")
+                        file:write("\t\t\t<death>"..event.circumstance.data.Death.."</death>\n")
                     elseif event.circumstance.type == df.unit_thought_type.Prayer then
-                        file:write("\t\t\t<Prayer>"..event.circumstance.data.Prayer.."</Prayer>\n")
+                        file:write("\t\t\t<prayer>"..event.circumstance.data.Prayer.."</prayer>\n")
                     elseif event.circumstance.type == df.unit_thought_type.DreamAbout then
-                        file:write("\t\t\t<DreamAbout>"..event.circumstance.data.DreamAbout.."</DreamAbout>\n")
+                        file:write("\t\t\t<dream_about>"..event.circumstance.data.DreamAbout.."</dream_about>\n")
                     elseif event.circumstance.type == df.unit_thought_type.Defeated then
-                        file:write("\t\t\t<Defeated>"..event.circumstance.data.Defeated.."</Defeated>\n")
+                        file:write("\t\t\t<defeated>"..event.circumstance.data.Defeated.."</defeated>\n")
                     elseif event.circumstance.type == df.unit_thought_type.Murdered then
-                        file:write("\t\t\t<Murdered>"..event.circumstance.data.Murdered.."</Murdered>\n")
+                        file:write("\t\t\t<murdered>"..event.circumstance.data.Murdered.."</murdered>\n")
                     elseif event.circumstance.type == df.unit_thought_type.HistEventCollection then
-                        file:write("\t\t\t<HistEventCollection>"..event.circumstance.data.HistEventCollection.."</HistEventCollection>\n")
+                        file:write("\t\t\t<hist_event_collection>"..event.circumstance.data.HistEventCollection.."</hist_event_collection>\n")
                     end
                     file:write("\t\t</circumstance>\n")
                 elseif (df.history_event_artifact_possessedst:is_instance(event) or
