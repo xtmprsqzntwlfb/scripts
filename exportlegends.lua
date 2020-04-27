@@ -47,12 +47,6 @@ local MAPS = {
     "Diplomacy",
 }
 
--- Used for moving files, does NOT change the filenames
-local MAPS_POSTFIX = {
-    "-bm","-detailed","-dip","-drn","-el","-elw","-evil","-hyd","-nob",
-    "-rain","-sal","-sav","-str","-tmp","-trd","-veg","-vol"
-}
-
 -- check if a folder with this name could be created or already exists
 function get_world_date_str()
     local month = dfhack.world.ReadCurrentMonth() + 1 --days and months are 1-indexed
