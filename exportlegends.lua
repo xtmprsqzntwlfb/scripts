@@ -607,21 +607,23 @@ function export_more_legends_xml()
                         df.history_event_entity_dissolvedst:is_instance(event) or
                         df.history_event_item_stolenst:is_instance(event) or
                         df.history_event_artifact_createdst:is_instance(event)) and k == "circumstance" then
-                    if event.circumstance.type ~= -1 then
+                    if event.circumstance.type ~= df.unit_thought_type.None then
                         file:write("\t\t<circumstance>\n")
-                        file:write("\t\t\t<type>"..event.circumstance.type.."</type>\n")
+                        file:write("\t\t\t<type>"..df_enums.unit_thought_type[event.circumstance.type]:lower().."</type>\n")
                         if event.circumstance.type == df.unit_thought_type.Death then
-                            file:write("\t\t\t<death>"..event.circumstance.data.Death.."</death>\n")
+                            printifvalue (file, 3, "death", event.circumstance.data.Death)
                         elseif event.circumstance.type == df.unit_thought_type.Prayer then
-                            file:write("\t\t\t<prayer>"..event.circumstance.data.Prayer.."</prayer>\n")
+                            printifvalue (file, 3, "prayer", event.circumstance.data.Prayer)
                         elseif event.circumstance.type == df.unit_thought_type.DreamAbout then
-                            file:write("\t\t\t<dream_about>"..event.circumstance.data.DreamAbout.."</dream_about>\n")
+                            printifvalue (file, 3, "dream_about", event.circumstance.data.DreamAbout)
                         elseif event.circumstance.type == df.unit_thought_type.Defeated then
-                            file:write("\t\t\t<defeated>"..event.circumstance.data.Defeated.."</defeated>\n")
+                            printifvalue (file, 3, "defeated", event.circumstance.data.Defeated)
                         elseif event.circumstance.type == df.unit_thought_type.Murdered then
-                            file:write("\t\t\t<murdered>"..event.circumstance.data.Murdered.."</murdered>\n")
+                            printifvalue (file, 3, "murdered", event.circumstance.data.Murdered)
                         elseif event.circumstance.type == df.unit_thought_type.HistEventCollection then
                             file:write("\t\t\t<hist_event_collection>"..event.circumstance.data.HistEventCollection.."</hist_event_collection>\n")
+                        elseif event.circumstance.type == df.unit_thought_type.AfterAbducting then
+                            printifvalue (file, 3, "after_abducting", event.circumstance.data.AfterAbducting)
                         end
                         file:write("\t\t</circumstance>\n")
                     end
@@ -635,17 +637,17 @@ function export_more_legends_xml()
                         df.history_event_entity_dissolvedst:is_instance(event) or
                         df.history_event_item_stolenst:is_instance(event) or
                         df.history_event_artifact_createdst:is_instance(event)) and k == "reason" then
-                    if event.reason.type ~= -1 then
-                        file:write("\t\t<reason>\n")
-                        file:write("\t\t\t<type>"..df_enums.history_event_reason[event.reason.type]:lower().."</type>\n")
+                    if event.reason.type ~= df.history_event_reason.none then
+                        file:write("\t\t<reason>"..df_enums.history_event_reason[event.reason.type]:lower().."</reason>\n")
                         if event.reason.type == df.history_event_reason.glorify_hf then
-                            file:write("\t\t\t<glorify_hf>"..event.reason.data.glorify_hf.."</glorify_hf>\n")
+                            printifvalue (file, 2, "glorify_hf", event.reason.data.glorify_hf)
+                        elseif event.reason.type == df.history_event_reason.sanctify_hf then
+                            printifvalue (file, 2, "sanctify_hf", event.reason.data.sanctify_hf)
                         elseif event.reason.type == df.history_event_reason.artifact_is_heirloom_of_family_hfid then
-                            file:write("\t\t\t<artifact_is_heirloom_of_family_hfid>"..event.reason.data.artifact_is_heirloom_of_family_hfid.."</artifact_is_heirloom_of_family_hfid>\n")
+                            printifvalue (file, 2, "artifact_is_heirloom_of_family_hfid", event.reason.data.artifact_is_heirloom_of_family_hfid)
                         elseif event.reason.type == df.history_event_reason.artifact_is_symbol_of_entity_position then
-                            file:write("\t\t\t<artifact_is_symbol_of_entity_position>"..event.reason.data.artifact_is_symbol_of_entity_position.."</artifact_is_symbol_of_entity_position>\n")
+                            printifvalue (file, 2, "artifact_is_symbol_of_entity_position", event.reason.data.artifact_is_symbol_of_entity_position)
                         end
-                        file:write("\t\t</reason>\n")
                     end
                 elseif (df.history_event_masterpiece_created_itemst:is_instance(event) or
                         df.history_event_masterpiece_created_item_improvementst:is_instance(event) or
