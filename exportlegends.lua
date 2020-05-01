@@ -157,7 +157,9 @@ function export_more_legends_xml()
         file:write("\t\t<name>"..escape_xml(dfhack.df2utf(dfhack.TranslateName(mountainV.name,1))).."</name>\n")
         file:write("\t\t<coords>"..mountainV.pos.x..","..mountainV.pos.y.."</coords>\n")
         file:write("\t\t<height>"..mountainV.height.."</height>\n")
-        file:write("\t\t<is_volcano>"..tostring(mountainV.flags.is_volcano).."</is_volcano>\n")
+        if mountainV.flags.is_volcano then
+            file:write("\t\t<is_volcano/>\n")
+        end
         file:write("\t</mountain_peak>\n")
     end
     file:write("</mountain_peaks>\n")
@@ -222,7 +224,9 @@ function export_more_legends_xml()
         file:write("\t\t<name_singular>"..escape_xml(dfhack.df2utf(creatureV.name[0])).."</name_singular>\n")
         file:write("\t\t<name_plural>"..escape_xml(dfhack.df2utf(creatureV.name[1])).."</name_plural>\n")
         for flagK, flagV in ipairs (df.creature_raw_flags) do
-            file:write("\t\t<"..flagV:lower()..">"..tostring(creatureV.flags[flagV]).."</"..flagV:lower()..">\n")
+            if creatureV.flags[flagV] then
+                file:write("\t\t<"..flagV:lower().."/>\n")
+            end
         end
         file:write("\t</creature>\n")
     end
