@@ -51,11 +51,11 @@ function getItemSubTypeName(itemType, subType)
     if (dfhack.items.getSubtypeCount(itemType)) <= 0 then
         return tostring(-1)
     end
-    local subtypename = dfhack.items.getSubtypeDef(itemType, subType)
-    if (subtypename == nil) then
+    local subtype_def = dfhack.items.getSubtypeDef(itemType, subType)
+    if (subtype_def == nil) then
         return tostring(-1)
     else
-        return escape_xml(tostring(subtypename.name):lower())
+        return escape_xml(dfhack.df2utf(subtype_def.name:lower()))
     end
 end
 
