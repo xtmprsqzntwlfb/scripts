@@ -31,14 +31,6 @@ local validArgs = utils.invert({
 })
 local args = utils.processArgs({...}, validArgs)
 
-local function getSpeciesIdFromString(name)
-    for k,v in ipairs(df.global.world.raws.creatures.all) do
-        if v.creature_id == name or v.name[0] == name then
-            return k
-        end
-    end
-end
-
 if args.help then
  print(usage)
  return
@@ -70,6 +62,13 @@ else
  error 'invalid gender'
 end
 
+local race 
+for k,v in ipairs(df.global.world.raws.creatures.all) do
+    if v.creature_id == args.depictedAs or v.name[0] == args.depictedAs then
+        race = k
+    end
+end
+
 for _,fig in ipairs(df.global.world.history.figures) do
  if fig.name.first_name == args.name then
   print('god ' .. args.name .. ' already exists. Skipping')
@@ -94,7 +93,7 @@ godFig.id = df.global.hist_figure_next_id
 df.global.hist_figure_next_id = 1+df.global.hist_figure_next_id
 godFig.info = df.historical_figure_info:new()
 godFig.info.spheres = {new=true}
-godFig.race = getSpeciesIdFromString(args.depictedAs)
+godFig.race = race
 godFig.sex = gender
 godFig.name.first_name = args.name
 for _,sphere in ipairs(args.spheres) do
