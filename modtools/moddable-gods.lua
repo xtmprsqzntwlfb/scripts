@@ -95,6 +95,7 @@ df.global.hist_figure_next_id = 1+df.global.hist_figure_next_id
 godFig.info = df.historical_figure_info:new()
 godFig.info.spheres = {new=true}
 godFig.race = race
+godFig.caste = 0
 godFig.sex = gender
 godFig.name.first_name = args.name
 for _,sphere in ipairs(args.spheres) do
