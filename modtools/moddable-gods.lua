@@ -17,10 +17,6 @@ Arguments::
         define a space-separated list of spheres of influence of the god
     -depictedAs str
         often depicted as a str
-    -domain str
-        set the domain of the god
-    -description str
-        set the description of the god
 
 ]====]
 local utils = require 'utils'
@@ -31,18 +27,24 @@ local validArgs = utils.invert({
  'spheres',
  'gender',
  'depictedAs',
- 'domain',
- 'description',
 -- 'entities',
 })
 local args = utils.processArgs({...}, validArgs)
+
+local function getSpeciesIdFromString(name)
+    for k,v in ipairs(df.global.world.raws.creatures.all) do
+        if v.creature_id == name or v.name[0] == name then
+            return k
+        end
+    end
+end
 
 if args.help then
  print(usage)
  return
 end
 
-if not args.name or not args.depictedAs or not args.domain or not args.description or not args.spheres or not args.gender then
+if not args.name or not args.depictedAs or not args.spheres or not args.gender then
  error('All arguments must be specified.')
 end
 
@@ -62,6 +64,8 @@ if args.gender == 'male' then
  gender = 1
 elseif args.gender == 'female' then
  gender = 0
+elseif args.gender == "neuter" then
+ gender = -1
 else
  error 'invalid gender'
 end
@@ -90,8 +94,7 @@ godFig.id = df.global.hist_figure_next_id
 df.global.hist_figure_next_id = 1+df.global.hist_figure_next_id
 godFig.info = df.historical_figure_info:new()
 godFig.info.spheres = {new=true}
-godFig.info.secret = df.historical_figure_info.T_secret:new()
-
+godFig.race = getSpeciesIdFromString(args.depictedAs)
 godFig.sex = gender
 godFig.name.first_name = args.name
 for _,sphere in ipairs(args.spheres) do
