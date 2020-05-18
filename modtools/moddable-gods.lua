@@ -104,4 +104,4 @@ for _,sphere in ipairs(args.spheres) do
 end
 df.global.world.history.figures:insert('#',godFig)
 
-print(args.name.first_name .. " created as historical figure " .. tostring(godFig.id))
+print(godFig.name.first_name .. " created as historical figure " .. tostring(godFig.id))
