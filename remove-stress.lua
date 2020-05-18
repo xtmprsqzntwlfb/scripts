@@ -1,5 +1,6 @@
 -- Sets stress to negative one million
 --By Putnam; http://www.bay12forums.com/smf/index.php?topic=139553.msg5820486#msg5820486
+--edited by Bumber
 --@module = true
 local help = [====[
 
@@ -10,6 +11,7 @@ very stressed dwarves taking on negative or greater values respectively.
 Applies to the selected unit, or use ``remove-stress -all`` to apply to all units.
 Using the argument ``-value 0`` will reduce stress to the value 0 instead of -1,000,000.
 Negative values must be preceded by a backslash (\): ``-value \-10000``
+
 ]====]
 
 local utils = require 'utils'
