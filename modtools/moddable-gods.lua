@@ -62,7 +62,7 @@ else
  error 'invalid gender'
 end
 
-local race 
+local race
 for k,v in ipairs(df.global.world.raws.creatures.all) do
     if v.creature_id == args.depictedAs or v.name[0] == args.depictedAs then
         race = k
