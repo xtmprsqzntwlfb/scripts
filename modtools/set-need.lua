@@ -97,10 +97,10 @@ local focusSatisfied = 400
 -- Returns true if unit has the given need, false if not.
 -- deityId is an optional argument that records the deity's historical figure ID for PrayOrMeditate needs
 function unitHasNeed(unit, need, deityId)
-  return getUnitNeed(unit, need, deityId) ~= false
+  return not not getUnitNeed(unit, need, deityId)
 end
 
--- Returns the unit's need data, followed by its index in the needs list if the unit has the given need. Otherwise, returns false.
+-- Returns the unit's need data, followed by its index in the needs list if the unit has the given need. Otherwise, returns nil.
 -- deityId is an optional argument that records the deity's historical figure ID for PrayOrMeditate needs
 function getUnitNeed(unit, need, deityId)
   for index, needInstance in ipairs(unit.status.current_soul.personality.needs) do
@@ -115,30 +115,25 @@ function getUnitNeed(unit, need, deityId)
   end
 
   -- If we get here, unit doesn't have it
-  return false
 end
 
--- Returns the unit's focus level for the given need, or false if they don't have that need
+-- Returns the unit's focus level for the given need, or nil if they don't have that need
 -- deityId is an optional argument that records the deity's historical figure ID for PrayOrMeditate needs
 function getFocus(unit, need, deityId)
   local needInstance = getUnitNeed(unit, need, deityId)
 
-  if needInstance == false then
-    return false
-  else
+  if needInstance then
     return needInstance.focus_level
   end
 end
 
--- Returns the unit's need level for the given need, or false if they don't have that need
+-- Returns the unit's need level for the given need, or nil if they don't have that need
 -- deityId is an optional argument that records the deity's historical figure ID for PrayOrMeditate needs
 -- You can use getNeedLevelString to get the label that the game uses for that level e.g. "Strong", "Slight"
 function getNeedLevel(unit, need, deityId)
   local needInstance = getUnitNeed(unit, need, deityId)
 
-  if needInstance == false then
-    return false
-  else
+  if needInstance then
     return needInstance.need_level
   end
 end
@@ -146,8 +141,8 @@ end
 function addNeed(unit, need, focus, level, deityId)
   -- Setup default values
   local need = need
-  if not tonumber(need) then
-    need = df.need_type[need]
+  if type(need) == "string" then
+    need = df.need_type[need] --luacheck:retype
   end
 
   local focus = focus or focusDefault -- focusDefault defined earlier in script: default is 0
@@ -164,7 +159,7 @@ end
 function removeNeed(unit, need, deityId)
   local needInstance, index = getUnitNeed(unit, need, deityId)
 
-  if needInstance == false then
+  if not needInstance then
     return false
   else
     unit.status.current_soul.personality.needs:erase(index)
@@ -217,7 +212,7 @@ end
 
 -- Replicates the base game calculations that determine the strength of a unit's needs based on their personality traits, beliefs, and devotion to gods.
 -- Returns appropriate need strength value, or 0 if the unit shouldn't have the need.
-local needDefaultsInfo = {
+local needDefaultsInfo = { --as:{_type:table,trait:{_type:table,id:string},belief:{_type:table,id:string},special:bool,negative:bool}[]
   [df.need_type.Socialize] = {trait = {id = "GREGARIOUSNESS"}},
   [df.need_type.DrinkAlcohol] = {trait = {id = "IMMODERATION"}},
   [df.need_type.PrayOrMeditate] = {special = true},
@@ -250,6 +245,7 @@ local needDefaultsInfo = {
   [df.need_type.AdmireArt] = {belief = {id = "ARTWORK"}}
 }
 local needLevelValues = {1, 2, 5, 10} --Value for need level for each need level tier
+--luacheck: out=number
 function getUnitDefaultNeedStrength(unit, need, deityId)
   local entry = needDefaultsInfo[need]
   if entry == nil then return 0 end
@@ -500,7 +496,7 @@ function main(...)
   end
 
   -- Valid target check
-  local unitsList = {}
+  local unitsList = {} --as:df.unit[]
   if not args.citizens then
     -- Assume trying to target a unit
     local unit

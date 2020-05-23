@@ -88,7 +88,7 @@ An example of player digging in adventure mode:
 --]==]
 
 --keybinding, change to your hearts content. Only the key part.
-keybinds={
+local keybinds={
 nextJob={key="CUSTOM_SHIFT_T",desc="Next job in the list"},
 prevJob={key="CUSTOM_SHIFT_R",desc="Previous job in the list"},
 continue={key="A_WAIT",desc="Continue job if available"},
@@ -101,7 +101,7 @@ workshop={key="CHANGETAB",desc="Show building menu"},
 quick={key="CUSTOM_Q",desc="Toggle quick item select"},
 }
 -- building filters
-build_filter={
+local build_filter={
     forbid_all=false, --this forbits all except the "allow"
     allow={"MetalSmithsForge"}, --ignored if forbit_all=false
     forbid={} --ignored if forbit_all==true
@@ -127,7 +127,7 @@ local gscript=require 'gui.script'
 
 local tile_attrs = df.tiletype.attrs
 
-settings={build_by_items=false,use_worn=false,check_inv=true,teleport_items=true,df_assign=false,gui_item_select=true,only_in_sites=false}
+local settings={build_by_items=false,use_worn=false,check_inv=true,teleport_items=true,df_assign=false,gui_item_select=true,only_in_sites=false}
 
 function hasValue(tbl,val)
     for k,v in pairs(tbl) do
@@ -356,6 +356,7 @@ if settings.clear_jobs then
     print("Deleted: "..counter.." jobs")
     return
 end
+--luacheck: in={_type:table,job:df.job,job_type:df.job_type,pos:df.coord,from_pos:df.coord,unit:df.unit,no_job_delete:bool,screen:usetool,pre_actions:'{_type:function,_node:{_type:tuple,_tuple:[bool,string]},_anyfunc:true}[]',post_actions:'{_type:function,_node:{_type:tuple,_tuple:[bool,string]},_anyfunc:true}[]'}
 function makeJob(args)
     gscript.start(function ()
         make_native_job(args)
@@ -451,11 +452,17 @@ function SetCarveDir(args)
         job.item_category[dirs.up]=true
     end
 end
+function is_grasping_item( item_bp,unit )
+    local bplan=unit.body.body_plan
+    local bpart=bplan.body_parts[item_bp]
+
+    return bpart.flags.GRASP
+end
 function MakePredicateWieldsItem(item_skill)
     local pred=function(args)
         local inv=args.unit.inventory
         for k,v in pairs(inv) do
-            if v.mode==1 and v.item:getMeleeSkill()==item_skill and args.unit.body.weapon_bp==v.body_part_id then
+            if v.mode==1 and v.item:getMeleeSkill()==item_skill and is_grasping_item(v.body_part_id,args.unit) then
                 return true
             end
         end
@@ -621,7 +628,6 @@ function chooseBuildingWidthHeightDir(args) --TODO nicer selection dialog
     return false
     --width = ..., height = ..., direction = ...
 end
-CheckAndFinishBuilding=nil
 function BuildingChosen(inp_args,type_id,subtype_id,custom_id)
     local args=inp_args or {}
 
@@ -962,7 +968,7 @@ function AssignJobItems(args)
 
 end
 
-CheckAndFinishBuilding=function (args,bld)
+function CheckAndFinishBuilding(args,bld)
     args.building=args.building or bld
     for idx,job in pairs(bld.jobs) do
         if job.job_type==df.job_type.ConstructBuilding then
@@ -1162,7 +1168,7 @@ function PlantGatherFix(args)
     path.path.z:insert("#",pos.z)
     printall(path)
 end
-actions={
+local actions={ --as:{1:string,2:df.job_type,3:'{_type:function,_node:{_type:tuple,_tuple:[bool,string]},_anyfunc:true}[]',4:'{_type:function,_node:{_type:tuple,_tuple:[bool,string]},_anyfunc:true}[]',5:'{_type:function,_node:{_type:tuple,_tuple:[bool,string]},_anyfunc:true}[]'}[]
     {"CarveFortification"   ,df.job_type.CarveFortification,{IsWall,IsHardMaterial}},
     {"DetailWall"           ,df.job_type.DetailWall,{IsWall,IsHardMaterial}},
     {"DetailFloor"          ,df.job_type.DetailFloor,{IsFloor,IsHardMaterial,SameSquare}},
@@ -1197,8 +1203,10 @@ for id,action in pairs(actions) do
         break
     end
 end
+--luacheck:defclass={mode:{_type:table,name:string,input:'anyfunc:none'},building:df.building_actual,site:df.world_site,in_shop:df.building_workshopst}
 usetool=defclass(usetool,gui.Screen)
 usetool.focus_path = 'advfort'
+--luacheck: out=string
 function usetool:getModeName()
     local adv=df.global.world.units.active[0]
     local ret
@@ -1216,7 +1224,7 @@ end
 function usetool:update_site()
     local site=inSite()
     self.current_site=site
-    local site_label=self.subviews.siteLabel
+    local site_label=self.subviews.siteLabel --as:wid.Label
     if site then
 
         site_label:itemById("site").text=dfhack.TranslateName(site.name)
@@ -1423,9 +1431,8 @@ function usetool:openShopWindow(building)
 
     local filter_pile=workshopJobs.getJobs(building:getType(),building:getSubtype(),building:getCustomType())
     if filter_pile then
-        local state={unit=adv,from_pos={x=adv.pos.x,y=adv.pos.y, z=adv.pos.z},building=building
-        ,screen=self,bld=building,common=filter_pile.common}
-        choices={}
+        local state={unit=adv,from_pos={x=adv.pos.x,y=adv.pos.y, z=adv.pos.z},building=building,screen=self,bld=building}
+        local choices={}
         for k,v in pairs(filter_pile) do
             table.insert(choices,{job_id=0,text=v.name:lower(),filter=v})
         end
@@ -1511,6 +1518,7 @@ function usetool:armCleanTrap(building)
         makeJob(args)
     end
 end
+--luacheck: in=df.building_hivest out=none
 function usetool:hiveActions(building)
     local adv=df.global.world.units.active[0]
     local args={unit=adv,post_actions={AssignBuildingRef},pos=adv.pos,
@@ -1551,12 +1559,14 @@ function usetool:farmPlot(building)
 
     makeJob(args)
 end
+--luacheck: in=df.building_bedst out=none
 function usetool:bedActions(building)
     local adv=df.global.world.units.active[0]
     local args={unit=adv,pos=adv.pos,from_pos=adv.pos,screen=self,building=building,
     job_type=df.job_type.Sleep,post_actions={AssignBuildingRef}}
     makeJob(args)
 end
+--luacheck: in=df.building_chairst out=none
 function usetool:chairActions(building)
     local adv=df.global.world.units.active[0]
     local eatjob={items={{quantity=1,item_type=df.item_type.FOOD}}}
@@ -1627,18 +1637,20 @@ MODES={
     },
 }
 function usetool:shopMode(enable,mode,building)
-    self.subviews.shopLabel.visible=enable
+    local shopLabel = self.subviews.shopLabel --as:wid.Label
+    shopLabel.visible=enable
     if mode then
-        self.subviews.shopLabel:itemById("text1").text=mode.name
+        shopLabel:itemById("text1").text=mode.name
         if building:getClutterLevel()<=1 then
-            self.subviews.shopLabel:itemById("clutter").text=""
+            shopLabel:itemById("clutter").text=""
         else
-            self.subviews.shopLabel:itemById("clutter").text=" Clutter:"..tostring(building:getClutterLevel())
+            shopLabel:itemById("clutter").text=" Clutter:"..tostring(building:getClutterLevel())
         end
         self.building=building
     end
     self.mode=mode
 end
+--luacheck: in=bool[] out=none
 function usetool:shopInput(keys)
     if keys[keybinds.workshop.key] then
         self:openShopWindowButtoned(self.in_shop)
