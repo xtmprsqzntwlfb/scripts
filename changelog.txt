@@ -13,6 +13,8 @@ that repo.
 
 # Future
 
+# 0.47.04-r1
+
 ## Fixes
 - `catsplosion`: fixed error when handling races with only one caste (e.g. harpies)
 -@ `exportlegends`: fixed error when exporting maps
