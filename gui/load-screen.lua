@@ -369,7 +369,7 @@ function load_screen:onDismiss()
 end
 
 load_screen_options = gui.FramedScreen{
-    frame_width = 40,
+    frame_width = 42,
     frame_height = 6,
     frame_title = "",
     frame_inset = 1,
