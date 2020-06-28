@@ -13,6 +13,9 @@ that repo.
 
 # Future
 
+## Fixes
+- `gui/load-screen`: fixed an issue causing longer timezones to be cut off
+
 # 0.47.04-r1
 
 ## Fixes
