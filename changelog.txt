@@ -16,6 +16,9 @@ that repo.
 ## Fixes
 - `gui/load-screen`: fixed an issue causing longer timezones to be cut off
 
+## Misc Improvements
+- `workorder`: changed default frequency from "Daily" to "OneTime"
+
 # 0.47.04-r1
 
 ## Fixes
