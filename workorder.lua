@@ -71,7 +71,7 @@ See description of ``<json>``-parameter for more details.
 
              This script doesn't need values in all fields:
               * ``id`` is only used for order conditions;
-              * ``frequency`` is set to ``Daily`` by default;
+              * ``frequency`` is set to ``OneTime`` by default;
               * ``amount_total`` can be missing, a function name from this script (one of
                 ``calcAmountFor_MilkCreature`` or ``calcAmountFor_ShearCreature``) or ``Lua``
                 code called as ``load(code)(order, orders)``. Missing ``amount_total`` is
@@ -584,7 +584,7 @@ local function preprocess_orders(orders)
 end
 
 local order_defaults = {
-    frequency = 'Daily'
+    frequency = 'OneTime'
 }
 local _order_mt = {__index = order_defaults}
 local function fillin_defaults(orders)
