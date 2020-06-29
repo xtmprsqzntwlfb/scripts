@@ -311,28 +311,28 @@ function GetFoodPropertiesStringList (item)
     add_lines_to_list(list, get_plant_reaction_products(mat))
     if item._type == df.item_plantst and GetMatPlant (item) then
         local plant = GetMatPlant (item)
-        if plant.material_defs.type_mill ~= -1 then
-            local targetmat = dfhack.matinfo.decode(plant.material_defs.type_mill, plant.material_defs.idx_mill)
+        if plant.material_defs.type[df.plant_material_def.mill] ~= -1 then
+            local targetmat = dfhack.matinfo.decode(plant.material_defs.type[df.plant_material_def.mill], plant.material_defs.idx[df.plant_material_def.mill])
             append(list,'Ground into '..targetmat.material.prefix..''..targetmat.material.state_name[df.matter_state.Powder])
         end
-        if plant.material_defs.type_thread ~= -1 then
-            local targetmat = dfhack.matinfo.decode(plant.material_defs.type_thread, plant.material_defs.idx_thread)
+        if plant.material_defs.type[df.plant_material_def.thread] ~= -1 then
+            local targetmat = dfhack.matinfo.decode(plant.material_defs.type[df.plant_material_def.thread], plant.material_defs.idx[df.plant_material_def.thread])
             append(list,'Woven into '..targetmat.material.prefix..''..targetmat.material.state_name[df.matter_state.Solid])
         end
-        if plant.material_defs.type_drink ~= -1 then
-            local targetmat = dfhack.matinfo.decode(plant.material_defs.type_drink, plant.material_defs.idx_drink)
+        if plant.material_defs.type[df.plant_material_def.drink] ~= -1 then
+            local targetmat = dfhack.matinfo.decode(plant.material_defs.type[df.plant_material_def.drink], plant.material_defs.idx[df.plant_material_def.drink])
             append(list,'Brewed into '..targetmat.material.prefix..''..targetmat.material.state_name[df.matter_state.Liquid])
         end
-        if plant.material_defs.type_extract_barrel ~= -1 then
-            local targetmat = dfhack.matinfo.decode(plant.material_defs.type_extract_barrel, plant.material_defs.idx_extract_barrel)
+        if plant.material_defs.type[df.plant_material_def.extract_barrel] ~= -1 then
+            local targetmat = dfhack.matinfo.decode(plant.material_defs.type[df.plant_material_def.extract_barrel], plant.material_defs.idx[df.plant_material_def.extract_barrel])
             append(list,'Cask-aged into '..targetmat.material.prefix..''..targetmat.material.state_name[df.matter_state.Liquid])
         end
-        if plant.material_defs.type_extract_vial ~= -1 then
-            local targetmat = dfhack.matinfo.decode(plant.material_defs.type_extract_vial, plant.material_defs.idx_extract_vial)
+        if plant.material_defs.type[df.plant_material_def.extract_vial] ~= -1 then
+            local targetmat = dfhack.matinfo.decode(plant.material_defs.type[df.plant_material_def.extract_vial], plant.material_defs.idx[df.plant_material_def.extract_vial])
             append(list,'Refined into vials of '..targetmat.material.prefix..''..targetmat.material.state_name[df.matter_state.Liquid])
         end
-        if plant.material_defs.type_extract_still_vial ~= -1 then
-            local targetmat = dfhack.matinfo.decode(plant.material_defs.type_extract_still_vial, plant.material_defs.idx_extract_still_vial)
+        if plant.material_defs.type[df.plant_material_def.extract_still_vial] ~= -1 then
+            local targetmat = dfhack.matinfo.decode(plant.material_defs.type[df.plant_material_def.extract_still_vial], plant.material_defs.idx[df.plant_material_def.extract_still_vial])
             append(list,'Distilled into vials of '..targetmat.material.prefix..''..targetmat.material.state_name[df.matter_state.Liquid])
         end
     end
