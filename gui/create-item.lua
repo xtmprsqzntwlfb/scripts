@@ -30,7 +30,7 @@ function getCreatureList()
  for k,cr in ipairs(df.global.world.raws.creatures.alphabetic) do
   for kk,ca in ipairs(cr.caste) do
    local str=ca.caste_name[0]
-   str=str..' '..getGenderString(ca.gender)
+   str=str..' '..getGenderString(ca.sex)
    table.insert(crList,{str,nil,ca})
   end
  end

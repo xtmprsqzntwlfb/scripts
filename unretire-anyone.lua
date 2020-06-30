@@ -59,7 +59,7 @@ function showNemesisPrompt(advSetUpScreen)
       if (histFig.died_year == -1 or histFlags.ghost) and not histFlags.deity and not histFlags.force then
         local creature = df.creature_raw.find(histFig.race).caste[histFig.caste]
         local name = creature.caste_name[0]
-        name = name..' '..getGenderString(creature.gender)
+        name = name..' '..getGenderString(creature.sex)
         if histFlags.ghost then
           name = name.." ghost"
         end
