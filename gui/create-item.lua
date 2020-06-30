@@ -14,15 +14,11 @@ See also: `createitem`, `modtools/create-item`, :issue:`735`
 
 ]====]
 function getGenderString(gender)
- local genderStr
- if gender==0 then
-  genderStr=string.char(12)
- elseif gender==1 then
-  genderStr=string.char(11)
- else
-  return ""
- end
- return string.char(40)..genderStr..string.char(41)
+  local sym = df.pronoun_type.attrs[gender].symbol
+  if not sym then
+    return ""
+  end
+  return "("..sym..")"
 end
 
 function getCreatureList()
