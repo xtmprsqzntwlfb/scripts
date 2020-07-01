@@ -11,7 +11,7 @@ Example: ``load-save region``
 
 This can also be run when starting DFHack from the command line::
 
-    ./dfhack +load-game region1
+    ./dfhack +load-save region1
 
 (This is currently untested on Windows)
 
