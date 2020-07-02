@@ -12,7 +12,7 @@ jobs:
         python-version: 3
     - name: Install dependencies
       run: |
-        sudo pip3 install --system sphinx
+        pip install sphinx
     - name: Clone scripts
       uses: actions/checkout@v2
     - name: Set up DFHack
@@ -25,7 +25,7 @@ jobs:
       run: |
         sphinx-build -qW -j3 $HOME/dfhack html
     - name: Check for missing docs
-      run: python3 $HOME/dfhack/travis/script-docs.py .
+      run: python $HOME/dfhack/travis/script-docs.py .
     - name: Upload docs
       if: success() || failure()
       uses: actions/upload-artifact@master
@@ -55,10 +55,10 @@ jobs:
         rmdir $HOME/dfhack/scripts
         ln -sv $(pwd) $HOME/dfhack/scripts
     - name: Check whitespace
-      run: python3 $HOME/dfhack/travis/lint.py
+      run: python $HOME/dfhack/travis/lint.py
     - name: Check Lua syntax
       if: success() || failure()
-      run: python3 $HOME/dfhack/travis/script-syntax.py --ext=lua --cmd="luac5.3 -p"
+      run: python $HOME/dfhack/travis/script-syntax.py --ext=lua --cmd="luac5.3 -p" --github-actions
     - name: Check Ruby syntax
       if: success() || failure()
-      run: python3 $HOME/dfhack/travis/script-syntax.py --ext=rb --cmd="ruby -c"
+      run: python $HOME/dfhack/travis/script-syntax.py --ext=rb --cmd="ruby -c" --github-actions
