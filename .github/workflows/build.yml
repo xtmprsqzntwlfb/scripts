@@ -6,6 +6,10 @@ jobs:
   docs:
     runs-on: ubuntu-18.04
     steps:
+    - name: Set up Python 3
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3
     - name: Install dependencies
       run: |
         sudo pip3 install --system sphinx
@@ -31,6 +35,14 @@ jobs:
   lint:
     runs-on: ubuntu-18.04
     steps:
+    - name: Set up Python 3
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3
+    - name: Set up Ruby 2.7
+      uses: actions/setup-ruby@v1
+      with:
+        ruby-version: 2.7
     - name: Install dependencies
       run: |
         sudo apt-get update
