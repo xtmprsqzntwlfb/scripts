@@ -22,8 +22,8 @@ Loaded as a module, this script will export those methods :
 
 For more information about arguments and return values, see ``hack/scripts/color-schemes.lua``.
 
-Notes :
-    * `gui/color-schemes` is the in-game GUI for that script.
+Related scripts:
+    * `gui/color-schemes` is the in-game GUI for this script.
     * `season-palette` swaps color schemes when the season changes.
 
 ]====]

@@ -48,22 +48,22 @@ Usage:
                     first all the unit facets will be reset and then those
                     facets listed after ``-facets`` will be modified.
 
-Example:
+Example::
 
-``assign-facets -reset -facets [ HATE_PROPENSITY -2 CHEER_PROPENSITY -1 ]``
-    Resets all the unit facets, then sets the listed facets to the following values:
+    assign-facets -reset -facets [ HATE_PROPENSITY -2 CHEER_PROPENSITY -1 ]
 
-    * Hate propensity: a value between 10 and 24 (level -2);
-    * Cheer propensity: a value between 25 and 39 (level -1).
+Resets all the unit facets, then sets the listed facets to the following values:
 
-    The final result (for a dwarf) will be:
-    ``She very rarely develops negative feelings
-    toward things. She is rarely happy or enthusiastic,
-    and she is conflicted by this as she values
-    parties and merrymaking in the abstract.``
+* Hate propensity: a value between 10 and 24 (level -2);
+* Cheer propensity: a value between 25 and 39 (level -1).
 
-    Note that the facets are compared to the beliefs,
-    and if conflicts arise they will be reported.
+The final result (for a dwarf) will be: "She very rarely develops negative
+feelings toward things. She is rarely happy or enthusiastic, and she is
+conflicted by this as she values parties and merrymaking in the abstract."
+
+Note that the facets are compared to the beliefs, and if conflicts arise they
+will be reported.
+
 ]====]
 
 local utils = require("utils")

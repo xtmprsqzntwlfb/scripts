@@ -41,12 +41,13 @@ Usage:
                     the unit goals will be erased and then those
                     goals listed after ``-goals`` will be added.
 
-Example:
+Example::
 
-``assign-goals -reset -goals [ MASTER_A_SKILL false ]``
-    Clears all the unit goals, then sets the "master
-    a skill" goal. The final result will be:
-    ``dreams of mastering a skill.``
+    assign-goals -reset -goals [ MASTER_A_SKILL false ]
+
+Clears all the unit goals, then sets the "master a skill" goal. The final result
+will be: "dreams of mastering a skill".
+
 ]====]
 
 local utils = require("utils")

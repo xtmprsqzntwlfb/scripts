@@ -5,8 +5,8 @@ local helpstr = [====[
 
 markdown
 ========
-Save a copy of a text screen in markdown (for reddit among others).
-See `forum-dwarves` for BBCode export (for eg. the Bay12 Forums).
+Save a copy of a text screen in markdown (useful for Reddit, among other sites).
+See `forum-dwarves` for BBCode export (for e.g. the Bay12 Forums).
 
 This script will attempt to read the current df-screen, and if it is a
 text-viewscreen (such as the dwarf 'thoughts' screen or an item / creature
@@ -19,7 +19,9 @@ document containing the text from multiple screens (eg: text screens
 from several dwarves, or text screens from multiple artifacts/items,
 or some combination).
 
-Usage:  ``markdown [-n] [filename]``
+Usage::
+
+    markdown [-n] [filename]
 
 :-n:    overwrites contents of output file
 :filename:

@@ -3,8 +3,12 @@
 
 setfps
 ======
-Run ``setfps <number>`` to set the FPS cap at runtime, in case you want to watch
-combat in slow motion or something.
+Sets the FPS cap at runtime. Useful in case you want to speed up the game or
+watch combat in slow motion.
+
+Usage::
+
+    setfps <number>
 
 ]====]
 

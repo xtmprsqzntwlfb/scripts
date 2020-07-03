@@ -59,11 +59,13 @@ Usage:
                     first all the unit skills will be cleared
                     and then the listed skills will be added.
 
-Example:
+Example::
 
-``assign-skills -reset -skills [ WOODCUTTING 3 AXE 2 ]``
-    Clears all the unit skills, then adds the Wood cutter skill
-    (competent level) and the Axeman skill (adequate level).
+    assign-skills -reset -skills [ WOODCUTTING 3 AXE 2 ]
+
+Clears all the unit skills, then adds the Wood cutter skill (competent level)
+and the Axeman skill (adequate level).
+
 ]====]
 
 local utils = require("utils")

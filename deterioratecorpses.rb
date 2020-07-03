@@ -22,7 +22,9 @@ also get destroyed by the script to kill more goblins and elves.
 This script causes all of those to rot away into nothing after
 several months.
 
-Usage: ``deterioratecorpses (start|stop)``
+Usage::
+
+    deterioratecorpses start|stop
 
 =end
 
