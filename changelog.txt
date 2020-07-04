@@ -14,9 +14,12 @@ that repo.
 # Future
 
 ## Fixes
+- `digfort`: fixed y-line tracking when .csv files contain lines with only commas
 - `gui/load-screen`: fixed an issue causing longer timezones to be cut off
 
 ## Misc Improvements
+- `digfort`: handle double quotes (") at the start of a string; this allows .csv files exported from spreadsheets to work without manual modification
+- `digfort`: document that removing ramps, cutting trees, and gathering plants is indeed supported
 - `workorder`: changed default frequency from "Daily" to "OneTime"
 
 # 0.47.04-r1
