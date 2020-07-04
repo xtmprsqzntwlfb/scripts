@@ -5,29 +5,34 @@ digfort
 =======
 A script to designate an area for digging according to a plan in csv format.
 
-This script, inspired from quickfort, can designate an area for digging.
+This script, inspired by quickfort, can designate an area for digging.
 Your plan should be stored in a .csv file like this::
 
     # this is a comment
-    d;d;u;d;d;skip this tile;d
-    d;d;d;i
+    d,d,u,d,d,skip this tile,d
+    d,d,d,i
 
-Available tile shapes are named after the 'dig' menu shortcuts:
-``d`` for dig, ``u`` for upstairs, ``j`` downstairs, ``i`` updown,
-``h`` channel, ``r`` upward ramp, ``x`` remove designation.
-Unrecognized characters are ignored (eg the 'skip this tile' in the sample).
+Other than ``d``, tile shapes are named after the 'dig' menu shortcuts:
+``d`` for default, ``u`` upstairs, ``j`` downstairs, ``i`` updown,
+``h`` channel, ``r`` upward ramp, and ``x`` remove designation.
+Unrecognized characters are ignored (e.g. the 'skip this tile' in the sample).
+``d`` is interpreted based on the shape of the current tile. It will dig
+walls, remove stairs and ramps, gather plants, and fell trees.
 
-Empty lines and data after a ``#`` are ignored as comments.
-To skip a row in your design, use a single ``;``.
+Empty lines and data after a ``#`` are ignored as comments. Double quote (``"``)
+characters that are inserted at the beginning of strings by csv exporters are
+also ignored. To skip a row in your design, add a row consisting only of ``,``
+characters.
 
 One comment in the file may contain the phrase ``start(3,5)``. It is interpreted
 as an offset for the pattern: instead of starting at the cursor, it will start
 3 tiles left and 5 tiles up from the cursor.
 
-additionally a comment can have a < for a rise in z level and a > for drop in z.
+Additionally a comment can have a ``<`` for a rise in z level or a ``>`` for a
+drop in z.
 
 The script takes the plan filename, starting from the root df folder (where
-``Dwarf Fortress.exe`` is found).
+``dfhack.init`` is found).
 
 =end
 
@@ -59,21 +64,23 @@ max_x = 0
 max_y = 0
 y = 0
 planfile.each_line { |l|
+    l = l.chomp.sub(/^"/, '')
+
     if l =~ /#.*start\s*\(\s*(-?\d+)\s*[,;]\s*(-?\d+)/
         raise "Error: multiple start() comments" if offset != [0, 0]
         offset = [$1.to_i, $2.to_i]
     end
-    if l.chomp == '#<'
+    if l == '#<'
         l = '<'
         y = 0
     end
 
-    if l.chomp == '#>'
+    if l == '#>'
         l = '>'
         y = 0
     end
 
-    l = l.chomp.sub(/#.*/, '')
+    l = l.sub(/#.*/, '')
     next if l == ''
     x = 0
     tiles << l.split(/[;,]/).map { |t|
@@ -100,7 +107,10 @@ if x < 0 or y < 0 or x+max_x >= map.x_count or y+max_y >= map.y_count
 end
 
 tiles.each { |line|
-    next if line.empty? or line == ['']
+    if line.empty? or line == [''] then
+        y += 1
+        next
+    end
     line.each { |tile|
         if tile.empty?
             x += 1
