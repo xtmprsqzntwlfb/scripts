@@ -17,6 +17,7 @@ that repo.
 - `gui/load-screen`: fixed an issue causing longer timezones to be cut off
 
 ## Misc Improvements
+- `gui/gm-editor`: added support for automatically following ref-targets when pressing the ``i`` key
 - `workorder`: changed default frequency from "Daily" to "OneTime"
 
 # 0.47.04-r1
