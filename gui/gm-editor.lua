@@ -5,15 +5,15 @@
 gui/gm-editor
 =============
 This editor allows to change and modify almost anything in df. Press :kbd:`?` for
-in-game help. There are three ways to open this editor:
+in-game help. There are multiple ways to open this editor:
 
 * Calling ``gui/gm-editor``  from a command or keybinding opens the editor
   on whatever is selected or viewed (e.g. unit/item description screen)
 
-* using gui/gm-editor <lua command> - executes lua command and opens editor on
+* using ``gui/gm-editor <lua command>`` - executes lua command and opens editor on
   its results (e.g. ``gui/gm-editor "df.global.world.items.all"`` shows all items)
 
-* using gui/gm-editor dialog - shows an in game dialog to input lua command. Works
+* using ``gui/gm-editor dialog`` - shows an in game dialog to input lua command. Works
   the same as version above.
 
 * using ``gui/gm-editor toggle`` - will hide (if shown) and show (if hidden) editor at
@@ -45,7 +45,8 @@ end)()
 local keybindings_raw = {
     {name='offset', key="CUSTOM_ALT_O",desc="Show current items offset"},
     {name='find', key="CUSTOM_F",desc="Find a value by entering a predicate"},
-    {name='find_id', key="CUSTOM_I",desc="Find object with this ID"},
+    {name='find_id', key="CUSTOM_I",desc="Find object with this ID, using ref-target if available"},
+    {name='find_id_raw', key="CUSTOM_SHIFT_I",desc="Find object with this ID, forcing dialog box"},
     {name='lua_set', key="CUSTOM_ALT_S",desc="Set by using a lua function"},
     {name='insert', key="CUSTOM_ALT_I",desc="Insert a new value to the vector"},
     {name='delete', key="CUSTOM_ALT_D",desc="Delete selected entry"},
@@ -124,7 +125,7 @@ function Disclaimer(tlb)
     local dsc={
         "Association Of ", {text="Psychic ",pen=COLOR_YELLOW}, "Dwarves (AOPD) is not responsible for all the damage", NEWLINE,
         "that this tool can (and will) cause to you and your loved dwarves", NEWLINE,
-        "and/or saves.Please use with caution.", NEWLINE,
+        "and/or saves. Please use with caution.", NEWLINE,
         {text="Magma not included.", pen=COLOR_LIGHTRED,bg=0}
     }
     if tlb then
@@ -207,19 +208,54 @@ function GmEditorUi:find(test)
         end
     end
 end
-function GmEditorUi:find_id()
+function GmEditorUi:find_id(force_dialog)
     local key = tostring(self:getSelectedKey())
     local id = tonumber(self:getSelectedValue())
+    local field = self:getSelectedField()
+    local ref_target = nil
+    if field and field.ref_target then
+        ref_target = field.ref_target
+    end
+    if ref_target and not force_dialog then
+        if not ref_target.find then
+            dialog.showMessage("Error!", ("Cannot look up %s by ID"):format(getmetatable(ref_target)), COLOR_LIGHTRED)
+            return
+        end
+        local obj = ref_target.find(id)
+        if obj then
+            self:pushTarget(obj)
+        else
+            dialog.showMessage("Error!", ("%s with ID %d not found"):format(getmetatable(ref_target), id), COLOR_LIGHTRED)
+        end
+        return
+    end
     if not id then return end
+    local raw_message
+    local search_key = key
+    if ref_target then
+        search_key = getmetatable(ref_target)
+        raw_message = 'This field has a ref-target of ' .. search_key
+        if not find_funcs[getmetatable(ref_target)] then
+            raw_message = raw_message .. '\nbut this type does not have an instance vector'
+        end
+    else
+        raw_message = 'This field has no ref-target specified. If you\n' ..
+                      'know what it should be, please report it!'
+    end
     local opts = {}
     for name, func in pairs(find_funcs) do
-        table.insert(opts, {text=name, callback=func, weight=search_relevance(key, name)})
+        table.insert(opts, {text=name, callback=func, weight=search_relevance(search_key, name)})
     end
     table.sort(opts, function(a, b)
         return a.weight > b.weight
     end)
+    local message = {{pen=COLOR_LIGHTRED, text="Note: "}}
+    for _, line in ipairs(utils.split_string(raw_message, '\n')) do
+        table.insert(message, line)
+        table.insert(message, NEWLINE)
+    end
     guiScript.start(function()
-        local ret,idx,choice=guiScript.showListPrompt("Choose type:",nil,3,opts,nil,true)
+        local ret,idx,choice=guiScript.showListPrompt("Choose type:",message,COLOR_WHITE,opts,nil,true)
         if ret then
             local obj = choice.callback(id)
             if obj then
@@ -266,6 +302,14 @@ function GmEditorUi:getSelectedKey()
 end
 function GmEditorUi:getSelectedValue()
     return self:currentTarget().target[self:getSelectedKey()]
+end
+function GmEditorUi:getSelectedField()
+    local ok, ret = pcall(function()
+        return self:currentTarget().target:_field(self:getSelectedKey())
+    end)
+    if ok then
+        return ret
+    end
 end
 function GmEditorUi:currentTarget()
     return self.stack[#self.stack]
@@ -424,6 +468,8 @@ function GmEditorUi:onInput(keys)
         self:find()
     elseif keys[keybindings.find_id.key] then
         self:find_id()
+    elseif keys[keybindings.find_id_raw.key] then
+        self:find_id(true)
     elseif keys[keybindings.lua_set.key] then
         self:set(self:getSelectedKey())
     elseif keys[keybindings.insert.key] then --insert
@@ -448,6 +494,10 @@ function getStringValue(trg,field)
         local enum=obj:_field(field)._type
         if enum._kind=="enum-type" then
             text=text.." ("..tostring(enum[obj[field]])..")"
+        end
+        local ref_target=obj:_field(field).ref_target
+        if ref_target then
+            text=text.. " (ref-target: "..getmetatable(ref_target)..")"
         end
     end
     end)
