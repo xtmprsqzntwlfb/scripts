@@ -235,7 +235,7 @@ function GmEditorUi:find_id(force_dialog)
     if ref_target then
         search_key = getmetatable(ref_target)
         raw_message = 'This field has a ref-target of ' .. search_key
-        if not find_funcs[getmetatable(ref_target)] then
+        if not ref_target.get_vector then
             raw_message = raw_message .. '\nbut this type does not have an instance vector'
         end
     else
