@@ -15,8 +15,12 @@ Arguments::
         if there's already a god of that name, the script halts
     -spheres [ sphereList ]
         define a space-separated list of spheres of influence of the god
+    -gender male|female|neuter
+        sets the gender of the god
     -depictedAs str
         often depicted as a str
+    -verbose
+        if specified, prints details about the created god
 
 ]====]
 local utils = require 'utils'
@@ -27,6 +31,7 @@ local validArgs = utils.invert({
  'spheres',
  'gender',
  'depictedAs',
+ 'verbose',
 -- 'entities',
 })
 local args = utils.processArgs({...}, validArgs)
@@ -104,4 +109,6 @@ for _,sphere in ipairs(args.spheres) do
 end
 df.global.world.history.figures:insert('#',godFig)
 
-print(godFig.name.first_name .. " created as historical figure " .. tostring(godFig.id))
+if args.verbose then
+  print(godFig.name.first_name .. " created as historical figure " .. tostring(godFig.id))
+end
