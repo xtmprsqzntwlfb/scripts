@@ -113,6 +113,15 @@ setmetatable(df_enums, {
     __newindex = function() error('read-only') end
 })
 
+-- prints a line with the value inside the tags if the value isn't -1. Intended to be used
+-- for fields where -1 is a known "no info" value. Relies on 'indentation' being set to indicate
+-- the current indentation level
+function printifvalue (file, indentation, tag, value)
+    if value ~= -1 then
+        file:write(string.rep("\t", indentation).."<"..tag..">"..tostring(value).."</"..tag..">\n")
+    end
+end
+
 --create an extra legends xml with extra data, by Mason11987 for World Viewer
 function export_more_legends_xml()
     local month = dfhack.world.ReadCurrentMonth() + 1 --days and months are 1-indexed
@@ -148,7 +157,9 @@ function export_more_legends_xml()
         file:write("\t\t<name>"..escape_xml(dfhack.df2utf(dfhack.TranslateName(mountainV.name,1))).."</name>\n")
         file:write("\t\t<coords>"..mountainV.pos.x..","..mountainV.pos.y.."</coords>\n")
         file:write("\t\t<height>"..mountainV.height.."</height>\n")
-        file:write("\t\t<is_volcano>"..tostring(mountainV.flags.is_volcano).."</is_volcano>\n")
+        if mountainV.flags.is_volcano then
+            file:write("\t\t<is_volcano/>\n")
+        end
         file:write("\t</mountain_peak>\n")
     end
     file:write("</mountain_peaks>\n")
@@ -213,7 +224,9 @@ function export_more_legends_xml()
         file:write("\t\t<name_singular>"..escape_xml(dfhack.df2utf(creatureV.name[0])).."</name_singular>\n")
         file:write("\t\t<name_plural>"..escape_xml(dfhack.df2utf(creatureV.name[1])).."</name_plural>\n")
         for flagK, flagV in ipairs (df.creature_raw_flags) do
-            file:write("\t\t<"..flagV:lower()..">"..tostring(creatureV.flags[flagV]).."</"..flagV:lower()..">\n")
+            if creatureV.flags[flagV] then
+                file:write("\t\t<"..flagV:lower().."/>\n")
+            end
         end
         file:write("\t</creature>\n")
     end
@@ -224,7 +237,8 @@ function export_more_legends_xml()
         file:write("\t<site>\n")
         for k,v in pairs(siteV) do
             if (k == "id" or k == "civ_id" or k == "cur_owner_id") then
-                file:write("\t\t<"..k..">"..tostring(v).."</"..k..">\n")
+                printifvalue(file, 2, k, v)
+--                file:write("\t\t<"..k..">"..tostring(v).."</"..k..">\n")
             elseif (k == "buildings") then
                 if (#siteV.buildings > 0) then
                     file:write("\t\t<structures>\n")
@@ -405,7 +419,7 @@ function export_more_legends_xml()
             file:write("\t\t<entity_position_assignment>\n")
             for k, v in pairs(assignmentV) do
                 if (k == "id" or k == "histfig" or k == "position_id" or k == "squad_id") then
-                    file:write("\t\t\t<"..k..">"..v.."</"..k..">\n")
+                    printifvalue(file, 3, k, v)  --  'id' should never be negative, and so won't be suppressed
                 end
             end
             file:write("\t\t</entity_position_assignment>\n")
@@ -597,22 +611,26 @@ function export_more_legends_xml()
                         df.history_event_entity_dissolvedst:is_instance(event) or
                         df.history_event_item_stolenst:is_instance(event) or
                         df.history_event_artifact_createdst:is_instance(event)) and k == "circumstance" then
-                    file:write("\t\t<circumstance>\n")
-                    file:write("\t\t\t<type>"..event.circumstance.type.."</type>\n")
-                    if event.circumstance.type == df.unit_thought_type.Death then
-                        file:write("\t\t\t<death>"..event.circumstance.data.Death.."</death>\n")
-                    elseif event.circumstance.type == df.unit_thought_type.Prayer then
-                        file:write("\t\t\t<prayer>"..event.circumstance.data.Prayer.."</prayer>\n")
-                    elseif event.circumstance.type == df.unit_thought_type.DreamAbout then
-                        file:write("\t\t\t<dream_about>"..event.circumstance.data.DreamAbout.."</dream_about>\n")
-                    elseif event.circumstance.type == df.unit_thought_type.Defeated then
-                        file:write("\t\t\t<defeated>"..event.circumstance.data.Defeated.."</defeated>\n")
-                    elseif event.circumstance.type == df.unit_thought_type.Murdered then
-                        file:write("\t\t\t<murdered>"..event.circumstance.data.Murdered.."</murdered>\n")
-                    elseif event.circumstance.type == df.unit_thought_type.HistEventCollection then
-                        file:write("\t\t\t<hist_event_collection>"..event.circumstance.data.HistEventCollection.."</hist_event_collection>\n")
+                    if event.circumstance.type ~= df.unit_thought_type.None then
+                        file:write("\t\t<circumstance>\n")
+                        file:write("\t\t\t<type>"..df_enums.unit_thought_type[event.circumstance.type]:lower().."</type>\n")
+                        if event.circumstance.type == df.unit_thought_type.Death then
+                            printifvalue (file, 3, "death", event.circumstance.data.Death)
+                        elseif event.circumstance.type == df.unit_thought_type.Prayer then
+                            printifvalue (file, 3, "prayer", event.circumstance.data.Prayer)
+                        elseif event.circumstance.type == df.unit_thought_type.DreamAbout then
+                            printifvalue (file, 3, "dream_about", event.circumstance.data.DreamAbout)
+                        elseif event.circumstance.type == df.unit_thought_type.Defeated then
+                            printifvalue (file, 3, "defeated", event.circumstance.data.Defeated)
+                        elseif event.circumstance.type == df.unit_thought_type.Murdered then
+                            printifvalue (file, 3, "murdered", event.circumstance.data.Murdered)
+                        elseif event.circumstance.type == df.unit_thought_type.HistEventCollection then
+                            file:write("\t\t\t<hist_event_collection>"..event.circumstance.data.HistEventCollection.."</hist_event_collection>\n")
+                        elseif event.circumstance.type == df.unit_thought_type.AfterAbducting then
+                            printifvalue (file, 3, "after_abducting", event.circumstance.data.AfterAbducting)
+                        end
+                        file:write("\t\t</circumstance>\n")
                     end
-                    file:write("\t\t</circumstance>\n")
                 elseif (df.history_event_artifact_possessedst:is_instance(event) or
                         df.history_event_poetic_form_createdst:is_instance(event) or
                         df.history_event_musical_form_createdst:is_instance(event) or
@@ -623,16 +641,18 @@ function export_more_legends_xml()
                         df.history_event_entity_dissolvedst:is_instance(event) or
                         df.history_event_item_stolenst:is_instance(event) or
                         df.history_event_artifact_createdst:is_instance(event)) and k == "reason" then
-                    file:write("\t\t<reason>\n")
-                    file:write("\t\t\t<type>"..df.history_event_reason[event.reason.type].."</type>\n")
-                    if event.reason.type == df.history_event_reason.glorify_hf then
-                        file:write("\t\t\t<glorify_hf>"..event.reason.data.glorify_hf.."</glorify_hf>\n")
-                    elseif event.reason.type == df.history_event_reason.artifact_is_heirloom_of_family_hfid then
-                        file:write("\t\t\t<artifact_is_heirloom_of_family_hfid>"..event.reason.data.artifact_is_heirloom_of_family_hfid.."</artifact_is_heirloom_of_family_hfid>\n")
-                    elseif event.reason.type == df.history_event_reason.artifact_is_symbol_of_entity_position then
-                        file:write("\t\t\t<artifact_is_symbol_of_entity_position>"..event.reason.data.artifact_is_symbol_of_entity_position.."</artifact_is_symbol_of_entity_position>\n")
+                    if event.reason.type ~= df.history_event_reason.none then
+                        file:write("\t\t<reason>"..df_enums.history_event_reason[event.reason.type]:lower().."</reason>\n")
+                        if event.reason.type == df.history_event_reason.glorify_hf then
+                            printifvalue (file, 2, "glorify_hf", event.reason.data.glorify_hf)
+                        elseif event.reason.type == df.history_event_reason.sanctify_hf then
+                            printifvalue (file, 2, "sanctify_hf", event.reason.data.sanctify_hf)
+                        elseif event.reason.type == df.history_event_reason.artifact_is_heirloom_of_family_hfid then
+                            printifvalue (file, 2, "artifact_is_heirloom_of_family_hfid", event.reason.data.artifact_is_heirloom_of_family_hfid)
+                        elseif event.reason.type == df.history_event_reason.artifact_is_symbol_of_entity_position then
+                            printifvalue (file, 2, "artifact_is_symbol_of_entity_position", event.reason.data.artifact_is_symbol_of_entity_position)
+                        end
                     end
-                    file:write("\t\t</reason>\n")
                 elseif (df.history_event_masterpiece_created_itemst:is_instance(event) or
                         df.history_event_masterpiece_created_item_improvementst:is_instance(event) or
                         df.history_event_masterpiece_created_foodst:is_instance(event) or
@@ -707,13 +727,22 @@ function export_more_legends_xml()
                             end
                         end
                     elseif event.abuse_type == df.history_event_body_abusedst.T_abuse_type.Piled then
-                        file:write("\t\t<pile_type>"..df.history_event_body_abusedst.T_abuse_data.T_Piled.T_pile_type [event.abuse_data.Piled.pile_type].."</pile_type>\n")
+                        local val = df.history_event_body_abusedst.T_abuse_data.T_Piled.T_pile_type [event.abuse_data.Piled.pile_type]
+                        if not val then
+                            file:write("\t\t<pile_type>unknown "..tostring(event.abuse_data.Piled.pile_type).."</pile_type>\n")
+                        else
+                            file:write("\t\t<pile_type>"..tostring(val):lower().."</pile_type>\n")
+                        end
                     elseif event.abuse_type == df.history_event_body_abusedst.T_abuse_type.Flayed then
                         file:write("\t\t<structure>"..tostring(event.abuse_data.Flayed.structure).."</structure>\n")
                     elseif event.abuse_type == df.history_event_body_abusedst.T_abuse_type.Hung then
                         file:write("\t\t<tree>"..tostring(event.abuse_data.Hung.tree).."</tree>\n")
-                        file:write("\t\t<mat_type>"..event.abuse_data.Hung.mat_type.."</mat_type>\n")
-                        file:write("\t\t<mat_index>"..event.abuse_data.Hung.mat_index.."</mat_index>\n")
+                        if (dfhack.matinfo.decode(event.abuse_data.Hung.mat_type, event.abuse_data.Hung.mat_index) == nil) then
+                            file:write("\t\t<mat_type>"..event.abuse_data.Hung.mat_type.."</mat_type>\n")
+                            file:write("\t\t<mat_index>"..event.abuse_data.Hung.mat_index.."</mat_index>\n")
+                        else
+                            file:write("\t\t<item_mat>"..dfhack.df2utf(dfhack.matinfo.toString(dfhack.matinfo.decode(event.abuse_data.Hung.mat_type, event.abuse_data.Hung.mat_index))).."</item_mat>\n")
+                        end
                     elseif event.abuse_type == df.history_event_body_abusedst.T_abuse_type.Mutilated then  --  For completeness. No fields
                     elseif event.abuse_type == df.history_event_body_abusedst.T_abuse_type.Animated then
                         file:write("\t\t<interaction>"..tostring(event.abuse_data.Animated.interaction).."</interaction>\n")
@@ -721,18 +750,11 @@ function export_more_legends_xml()
                 elseif df.history_event_assume_identityst:is_instance(event) and k == "identity" then
                     local identity = df.identity.find(v)
                     if identity then
-                        if identity.type == df.identity_type.HidingCurse or
-                           identity.type == df.identity_type.Unk_1 or
-                           identity.type == df.identity_type.TrueName or
-                           identity.type == df.identity_type.Unk_4 or
-                           identity.type == df.identity_type.Identity then
-                            if identity.histfig_id ~= -1 then
-                                file:write("\t\t<identity_histfig_id>"..identity.histfig_id.."</identity_histfig_id>\n")
-                            end
-                        elseif identity.type == df.identity_type.FalseIdentity then
-                            if identity.nemesis_id ~= -1 then
-                                file:write("\t\t<identity_nemesis_id>"..identity.nemesis_id.."</identity_nemesis_id>\n")
-                            end
+                        local id_tag = df.identity_type.attrs[identity.type].id_tag
+                        if id_tag == "histfig_id" then
+                            printifvalue(file, 2, "identity_histfig_id", identity.histfig_id)
+                        elseif id_tag == "nemesis_id" then
+                            printifvalue(file, 2, "identity_nemesis_id", identity.nemesis_id)
                         else
                             dfhack.printerr ("Unknown df.identity_type value encountered:"..tostring (identity.type)..". Please report to DFHack team.")
                         end
@@ -787,7 +809,6 @@ function export_more_legends_xml()
                                         end
                                     end
                                 end
-
                             end
                         elseif (detailK == "item_type") then
                             if event.weapon.item > -1 then
@@ -853,7 +874,17 @@ function export_more_legends_xml()
                     end
                     file:write("\t\t<"..k..">please report compound element for correction</"..k..">\n")
                 else
-                    file:write("\t\t<"..k..">"..tostring(v).."</"..k..">\n")
+                    local enum = event:_field (k)._type
+                    if enum._kind == "enum-type" then
+                        local val = enum [v]
+                        if not val then
+                            file:write("\t\t<"..k..">unknown "..tostring(v).."</"..k..">\n")
+                        else
+                            file:write("\t\t<"..k..">"..tostring(val):lower().."</"..k..">\n")
+                        end
+                    else
+                        file:write("\t\t<"..k..">"..tostring(v).."</"..k..">\n")
+                    end
                 end
             end
             file:write("\t</historical_event>\n")
@@ -865,7 +896,7 @@ function export_more_legends_xml()
         for k = 0, set.next_element - 1 do
             file:write("\t<historical_event_relationship>\n")
             file:write("\t\t<event>"..set.event[k].."</event>\n")
-            file:write("\t\t<relationship>"..set.relationship[k].."</relationship>\n")
+            file:write("\t\t<relationship>"..df_enums.vague_relationship_type[set.relationship[k]].."</relationship>\n")
             file:write("\t\t<source_hf>"..set.source_hf[k].."</source_hf>\n")
             file:write("\t\t<target_hf>"..set.target_hf[k].."</target_hf>\n")
             file:write("\t\t<year>"..set.year[k].."</year>\n")
@@ -893,8 +924,8 @@ function export_more_legends_xml()
         file:write("\t<written_content>\n")
         file:write("\t\t<id>"..wcV.id.."</id>\n")
         file:write("\t\t<title>"..escape_xml(dfhack.df2utf(wcV.title)).."</title>\n")
-        file:write("\t\t<page_start>"..wcV.page_start.."</page_start>\n")
-        file:write("\t\t<page_end>"..wcV.page_end.."</page_end>\n")
+        printifvalue(file, 2, "page_start", wcV.page_start)
+        printifvalue(file, 2, "page_end", wcV.page_end)
         for refK, refV in pairs(wcV.refs) do
             file:write("\t\t<reference>\n")
             file:write("\t\t\t<type>"..df_enums.general_ref_type[refV:getType()].."</type>\n")
