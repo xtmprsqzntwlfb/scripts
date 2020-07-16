@@ -74,6 +74,9 @@ for k,v in ipairs(df.global.world.raws.creatures.all) do
         break
     end
 end
+if not race then
+  error('invalid race: ' .. args.depictedAs)
+end
 
 for _,fig in ipairs(df.global.world.history.figures) do
  if fig.name.first_name == args.name then
