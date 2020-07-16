@@ -13,6 +13,9 @@ that repo.
 
 # Future
 
+## Misc Improvements
+- `remove-stress`: added a ``-value`` argument to enable setting stress level directly
+
 # 0.47.04-r1
 
 ## Fixes
