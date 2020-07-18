@@ -21,10 +21,9 @@ real" in Dwarf Fortress, and then export your map using the DFHack
 `blueprint plugin`_ for later replay in a different fort. Blueprint files should
 go in the ``blueprints`` subfolder in the main DF folder.
 
-You can see the full format specification for blueprint files, as well as
-ready-to-use examples of blueprints in each of the four modes in the
-``blueprints/library`` folder (or, of course, in the
-`DFHack source repository`_).
+You can read more about how to create blueprint files in the
+`blueprints/README.txt`_ file, and there are ready-to-use examples of blueprints
+in each of the four modes in the `blueprints/library`_ folder.
 
 Usage:
 
@@ -46,16 +45,13 @@ Usage:
 
 **<command>** can be one of:
 
-``run``
-    applies the blueprint at your current active cursor position.
-``orders``
-    uses the manager interface to queue up orders for the specified build-mode
-    blueprint.
-``undo``
-    applies the inverse of the specified blueprint, depending on its type. Dig
-    tiles are undesignated, buildings are canceled or removed (depending on
-    their construction status), and stockpiles are removed. No effect for query
-    blueprints.
+:run:     applies the blueprint at your current active cursor position.
+:orders:  uses the manager interface to queue up orders for the specified
+          build-mode blueprint.
+:undo:    applies the inverse of the specified blueprint, depending on its type.
+          Dig tiles are undesignated, buildings are canceled or removed
+          (depending on their construction status), and stockpiles are removed.
+          No effect for query blueprints.
 
 Configuration:
 
@@ -72,11 +68,13 @@ the configuration stored in the file):
     Set to "true" or "false". If true, will designate dig blueprints in marker
     mode. If false, only cells with dig codes prefixed with ``m`` will be
     designated in marker mode.
-``interactive-build`` (default: 'false')
+``force-interactive-build`` (default: 'false')
     Allows you to manually select building materials for each
     building/construction when running (or creating orders for) build
     blueprints. Materials in selection dialogs are ordered according to
-    preferences in ``materials.txt`` (see below).
+    preferences in ``materials.txt`` (see below). If false, will only prompt for
+    materials that have :labels. See `original Quickfort documentation`_ for
+    details.
 
 There are also two other configuration files in the ``dfhack-config/quickfort``
 folder: ``aliases.txt`` and ``materials.txt``. ``aliases.txt`` defines keycode
@@ -85,7 +83,9 @@ materials and material preferences for build blueprints. The formats for these
 files are described in the files themselves.
 
 .. _blueprint plugin: https://docs.dfhack.org/en/stable/docs/Plugins.html#blueprint
-.. _DFHack source repository: https://github.com/DFHack/dfhack/tree/develop/data/blueprints
+.. _blueprints/README.txt: https://github.com/DFHack/dfhack/tree/develop/data/blueprints/README.txt
+.. _blueprints/library: https://github.com/DFHack/dfhack/tree/develop/data/blueprints/library
+.. _original Quickfort documentation: https://github.com/joelpt/quickfort#manual-material-selection
 ]====]
 
 print('Given arguments: ',...)
