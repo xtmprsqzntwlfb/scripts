@@ -180,6 +180,77 @@ do_set = function(args)
     print(string.format('successfully set %s to "%s"', args[1], tostring(val)))
 end
 
+local function get_first_line(filepath)
+    f = io.open(filepath)
+    first_line = f:read()
+    f:close()
+    return first_line
+end
+
+local blueprint_cache = {}
+
+local function scan_blueprint(path)
+    local filepath = string.format("%s/%s", settings['blueprints_dir'], path)
+    local hash = dfhack.internal.md5File(filepath)
+    if not blueprint_cache[path] or blueprint_cache[path].hash ~= hash then
+        local mode = nil
+        local comment = nil
+        local mode_end = nil
+        local line = get_first_line(filepath)
+        if line then
+            _, mode_end, mode = string.find(line, '^#([%l]+)')
+            _, _, comment = string.find(
+                line, '%s+start%b()%s+(.*)', mode_end + 1)
+            if not comment then
+                -- try to detect a comment without a 'start()' annotation
+                _, _, comment = string.find(line, '%s+(.*)', mode_end + 1)
+            end
+        end
+        blueprint_cache[path] = {mode=mode, comment=comment, hash=hash}
+    end
+    return blueprint_cache[path].mode, blueprint_cache[path].comment
+end
+
+local blueprint_files = {}
+
+local function scan_blueprints()
+    local paths = dfhack.filesystem.listdir_recursive(
+        settings['blueprints_dir'], nil, false)
+    blueprint_files = {}
+    local library_files = {}
+    for _, v in ipairs(paths) do
+        if not v.isdir and
+                (string.find(v.path, '[.]csv$') or
+                 string.find(v.path, '[.]xlsx$')) then
+            if string.find(v.path, '[.]xlsx$') then
+                print(string.format(
+                        'skipping "%s": .xlsx files not yet supported', v.path))
+                goto skip
+            end
+            local mode, comment = scan_blueprint(v.path)
+            if not mode then
+                print(string.format(
+                        'skipping "%s": no #mode marker detected', v.path))
+                goto skip
+            end
+            if string.find(v.path, '^library/') ~= nil then
+                table.insert(
+                    library_files,
+                    {path=v.path, mode=mode, comment=comment, is_library=true})
+            else
+                table.insert(
+                    blueprint_files,
+                    {path=v.path, mode=mode, comment=comment, is_library=false})
+            end
+            ::skip::
+        end
+    end
+    -- tack library files on to the end so user files are contiguous
+    for i=1, #library_files do
+        blueprint_files[#blueprint_files + 1] = library_files[i]
+    end
+end
+
 local utils = require('utils')
 
 local valid_list_args = utils.invert({
@@ -190,9 +261,16 @@ local valid_list_args = utils.invert({
 do_list = function(in_args)
     local args = utils.processArgs(in_args, valid_list_args)
     local show_library = args['l'] ~= nil or args['-library'] ~= nil
-    print('NOT YET IMPLEMENTED')
-    print(string.format(
-        'would call "list" with show_library="%s"', tostring(show_library)))
+    scan_blueprints()
+    for i, v in ipairs(blueprint_files) do
+        if show_library or not v.is_library then
+            local comment = ')'
+            if v.comment then
+                comment = string.format(': %s)', v.comment)
+            end
+            print(string.format('%d) "%s" (%s%s', i, v.path, v.mode, comment))
+        end
+    end
 end
 
 local valid_commands = utils.invert({
@@ -217,7 +295,6 @@ do_command = function(command, in_args)
 
     local filename = table.remove(in_args, 1)
     local list_num = tonumber(filename)
-    -- TODO: convert list number into filename
     if list_num then
         if #blueprint_files == 0 then
             scan_blueprints()
