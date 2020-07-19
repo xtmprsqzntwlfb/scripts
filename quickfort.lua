@@ -147,6 +147,26 @@ local settings = {
     force_interactive_build = false,
 }
 
+local function set_setting(key, value)
+    if settings[key] == nil then
+        error(string.format('error: invalid setting: "%s"', key))
+    end
+    val = value
+    if type(settings[key]) == 'boolean' then
+        val = value == 'true'
+    end
+    settings[key] = val
+end
+
+local function read_config(filename)
+    for line in io.lines(filename) do
+        local _, _, key, value = string.find(line, '^%s*([%a_]+)%s*=%s*(%S.*)')
+        if (key) then
+            set_setting(key, value)
+        end
+    end
+end
+
 do_set = function(args)
     if #args == 0 then
         print('active settings:')
@@ -156,7 +176,8 @@ do_set = function(args)
     if #args ~= 2 then
         error('error: expected "quickfort set [<key> <value>]"')
     end
-    -- TODO: validate and set settings
+    set_setting(args[1], args[2])
+    print(string.format('successfully set %s to "%s"', args[1], tostring(val)))
 end
 
 local utils = require('utils')
@@ -197,6 +218,16 @@ do_command = function(command, in_args)
     local filename = table.remove(in_args, 1)
     local list_num = tonumber(filename)
     -- TODO: convert list number into filename
+    if list_num then
+        if #blueprint_files == 0 then
+            scan_blueprints()
+        end
+        blueprint_file = blueprint_files[list_num]
+        if not blueprint_file then
+            error(string.format('invalid list index: %d', filename))
+        end
+        filename = blueprint_files[list_num].path
+    end
 
     local args = utils.processArgs(in_args, valid_command_args)
     local quiet = args['q'] ~= nil or args['-quiet'] ~= nil
@@ -208,6 +239,10 @@ do_command = function(command, in_args)
         'would call "%s" with filename="%s", quiet=%s, verbose=%s, sheet=%s',
         command, filename, tostring(quiet), tostring(verbose), sheet))
 end
+
+
+-- initialize script
+read_config('dfhack-config/quickfort/quickfort.txt')
 
 end -- if not initialized
 
