@@ -1,5 +1,11 @@
--- DFHack-native implementation of the classic Quickfort utility (PRE-RELEASE).
---[====[
+-- DFHack-native implementation of the classic Quickfort utility (PRE-RELEASE)
+
+-- only initialize our globals once
+if not initialized then
+initialized = true
+
+print_help = function()
+    print [====[
 
 quickfort
 =========
@@ -31,17 +37,17 @@ Usage:
     Allows you to modify the active quickfort configuration. Just run
     ``quickfort set`` to show current settings. See the Configuration section
     below for available keys and values.
-**quickfort list [-l]**
+**quickfort list [-l|--library]**
     Lists blueprints in the ``blueprints`` folder. Blueprints are ``.csv`` files
     or sheets within ``.xlsx`` files that contain a ``#<mode>`` comment in the
     upper-left cell. By default, blueprints in the ``blueprints/library/``
     subfolder are not included. Specify ``-l`` to include library blueprints.
-**quickfort <command> <list_num>**
+**quickfort <command> <list_num> [<options>]**
     Applies the blueprint with the number from the list command.
-**quickfort <command> <filename> [-s <sheet_num>]**
+**quickfort <command> <filename> [-s <sheet_num>] [<options>]**
     Applies the blueprint from the named file. If it is an ``.xlsx`` file,
-    the ``-s`` parameter is required to identify the sheet number (the first
-    sheet is ``-s 1``).
+    the ``-s`` (or ``--sheet``) parameter is required to identify the sheet
+    number (the first sheet is ``-s 1``).
 
 **<command>** can be one of:
 
@@ -53,6 +59,13 @@ Usage:
           (depending on their construction status), and stockpiles are removed.
           No effect for query blueprints.
 
+**<options>** can be zero or more of:
+
+``-q``, ``--quiet``
+    Don't report on what actions were taken (error messages are still shown).
+``-v``, ``--verbose``
+    Output extra debugging information.
+
 Configuration:
 
 The quickfort script reads its startup configuration from the
@@ -61,14 +74,14 @@ following settings may be dynamically modified by the ``quickfort set`` command
 (note that settings changed with the ``quickfort set`` command will not change
 the configuration stored in the file):
 
-``blueprints-dir`` (default: 'blueprints')
+``blueprints_dir`` (default: 'blueprints')
     Can be set to an absolute or relative path. If set to a relative path,
     resolves to a directory under the DF folder.
-``force-marker-mode`` (default: 'false')
+``force_marker_mode`` (default: 'false')
     Set to "true" or "false". If true, will designate dig blueprints in marker
     mode. If false, only cells with dig codes prefixed with ``m`` will be
     designated in marker mode.
-``force-interactive-build`` (default: 'false')
+``force_interactive_build`` (default: 'false')
     Allows you to manually select building materials for each
     building/construction when running (or creating orders for) build
     blueprints. Materials in selection dialogs are ordered according to
@@ -87,5 +100,94 @@ files are described in the files themselves.
 .. _blueprints/library: https://github.com/DFHack/dfhack/tree/develop/data/blueprints/library
 .. _original Quickfort documentation: https://github.com/joelpt/quickfort#manual-material-selection
 ]====]
+end
 
-print('Given arguments: ',...)
+local settings = {
+    blueprints_dir = "blueprints",
+    force_marker_mode = false,
+    force_interactive_build = false,
+}
+
+do_set = function(args)
+    if #args == 0 then
+        print("active settings:")
+        printall(settings)
+        return
+    end
+    if #args ~= 2 then
+        error('error: expected "quickfort set [<key> <value>]"')
+    end
+    if settings[args[1]] == nil then
+        error('error: invalid setting: "' .. args[1] .. '"')
+    end
+    val = args[2]
+    if type(settings[args[1]]) == "boolean" then
+        val = args[2] == "true"
+    end
+    settings[args[1]] = val
+    print("successfully set " .. args[1] .. " to '" .. tostring(val) .. "'")
+end
+
+local utils = require('utils')
+
+local valid_list_args = utils.invert({
+    'l',
+    '-library',
+})
+
+do_list = function(in_args)
+    local args = utils.processArgs(in_args, valid_list_args)
+    local show_library = args['l'] ~= nil or args['-library'] ~= nil
+    print("NOT YET IMPLEMENTED")
+    print(string.format(
+        "would call list with show_library=%s", tostring(show_library)))
+end
+
+local valid_commands = utils.invert({
+    'run',
+    'orders',
+    'undo',
+})
+
+local valid_command_args = utils.invert({
+    'q',
+    '-quiet',
+    'v',
+    '-verbose',
+    's',
+    '-sheet',
+})
+
+do_command = function(action, in_args)
+    if not valid_commands[action] then
+        error(string.format('invalid command: "%s"', action))
+    end
+
+    local args = utils.processArgs(in_args, valid_command_args)
+    local quiet = args['q'] ~= nil or args['-quiet'] ~= nil
+    local verbose = args['v'] ~= nil or args['-verbose'] ~= nil
+    local sheet = args['s'] ~= nil or args['-sheet'] ~= nil
+
+    print("NOT YET IMPLEMENTED")
+    print(string.format(
+        "would call %s with quiet=%s, verbose=%s, sheet=%s",
+        tostring(quiet), tostring(verbose), sheet))
+end
+
+end -- if not initialized
+
+-- main
+local argv = {...}
+local action = table.remove(argv, 1)
+
+if action == 'set' then
+    do_set(argv)
+elseif action == 'list' then
+    do_list(argv)
+elseif action == 'run' or action == 'orders' or action == 'undo' then
+    do_command(action, argv)
+elseif action == 'reset' then  -- undocumented "reset" action for development
+    initialized = false
+else
+    print_help()
+end
