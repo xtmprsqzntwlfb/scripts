@@ -218,16 +218,6 @@ do_command = function(command, in_args)
     local filename = table.remove(in_args, 1)
     local list_num = tonumber(filename)
     -- TODO: convert list number into filename
-    if list_num then
-        if #blueprint_files == 0 then
-            scan_blueprints()
-        end
-        blueprint_file = blueprint_files[list_num]
-        if not blueprint_file then
-            error(string.format('invalid list index: %d', filename))
-        end
-        filename = blueprint_files[list_num].path
-    end
 
     local args = utils.processArgs(in_args, valid_command_args)
     local quiet = args['q'] ~= nil or args['-quiet'] ~= nil
