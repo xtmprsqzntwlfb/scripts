@@ -1,11 +1,5 @@
 -- DFHack-native implementation of the classic Quickfort utility (PRE-RELEASE)
-
--- only initialize our globals once
-if not initialized then
-initialized = true
-
-print_help = function()
-    print [====[
+--[====[
 
 quickfort
 =========
@@ -37,6 +31,8 @@ Usage:
     Allows you to modify the active quickfort configuration. Just run
     ``quickfort set`` to show current settings. See the Configuration section
     below for available keys and values.
+**quickfort reset**
+    Resets quickfort script state and re-reads all configuration files.
 **quickfort list [-l|--library]**
     Lists blueprints in the ``blueprints`` folder. Blueprints are ``.csv`` files
     or sheets within ``.xlsx`` files that contain a ``#<mode>`` comment in the
@@ -44,7 +40,7 @@ Usage:
     subfolder are not included. Specify ``-l`` to include library blueprints.
 **quickfort <command> <list_num> [<options>]**
     Applies the blueprint with the number from the list command.
-**quickfort <command> <filename> [-s <sheet_num>] [<options>]**
+**quickfort <command> <filename> [-s|--sheet <sheet_num>] [<options>]**
     Applies the blueprint from the named file. If it is an ``.xlsx`` file,
     the ``-s`` (or ``--sheet``) parameter is required to identify the sheet
     number (the first sheet is ``-s 1``).
@@ -100,32 +96,88 @@ files are described in the files themselves.
 .. _blueprints/library: https://github.com/DFHack/dfhack/tree/develop/data/blueprints/library
 .. _original Quickfort documentation: https://github.com/joelpt/quickfort#manual-material-selection
 ]====]
+
+-- only initialize our globals once
+if not initialized then
+initialized = true
+
+-- keep this in sync with the full help text above
+print_short_help = function()
+    print [[
+Usage:
+
+quickfort set [<key> <value>]
+    Allows you to modify the active quickfort configuration. Just run
+    "quickfort set" to show current settings.
+quickfort reset
+    Resets quickfort script state and re-reads all configuration files.
+quickfort list [-l|--library]
+    Lists blueprints in the "blueprints" folder. Specify -l to include library
+    blueprints.
+quickfort <command> <list_num> [<options>]
+    Applies the blueprint with the number from the list command.
+quickfort <command> <filename> [-s|--sheet <sheet_num>] [<options>]
+    Applies the blueprint from the named file. If it is an .xlsx file, the -s
+    parameter is required to identify the sheet (the first sheet is "-s 1").
+
+<command> can be one of:
+
+run     applies the blueprint at your current active cursor position.
+orders  uses the manager interface to queue up orders for the specified
+        build-mode blueprint.
+undo    applies the inverse of the specified blueprint, depending on its type.
+        Dig tiles are undesignated, buildings are canceled or removed
+        (depending on their construction status), and stockpiles are removed.
+        No effect for query blueprints.
+
+<options> can be zero or more of:
+
+-q, --quiet
+    Don't report on what actions were taken (error messages are still shown).
+-v, --verbose
+    Output extra debugging information.
+
+For more info, see: https://docs.dfhack.org/en/stable/docs/_auto/base.html#quickfort
+]]
 end
 
 local settings = {
-    blueprints_dir = "blueprints",
+    blueprints_dir = 'blueprints',
     force_marker_mode = false,
     force_interactive_build = false,
 }
 
+local function set_setting(key, value)
+    if settings[key] == nil then
+        error(string.format('error: invalid setting: "%s"', key))
+    end
+    val = value
+    if type(settings[key]) == 'boolean' then
+        val = value == 'true'
+    end
+    settings[key] = val
+end
+
+local function read_config(filename)
+    for line in io.lines(filename) do
+        _, _, key, value = string.find(line, "^%s*([%a_]+)%s*=%s*(%S.*)")
+        if (key) then
+            set_setting(key, value)
+        end
+    end
+end
+
 do_set = function(args)
     if #args == 0 then
-        print("active settings:")
+        print('active settings:')
         printall(settings)
         return
     end
     if #args ~= 2 then
         error('error: expected "quickfort set [<key> <value>]"')
     end
-    if settings[args[1]] == nil then
-        error('error: invalid setting: "' .. args[1] .. '"')
-    end
-    val = args[2]
-    if type(settings[args[1]]) == "boolean" then
-        val = args[2] == "true"
-    end
-    settings[args[1]] = val
-    print("successfully set " .. args[1] .. " to '" .. tostring(val) .. "'")
+    set_setting(args[1], args[2])
+    print(string.format('successfully set %s to "%s"', args[1], tostring(val)))
 end
 
 local utils = require('utils')
@@ -138,9 +190,9 @@ local valid_list_args = utils.invert({
 do_list = function(in_args)
     local args = utils.processArgs(in_args, valid_list_args)
     local show_library = args['l'] ~= nil or args['-library'] ~= nil
-    print("NOT YET IMPLEMENTED")
+    print('NOT YET IMPLEMENTED')
     print(string.format(
-        "would call list with show_library=%s", tostring(show_library)))
+        'would call "list" with show_library=%s', tostring(show_library)))
 end
 
 local valid_commands = utils.invert({
@@ -166,15 +218,20 @@ do_command = function(action, in_args)
     local args = utils.processArgs(in_args, valid_command_args)
     local quiet = args['q'] ~= nil or args['-quiet'] ~= nil
     local verbose = args['v'] ~= nil or args['-verbose'] ~= nil
-    local sheet = args['s'] ~= nil or args['-sheet'] ~= nil
+    local sheet = args['s'] or args['-sheet']
 
-    print("NOT YET IMPLEMENTED")
+    print('NOT YET IMPLEMENTED')
     print(string.format(
-        "would call %s with quiet=%s, verbose=%s, sheet=%s",
-        tostring(quiet), tostring(verbose), sheet))
+        'would call "%s" with quiet=%s, verbose=%s, sheet=%s',
+        action, tostring(quiet), tostring(verbose), sheet))
 end
 
+
+-- initialize script
+read_config('dfhack-config/quickfort/quickfort.txt')
+
 end -- if not initialized
+
 
 -- main
 local argv = {...}
@@ -186,8 +243,8 @@ elseif action == 'list' then
     do_list(argv)
 elseif action == 'run' or action == 'orders' or action == 'undo' then
     do_command(action, argv)
-elseif action == 'reset' then  -- undocumented "reset" action for development
+elseif action == 'reset' then
     initialized = false
 else
-    print_help()
+    print_short_help()
 end
