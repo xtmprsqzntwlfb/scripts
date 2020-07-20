@@ -233,12 +233,14 @@ local valid_modes = utils.invert({
     'query',
 })
 
--- parses a Quickfort 2.0 modeline
--- example: '#dig (start 4;4;center of stairs) dining hall'
--- where all elements other than the initial #mode are optional (though if
--- the 'start' block exists, the offsets must also exist)
--- returns a table in the format {mode, startx, starty, start_comment, comment}
--- or nil if the modeline is invalid
+--[[
+parses a Quickfort 2.0 modeline
+example: '#dig (start 4;4;center of stairs) dining hall'
+where all elements other than the initial #mode are optional (though if the
+'start' block exists, the offsets must also exist)
+returns a table in the format {mode, startx, starty, start_comment, comment}
+or nil if the modeline is invalid
+]]
 local function parse_modeline(line)
     if not line then return nil end
     local _, mode_end, mode = string.find(line, '^#([%l]+)')
@@ -248,7 +250,7 @@ local function parse_modeline(line)
     end
     local _, start_str_end, start_str = string.find(
         line, '%s+start(%b())', mode_end + 1)
-    local startx, starty, start_comment
+    local startx, starty, start_comment = 1, 1, nil
     if start_str then
         _, _, startx, starty, start_comment = string.find(
             start_str, '^%(%s*(%d+)%s*;%s*(%d+)%s*;?%s*(.*)%)$')
@@ -270,21 +272,11 @@ local function parse_modeline(line)
 end
 
 local function get_modeline(filepath)
-    f = io.open(filepath)
-    first_line = f:read()
-    f:close()
+    local file = io.open(filepath)
+    local first_line = file:read()
+    file:close()
     if (not first_line) then return nil end
     return parse_modeline(tokenize_csv_line(first_line)[1])
-end
-
---[[
-returns a list of {modeline, grid} tuples. The index of the list is the z-index,
-relative to the initial cursor position, on which to apply the grid data. The
-modeline is defined as per parse_modeline. The grid is a sparse matrix: tables
-of tables, zero-indexed to correspond with the target map coordinates.
-]]
-local function process_file(filename)
-    return {}
 end
 
 local blueprint_cache = {}
@@ -383,6 +375,63 @@ local function do_undo(data, verbose)
     return stats
 end
 
+-- returns a grid representation of the current section and the next z-level
+-- modifier, if any. See process_file for grid format.
+local function process_section(file, start_coord)
+    local grid = {}
+    local y = start_coord.y
+    while true do
+        local line = file:read()
+        if not line then return grid end
+        for i, v in ipairs(tokenize_csv_line(line)) do
+            if i == 1 then
+                if v == '#<' then return grid, -1 end
+                if v == '#>' then return grid, 1 end
+            end
+            if string.find(v, '^#') then break end
+            if not string.find(v, '^[`~%s]*$') then
+                -- cell has actual content, not just spaces or comment chars
+                if not grid[y] then grid[y] = {} end
+                local x = start_coord.x + i - 1
+                grid[y][x] = v
+            end
+        end
+        y = y + 1
+    end
+end
+
+--[[
+returns the following logical structure:
+  map of target map z coordinate ->
+    list of {modeline, grid} tuples
+Where the structure of modeline is defined as per parse_modeline and grid is a:
+  map of target y coordinate ->
+    map of target map x coordinate ->
+      text from spreadsheet cell
+Map keys are numbers, and the keyspace is sparse -- only elements that have
+contents are non-nil.
+]]
+local function process_file(filepath, start_cursor_coord)
+    local zlevels = {}
+    local file = io.open(filepath)
+    if not file then
+        error(string.format('failed to open blueprint file: "%s"', filepath))
+    end
+    local line = file:read()
+    local modeline = parse_modeline(tokenize_csv_line(line)[1])
+    local x = start_cursor_coord.x - modeline.startx + 1
+    local y = start_cursor_coord.y - modeline.starty + 1
+    local z = start_cursor_coord.z
+    while true do
+        local grid, zmod = process_section(file, {x=x, y=y, z=z})
+        if #grid > 0 then zlevels[z] = {modeline=modeline, grid=grid} end
+        if zmod == nil then break end
+        z = z + zmod
+    end
+    file:close()
+    return zlevels
+end
+
 local command_switch = {
     run=do_run,
     orders=do_orders,
@@ -425,7 +474,16 @@ local function do_command(in_args)
     local verbose = args['v'] ~= nil or args['-verbose'] ~= nil
     local sheet = tonumber(args['s']) or tonumber(args['-sheet'])
 
-    local stats = command_switch[command](process_file(filename), verbose)
+    local cursor_coord = df.global.cursor
+    if command ~= 'orders' and df.global.cursor.x == -30000 then
+        error('please position the game cursor at the blueprint start location')
+    end
+
+    local filepath =
+            string.format("%s/%s", settings['blueprints_dir'], filename)
+    local stats = command_switch[command](
+        process_file(filepath, cursor_coord),
+        verbose)
     if stats and not quiet then
         printall(stats)
     end
