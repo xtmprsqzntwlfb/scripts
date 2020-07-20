@@ -1114,17 +1114,15 @@ end
 function create_folder(folder_name)
     if folder_name == "-00000-01-01" then
         qerror('"'..folder_name..'" is the default foldername, this folder will not be created as you are probably not in the legends screen.')
-        return false
     end
     -- check if it is a file, not a folder
     if dfhack.filesystem.isfile(folder_name) then
-      qerror(folder_name..' is a file, not a folder')
-      return false
+        qerror(folder_name..' is a file, not a folder')
     end
     if dfhack.filesystem.exists(folder_name) then
-      return true
+        return true
     else
-      return dfhack.filesystem.mkdir(folder_name)
+        return dfhack.filesystem.mkdir(folder_name)
     end
 end
 
