@@ -101,8 +101,12 @@ files are described in the files themselves.
 if not initialized then
 initialized = true
 
+local function do_reset()
+    initialized = false
+end
+
 -- keep this in sync with the full help text above
-print_short_help = function()
+local function print_short_help()
     print [[
 Usage:
 
@@ -147,7 +151,7 @@ local settings = {
     force_interactive_build = false,
 }
 
-do_set = function(args)
+local function do_set(args)
     if #args == 0 then
         print('active settings:')
         printall(settings)
@@ -166,7 +170,7 @@ local valid_list_args = utils.invert({
     '-library',
 })
 
-do_list = function(in_args)
+local function do_list(in_args)
     local args = utils.processArgs(in_args, valid_list_args)
     local show_library = args['l'] ~= nil or args['-library'] ~= nil
     print('NOT YET IMPLEMENTED')
@@ -189,12 +193,16 @@ local valid_command_args = utils.invert({
     '-sheet',
 })
 
-do_command = function(command, in_args)
+local function do_command(in_args)
+    local command = in_args.action
     if not valid_commands[command] then
         error(string.format('invalid command: "%s"', command))
     end
 
     local filename = table.remove(in_args, 1)
+    if not filename or filename == '' then
+        error("expected <list_num> or <filename> parameter")
+    end
     local list_num = tonumber(filename)
     -- TODO: convert list number into filename
 
@@ -209,21 +217,21 @@ do_command = function(command, in_args)
         command, filename, tostring(quiet), tostring(verbose), sheet))
 end
 
+action_switch = {
+    reset=do_reset,
+    set=do_set,
+    list=do_list,
+    run=do_command,
+    orders=do_command,
+    undo=do_command,
+    }
+setmetatable(action_switch, {__index=function () return print_short_help end})
 end -- if not initialized
 
 
 -- main
-local argv = {...}
-local action = table.remove(argv, 1)
+local args = {...}
+local action = table.remove(args, 1) or 'help'
+args['action'] = action
 
-if action == 'set' then
-    do_set(argv)
-elseif action == 'list' then
-    do_list(argv)
-elseif action == 'run' or action == 'orders' or action == 'undo' then
-    do_command(action, argv)
-elseif action == 'reset' then
-    initialized = false
-else
-    print_short_help()
-end
+action_switch[action](args)
