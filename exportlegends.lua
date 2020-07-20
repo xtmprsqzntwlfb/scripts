@@ -19,7 +19,7 @@ Options:
 :all:    Equivalent to calling all of the above, in that order
 
 Argument:
-:<folder_name>: (optional) The name of the folder where all the files will be saved.
+:folder_name: (optional) The name of the folder where all the files will be saved.
                 Default is to use the format: "regionX-YYYYY-MM-DD".
                 A path is also allowed although everything but the last folder has to exist.
                 If you export all the files in your current directory by using the file_name ".".
@@ -1044,7 +1044,7 @@ function export_detailed_maps()
                 -- Make sure this is always printed even when error occurs.
                 print("    Done exporting.")
             end,
-            -- Run script 
+            -- Run script
             function()
                 -- Loop over all the detailed maps and export them.
                 for i = 1, #MAPS do
