@@ -180,11 +180,53 @@ do_set = function(args)
     print(string.format('successfully set %s to "%s"', args[1], tostring(val)))
 end
 
-local function get_first_line(filepath)
+-- adapted from example on http://lua-users.org/wiki/LuaCsv
+function tokenize_csv_line(line)
+    local tokens = {}
+    local pos = 1
+    local sep = ','
+    while true do
+        local c = string.sub(line, pos, pos)
+        if (c == "") then break end
+        if (c == '"') then
+            -- quoted value (ignore separator within)
+            local txt = ""
+            repeat
+                local startp, endp = string.find(line, '^%b""', pos)
+                txt = txt..string.sub(line, startp+1, endp-1)
+                pos = endp + 1
+                c = string.sub(line, pos, pos)
+                if (c == '"') then txt = txt..'"' end
+                -- check first char AFTER quoted string, if it is another
+                -- quoted string without separator, then append it
+                -- this is the way to "escape" the quote char in a quote.
+                -- example: "blub""blip""boing" -> blub"blip"boing
+            until (c ~= '"')
+            table.insert(tokens,txt)
+            assert(c == sep or c == "")
+            pos = pos + 1
+        else
+            -- no quotes used, just look for the first separator
+            local startp, endp = string.find(line, sep, pos)
+            if (startp) then
+                table.insert(tokens, string.sub(line, pos, startp-1))
+                pos = endp + 1
+            else
+                -- no separator found -> use rest of string and terminate
+                table.insert(tokens, string.sub(line, pos))
+                break
+            end
+        end
+    end
+    return tokens
+end
+
+local function get_initial_comment(filepath)
     f = io.open(filepath)
     first_line = f:read()
     f:close()
-    return first_line
+    if (not first_line) then return nil end
+    return tokenize_csv_line(first_line)[1]
 end
 
 local blueprint_cache = {}
@@ -196,11 +238,11 @@ local function scan_blueprint(path)
         local mode = nil
         local comment = nil
         local mode_end = nil
-        local line = get_first_line(filepath)
+        local line = get_initial_comment(filepath)
         if line then
             _, mode_end, mode = string.find(line, '^#([%l]+)')
             _, _, comment = string.find(
-                line, '%s+start%b()%s+(.*)', mode_end + 1)
+                line, '%s+start%b()%s*(.*)', mode_end + 1)
             if not comment then
                 -- try to detect a comment without a 'start()' annotation
                 _, _, comment = string.find(line, '%s+(.*)', mode_end + 1)
@@ -265,7 +307,7 @@ do_list = function(in_args)
     for i, v in ipairs(blueprint_files) do
         if show_library or not v.is_library then
             local comment = ')'
-            if v.comment then
+            if string.find(v.comment, '%S') then
                 comment = string.format(': %s)', v.comment)
             end
             print(string.format('%d) "%s" (%s%s', i, v.path, v.mode, comment))
