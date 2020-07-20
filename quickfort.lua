@@ -99,7 +99,8 @@ files are described in the files themselves.
 
 -- only initialize our globals once
 if not initialized then
-initialized = true
+
+local utils = require('utils')
 
 local function do_reset()
     initialized = false
@@ -225,12 +226,65 @@ function tokenize_csv_line(line)
     return tokens
 end
 
-local function get_initial_comment(filepath)
+local valid_modes = utils.invert({
+    'dig',
+    'build',
+    'place',
+    'query',
+})
+
+-- parses a Quickfort 2.0 modeline
+-- example: '#dig (start 4;4;center of stairs) dining hall'
+-- where all elements other than the initial #mode are optional (though if
+-- the 'start' block exists, the offsets must also exist)
+-- returns a table in the format {mode, startx, starty, start_comment, comment}
+-- or nil if the modeline is invalid
+local function parse_modeline(line)
+    if not line then return nil end
+    local _, mode_end, mode = string.find(line, '^#([%l]+)')
+    if not mode or not valid_modes[mode] then
+        print(string.format('invalid mode: %s', mode))
+        return nil
+    end
+    local _, start_str_end, start_str = string.find(
+        line, '%s+start(%b())', mode_end + 1)
+    local startx, starty, start_comment
+    if start_str then
+        _, _, startx, starty, start_comment = string.find(
+            start_str, '^%(%s*(%d+)%s*;%s*(%d+)%s*;?%s*(.*)%)$')
+        if not startx or not starty then
+            print(string.format('invalid start offsets: %s', start_str))
+            return nil
+        end
+    else
+        start_str_end = mode_end
+    end
+    local _, _, comment = string.find(line, '%s*(.*)', start_str_end + 1)
+    return {
+        mode=mode,
+        startx=startx,
+        starty=starty,
+        start_comment=start_comment,
+        comment=comment
+    }
+end
+
+local function get_modeline(filepath)
     f = io.open(filepath)
     first_line = f:read()
     f:close()
     if (not first_line) then return nil end
-    return tokenize_csv_line(first_line)[1]
+    return parse_modeline(tokenize_csv_line(first_line)[1])
+end
+
+--[[
+returns a list of {modeline, grid} tuples. The index of the list is the z-index,
+relative to the initial cursor position, on which to apply the grid data. The
+modeline is defined as per parse_modeline. The grid is a sparse matrix: tables
+of tables, zero-indexed to correspond with the target map coordinates.
+]]
+local function process_file(filename)
+    return {}
 end
 
 local blueprint_cache = {}
@@ -239,22 +293,9 @@ local function scan_blueprint(path)
     local filepath = string.format("%s/%s", settings['blueprints_dir'], path)
     local hash = dfhack.internal.md5File(filepath)
     if not blueprint_cache[path] or blueprint_cache[path].hash ~= hash then
-        local mode = nil
-        local comment = nil
-        local mode_end = nil
-        local line = get_initial_comment(filepath)
-        if line then
-            _, mode_end, mode = string.find(line, '^#([%l]+)')
-            _, _, comment = string.find(
-                line, '%s+start%b()%s*(.*)', mode_end + 1)
-            if not comment then
-                -- try to detect a comment without a 'start()' annotation
-                _, _, comment = string.find(line, '%s+(.*)', mode_end + 1)
-            end
-        end
-        blueprint_cache[path] = {mode=mode, comment=comment, hash=hash}
+        blueprint_cache[path] = {modeline=get_modeline(filepath), hash=hash}
     end
-    return blueprint_cache[path].mode, blueprint_cache[path].comment
+    return blueprint_cache[path].modeline
 end
 
 local blueprint_files = {}
@@ -270,11 +311,11 @@ local function scan_blueprints()
                  string.find(v.path, '[.]xlsx$')) then
             if string.find(v.path, '[.]xlsx$') then
                 print(string.format(
-                        'skipping "%s": .xlsx files not yet supported', v.path))
+                        'skipping "%s": .xlsx files not supported yet', v.path))
                 goto skip
             end
-            local mode, comment = scan_blueprint(v.path)
-            if not mode then
+            local modeline = scan_blueprint(v.path)
+            if not modeline then
                 print(string.format(
                         'skipping "%s": no #mode marker detected', v.path))
                 goto skip
@@ -282,11 +323,11 @@ local function scan_blueprints()
             if string.find(v.path, '^library/') ~= nil then
                 table.insert(
                     library_files,
-                    {path=v.path, mode=mode, comment=comment, is_library=true})
+                    {path=v.path, modeline=modeline, is_library=true})
             else
                 table.insert(
                     blueprint_files,
-                    {path=v.path, mode=mode, comment=comment, is_library=false})
+                    {path=v.path, modeline=modeline, is_library=false})
             end
             ::skip::
         end
@@ -296,8 +337,6 @@ local function scan_blueprints()
         blueprint_files[#blueprint_files + 1] = library_files[i]
     end
 end
-
-local utils = require('utils')
 
 local valid_list_args = utils.invert({
     'l',
@@ -311,19 +350,44 @@ local function do_list(in_args)
     for i, v in ipairs(blueprint_files) do
         if show_library or not v.is_library then
             local comment = ')'
-            if string.find(v.comment, '%S') then
-                comment = string.format(': %s)', v.comment)
+            if #v.modeline.comment > 0 then
+                comment = string.format(': %s)', v.modeline.comment)
             end
-            print(string.format('%d) "%s" (%s%s', i, v.path, v.mode, comment))
+            local start_comment = ''
+            if #v.modeline.start_comment > 0 then
+                start_comment = string.format('; place cursor: %s',
+                                              v.modeline.start_comment)
+            end
+            print(string.format('%d) "%s" (%s%s%s',
+                                i, v.path, v.modeline.mode, comment,
+                                start_comment))
         end
     end
 end
 
-local valid_commands = utils.invert({
-    'run',
-    'orders',
-    'undo',
-})
+local function do_run(data, verbose)
+    stats = nil
+    print('quickfort run not yet implemented')
+    return stats
+end
+
+local function do_orders(data, verbose)
+    stats = nil
+    print('quickfort orders not yet implemented')
+    return stats
+end
+
+local function do_undo(data, verbose)
+    stats = nil
+    print('quickfort undo not yet implemented')
+    return stats
+end
+
+local command_switch = {
+    run=do_run,
+    orders=do_orders,
+    undo=do_undo,
+}
 
 local valid_command_args = utils.invert({
     'q',
@@ -336,7 +400,7 @@ local valid_command_args = utils.invert({
 
 local function do_command(in_args)
     local command = in_args.action
-    if not valid_commands[command] then
+    if not command or not command_switch[command] then
         error(string.format('invalid command: "%s"', command))
     end
 
@@ -351,7 +415,7 @@ local function do_command(in_args)
         end
         blueprint_file = blueprint_files[list_num]
         if not blueprint_file then
-            error(string.format('invalid list index: %d', filename))
+            error(string.format('invalid list index: %d', list_num))
         end
         filename = blueprint_files[list_num].path
     end
@@ -361,10 +425,10 @@ local function do_command(in_args)
     local verbose = args['v'] ~= nil or args['-verbose'] ~= nil
     local sheet = tonumber(args['s']) or tonumber(args['-sheet'])
 
-    print('NOT YET IMPLEMENTED')
-    print(string.format(
-        'would call "%s" with filename="%s", quiet=%s, verbose=%s, sheet=%s',
-        command, filename, tostring(quiet), tostring(verbose), sheet))
+    local stats = command_switch[command](process_file(filename), verbose)
+    if stats and not quiet then
+        printall(stats)
+    end
 end
 
 
@@ -376,10 +440,12 @@ action_switch = {
     set=do_set,
     list=do_list,
     run=do_command,
-    orders=do_command,
+    order=do_command,
     undo=do_command,
     }
 setmetatable(action_switch, {__index=function () return print_short_help end})
+
+initialized = true
 end -- if not initialized
 
 
