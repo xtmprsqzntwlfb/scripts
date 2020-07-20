@@ -20,9 +20,9 @@ Options:
 
 Argument:
 :folder_name: (optional) The name of the folder where all the files will be saved.
-                Default is to use the format: "regionX-YYYYY-MM-DD".
-                A path is also allowed although everything but the last folder has to exist.
-                If you export all the files in your current directory by using the file_name ".".
+Default is to use the format: "regionX-YYYYY-MM-DD".
+A path is also allowed although everything but the last folder has to exist.
+If you export all the files in your current directory by using the file_name ".".
 
 Usage:
     exportlegends all
