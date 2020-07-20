@@ -18,15 +18,30 @@ Options:
 :maps:   Exports all seventeen detailed maps
 :all:    Equivalent to calling all of the above, in that order
 
+Argument:
+:<folder_name>: (optional) The name of the folder where all the files will be saved.
+                Default is to use the format: "regionX-YYYYY-MM-DD".
+                A path is also allowed although everything but the last folder has to exist.
+                If you export all the files in your current directory by using the file_name ".".
+
+Usage:
+    exportlegends all
+    exportlegends all region6
+    exportlegends info
+    exportlegends info .
+
 ]====]
 
 --luacheck-flags: strictsubtype
+
+-- General note: If you are looking for main function look at the buttom of this script file.
 
 local gui = require 'gui'
 local script = require 'gui.script'
 local args = {...}
 local vs = dfhack.gui.getCurViewscreen()
 
+-- List of all the detailed maps
 local MAPS = {
     "Standard biome+site map",
     "Elevations including lake and ocean floors",
@@ -47,7 +62,8 @@ local MAPS = {
     "Diplomacy",
 }
 
--- check if a folder with this name could be created or already exists
+-- Get that date of the world as a string
+-- Format: "YYYYY-MM-DD"
 function get_world_date_str()
     local month = dfhack.world.ReadCurrentMonth() + 1 --days and months are 1-indexed
     local day = dfhack.world.ReadCurrentDay()
@@ -56,17 +72,14 @@ function get_world_date_str()
     return date_str
 end
 
--- set current directory as main folder
-local main_folder = dfhack.filesystem.getcwd()
--- go back to root folder so dfhack does not break, returns true if successfully
+-- Go back to root folder so dfhack does not break, returns true if successfully
 function move_back_to_main_folder()
-    -- return dfhack.filesystem.chdir(dfhack.getDFPath())
-    return dfhack.filesystem.chdir(main_folder)
+    return dfhack.filesystem.chdir(dfhack.getDFPath())
 end
 
--- set default folder name
+-- Set default folder name
 local folder_name = df.global.world.cur_savegame.save_dir.."-"..get_world_date_str()
--- go to save folder, returns true if successfully
+-- Go to save folder, returns true if successfully
 function move_to_save_folder()
     if move_back_to_main_folder() then
         return dfhack.filesystem.chdir(folder_name)
@@ -140,7 +153,7 @@ setmetatable(df_enums, {
     __newindex = function() error('read-only') end
 })
 
---create an extra legends xml with extra data, by Mason11987 for World Viewer
+-- Export additional legends data, legends_plus.xml
 function export_more_legends_xml()
     local problem_elements = {}
 
@@ -1002,7 +1015,7 @@ function export_more_legends_xml()
     end
 end
 
--- export information and XML ('p, x')
+-- Export world information and legends.xml (keys: 'p and x')
 function export_legends_info()
     -- Move into the save folder
     if not move_to_save_folder() then
@@ -1017,41 +1030,62 @@ function export_legends_info()
     export_more_legends_xml()
 end
 
+-- Export all the detailed maps like biome and elevation maps. (key: 'd')
 function export_detailed_maps()
-    script.start(function()
-        for i = 1, #MAPS do
-            local vs = dfhack.gui.getViewscreenByType(df.viewscreen_export_graphical_mapst, 0)
-            if not vs then
-                local legends_vs = dfhack.gui.getViewscreenByType(df.viewscreen_legendsst, 0)
-                if not legends_vs then
-                    qerror("Could not find legends screen")
+    script.start(
+        function()
+        -- When script is finished run `move_back_to_main_folder()`
+        dfhack.with_finalize(
+            -- Function when script is finished
+            function()
+                -- This makes sure it will always go back to the main folder.
+                -- Even if an error occurs
+                move_back_to_main_folder()
+                -- Make sure this is always printed even when error occurs.
+                print("    Done exporting.")
+            end,
+            -- Run script 
+            function()
+                -- Loop over all the detailed maps and export them.
+                for i = 1, #MAPS do
+                    -- Select the detailed map section
+                    local vs = dfhack.gui.getViewscreenByType(df.viewscreen_export_graphical_mapst, 0)
+                    if not vs then
+                        local legends_vs = dfhack.gui.getViewscreenByType(df.viewscreen_legendsst, 0)
+                        if not legends_vs then
+                            qerror("Could not find legends screen")
+                        end
+
+                        gui.simulateInput(legends_vs, 'LEGENDS_EXPORT_DETAILED_MAP')
+                    end
+
+                    vs = dfhack.gui.getViewscreenByType(df.viewscreen_export_graphical_mapst, 0)
+                    if not vs then
+                        qerror("Could not find map export screen")
+                    end
+                    
+                    vs.sel_type = i - 1
+                    -- Move into the save folder
+                    if not move_to_save_folder() then
+                        qerror('Could not move into the save folder.')
+                    end
+                    print('    Exporting map ' ..i.. '/' ..#MAPS..': '.. MAPS[i])
+                    -- Select the map and start exporting
+                    gui.simulateInput(vs, 'SELECT')
+                    -- Wait for the map to finish exporting
+                    while dfhack.gui.getCurViewscreen() == vs do
+                        script.sleep(10, 'frames')
+                    end
+                    -- Move back out of the save folder
+                    move_back_to_main_folder()
                 end
-
-                gui.simulateInput(legends_vs, 'LEGENDS_EXPORT_DETAILED_MAP')
             end
-
-            vs = dfhack.gui.getViewscreenByType(df.viewscreen_export_graphical_mapst, 0)
-            if not vs then
-                qerror("Could not find map export screen")
-            end
-            
-            vs.sel_type = i - 1
-            -- Move into the save folder
-            if not move_to_save_folder() then
-                qerror('Could not move into the save folder.')
-            end
-            print('    Exporting map ' ..i.. '/' ..#MAPS..': '.. MAPS[i])
-            gui.simulateInput(vs, 'SELECT')
-            while dfhack.gui.getCurViewscreen() == vs do
-                script.sleep(10, 'frames')
-            end
-            move_back_to_main_folder() -- Move back out of the save folder
+        )
         end
-        print("    Done exporting.")
-    end)
+    )
 end
 
--- export site maps
+-- Export the maps of all the sites (cities, towns,...) (key: 'sites', 'p')
 function export_site_maps()
     local vs = dfhack.gui.getCurViewscreen()
     if ((dfhack.gui.getCurFocus() ~= "legends" ) and (not table_contains(vs, "main_cursor"))) then -- Using open-legends
@@ -1076,8 +1110,12 @@ function export_site_maps()
     end
 end
 
--- check if a folder with this name could be created or already exists
+-- Check if a folder with this name could be created or already exists
 function create_folder(folder_name)
+    if folder_name == "-00000-01-01" then
+        qerror('"'..folder_name..'" is the default foldername, this folder will not be created as you are probably not in the legends screen.')
+        return false
+    end
     -- check if it is a file, not a folder
     if dfhack.filesystem.isfile(folder_name) then
       qerror(folder_name..' is a file, not a folder')
@@ -1090,16 +1128,18 @@ function create_folder(folder_name)
     end
 end
 
+-- If folder_name is given as a argument use that
 if #args >= 2 then
     folder_name = args[2]
 end
+-- Create folder to export all files into, if possible.
 if not create_folder(folder_name) then
     -- no valid folder name or could not create folder
     qerror('The foldername '..folder_name..' could not be created')
 end
 print("Writing all files in: "..folder_name)
 
--- main()
+-- Main: Check if on legends screen and trigger the correct export.
 if dfhack.gui.getCurFocus() == "legends" or dfhack.gui.getCurFocus() == "dfhack/lua/legends" then
     -- either native legends mode, or using the open-legends.lua script
     if args[1] == "all" then
