@@ -13,6 +13,9 @@ that repo.
 
 # Future
 
+## New Scripts
+- `quickfort`: DFHack-native implementation of quickfort with many new features and integrations. Implementation in progress.
+
 ## Fixes
 - `digfort`: fixed y-line tracking when .csv files contain lines with only commas
 - `exportlegends`: fixed an issue where two different ``<reason>`` tags could be included in a ``<historical_event>``
