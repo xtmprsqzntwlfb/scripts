@@ -357,11 +357,86 @@ local function do_list(in_args)
     end
 end
 
-local valid_commands = utils.invert({
-    'run',
-    'orders',
-    'undo',
-})
+local function do_run(data, verbose)
+    stats = nil
+    print('quickfort run not yet implemented')
+    return stats
+end
+
+local function do_orders(data, verbose)
+    stats = nil
+    print('quickfort orders not yet implemented')
+    return stats
+end
+
+local function do_undo(data, verbose)
+    stats = nil
+    print('quickfort undo not yet implemented')
+    return stats
+end
+
+-- returns a grid representation of the current section and the next z-level
+-- modifier, if any. See process_file for grid format.
+local function process_section(file, start_coord)
+    local grid = {}
+    local y = start_coord.y
+    while true do
+        local line = file:read()
+        if not line then return grid end
+        for i, v in ipairs(tokenize_csv_line(line)) do
+            if i == 1 then
+                if v == '#<' then return grid, -1 end
+                if v == '#>' then return grid, 1 end
+            end
+            if string.find(v, '^#') then break end
+            if not string.find(v, '^[`~%s]*$') then
+                -- cell has actual content, not just spaces or comment chars
+                if not grid[y] then grid[y] = {} end
+                local x = start_coord.x + i - 1
+                grid[y][x] = v
+            end
+        end
+        y = y + 1
+    end
+end
+
+--[[
+returns the following logical structure:
+  map of target map z coordinate ->
+    list of {modeline, grid} tuples
+Where the structure of modeline is defined as per parse_modeline and grid is a:
+  map of target y coordinate ->
+    map of target map x coordinate ->
+      text from spreadsheet cell
+Map keys are numbers, and the keyspace is sparse -- only elements that have
+contents are non-nil.
+]]
+local function process_file(filepath, start_cursor_coord)
+    local zlevels = {}
+    local file = io.open(filepath)
+    if not file then
+        error(string.format('failed to open blueprint file: "%s"', filepath))
+    end
+    local line = file:read()
+    local modeline = parse_modeline(tokenize_csv_line(line)[1])
+    local x = start_cursor_coord.x - modeline.startx + 1
+    local y = start_cursor_coord.y - modeline.starty + 1
+    local z = start_cursor_coord.z
+    while true do
+        local grid, zmod = process_section(file, {x=x, y=y, z=z})
+        if #grid > 0 then zlevels[z] = {modeline=modeline, grid=grid} end
+        if zmod == nil then break end
+        z = z + zmod
+    end
+    file:close()
+    return zlevels
+end
+
+local command_switch = {
+    run=do_run,
+    orders=do_orders,
+    undo=do_undo,
+}
 
 local valid_command_args = utils.invert({
     'q',
@@ -374,7 +449,7 @@ local valid_command_args = utils.invert({
 
 local function do_command(in_args)
     local command = in_args.action
-    if not valid_commands[command] then
+    if not command or not command_switch[command] then
         error(string.format('invalid command: "%s"', command))
     end
 
@@ -399,10 +474,19 @@ local function do_command(in_args)
     local verbose = args['v'] ~= nil or args['-verbose'] ~= nil
     local sheet = tonumber(args['s']) or tonumber(args['-sheet'])
 
-    print('NOT YET IMPLEMENTED')
-    print(string.format(
-        'would call "%s" with filename="%s", quiet=%s, verbose=%s, sheet=%s',
-        command, filename, tostring(quiet), tostring(verbose), sheet))
+    local cursor_coord = df.global.cursor
+    if command ~= 'orders' and df.global.cursor.x == -30000 then
+        error('please position the game cursor at the blueprint start location')
+    end
+
+    local filepath =
+            string.format("%s/%s", settings['blueprints_dir'], filename)
+    local stats = command_switch[command](
+        process_file(filepath, cursor_coord),
+        verbose)
+    if stats and not quiet then
+        printall(stats)
+    end
 end
 
 
@@ -414,7 +498,7 @@ action_switch = {
     set=do_set,
     list=do_list,
     run=do_command,
-    orders=do_command,
+    order=do_command,
     undo=do_command,
     }
 setmetatable(action_switch, {__index=function () return print_short_help end})
