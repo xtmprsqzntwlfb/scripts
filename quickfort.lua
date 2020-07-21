@@ -100,9 +100,17 @@ files are described in the files themselves.
 -- only initialize our globals once
 if not initialized then
 
+local quickfort_dig = require('hack.scripts.quickfort-dig-internal')
+local quickfort_build = require('hack.scripts.quickfort-build-internal')
+local quickfort_place = require('hack.scripts.quickfort-place-internal')
+local quickfort_query = require('hack.scripts.quickfort-query-internal')
 local utils = require('utils')
 
 local function do_reset()
+    reload('hack.scripts.quickfort-dig-internal')
+    reload('hack.scripts.quickfort-build-internal')
+    reload('hack.scripts.quickfort-place-internal')
+    reload('hack.scripts.quickfort-query-internal')
     initialized = false
 end
 
@@ -226,12 +234,12 @@ function tokenize_csv_line(line)
     return tokens
 end
 
-local valid_modes = utils.invert({
-    'dig',
-    'build',
-    'place',
-    'query',
-})
+local mode_switch = {
+    dig=quickfort_dig,
+    build=quickfort_build,
+    place=quickfort_place,
+    query=quickfort_query,
+}
 
 --[[
 parses a Quickfort 2.0 modeline
@@ -244,7 +252,7 @@ or nil if the modeline is invalid
 local function parse_modeline(line)
     if not line then return nil end
     local _, mode_end, mode = string.find(line, '^#([%l]+)')
-    if not mode or not valid_modes[mode] then
+    if not mode or not mode_switch[mode] then
         print(string.format('invalid mode: %s', mode))
         return nil
     end
@@ -357,24 +365,6 @@ local function do_list(in_args)
     end
 end
 
-local function do_run(data, verbose)
-    stats = nil
-    print('quickfort run not yet implemented')
-    return stats
-end
-
-local function do_orders(data, verbose)
-    stats = nil
-    print('quickfort orders not yet implemented')
-    return stats
-end
-
-local function do_undo(data, verbose)
-    stats = nil
-    print('quickfort undo not yet implemented')
-    return stats
-end
-
 -- returns a grid representation of the current section and the next z-level
 -- modifier, if any. See process_file for grid format.
 local function process_section(file, start_coord)
@@ -412,7 +402,6 @@ Map keys are numbers, and the keyspace is sparse -- only elements that have
 contents are non-nil.
 ]]
 local function process_file(filepath, start_cursor_coord)
-    local zlevels = {}
     local file = io.open(filepath)
     if not file then
         error(string.format('failed to open blueprint file: "%s"', filepath))
@@ -422,9 +411,15 @@ local function process_file(filepath, start_cursor_coord)
     local x = start_cursor_coord.x - modeline.startx + 1
     local y = start_cursor_coord.y - modeline.starty + 1
     local z = start_cursor_coord.z
+    local zlevels = {}
     while true do
         local grid, zmod = process_section(file, {x=x, y=y, z=z})
-        if #grid > 0 then zlevels[z] = {modeline=modeline, grid=grid} end
+        for _, _ in pairs(grid) do
+            -- apparently, the only way to tell if a sparse array is not empty
+            if not zlevels[z] then zlevels[z] = {} end
+            table.insert(zlevels[z], {modeline=modeline, grid=grid})
+            break;
+        end
         if zmod == nil then break end
         z = z + zmod
     end
@@ -433,9 +428,9 @@ local function process_file(filepath, start_cursor_coord)
 end
 
 local command_switch = {
-    run=do_run,
-    orders=do_orders,
-    undo=do_undo,
+    run='do_run',
+    orders='do_orders',
+    undo='do_undo',
 }
 
 local valid_command_args = utils.invert({
@@ -474,19 +469,26 @@ local function do_command(in_args)
     local verbose = args['v'] ~= nil or args['-verbose'] ~= nil
     local sheet = tonumber(args['s']) or tonumber(args['-sheet'])
 
-    local cursor_coord = df.global.cursor
     if command ~= 'orders' and df.global.cursor.x == -30000 then
         error('please position the game cursor at the blueprint start location')
     end
 
     local filepath =
             string.format("%s/%s", settings['blueprints_dir'], filename)
-    local stats = command_switch[command](
-        process_file(filepath, cursor_coord),
-        verbose)
-    if stats and not quiet then
-        printall(stats)
+    local data = process_file(filepath, df.global.cursor)
+    for zlevel, section_data_list in pairs(data) do
+        for _, section_data in ipairs(section_data_list) do
+            local modeline = section_data.modeline
+            local stats = mode_switch[modeline.mode][command_switch[command]](
+                zlevel,
+                section_data.grid,
+                verbose)
+            if stats and not quiet then
+                printall(stats)
+            end
+        end
     end
+    print(string.format('%s "%s" successfully completed', command, filename))
 end
 
 
