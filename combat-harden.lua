@@ -14,7 +14,7 @@ Valid values:
     A percent value to set combat hardened to.
 :``-tier <1-4>``:
     Choose a tier of hardenedness to set it to.
-      1 = No hardendness.
+      1 = No hardenedness.
       2 = "is getting used to tragedy"
       3 = "is a hardened individual"
       4 = "doesn't really care about anything anymore" (max)
