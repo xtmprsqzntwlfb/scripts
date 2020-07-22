@@ -11,6 +11,7 @@ keybinding (see below for the default binding). Possible arguments:
 :-a, --nodfassign:  uses different method to assign items.
 :-i, --inventory:   checks inventory for possible items to use in the job.
 :-c, --cheat:       relaxes item requirements for buildings (e.g. walls from bones). Implies -a
+:-e, --entity:      sets civ as your own (by raw entity names). Defaults to MOUNTAIN, if without argument uses adventurer
 :job:               selects that job (e.g. Dig or FellTree)
 
 An example of player digging in adventure mode:
@@ -127,7 +128,7 @@ local gscript=require 'gui.script'
 
 local tile_attrs = df.tiletype.attrs
 
-local settings={build_by_items=false,use_worn=false,check_inv=true,teleport_items=true,df_assign=false,gui_item_select=true,only_in_sites=false}
+local settings={build_by_items=false,use_worn=false,check_inv=true,teleport_items=true,df_assign=false,gui_item_select=true,only_in_sites=false,set_civ="MOUNTAIN"}
 
 function hasValue(tbl,val)
     for k,v in pairs(tbl) do
@@ -159,29 +160,45 @@ function deon_filter(name,type_id,subtype_id,custom_id, parent)
     end
 end
 local mode_name
-for k,v in ipairs({...}) do --setting parsing
-    if v=="-c" or v=="--cheat" then
-        settings.build_by_items=true
-        settings.df_assign=false
-    elseif v=="-q" or v=="--quick" then
-        settings.quick=true
-    elseif v=="-u" or v=="--unsafe" then --ignore pain and etc
-        settings.unsafe=true
-    elseif v=="-s" or v=="--safe" then
-        settings.safe=true
-    elseif v=="-i" or v=="--inventory" then
-        settings.check_inv=true
-        settings.df_assign=false
-    elseif v=="-a" or v=="--nodfassign" then
-        settings.df_assign=false
-    elseif v=="-h" or v=="--help" then
-        settings.help=true
-    elseif v=="--clear_jobs" then
-        settings.clear_jobs=true
-    else
-        mode_name=v
+local args={...}
+function parse_args(  )
+    --NOTE(warmist): this duplicates most of stuff in utils, but i don't want to change some functionality
+    local i=1
+    while i<=#args do
+        local v=args[i]
+        if v=="-c" or v=="--cheat" then
+            settings.build_by_items=true
+            settings.df_assign=false
+        elseif v=="-q" or v=="--quick" then
+            settings.quick=true
+        elseif v=="-u" or v=="--unsafe" then --ignore pain and etc
+            settings.unsafe=true
+        elseif v=="-s" or v=="--safe" then
+            settings.safe=true
+        elseif v=="-i" or v=="--inventory" then
+            settings.check_inv=true
+            settings.df_assign=false
+        elseif v=="-a" or v=="--nodfassign" then
+            settings.df_assign=false
+        elseif v=="-e" or v=="--entity" then
+            if #args>i and string.sub(args[i+1],1,1)~="-" then
+                settings.set_civ=args[i+1]
+                print(settings.set_civ)
+                i=i+1
+            else
+                settings.set_civ=true
+            end
+        elseif v=="-h" or v=="--help" then
+            settings.help=true
+        elseif v=="--clear_jobs" then
+            settings.clear_jobs=true
+        else
+            mode_name=v
+        end
+        i=i+1
     end
 end
+parse_args()
 
 mode=mode or 0
 last_building=last_building or {}
@@ -1659,13 +1676,29 @@ end
 function usetool:wait_tick()
     self:sendInputToParent("A_SHORT_WAIT")
 end
+function find_entity_civ( raw_code )
+    for i,v in ipairs(df.global.world.entities.all) do
+        if v.type==df.historical_entity_type.Civilization and
+            v.entity_raw.code==raw_code then
+            return v
+        end
+    end
+end
 function usetool:setupFields()
-    local adv=df.global.world.units.active[0]
-    local civ_id=df.global.world.units.active[0].civ_id
     local ui=df.global.ui
-    ui.civ_id = civ_id
-    ui.main.fortress_entity=df.historical_entity.find(civ_id)
-    ui.race_id=adv.race
+
+    local adv=df.global.world.units.active[0]
+    if settings.set_civ==true then
+        ui.civ_id=adv.civ_id
+        ui.race_id=adv.race
+        ui.main.fortress_entity=df.historical_entity.find(adv.civ_id)
+    else
+        local civ_entity=find_entity_civ(settings.set_civ or "MOUNTAIN")
+        ui.civ_id=civ_entity.id
+        ui.race_id=civ_entity.race
+        ui.main.fortress_entity=civ_entity
+    end
+
     local nem=dfhack.units.getNemesis(adv)
     if nem then
         local links=nem.figure.entity_links
