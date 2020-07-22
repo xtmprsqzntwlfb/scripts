@@ -1530,9 +1530,12 @@ function usetool:hiveActions(building)
     --CollectHiveProducts,
 end
 function usetool:operatePump(building)
-
+    --TODO: low priotity, but would be nice to have the job auto cleanup (i.e. one work would only pump and then you could press it again)
     local adv=df.global.world.units.active[0]
-    makeJob{unit=adv,post_actions={AssignBuildingRef},pos=adv.pos,from_pos=adv.pos,job_type=df.job_type.OperatePump,screen=self}
+    local set_operate=function ( args )
+        args.building.pump_manually=true
+    end
+    makeJob{unit=adv,building=building,post_actions={AssignBuildingRef,set_operate},pos=adv.pos,from_pos=adv.pos,job_type=df.job_type.OperatePump,screen=self}
 end
 function usetool:farmPlot(building)
     local adv=df.global.world.units.active[0]
