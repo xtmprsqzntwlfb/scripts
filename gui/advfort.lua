@@ -4,21 +4,26 @@
 
 gui/advfort
 ===========
-This script allows to perform jobs in adventure mode. For more complete help
-press :kbd:`?` while script is running. It's most comfortable to use this as a
+This script allows performing jobs in adventure mode. For more complete help
+press :kbd:`?` while the script is running. It's most comfortable to use this as a
 keybinding (see below for the default binding). Possible arguments:
 
-:-a, --nodfassign:  uses different method to assign items.
-:-i, --inventory:   checks inventory for possible items to use in the job.
-:-c, --cheat:       relaxes item requirements for buildings (e.g. walls from bones). Implies -a
-:-e, --entity:      sets civ as your own (by raw entity names). Defaults to MOUNTAIN, if without argument uses adventurer
-:job:               selects that job (e.g. Dig or FellTree)
+* ``-a``, ``--nodfassign``:
+    uses a different method to assign job items, instead of relying on DF.
+* ``-i``, ``--inventory``:
+    checks inventory for possible items to use in the job.
+* ``-c``, ``--cheat``:
+    relaxes item requirements for buildings (e.g. walls from bones). Implies -a
+* ``-e [NAME]``, ``--entity [NAME]``:
+    uses the given civ to determine available resources (specified as an entity raw ID). Defaults to ``MOUNTAIN``; if the entity name is omitted, uses the adventurer's civ
+* ``job``: selects the specified job (must be a valid ``job_type``, e.g. ``Dig`` or ``FellTree``)
 
-An example of player digging in adventure mode:
+.. warning::
+    changes only persist in non-procedural sites, namely player forts, caves, and camps.
+
+An example of a player digging in adventure mode:
 
 .. image:: /docs/images/advfort.png
-
-**WARNING:**  changes only persist in non procedural sites, namely: player forts, caves, and camps.
 
 ]====]
 
@@ -181,7 +186,7 @@ function parse_args(  )
         elseif v=="-a" or v=="--nodfassign" then
             settings.df_assign=false
         elseif v=="-e" or v=="--entity" then
-            if #args>i and string.sub(args[i+1],1,1)~="-" then
+            if #args>i and not args[i+1]:startswith("-") then
                 settings.set_civ=args[i+1]
                 print(settings.set_civ)
                 i=i+1
