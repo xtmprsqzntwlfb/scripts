@@ -17,6 +17,7 @@ that repo.
 - `digfort`: fixed y-line tracking when .csv files contain lines with only commas
 - `exportlegends`: fixed an issue where two different ``<reason>`` tags could be included in a ``<historical_event>``
 - `exportlegends`: stopped including some tags with ``-1`` values which don't provide useful information
+- `gui/advfort`: fixed "operate pump" job
 - `gui/load-screen`: fixed an issue causing longer timezones to be cut off
 - `modtools/moddable-gods`: fixed an error when creating the historical figure
 - `modtools/moddable-gods`: removed unused ``-domain`` and ``-description`` arguments
@@ -27,6 +28,7 @@ that repo.
 - `digfort`: documented that removing ramps, cutting trees, and gathering plants are indeed supported
 - `exportlegends`: changed some flags to be represented by self-closing tags instead of true/false strings (e.g. ``<is_volcano/>``) - note that this may require changes to other XML-parsing utilities
 - `exportlegends`: changed some enum values from numbers to their string representations
+- `gui/advfort`: added support for specifying the entity used to determine available resources
 - `gui/gm-editor`: added support for automatically following ref-targets when pressing the ``i`` key
 - `modtools/moddable-gods`: added support for ``neuter`` gender
 - `remove-stress`: added a ``-value`` argument to enable setting stress level directly
