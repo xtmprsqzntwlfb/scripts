@@ -100,12 +100,12 @@ files are described in the files themselves.
 -- only initialize our globals once
 if not initialized then
 
+local utils = require('utils')
 local quickfort_common = require('hack.scripts.quickfort-common-internal')
 local quickfort_dig = require('hack.scripts.quickfort-dig-internal')
 local quickfort_build = require('hack.scripts.quickfort-build-internal')
 local quickfort_place = require('hack.scripts.quickfort-place-internal')
 local quickfort_query = require('hack.scripts.quickfort-query-internal')
-local utils = require('utils')
 
 local function do_reset()
     reload('hack.scripts.quickfort-common-internal')

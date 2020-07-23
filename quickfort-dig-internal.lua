@@ -8,6 +8,7 @@ designation has any effect.
 
 local _ENV = mkmodule('hack.scripts.quickfort-dig-internal')
 
+local utils = require('utils')
 local quickfort_common = require('hack.scripts.quickfort-common-internal')
 local log = quickfort_common.log
 
@@ -51,6 +52,32 @@ local function is_smoothable_material(tileattrs)
     return hard_natural_materials[tileattrs.material]
 end
 
+local values = nil
+
+local values_run = {
+    designation_default=df.tile_dig_designation.Default,
+    designation_channel=df.tile_dig_designation.Channel,
+    designation_upstair=df.tile_dig_designation.UpStair,
+    designation_downstair=df.tile_dig_designation.DownStair,
+    designation_updownstair=df.tile_dig_designation.UpDownStair,
+    designation_ramp=df.tile_dig_designation.Ramp,
+    designation_no=df.tile_dig_designation.No,
+    smooth=1,
+    engrave=2,
+}
+
+local values_undo = {
+    designation_default=df.tile_dig_designation.No,
+    designation_channel=df.tile_dig_designation.No,
+    designation_upstair=df.tile_dig_designation.No,
+    designation_downstair=df.tile_dig_designation.No,
+    designation_updownstair=df.tile_dig_designation.No,
+    designation_ramp=df.tile_dig_designation.No,
+    designation_no=df.tile_dig_designation.No,
+    smooth=0,
+    engrave=0,
+}
+
 -- these functions return whether a designation was made
 local function do_mine(flags, _, tileattrs)
     if not flags.hidden then
@@ -58,7 +85,7 @@ local function do_mine(flags, _, tileattrs)
             return false
         end
     end
-    flags.dig = df.tile_dig_designation.Default
+    flags.dig = values.designation_default
     return true
 end
 
@@ -69,7 +96,7 @@ local function do_channel(flags, _, tileattrs)
             return false
         end
     end
-    flags.dig = df.tile_dig_designation.Channel
+    flags.dig = values.designation_channel
     return true
 end
 
@@ -79,7 +106,7 @@ local function do_up_stair(flags, _, tileattrs)
             return false
         end
     end
-    flags.dig = df.tile_dig_designation.UpStair
+    flags.dig = values.designation_upstair
     return true
 end
 
@@ -90,7 +117,7 @@ local function do_down_stair(flags, _, tileattrs)
             return false
         end
     end
-    flags.dig = df.tile_dig_designation.DownStair
+    flags.dig = values.designation_downstair
     return true
 end
 
@@ -102,9 +129,9 @@ local function do_up_down_stair(flags, _, tileattrs)
         end
     end
     if is_up_stair(tileattrs) then
-        flags.dig = df.tile_dig_designation.DownStair
+        flags.dig = values.designation_downstair
     else
-        flags.dig = df.tile_dig_designation.UpDownStair
+        flags.dig = values.designation_updownstair
     end
     return true
 end
@@ -115,7 +142,7 @@ local function do_ramp(flags, _, tileattrs)
             return false
         end
     end
-    flags.dig = df.tile_dig_designation.Ramp
+    flags.dig = values.designation_ramp
     return true
 end
 
@@ -124,14 +151,14 @@ local function do_remove_ramps(flags, _, tileattrs)
     if is_construction(tileattrs) or not is_removable_shape(tileattrs) then
         return false
     end
-    flags.dig = df.tile_dig_designation.Default
+    flags.dig = values.designation_default
     return true
 end
 
 local function do_gather(flags, _, tileattrs)
     if flags.hidden then return false end
     if not is_gatherable(tileattrs) then return false end
-    flags.dig = df.tile_dig_designation.Default
+    flags.dig = values.designation_default
     return true
 end
 
@@ -139,10 +166,10 @@ local function do_smooth(flags, _, tileattrs)
     if flags.hidden then return false end
     if is_construction(tileattrs) or
             (not is_floor(tileattrs) and not is_wall(tileattrs)) or
-            not is_smoothable_material(tileattrs)) then
+            not is_smoothable_material(tileattrs) then
         return false
     end
-    flags.smooth = 1
+    flags.smooth = values.smooth
     return true
 end
 
@@ -151,20 +178,20 @@ local function do_engrave(flags, _, tileattrs)
             is_construction(tileattrs) or not is_smooth(tileattrs) then
         return false
     end
-    flags.smooth = 2
+    flags.smooth = values.engrave
     return true
 end
 
 local function do_fortification(flags, _, tileattrs)
     if flags.hidden then return false end
     if not is_wall(tileattrs) or not is_smooth(tileattrs) then return false end
-    flags.smooth = 1
+    flags.smooth = values.smooth
     return true
 end
 
 local function do_remove_designation(flags, _, tileattrs)
     if flags.dig == df.tile_dig_designation.No then return false end
-    flags.dig = df.tile_dig_designation.No
+    flags.dig = values.designation_no
     return true
 end
 
@@ -215,9 +242,9 @@ local function dig_tile(pos, code, marker_mode)
     return false
 end
 
-function do_run(zlevel, grid)
+local function do_run_impl(zlevel, grid)
     local stats = {
-        designated={label='Tiles designated for digging', value=0, always=true},
+        designated={label='Tiles designated', value=0, always=true},
         out_of_bounds={label='Tiles skipped (outside map boundary)', value=0},
         invalid_keys={label='Invalid key sequence', value=0},
     }
@@ -262,15 +289,19 @@ function do_run(zlevel, grid)
     return stats
 end
 
+function do_run(zlevel, grid)
+    values = values_run
+    return do_run_impl(zlevel, grid)
+end
+
 function do_orders(zlevel, grid)
     log('nothing to do for blueprints in mode: dig')
     return nil
 end
 
 function do_undo(zlevel, grid)
-    local stats = nil
-    print('"quickfort undo" not yet implemented for mode: dig')
-    return stats
+    values = values_undo
+    return do_run_impl(zlevel, grid)
 end
 
 return _ENV
