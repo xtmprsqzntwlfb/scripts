@@ -100,6 +100,7 @@ files are described in the files themselves.
 -- only initialize our globals once
 if not initialized then
 
+local quickfort_common = require('hack.scripts.quickfort-common-internal')
 local quickfort_dig = require('hack.scripts.quickfort-dig-internal')
 local quickfort_build = require('hack.scripts.quickfort-build-internal')
 local quickfort_place = require('hack.scripts.quickfort-place-internal')
@@ -107,6 +108,7 @@ local quickfort_query = require('hack.scripts.quickfort-query-internal')
 local utils = require('utils')
 
 local function do_reset()
+    reload('hack.scripts.quickfort-common-internal')
     reload('hack.scripts.quickfort-dig-internal')
     reload('hack.scripts.quickfort-build-internal')
     reload('hack.scripts.quickfort-place-internal')
@@ -154,21 +156,15 @@ For more info, see: https://docs.dfhack.org/en/stable/docs/_auto/base.html#quick
 ]]
 end
 
-local settings = {
-    blueprints_dir = 'blueprints',
-    force_marker_mode = false,
-    force_interactive_build = false,
-}
-
 local function set_setting(key, value)
-    if settings[key] == nil then
+    if quickfort_common.settings[key] == nil then
         error(string.format('error: invalid setting: "%s"', key))
     end
     val = value
-    if type(settings[key]) == 'boolean' then
+    if type(quickfort_common.settings[key]) == 'boolean' then
         val = value == 'true'
     end
-    settings[key] = val
+    quickfort_common.settings[key] = val
 end
 
 local function read_config(filename)
@@ -183,7 +179,7 @@ end
 local function do_set(args)
     if #args == 0 then
         print('active settings:')
-        printall(settings)
+        printall(quickfort_common.settings)
         return
     end
     if #args ~= 2 then
@@ -287,10 +283,16 @@ local function get_modeline(filepath)
     return parse_modeline(tokenize_csv_line(first_line)[1])
 end
 
+-- filename is relative to the blueprints dir
+local function get_blueprint_filepath(filename)
+    return string.format("%s/%s",
+                         quickfort_common.settings['blueprints_dir'], filename)
+end
+
 local blueprint_cache = {}
 
 local function scan_blueprint(path)
-    local filepath = string.format("%s/%s", settings['blueprints_dir'], path)
+    local filepath = get_blueprint_filepath(path)
     local hash = dfhack.internal.md5File(filepath)
     if not blueprint_cache[path] or blueprint_cache[path].hash ~= hash then
         blueprint_cache[path] = {modeline=get_modeline(filepath), hash=hash}
@@ -302,7 +304,7 @@ local blueprint_files = {}
 
 local function scan_blueprints()
     local paths = dfhack.filesystem.listdir_recursive(
-        settings['blueprints_dir'], nil, false)
+        quickfort_common.settings['blueprints_dir'], nil, false)
     blueprint_files = {}
     local library_files = {}
     for _, v in ipairs(paths) do
@@ -354,7 +356,7 @@ local function do_list(in_args)
                 comment = string.format(': %s)', v.modeline.comment)
             end
             local start_comment = ''
-            if #v.modeline.start_comment > 0 then
+            if v.modeline.start_comment and #v.modeline.start_comment > 0 then
                 start_comment = string.format('; place cursor: %s',
                                               v.modeline.start_comment)
             end
@@ -375,8 +377,8 @@ local function process_section(file, start_coord)
         if not line then return grid end
         for i, v in ipairs(tokenize_csv_line(line)) do
             if i == 1 then
-                if v == '#<' then return grid, -1 end
-                if v == '#>' then return grid, 1 end
+                if v == '#<' then return grid, 1 end
+                if v == '#>' then return grid, -1 end
             end
             if string.find(v, '^#') then break end
             if not string.find(v, '^[`~%s]*$') then
@@ -473,18 +475,22 @@ local function do_command(in_args)
         error('please position the game cursor at the blueprint start location')
     end
 
-    local filepath =
-            string.format("%s/%s", settings['blueprints_dir'], filename)
+    quickfort_common.verbose = verbose
+
+    local filepath = get_blueprint_filepath(filename)
     local data = process_file(filepath, df.global.cursor)
     for zlevel, section_data_list in pairs(data) do
         for _, section_data in ipairs(section_data_list) do
             local modeline = section_data.modeline
             local stats = mode_switch[modeline.mode][command_switch[command]](
                 zlevel,
-                section_data.grid,
-                verbose)
+                section_data.grid)
             if stats and not quiet then
-                printall(stats)
+                for _, stat in pairs(stats) do
+                    if stat.always or stat.value > 0 then
+                        print(string.format('%s: %d', stat.label, stat.value))
+                    end
+                end
             end
         end
     end
