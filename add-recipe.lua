@@ -151,7 +151,6 @@ function addSingleItem(itemstring)
   
   local addedItem = nil
   --assume the user knows what they're doing, so no need for sanity checks
-  
   if (verbose) then print("Searching items in category " .. itemType) end
   for _, item in ipairs(all) do
     if (verbose) then print(_ .. "|" .. item.id) end
@@ -165,6 +164,8 @@ function addSingleItem(itemstring)
   if (addedItem ~= nil) then
     local addedItem = addedItem --as:df.itemdef_weaponst
     print("Added recipe " .. addedItem.id .. " (" .. addedItem.name .. ")")
+  else
+    print("Could not add recipe: invalid item name")
   end
 end
 
