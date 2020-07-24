@@ -241,7 +241,9 @@ end
 
 local function do_smooth(ctx)
     if ctx.flags.hidden then return false end
-    if is_construction(ctx.tileattrs) or not is_hard(ctx.tileattrs) or
+    if is_construction(ctx.tileattrs) or
+            not is_hard(ctx.tileattrs) or
+            is_smooth(ctx.tileattrs) or
             (not is_floor(ctx.tileattrs) and not is_wall(ctx.tileattrs)) then
         return false
     end
