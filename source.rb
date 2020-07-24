@@ -16,7 +16,7 @@ flow-passable tile, and not too high in the sky) and call::
 
 The number argument is the target liquid level (0 = drain, 7 = source).
 
-To add more than 1 unit everytime, call the command again on the same spot.
+To add more than 1 unit every time, call the command again on the same spot.
 
 To delete one source, place the cursor over its tile and use ``source delete``.
 To remove all existing sources, call ``source clear``.
