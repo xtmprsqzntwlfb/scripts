@@ -144,12 +144,18 @@ function addAllItems(exotic)
 end
 
 function addSingleItem(itemstring)
+  local itemType = nil  --The category of the item, the word before the ":"
+  local itemId = nil    --The item within that category, what goes after the ":"
+  
   if (itemstring ~= nil) then
-    local itemType, itemId = string.match(itemstring, "(.*):(.*)")
+    itemType, itemId = string.match(itemstring, "(.*):(.*)")
+	if(verbose) then print("Item to add: " .. itemType .. ":" .. itemId) end
   else
     print("Usage: add-recipe single <item name> | Example: add-recipe single SHOES:ITEM_SHOES_BOOTS")
-  end
-  if (itemType == nil or itemId == nil) then return end
+    return end
+  if (itemType == nil or itemId == nil) then
+    print("Usage: add-recipe single <item name> | Example: add-recipe single SHOES:ITEM_SHOES_BOOTS")
+    return end
   local category = categories[string.lower(itemType)]
   if (category == nil) then return end
   local known = category[1]
