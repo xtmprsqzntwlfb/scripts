@@ -144,7 +144,11 @@ function addAllItems(exotic)
 end
 
 function addSingleItem(itemstring)
-  local itemType, itemId = string.match(itemstring, "(.*):(.*)")
+  if (itemstring ~= nil) then
+    local itemType, itemId = string.match(itemstring, "(.*):(.*)")
+  else
+    print("Usage: add-recipe single <item name> | Example: add-recipe single SHOES:ITEM_SHOES_BOOTS")
+  end
   if (itemType == nil or itemId == nil) then return end
   local category = categories[string.lower(itemType)]
   if (category == nil) then return end
