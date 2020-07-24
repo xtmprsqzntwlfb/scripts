@@ -44,7 +44,8 @@ local categories = { --as:{1:'number[]',2:'number[]',3:'df.itemdef[]'}[]
   gloves = {resources.gloves_type, civ.equipment.gloves_id, itemDefs.gloves },
   shoes = {resources.shoes_type, civ.equipment.shoes_id, itemDefs.shoes },
   helm = {resources.helm_type, civ.equipment.helm_id, itemDefs.helms },
-  pants = {resources.pants_type, civ.equipment.pants_id, itemDefs.pants }
+  pants = {resources.pants_type, civ.equipment.pants_id, itemDefs.pants },
+  tool = {resources.tool_type, civ.equipment.tool_id, itemDefs.tools}
 }
 
 local diggers = resources.digger_type
@@ -139,6 +140,7 @@ function addAllItems(exotic)
   printItems(addItems(categories.shoes, exotic))
   printItems(addItems(categories.helm, exotic))
   printItems(addItems(categories.pants, exotic))
+  printItems(addItems(categories.tool, exotic))
 end
 
 function addSingleItem(itemstring)
