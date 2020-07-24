@@ -1,9 +1,9 @@
 -- dig-related logic for the quickfort script
 --[[
-In general, this file designates tiles with the same rules as the in-game UI.
-For example, if the tile is hidden, we designate blindly to avoid spoilers. If
-it's visible, the shape and material of the target tile affects whether the
-designation has any effect.
+This file designates tiles with the same rules as the in-game UI. For example,
+if the tile is hidden, we designate blindly to avoid spoilers. If it's visible,
+the shape and material of the target tile affects whether the designation has
+any effect.
 ]]
 
 local _ENV = mkmodule('hack.scripts.quickfort-dig-internal')
@@ -52,6 +52,15 @@ local function is_smoothable_material(tileattrs)
     return hard_natural_materials[tileattrs.material]
 end
 
+local function is_markable(flags, occupancy)
+    return flags.dig ~= df.tile_dig_designation.No or
+            flags.smooth ~= 0 or
+            occupancy.carve_track_north ~= 0 or
+            occupancy.carve_track_east ~= 0 or
+            occupancy.carve_track_south ~= or
+            occupancy.carve_track_west ~= 0
+end
+
 local values = nil
 
 local values_run = {
@@ -64,6 +73,7 @@ local values_run = {
     designation_no=df.tile_dig_designation.No,
     smooth=1,
     engrave=2,
+    track=1,
 }
 
 local values_undo = {
@@ -76,10 +86,11 @@ local values_undo = {
     designation_no=df.tile_dig_designation.No,
     smooth=0,
     engrave=0,
+    track=0,
 }
 
 -- these functions return whether a designation was made
-local function do_mine(flags, _, tileattrs)
+local function do_mine(flags, tileattrs)
     if not flags.hidden then
         if is_construction(tileattrs) or not is_wall(tileattrs) then
             return false
@@ -89,7 +100,7 @@ local function do_mine(flags, _, tileattrs)
     return true
 end
 
-local function do_channel(flags, _, tileattrs)
+local function do_channel(flags, tileattrs)
     if not flags.hidden then
         if is_construction(tileattrs) or
                 (not is_wall(tileattrs) and not is_floor(tileattrs)) then
@@ -100,7 +111,7 @@ local function do_channel(flags, _, tileattrs)
     return true
 end
 
-local function do_up_stair(flags, _, tileattrs)
+local function do_up_stair(flags, tileattrs)
     if not flags.hidden then
         if is_construction(tileattrs) or not is_wall(tileattrs) then
             return false
@@ -110,7 +121,7 @@ local function do_up_stair(flags, _, tileattrs)
     return true
 end
 
-local function do_down_stair(flags, _, tileattrs)
+local function do_down_stair(flags, tileattrs)
     if not flags.hidden then
         if is_construction(tileattrs) or
                 (not is_wall(tileattrs) and not is_floor(tileattrs)) then
@@ -121,7 +132,7 @@ local function do_down_stair(flags, _, tileattrs)
     return true
 end
 
-local function do_up_down_stair(flags, _, tileattrs)
+local function do_up_down_stair(flags, tileattrs)
     if not flags.hidden then
         if is_construction(tileattrs) or
                 (not is_wall(tileattrs) and not is_up_stair(tileattrs)) then
@@ -136,7 +147,7 @@ local function do_up_down_stair(flags, _, tileattrs)
     return true
 end
 
-local function do_ramp(flags, _, tileattrs)
+local function do_ramp(flags, tileattrs)
     if not flags.hidden then
         if is_construction(tileattrs) or not is_wall(tileattrs) then
             return false
@@ -146,7 +157,7 @@ local function do_ramp(flags, _, tileattrs)
     return true
 end
 
-local function do_remove_ramps(flags, _, tileattrs)
+local function do_remove_ramps(flags, tileattrs)
     if flags.hidden then return false end
     if is_construction(tileattrs) or not is_removable_shape(tileattrs) then
         return false
@@ -155,14 +166,14 @@ local function do_remove_ramps(flags, _, tileattrs)
     return true
 end
 
-local function do_gather(flags, _, tileattrs)
+local function do_gather(flags, tileattrs)
     if flags.hidden then return false end
     if not is_gatherable(tileattrs) then return false end
     flags.dig = values.designation_default
     return true
 end
 
-local function do_smooth(flags, _, tileattrs)
+local function do_smooth(flags, tileattrs)
     if flags.hidden then return false end
     if is_construction(tileattrs) or
             (not is_floor(tileattrs) and not is_wall(tileattrs)) or
@@ -173,7 +184,7 @@ local function do_smooth(flags, _, tileattrs)
     return true
 end
 
-local function do_engrave(flags, _, tileattrs)
+local function do_engrave(flags, tileattrs)
     if flags.hidden or
             is_construction(tileattrs) or not is_smooth(tileattrs) then
         return false
@@ -182,14 +193,50 @@ local function do_engrave(flags, _, tileattrs)
     return true
 end
 
-local function do_fortification(flags, _, tileattrs)
+local function do_fortification(flags, tileattrs)
     if flags.hidden then return false end
     if not is_wall(tileattrs) or not is_smooth(tileattrs) then return false end
     flags.smooth = values.smooth
     return true
 end
 
-local function do_remove_designation(flags, _, tileattrs)
+local function do_track(flags, tileattrs, ctx)
+    if flags.hidden or
+            not is_floor(tileattrs) or
+            is_construction(tileattrs) then
+        return false
+    end
+    local extent_adjacent = ctx.extent_adjacent
+    if not extent_adjacent.north and not  extent_adjacent.south and
+            not extent_adjacent.east and not extent_adjacent.west then
+        print('ambiguous direction for track; please use T(width x height)' ..
+              ' syntax (specify both width > 1 and height > 1 for a' ..
+              ' track that extends both South and East from this corner')
+        return false
+    end
+    if extent_adjacent.north and extent_adjacent.west then
+        -- we're in the "empty" interior of a track extent - tracks can only be
+        -- built in lines along the top or left of an extent.
+        return false
+    end
+    -- don't overwrite all directions, only 'or' in the new bits. we could be
+    -- adding to a previously-designated track.
+    local occupancy = ctx.occupancy
+    if extent_adjacent.north then occupancy.carve_track_north = values.track end
+    if extent_adjacent.east then occupancy.carve_track_east = values.track end
+    if extent_adjacent.south then occupancy.carve_track_south = values.track end
+    if extent_adjacent.west then occupancy.carve_track_west = values.track end
+    return true
+end
+
+local function do_toggle_marker(flags, tileattrs, ctx)
+    local occupancy = ctx.occupancy
+    if not is_markable(flags, occupancy) then return false end
+    occupancy.dig_marked = not occupancy.dig_marked
+    return true
+end
+
+local function do_remove_designation(flags, tileattrs)
     if flags.dig == df.tile_dig_designation.No then return false end
     flags.dig = values.designation_no
     return true
@@ -209,9 +256,9 @@ local designate_switch = {
     ds=do_smooth,
     de=do_engrave,
     dF=do_fortification,
-    --dT=nil,
+    dT=do_track,
     --dv=nil,
-    --dM=nil,
+    dM=do_toggle_marker,
     --dn=nil,
     dx=do_remove_designation,
     --dbc=nil,
@@ -228,12 +275,18 @@ local designate_switch = {
     --dor=nil,
 }
 
-local function dig_tile(pos, code, marker_mode)
-    local flags, occupancy = dfhack.maps.getTileFlags(pos)
-    local tileattrs = df.tiletype.attrs[dfhack.maps.getTileType(pos)]
-    if designate_switch[code](flags, occupancy, tileattrs) then
-        if flags.dig == df.tile_dig_designation.No and flags.smooth == 0 then
+local function dig_tile(ctx, code, marker_mode)
+    local flags, occupancy = dfhack.maps.getTileFlags(ctx.pos)
+    local tileattrs = df.tiletype.attrs[dfhack.maps.getTileType(ctx.pos)]
+    ctx.occupancy = occupancy
+    if designate_switch[code](flags, tileattrs, ctx) then
+        if not is_markable(flags, occupancy) then
             occupancy.dig_marked = false
+        elseif code == "dM"
+            -- the semantics are a little unclear if the code is M (toggle
+            -- marker mode) but m or force_marker_mode is also specified.
+            -- for now, or them together and let either turn marker mode on
+            occupancy.dig_marked = occupancy.dig_marked or marker_mode
         else
             occupancy.dig_marked = marker_mode
         end
@@ -253,6 +306,7 @@ local function do_run_impl(zlevel, grid)
         for x, text in pairs(row) do
             local pos = xyz2pos(x, y, zlevel)
             log('designating (%d, %d, %d)="%s"', pos.x, pos.y, pos.z, text)
+            -- TODO: we *can* smooth and carve fortifications for map edge tiles
             if not quickfort_common.is_within_bounds(pos) then
                 log('coordinates out of bounds; skipping')
                 stats.out_of_bounds.value = stats.out_of_bounds.value + 1
@@ -278,7 +332,17 @@ local function do_run_impl(zlevel, grid)
                         pos.x+extent_x-1,
                         pos.y+extent_y-1,
                         pos.z)
-                    if dig_tile(extent_pos, code, marker_mode) then
+                    local extent_adjacent = {
+                        north=extent_y>1,
+                        east=extent_x>1,
+                        south=extent_y<extent.height,
+                        west=extent_x<extent.width,
+                    }
+                    local ctx = {
+                        pos=extent_pos,
+                        extent_adjacent=extent_adjacent,
+                    }
+                    if dig_tile(ctx, code, marker_mode) then
                         stats.designated.value = stats.designated.value + 1
                     end
                 end
