@@ -151,7 +151,10 @@ function addSingleItem(itemstring)
   
   local addedItem = nil
   --assume the user knows what they're doing, so no need for sanity checks
+  
+  if (verbose) then print("Searching items in category " .. itemType) end
   for _, item in ipairs(all) do
+    if (verbose) then print(_ .. "|" .. item.id) end
     if (item.id == itemId) then
       known:insert('#', item.subtype)
       addedItem = item
@@ -167,6 +170,12 @@ end
 
 local args = {...}
 local cmd = args[1]
+
+if (args[3] == "-v") then
+  verbose = true
+else
+  verbose = false
+end
 if (cmd == "all") then
   addAllItems(true)
 elseif (cmd == "native") then
@@ -179,5 +188,6 @@ else
         .."native: adds only unknown native recipes (eg. high boots for "
         .."some dwarves)\n"
         .."single: adds a specific item by itemstring (eg. "
-        .."SHOES:ITEM_SHOES_BOOTS)")
+        .."SHOES:ITEM_SHOES_BOOTS)\n"
+		.."-v: DEBUG: activate verbose debugging")
 end
