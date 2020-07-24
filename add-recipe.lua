@@ -44,7 +44,8 @@ local categories = { --as:{1:'number[]',2:'number[]',3:'df.itemdef[]'}[]
   gloves = {resources.gloves_type, civ.equipment.gloves_id, itemDefs.gloves },
   shoes = {resources.shoes_type, civ.equipment.shoes_id, itemDefs.shoes },
   helm = {resources.helm_type, civ.equipment.helm_id, itemDefs.helms },
-  pants = {resources.pants_type, civ.equipment.pants_id, itemDefs.pants }
+  pants = {resources.pants_type, civ.equipment.pants_id, itemDefs.pants },
+  tool = {resources.tool_type, civ.equipment.tool_id, itemDefs.tools}
 }
 
 local diggers = resources.digger_type
@@ -139,6 +140,7 @@ function addAllItems(exotic)
   printItems(addItems(categories.shoes, exotic))
   printItems(addItems(categories.helm, exotic))
   printItems(addItems(categories.pants, exotic))
+  printItems(addItems(categories.tool, exotic))
 end
 
 function addSingleItem(itemstring)
@@ -151,7 +153,9 @@ function addSingleItem(itemstring)
   
   local addedItem = nil
   --assume the user knows what they're doing, so no need for sanity checks
+  if (verbose) then print("Searching items in category " .. itemType) end
   for _, item in ipairs(all) do
+    if (verbose) then print(_ .. "|" .. item.id) end
     if (item.id == itemId) then
       known:insert('#', item.subtype)
       addedItem = item
@@ -162,11 +166,19 @@ function addSingleItem(itemstring)
   if (addedItem ~= nil) then
     local addedItem = addedItem --as:df.itemdef_weaponst
     print("Added recipe " .. addedItem.id .. " (" .. addedItem.name .. ")")
+  else
+    print("Could not add recipe: invalid item name")
   end
 end
 
 local args = {...}
 local cmd = args[1]
+
+if (args[3] == "-v") then
+  verbose = true
+else
+  verbose = false
+end
 if (cmd == "all") then
   addAllItems(true)
 elseif (cmd == "native") then
@@ -179,5 +191,6 @@ else
         .."native: adds only unknown native recipes (eg. high boots for "
         .."some dwarves)\n"
         .."single: adds a specific item by itemstring (eg. "
-        .."SHOES:ITEM_SHOES_BOOTS)")
+        .."SHOES:ITEM_SHOES_BOOTS)\n"
+		.."-v: DEBUG: activate verbose debugging")
 end
