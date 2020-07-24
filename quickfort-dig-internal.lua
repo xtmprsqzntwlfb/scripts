@@ -110,6 +110,10 @@ local values_run = {
     smooth=1,
     engrave=2,
     track=1,
+    traffic_normal=0,
+    traffic_low=1,
+    traffic_high=2,
+    traffic_restricted=3,
 }
 
 local values_undo = {
@@ -123,6 +127,10 @@ local values_undo = {
     smooth=0,
     engrave=0,
     track=0,
+    traffic_normal=0,
+    traffic_low=0,
+    traffic_high=0,
+    traffic_restricted=0,
 }
 
 -- these functions return whether a designation was made
@@ -319,6 +327,26 @@ local function do_remove_designation(ctx)
     return true
 end
 
+local function do_traffic_high(ctx)
+    if ctx.flags.hidden then return false end
+    ctx.flags.traffic = values.traffic_high
+end
+
+local function do_traffic_normal(ctx)
+    if ctx.flags.hidden then return false end
+    ctx.flags.traffic = values.traffic_normal
+end
+
+local function do_traffic_low(ctx)
+    if ctx.flags.hidden then return false end
+    ctx.flags.traffic = values.traffic_low
+end
+
+local function do_traffic_restricted(ctx)
+    if ctx.flags.hidden then return false end
+    ctx.flags.traffic = values.traffic_restricted
+end
+
 -- add on the 'd' prefix to avoid spelling out reserved words (like 'or')
 local designate_switch = {
     dd=do_mine,
@@ -346,16 +374,15 @@ local designate_switch = {
     --dbD=nil,
     --dbh=nil,
     --dbH=nil,
-    --doh=nil,
-    --don=nil,
-    --dol=nil,
-    --dor=nil,
+    doh=do_traffic_high,
+    don=do_traffic_normal,
+    dol=do_traffic_low,
+    dor=do_traffic_restricted,
 }
 
 local function dig_tile(ctx, code, marker_mode)
     ctx.flags, ctx.occupancy = dfhack.maps.getTileFlags(ctx.pos)
     ctx.tileattrs = df.tiletype.attrs[dfhack.maps.getTileType(ctx.pos)]
-    --printall_recurse(ctx)
     if designate_switch[code](ctx) then
         if not has_designation(ctx.flags, ctx.occupancy) then
             ctx.occupancy.dig_marked = false
