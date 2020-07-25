@@ -107,15 +107,26 @@ local values_run = {
     dig_updownstair=df.tile_dig_designation.UpDownStair,
     dig_ramp=df.tile_dig_designation.Ramp,
     dig_no=df.tile_dig_designation.No,
-    smooth=1,
-    engrave=2,
+    tile_smooth=1,
+    tile_engrave=2,
     track=1,
+    item_claimed=false,
+    item_forbidden=true,
+    item_melted=true,
+    item_unmelted=false,
+    item_dumped=true,
+    item_undumped=false,
+    item_hidden=true,
+    item_unhidden=false,
     traffic_normal=0,
     traffic_low=1,
     traffic_high=2,
     traffic_restricted=3,
 }
 
+-- undo isn't guaranteed to restore what was set on the tile before the last
+-- 'run' command; it just sets a sensible default. we could implement true undo
+-- if there is demand, though.
 local values_undo = {
     dig_default=df.tile_dig_designation.No,
     dig_channel=df.tile_dig_designation.No,
@@ -124,9 +135,17 @@ local values_undo = {
     dig_updownstair=df.tile_dig_designation.No,
     dig_ramp=df.tile_dig_designation.No,
     dig_no=df.tile_dig_designation.No,
-    smooth=0,
-    engrave=0,
+    tile_smooth=0,
+    tile_engrave=0,
     track=0,
+    item_claimed=false,
+    item_forbidden=false,
+    item_melted=false,
+    item_unmelted=false,
+    item_dumped=false,
+    item_undumped=false,
+    item_hidden=false,
+    item_unhidden=false,
     traffic_normal=0,
     traffic_low=0,
     traffic_high=0,
@@ -247,7 +266,7 @@ local function do_smooth(ctx)
             (not is_floor(ctx.tileattrs) and not is_wall(ctx.tileattrs)) then
         return false
     end
-    ctx.flags.smooth = values.smooth
+    ctx.flags.smooth = values.tile_smooth
     return true
 end
 
@@ -258,7 +277,7 @@ local function do_engrave(ctx)
             get_engraving(ctx.pos) ~= nil then
         return false
     end
-    ctx.flags.smooth = values.engrave
+    ctx.flags.smooth = values.tile_engrave
     return true
 end
 
@@ -266,7 +285,7 @@ local function do_fortification(ctx)
     if ctx.flags.hidden then return false end
     if not is_wall(ctx.tileattrs) or
             not is_smooth(ctx.tileattrs) then return false end
-    ctx.flags.smooth = values.smooth
+    ctx.flags.smooth = values.tile_smooth
     return true
 end
 
@@ -329,6 +348,75 @@ local function do_remove_designation(ctx)
     return true
 end
 
+local function is_valid_item(item)
+    return not item.flags.garbage_collect
+end
+
+local function get_items_at(pos, include_buildings)
+    local items = {}
+    if include_buildings then
+        local bld = dfhack.buildings.findAtTile(pos)
+        if bld and same_xyz(pos, xyz2pos(bld.centerx, bld.centery, bld.z)) then
+            for _, contained_item in ipairs(bld.contained_items) do
+                if is_valid_item(contained_item.item) then
+                    table.insert(items, contained_item.item)
+                end
+            end
+        end
+    end
+    for _, item_id in ipairs(dfhack.maps.getTileBlock(pos).items) do
+        local item = df.item.find(item_id)
+        if same_xyz(pos, item.pos) and
+                is_valid_item(item) and item.flags.on_ground then
+            table.insert(items, item)
+        end
+    end
+    return items
+end
+
+local function do_item_flag(pos, flag_name, flag_value, include_buildings)
+    local ret = false
+    for _, item in ipairs(get_items_at(pos, include_buildings)) do
+        item.flags[flag_name] = flag_value
+        ret = true
+    end
+    return ret
+end
+
+local function do_claim(ctx)
+    return do_item_flag(ctx.pos, "forbid", values.item_claimed, true)
+end
+
+local function do_forbid(ctx)
+    return do_item_flag(ctx.pos, "forbid", values.item_forbidden, true)
+end
+
+local function do_melt(ctx)
+    -- the game appears to autoremove the flag from unmeltable items, so we
+    -- don't actually need to do any filtering here
+    return do_item_flag(ctx.pos, "melt", values.item_melted, false)
+end
+
+local function do_remove_melt(ctx)
+    return do_item_flag(ctx.pos, "melt", values.item_unmelted, false)
+end
+
+local function do_dump(ctx)
+    return do_item_flag(ctx.pos, "dump", values.item_dumped, false)
+end
+
+local function do_remove_dump(ctx)
+    return do_item_flag(ctx.pos, "dump", values.item_undumped, false)
+end
+
+local function do_hide(ctx)
+    return do_item_flag(ctx.pos, "hidden", values.item_hidden, true)
+end
+
+local function do_unhide(ctx)
+    return do_item_flag(ctx.pos, "hidden", values.item_unhidden, true)
+end
+
 local function do_traffic_high(ctx)
     if ctx.flags.hidden then return false end
     ctx.flags.traffic = values.traffic_high
@@ -368,14 +456,14 @@ local designate_switch = {
     dM=do_toggle_marker,
     dn=do_remove_construction,
     dx=do_remove_designation,
-    --dbc=nil,
-    --dbf=nil,
-    --dbm=nil,
-    --dbM=nil,
-    --dbd=nil,
-    --dbD=nil,
-    --dbh=nil,
-    --dbH=nil,
+    dbc=do_claim,
+    dbf=do_forbid,
+    dbm=do_melt,
+    dbM=do_remove_melt,
+    dbd=do_dump,
+    dbD=do_remove_dump,
+    dbh=do_hide,
+    dbH=do_unhide,
     doh=do_traffic_high,
     don=do_traffic_normal,
     dol=do_traffic_low,
@@ -411,7 +499,7 @@ local function do_run_impl(zlevel, grid)
     for y, row in pairs(grid) do
         for x, text in pairs(row) do
             local pos = xyz2pos(x, y, zlevel)
-            log('designating (%d, %d, %d)="%s"', pos.x, pos.y, pos.z, text)
+            log('processing (%d, %d, %d)="%s"', pos.x, pos.y, pos.z, text)
             local keys, extent = quickfort_common.parse_cell(text)
             log('parsed cell: keys="%s", width=%d, height=%d',
                 keys, extent.width, extent.height)

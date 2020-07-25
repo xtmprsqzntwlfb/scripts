@@ -486,7 +486,7 @@ local function do_command(in_args)
                 zlevel,
                 section_data.grid)
             if stats and not quiet then
-                print(string.format('z-level: %d', zlevel))
+                print(string.format('%s on z-level %d', modeline.mode, zlevel))
                 for _, stat in pairs(stats) do
                     if stat.always or stat.value > 0 then
                         print(string.format('  %s: %d', stat.label, stat.value))
