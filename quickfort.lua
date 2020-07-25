@@ -380,9 +380,7 @@ local function get_col_name(col)
 end
 
 local function make_cell_label(col_num, row_num)
-    print(string.format('making cell label for %d, %d', col_num, row_num))
-    local label = get_col_name(col_num) .. tostring(row_num)
-    print(string.format('returning label: %s', label))
+    return get_col_name(col_num) .. tostring(row_num)
 end
 
 -- returns a grid representation of the current section and the next z-level
