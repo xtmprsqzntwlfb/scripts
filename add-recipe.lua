@@ -4,7 +4,7 @@ add-recipe
 ==========
 Adds unknown weapon and armor crafting recipes to your civ.
 E.g. some civilizations never learn to craft high boots. This script can
-help with that, and more. Only weapons and armor are currently supported;
+help with that, and more. Only weapons, armor, and tools are currently supported;
 things such as instruments are not. Available options:
 
 * ``add-recipe all`` adds *all* available weapons and armor, including exotic items
@@ -14,9 +14,11 @@ things such as instruments are not. Available options:
   pick randomly from a pool of possible recipes, which means not all civs get
   high boots, for instance. This command gives you all the recipes your
   civilisation could have gotten.
-  
+
 * ``add-recipe single <item token>`` adds a single item by the given
-  item token. For example, ``add-recipe single SHOES:ITEM_SHOES_BOOTS``.
+  item token. For example::
+
+    add-recipe single SHOES:ITEM_SHOES_BOOTS
 ]====]
 
 local itemDefs = df.global.world.raws.itemdefs
@@ -86,16 +88,16 @@ function addItems(category, exotic)
   local native = category[2]
   local all = category[3]
   local added = {} --as:df.itemdef[]
-  
+
   for _, item in ipairs(all) do
     local item = item --as:df.itemdef_weaponst
     local subtype = item.subtype
     local itemOk = false
-    
+
     --check if it's a training weapon
     local t1, t2 = pcall(function () return item.flags.TRAINING == false end)
     local training = not(not t1 or t2)
-    
+
     --we don't want procedural items with adjectives such as "wavy spears"
     --(because they don't seem to be craftable even if added)
     --nor do we want known items or training items (because adding training
@@ -103,23 +105,23 @@ function addItems(category, exotic)
     if (item.adjective == "" and not training and not checkKnown(known, subtype)) then
       itemOk = true
     end
-    
+
     if (not exotic and not checkNative(native, subtype)) then
       itemOk = false
     end
-    
+
     --check that the weapon we're adding is not already known to the civ as
     --a digging implement so picks don't get duplicated
     if (checkKnown(diggers, subtype)) then
       itemOk = false
     end
-    
+
     if (itemOk) then
       known:insert('#', subtype)
       table.insert(added, item)
     end
   end
-  
+
   return added
 end
 
@@ -146,20 +148,22 @@ end
 function addSingleItem(itemstring)
   local itemType = nil  --The category of the item, the word before the ":"
   local itemId = nil    --The item within that category, what goes after the ":"
-  
+
   if (itemstring ~= nil) then
     itemType, itemId = string.match(itemstring, "(.*):(.*)")
   else
     print("Usage: add-recipe single <item name> | Example: add-recipe single SHOES:ITEM_SHOES_BOOTS")
-    return end
+    return
+  end
   if (itemType == nil or itemId == nil) then
     print("Usage: add-recipe single <item name> | Example: add-recipe single SHOES:ITEM_SHOES_BOOTS")
-    return end
+    return
+  end
   local category = categories[string.lower(itemType)]
   if (category == nil) then return end
   local known = category[1]
   local all = category[3]
-  
+
   local addedItem = nil
   --assume the user knows what they're doing, so no need for sanity checks
   for _, item in ipairs(all) do
@@ -169,7 +173,7 @@ function addSingleItem(itemstring)
       break
     end
   end
-  
+
   if (addedItem ~= nil) then
     local addedItem = addedItem --as:df.itemdef_weaponst
     print("Added recipe " .. addedItem.id .. " (" .. addedItem.name .. ")")
