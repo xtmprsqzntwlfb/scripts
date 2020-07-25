@@ -300,7 +300,7 @@ local blueprint_files = {}
 
 local function scan_blueprints()
     local paths = dfhack.filesystem.listdir_recursive(
-        quickfort_common.settings['blueprints_dir'], 10, false)
+        quickfort_common.settings['blueprints_dir'], nil, false)
     blueprint_files = {}
     local library_files = {}
     for _, v in ipairs(paths) do
