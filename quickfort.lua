@@ -231,12 +231,12 @@ function tokenize_csv_line(line)
     return tokens
 end
 
-local valid_modes = utils.invert({
-    'dig',
-    'build',
-    'place',
-    'query',
-})
+local mode_switch = {
+    dig=quickfort_dig,
+    build=quickfort_build,
+    place=quickfort_place,
+    query=quickfort_query,
+}
 
 --[[
 parses a Quickfort 2.0 modeline
@@ -249,7 +249,7 @@ or nil if the modeline is invalid
 local function parse_modeline(line)
     if not line then return nil end
     local _, mode_end, mode = string.find(line, '^#([%l]+)')
-    if not mode or not valid_modes[mode] then
+    if not mode or not mode_switch[mode] then
         print(string.format('invalid mode: %s', mode))
         return nil
     end
@@ -284,10 +284,16 @@ local function get_modeline(filepath)
     return parse_modeline(tokenize_csv_line(first_line)[1])
 end
 
+-- filename is relative to the blueprints dir
+local function get_blueprint_filepath(filename)
+    return string.format("%s/%s",
+                         quickfort_common.settings['blueprints_dir'], filename)
+end
+
 local blueprint_cache = {}
 
 local function scan_blueprint(path)
-    local filepath = string.format("%s/%s", settings['blueprints_dir'], path)
+    local filepath = get_blueprint_filepath(path)
     local hash = dfhack.internal.md5File(filepath)
     if not blueprint_cache[path] or blueprint_cache[path].hash ~= hash then
         blueprint_cache[path] = {modeline=get_modeline(filepath), hash=hash}
@@ -351,7 +357,7 @@ local function do_list(in_args)
                 comment = string.format(': %s)', v.modeline.comment)
             end
             local start_comment = ''
-            if #v.modeline.start_comment > 0 then
+            if v.modeline.start_comment and #v.modeline.start_comment > 0 then
                 start_comment = string.format('; place cursor: %s',
                                               v.modeline.start_comment)
             end
