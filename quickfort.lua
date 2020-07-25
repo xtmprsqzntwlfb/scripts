@@ -101,18 +101,18 @@ files are described in the files themselves.
 if not initialized then
 
 local utils = require('utils')
-local quickfort_common = require('hack.scripts.quickfort-common-internal')
-local quickfort_dig = require('hack.scripts.quickfort-dig-internal')
-local quickfort_build = require('hack.scripts.quickfort-build-internal')
-local quickfort_place = require('hack.scripts.quickfort-place-internal')
-local quickfort_query = require('hack.scripts.quickfort-query-internal')
+local quickfort_common = require('hack.scripts.internal.quickfort.common')
+local quickfort_dig = require('hack.scripts.internal.quickfort.dig')
+local quickfort_build = require('hack.scripts.internal.quickfort.build')
+local quickfort_place = require('hack.scripts.internal.quickfort.place')
+local quickfort_query = require('hack.scripts.internal.quickfort.query')
 
 local function do_reset()
-    reload('hack.scripts.quickfort-common-internal')
-    reload('hack.scripts.quickfort-dig-internal')
-    reload('hack.scripts.quickfort-build-internal')
-    reload('hack.scripts.quickfort-place-internal')
-    reload('hack.scripts.quickfort-query-internal')
+    reload('hack.scripts.internal.quickfort.common')
+    reload('hack.scripts.internal.quickfort.dig')
+    reload('hack.scripts.internal.quickfort.build')
+    reload('hack.scripts.internal.quickfort.place')
+    reload('hack.scripts.internal.quickfort.query')
     initialized = false
 end
 
@@ -160,7 +160,7 @@ local function set_setting(key, value)
     if quickfort_common.settings[key] == nil then
         error(string.format('error: invalid setting: "%s"', key))
     end
-    val = value
+    local val = value
     if type(quickfort_common.settings[key]) == 'boolean' then
         val = value == 'true'
     end
@@ -186,7 +186,8 @@ local function do_set(args)
         error('error: expected "quickfort set [<key> <value>]"')
     end
     set_setting(args[1], args[2])
-    print(string.format('successfully set %s to "%s"', args[1], tostring(val)))
+    print(string.format('successfully set %s to "%s"',
+                        args[1], quickfort_common.settings[args[1]]))
 end
 
 -- adapted from example on http://lua-users.org/wiki/LuaCsv
@@ -412,7 +413,7 @@ end
 --[[
 returns the following logical structure:
   map of target map z coordinate ->
-    list of {modeline, grid} tuples
+    list of {modeline, grid} tables
 Where the structure of modeline is defined as per parse_modeline and grid is a:
   map of target y coordinate ->
     map of target map x coordinate ->
@@ -527,7 +528,7 @@ action_switch = {
     set=do_set,
     list=do_list,
     run=do_command,
-    order=do_command,
+    orders=do_command,
     undo=do_command,
     }
 setmetatable(action_switch, {__index=function () return print_short_help end})

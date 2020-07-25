@@ -6,10 +6,10 @@ the shape and material of the target tile affects whether the designation has
 any effect.
 ]]
 
-local _ENV = mkmodule('hack.scripts.quickfort-dig-internal')
+local _ENV = mkmodule('hack.scripts.internal.quickfort.dig')
 
 local utils = require('utils')
-local quickfort_common = require('hack.scripts.quickfort-common-internal')
+local quickfort_common = require('hack.scripts.internal.quickfort.common')
 local log = quickfort_common.log
 
 local function is_construction(tileattrs)

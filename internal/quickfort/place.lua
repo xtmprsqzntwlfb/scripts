@@ -1,8 +1,8 @@
 -- place-related logic for the quickfort script
 
-local _ENV = mkmodule('hack.scripts.quickfort-place-internal')
+local _ENV = mkmodule('hack.scripts.internal.quickfort.place')
 
-local quickfort_common = require('hack.scripts.quickfort-common-internal')
+local quickfort_common = require('hack.scripts.internal.quickfort.common')
 local log = quickfort_common.log
 
 function do_run(zlevel, grid)
