@@ -304,7 +304,7 @@ local blueprint_files = {}
 
 local function scan_blueprints()
     local paths = dfhack.filesystem.listdir_recursive(
-        quickfort_common.settings['blueprints_dir'], nil, false)
+        quickfort_common.settings['blueprints_dir'], 10, false)
     blueprint_files = {}
     local library_files = {}
     for _, v in ipairs(paths) do
@@ -367,25 +367,44 @@ local function do_list(in_args)
     end
 end
 
+local function get_col_name(col)
+  if col <= 26 then
+    return string.char(string.byte('A') + col - 1)
+  end
+  local div, mod = math.floor(col / 26), math.floor(col % 26)
+  if mod == 0 then
+      mod = 26
+      div = div - 1
+  end
+  return get_col_name(div) .. get_col_name(mod)
+end
+
+local function make_cell_label(col_num, row_num)
+    print(string.format('making cell label for %d, %d', col_num, row_num))
+    local label = get_col_name(col_num) .. tostring(row_num)
+    print(string.format('returning label: %s', label))
+end
+
 -- returns a grid representation of the current section and the next z-level
 -- modifier, if any. See process_file for grid format.
-local function process_section(file, start_coord)
+local function process_section(file, start_line_num, start_coord)
     local grid = {}
     local y = start_coord.y
     while true do
         local line = file:read()
-        if not line then return grid end
+        if not line then return grid, y-start_coord.y end
         for i, v in ipairs(tokenize_csv_line(line)) do
             if i == 1 then
-                if v == '#<' then return grid, 1 end
-                if v == '#>' then return grid, -1 end
+                if v == '#<' then return grid, y-start_coord.y, 1 end
+                if v == '#>' then return grid, y-start_coord.y, -1 end
             end
             if string.find(v, '^#') then break end
             if not string.find(v, '^[`~%s]*$') then
                 -- cell has actual content, not just spaces or comment chars
                 if not grid[y] then grid[y] = {} end
                 local x = start_coord.x + i - 1
-                grid[y][x] = v
+                local line_num = start_line_num + y - start_coord.y
+                grid[y][x] = {cell=make_cell_label(i, line_num), text=v}
             end
         end
         y = y + 1
@@ -399,7 +418,7 @@ returns the following logical structure:
 Where the structure of modeline is defined as per parse_modeline and grid is a:
   map of target y coordinate ->
     map of target map x coordinate ->
-      text from spreadsheet cell
+      {cell=spreadsheet cell, text=text from spreadsheet cell}
 Map keys are numbers, and the keyspace is sparse -- only elements that have
 contents are non-nil.
 ]]
@@ -410,12 +429,14 @@ local function process_file(filepath, start_cursor_coord)
     end
     local line = file:read()
     local modeline = parse_modeline(tokenize_csv_line(line)[1])
+    local cur_line_num = 2
     local x = start_cursor_coord.x - modeline.startx + 1
     local y = start_cursor_coord.y - modeline.starty + 1
     local z = start_cursor_coord.z
     local zlevels = {}
     while true do
-        local grid, zmod = process_section(file, {x=x, y=y, z=z})
+        local grid, num_section_rows, zmod =
+                process_section(file, cur_line_num, xyz2pos(x, y, z))
         for _, _ in pairs(grid) do
             -- apparently, the only way to tell if a sparse array is not empty
             if not zlevels[z] then zlevels[z] = {} end
@@ -423,6 +444,7 @@ local function process_file(filepath, start_cursor_coord)
             break;
         end
         if zmod == nil then break end
+        cur_line_num = cur_line_num + num_section_rows + 1
         z = z + zmod
     end
     file:close()

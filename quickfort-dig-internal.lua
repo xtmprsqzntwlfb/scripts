@@ -497,9 +497,11 @@ local function do_run_impl(zlevel, grid)
     }
 
     for y, row in pairs(grid) do
-        for x, text in pairs(row) do
+        for x, cell_and_text in pairs(row) do
+            local cell, text = cell_and_text.cell, cell_and_text.text
             local pos = xyz2pos(x, y, zlevel)
-            log('processing (%d, %d, %d)="%s"', pos.x, pos.y, pos.z, text)
+            log('applying spreadsheet cell %s with text "%s" to map' ..
+                ' coordinates (%d, %d, %d)', cell, text, pos.x, pos.y, pos.z)
             local keys, extent = quickfort_common.parse_cell(text)
             log('parsed cell: keys="%s", width=%d, height=%d',
                 keys, extent.width, extent.height)
