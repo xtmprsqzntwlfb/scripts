@@ -1,6 +1,9 @@
 -- common logic for the quickfort modules
+--@ module = true
 
-local _ENV = mkmodule('hack.scripts.internal.quickfort.common')
+if not dfhack_flags.module then
+    qerror('this script cannot be called directly')
+end
 
 settings = {
     blueprints_dir = 'blueprints',
@@ -13,5 +16,3 @@ verbose = false
 function log(...)
     if verbose then print(string.format(...)) end
 end
-
-return _ENV
