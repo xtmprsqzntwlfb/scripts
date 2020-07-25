@@ -1,4 +1,6 @@
--- dig-related logic for the quickfort script
+--[====[
+dig-related logic for the quickfort script
+]====]
 
 local _ENV = mkmodule('hack.scripts.internal.quickfort.dig')
 
