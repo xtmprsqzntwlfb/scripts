@@ -101,18 +101,18 @@ files are described in the files themselves.
 if not initialized then
 
 local utils = require('utils')
-local quickfort_common = require('hack.scripts.quickfort-common-internal')
-local quickfort_dig = require('hack.scripts.quickfort-dig-internal')
-local quickfort_build = require('hack.scripts.quickfort-build-internal')
-local quickfort_place = require('hack.scripts.quickfort-place-internal')
-local quickfort_query = require('hack.scripts.quickfort-query-internal')
+local quickfort_common = require('hack.scripts.internal.quickfort.common')
+local quickfort_dig = require('hack.scripts.internal.quickfort.dig')
+local quickfort_build = require('hack.scripts.internal.quickfort.build')
+local quickfort_place = require('hack.scripts.internal.quickfort.place')
+local quickfort_query = require('hack.scripts.internal.quickfort.query')
 
 local function do_reset()
-    reload('hack.scripts.quickfort-common-internal')
-    reload('hack.scripts.quickfort-dig-internal')
-    reload('hack.scripts.quickfort-build-internal')
-    reload('hack.scripts.quickfort-place-internal')
-    reload('hack.scripts.quickfort-query-internal')
+    reload('hack.scripts.internal.quickfort.common')
+    reload('hack.scripts.internal.quickfort.dig')
+    reload('hack.scripts.internal.quickfort.build')
+    reload('hack.scripts.internal.quickfort.place')
+    reload('hack.scripts.internal.quickfort.query')
     initialized = false
 end
 
@@ -160,7 +160,7 @@ local function set_setting(key, value)
     if quickfort_common.settings[key] == nil then
         error(string.format('error: invalid setting: "%s"', key))
     end
-    val = value
+    local val = value
     if type(quickfort_common.settings[key]) == 'boolean' then
         val = value == 'true'
     end
@@ -186,7 +186,8 @@ local function do_set(args)
         error('error: expected "quickfort set [<key> <value>]"')
     end
     set_setting(args[1], args[2])
-    print(string.format('successfully set %s to "%s"', args[1], tostring(val)))
+    print(string.format('successfully set %s to "%s"',
+                        args[1], quickfort_common.settings[args[1]]))
 end
 
 -- adapted from example on http://lua-users.org/wiki/LuaCsv
@@ -304,7 +305,7 @@ local blueprint_files = {}
 
 local function scan_blueprints()
     local paths = dfhack.filesystem.listdir_recursive(
-        quickfort_common.settings['blueprints_dir'], nil, false)
+        quickfort_common.settings['blueprints_dir'], 10, false)
     blueprint_files = {}
     local library_files = {}
     for _, v in ipairs(paths) do
@@ -367,25 +368,42 @@ local function do_list(in_args)
     end
 end
 
+local function get_col_name(col)
+  if col <= 26 then
+    return string.char(string.byte('A') + col - 1)
+  end
+  local div, mod = math.floor(col / 26), math.floor(col % 26)
+  if mod == 0 then
+      mod = 26
+      div = div - 1
+  end
+  return get_col_name(div) .. get_col_name(mod)
+end
+
+local function make_cell_label(col_num, row_num)
+    return get_col_name(col_num) .. tostring(row_num)
+end
+
 -- returns a grid representation of the current section and the next z-level
 -- modifier, if any. See process_file for grid format.
-local function process_section(file, start_coord)
+local function process_section(file, start_line_num, start_coord)
     local grid = {}
     local y = start_coord.y
     while true do
         local line = file:read()
-        if not line then return grid end
+        if not line then return grid, y-start_coord.y end
         for i, v in ipairs(tokenize_csv_line(line)) do
             if i == 1 then
-                if v == '#<' then return grid, 1 end
-                if v == '#>' then return grid, -1 end
+                if v == '#<' then return grid, y-start_coord.y, 1 end
+                if v == '#>' then return grid, y-start_coord.y, -1 end
             end
             if string.find(v, '^#') then break end
             if not string.find(v, '^[`~%s]*$') then
                 -- cell has actual content, not just spaces or comment chars
                 if not grid[y] then grid[y] = {} end
                 local x = start_coord.x + i - 1
-                grid[y][x] = v
+                local line_num = start_line_num + y - start_coord.y
+                grid[y][x] = {cell=make_cell_label(i, line_num), text=v}
             end
         end
         y = y + 1
@@ -395,11 +413,11 @@ end
 --[[
 returns the following logical structure:
   map of target map z coordinate ->
-    list of {modeline, grid} tuples
+    list of {modeline, grid} tables
 Where the structure of modeline is defined as per parse_modeline and grid is a:
   map of target y coordinate ->
     map of target map x coordinate ->
-      text from spreadsheet cell
+      {cell=spreadsheet cell, text=text from spreadsheet cell}
 Map keys are numbers, and the keyspace is sparse -- only elements that have
 contents are non-nil.
 ]]
@@ -410,12 +428,14 @@ local function process_file(filepath, start_cursor_coord)
     end
     local line = file:read()
     local modeline = parse_modeline(tokenize_csv_line(line)[1])
+    local cur_line_num = 2
     local x = start_cursor_coord.x - modeline.startx + 1
     local y = start_cursor_coord.y - modeline.starty + 1
     local z = start_cursor_coord.z
     local zlevels = {}
     while true do
-        local grid, zmod = process_section(file, {x=x, y=y, z=z})
+        local grid, num_section_rows, zmod =
+                process_section(file, cur_line_num, xyz2pos(x, y, z))
         for _, _ in pairs(grid) do
             -- apparently, the only way to tell if a sparse array is not empty
             if not zlevels[z] then zlevels[z] = {} end
@@ -423,6 +443,7 @@ local function process_file(filepath, start_cursor_coord)
             break;
         end
         if zmod == nil then break end
+        cur_line_num = cur_line_num + num_section_rows + 1
         z = z + zmod
     end
     file:close()
@@ -507,7 +528,7 @@ action_switch = {
     set=do_set,
     list=do_list,
     run=do_command,
-    order=do_command,
+    orders=do_command,
     undo=do_command,
     }
 setmetatable(action_switch, {__index=function () return print_short_help end})

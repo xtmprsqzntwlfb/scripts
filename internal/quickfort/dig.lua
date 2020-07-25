@@ -6,10 +6,10 @@ the shape and material of the target tile affects whether the designation has
 any effect.
 ]]
 
-local _ENV = mkmodule('hack.scripts.quickfort-dig-internal')
+local _ENV = mkmodule('hack.scripts.internal.quickfort.dig')
 
 local utils = require('utils')
-local quickfort_common = require('hack.scripts.quickfort-common-internal')
+local quickfort_common = require('hack.scripts.internal.quickfort.common')
 local log = quickfort_common.log
 
 local function is_construction(tileattrs)
@@ -497,9 +497,11 @@ local function do_run_impl(zlevel, grid)
     }
 
     for y, row in pairs(grid) do
-        for x, text in pairs(row) do
+        for x, cell_and_text in pairs(row) do
+            local cell, text = cell_and_text.cell, cell_and_text.text
             local pos = xyz2pos(x, y, zlevel)
-            log('processing (%d, %d, %d)="%s"', pos.x, pos.y, pos.z, text)
+            log('applying spreadsheet cell %s with text "%s" to map' ..
+                ' coordinates (%d, %d, %d)', cell, text, pos.x, pos.y, pos.z)
             local keys, extent = quickfort_common.parse_cell(text)
             log('parsed cell: keys="%s", width=%d, height=%d',
                 keys, extent.width, extent.height)

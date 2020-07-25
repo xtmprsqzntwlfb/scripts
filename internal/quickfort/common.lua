@@ -1,6 +1,6 @@
 -- common logic for the quickfort modules
 
-local _ENV = mkmodule('hack.scripts.quickfort-common-internal')
+local _ENV = mkmodule('hack.scripts.internal.quickfort.common')
 
 settings = {
     blueprints_dir = 'blueprints',
