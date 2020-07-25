@@ -1,8 +1,11 @@
 -- dig-related logic for the quickfort script
+--@ module = true
 
-local _ENV = mkmodule('hack.scripts.internal.quickfort.dig')
+if not dfhack_flags.module then
+    qerror('this script cannot be called directly')
+end
 
-local quickfort_common = require('hack.scripts.internal.quickfort.common')
+local quickfort_common = reqscript('internal/quickfort/common')
 local log = quickfort_common.log
 
 function do_run(zlevel, grid)
@@ -21,5 +24,3 @@ function do_undo(zlevel, grid)
     print('"quickfort undo" not yet implemented for mode: dig')
     return stats
 end
-
-return _ENV
