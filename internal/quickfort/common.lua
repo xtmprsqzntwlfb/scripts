@@ -1,6 +1,9 @@
 -- common logic for the quickfort modules
+--@ module = true
 
-local _ENV = mkmodule('hack.scripts.internal.quickfort.common')
+if not dfhack_flags.module then
+    qerror('this script cannot be called directly')
+end
 
 settings = {
     blueprints_dir = 'blueprints',
@@ -47,5 +50,3 @@ function parse_cell(text)
     if not height or height <= 0 then height = 1 end
     return keys, {width=width, height=height}
 end
-
-return _ENV
