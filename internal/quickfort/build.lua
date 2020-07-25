@@ -1,6 +1,4 @@
---[====[
-build-related logic for the quickfort script
-]====]
+-- build-related logic for the quickfort script
 
 local _ENV = mkmodule('hack.scripts.internal.quickfort.build')
 

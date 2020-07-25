@@ -1,6 +1,4 @@
---[====[
-common logic for the quickfort script
-]====]
+-- common logic for the quickfort modules
 
 local _ENV = mkmodule('hack.scripts.internal.quickfort.common')
 
