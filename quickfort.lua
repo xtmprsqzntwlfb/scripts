@@ -101,18 +101,13 @@ files are described in the files themselves.
 if not initialized then
 
 local utils = require('utils')
-local quickfort_common = require('hack.scripts.internal.quickfort.common')
-local quickfort_dig = require('hack.scripts.internal.quickfort.dig')
-local quickfort_build = require('hack.scripts.internal.quickfort.build')
-local quickfort_place = require('hack.scripts.internal.quickfort.place')
-local quickfort_query = require('hack.scripts.internal.quickfort.query')
+local quickfort_common = reqscript('internal/quickfort/common')
+local quickfort_dig = reqscript('internal/quickfort/dig')
+local quickfort_build = reqscript('internal/quickfort/build')
+local quickfort_place = reqscript('internal/quickfort/place')
+local quickfort_query = reqscript('internal/quickfort/query')
 
 local function do_reset()
-    reload('hack.scripts.internal.quickfort.common')
-    reload('hack.scripts.internal.quickfort.dig')
-    reload('hack.scripts.internal.quickfort.build')
-    reload('hack.scripts.internal.quickfort.place')
-    reload('hack.scripts.internal.quickfort.query')
     initialized = false
 end
 
@@ -305,7 +300,7 @@ local blueprint_files = {}
 
 local function scan_blueprints()
     local paths = dfhack.filesystem.listdir_recursive(
-        quickfort_common.settings['blueprints_dir'], 10, false)
+        quickfort_common.settings['blueprints_dir'], nil, false)
     blueprint_files = {}
     local library_files = {}
     for _, v in ipairs(paths) do
