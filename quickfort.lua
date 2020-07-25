@@ -99,9 +99,20 @@ files are described in the files themselves.
 
 -- only initialize our globals once
 if not initialized then
-initialized = true
+
+local utils = require('utils')
+local quickfort_common = require('hack.scripts.internal.quickfort.common')
+local quickfort_dig = require('hack.scripts.internal.quickfort.dig')
+local quickfort_build = require('hack.scripts.internal.quickfort.build')
+local quickfort_place = require('hack.scripts.internal.quickfort.place')
+local quickfort_query = require('hack.scripts.internal.quickfort.query')
 
 local function do_reset()
+    reload('hack.scripts.internal.quickfort.common')
+    reload('hack.scripts.internal.quickfort.dig')
+    reload('hack.scripts.internal.quickfort.build')
+    reload('hack.scripts.internal.quickfort.place')
+    reload('hack.scripts.internal.quickfort.query')
     initialized = false
 end
 
@@ -145,21 +156,15 @@ For more info, see: https://docs.dfhack.org/en/stable/docs/_auto/base.html#quick
 ]]
 end
 
-local settings = {
-    blueprints_dir = 'blueprints',
-    force_marker_mode = false,
-    force_interactive_build = false,
-}
-
 local function set_setting(key, value)
-    if settings[key] == nil then
+    if quickfort_common.settings[key] == nil then
         error(string.format('error: invalid setting: "%s"', key))
     end
-    val = value
-    if type(settings[key]) == 'boolean' then
+    local val = value
+    if type(quickfort_common.settings[key]) == 'boolean' then
         val = value == 'true'
     end
-    settings[key] = val
+    quickfort_common.settings[key] = val
 end
 
 local function read_config(filename)
@@ -174,17 +179,16 @@ end
 local function do_set(args)
     if #args == 0 then
         print('active settings:')
-        printall(settings)
+        printall(quickfort_common.settings)
         return
     end
     if #args ~= 2 then
         error('error: expected "quickfort set [<key> <value>]"')
     end
     set_setting(args[1], args[2])
-    print(string.format('successfully set %s to "%s"', args[1], tostring(val)))
+    print(string.format('successfully set %s to "%s"',
+                        args[1], quickfort_common.settings[args[1]]))
 end
-
-local utils = require('utils')
 
 local valid_list_args = utils.invert({
     'l',
@@ -199,11 +203,11 @@ local function do_list(in_args)
         'would call "list" with show_library="%s"', tostring(show_library)))
 end
 
-local valid_commands = utils.invert({
-    'run',
-    'orders',
-    'undo',
-})
+local command_switch = {
+    run='do_run',
+    orders='do_orders',
+    undo='do_undo',
+}
 
 local valid_command_args = utils.invert({
     'q',
@@ -216,7 +220,7 @@ local valid_command_args = utils.invert({
 
 local function do_command(in_args)
     local command = in_args.action
-    if not valid_commands[command] then
+    if not command or not command_switch[command] then
         error(string.format('invalid command: "%s"', command))
     end
 
@@ -225,12 +229,22 @@ local function do_command(in_args)
         error("expected <list_num> or <filename> parameter")
     end
     local list_num = tonumber(filename)
-    -- TODO: convert list number into filename
+    if list_num then
+        print('NOT YET IMPLEMENTED')
+        print(string.format('would convert "%d" into blueprint filename',
+                            list_num))
+    end
 
     local args = utils.processArgs(in_args, valid_command_args)
     local quiet = args['q'] ~= nil or args['-quiet'] ~= nil
     local verbose = args['v'] ~= nil or args['-verbose'] ~= nil
     local sheet = tonumber(args['s']) or tonumber(args['-sheet'])
+
+    if command ~= 'orders' and df.global.cursor.x == -30000 then
+        error('please position the game cursor at the blueprint start location')
+    end
+
+    quickfort_common.verbose = verbose
 
     print('NOT YET IMPLEMENTED')
     print(string.format(
@@ -251,6 +265,8 @@ action_switch = {
     undo=do_command,
     }
 setmetatable(action_switch, {__index=function () return print_short_help end})
+
+initialized = true
 end -- if not initialized
 
 
