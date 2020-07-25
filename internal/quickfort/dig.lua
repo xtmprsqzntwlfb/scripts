@@ -1,4 +1,5 @@
 -- dig-related logic for the quickfort script
+--@ module = true
 --[[
 This file designates tiles with the same rules as the in-game UI. For example,
 if the tile is hidden, we designate blindly to avoid spoilers. If it's visible,
@@ -6,10 +7,12 @@ the shape and material of the target tile affects whether the designation has
 any effect.
 ]]
 
-local _ENV = mkmodule('hack.scripts.internal.quickfort.dig')
+if not dfhack_flags.module then
+    qerror('this script cannot be called directly')
+end
 
 local utils = require('utils')
-local quickfort_common = require('hack.scripts.internal.quickfort.common')
+local quickfort_common = reqscript('internal/quickfort/common')
 local log = quickfort_common.log
 
 local function is_construction(tileattrs)
@@ -564,5 +567,3 @@ function do_undo(zlevel, grid)
     values = values_undo
     return do_run_impl(zlevel, grid)
 end
-
-return _ENV
