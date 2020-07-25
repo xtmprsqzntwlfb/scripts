@@ -44,7 +44,8 @@ local categories = { --as:{1:'number[]',2:'number[]',3:'df.itemdef[]'}[]
   gloves = {resources.gloves_type, civ.equipment.gloves_id, itemDefs.gloves },
   shoes = {resources.shoes_type, civ.equipment.shoes_id, itemDefs.shoes },
   helm = {resources.helm_type, civ.equipment.helm_id, itemDefs.helms },
-  pants = {resources.pants_type, civ.equipment.pants_id, itemDefs.pants }
+  pants = {resources.pants_type, civ.equipment.pants_id, itemDefs.pants },
+  tool = {resources.tool_type, civ.equipment.tool_id, itemDefs.tools}
 }
 
 local diggers = resources.digger_type
@@ -139,11 +140,21 @@ function addAllItems(exotic)
   printItems(addItems(categories.shoes, exotic))
   printItems(addItems(categories.helm, exotic))
   printItems(addItems(categories.pants, exotic))
+  printItems(addItems(categories.tool, exotic))
 end
 
 function addSingleItem(itemstring)
-  local itemType, itemId = string.match(itemstring, "(.*):(.*)")
-  if (itemType == nil or itemId == nil) then return end
+  local itemType = nil  --The category of the item, the word before the ":"
+  local itemId = nil    --The item within that category, what goes after the ":"
+  
+  if (itemstring ~= nil) then
+    itemType, itemId = string.match(itemstring, "(.*):(.*)")
+  else
+    print("Usage: add-recipe single <item name> | Example: add-recipe single SHOES:ITEM_SHOES_BOOTS")
+    return end
+  if (itemType == nil or itemId == nil) then
+    print("Usage: add-recipe single <item name> | Example: add-recipe single SHOES:ITEM_SHOES_BOOTS")
+    return end
   local category = categories[string.lower(itemType)]
   if (category == nil) then return end
   local known = category[1]
@@ -162,11 +173,14 @@ function addSingleItem(itemstring)
   if (addedItem ~= nil) then
     local addedItem = addedItem --as:df.itemdef_weaponst
     print("Added recipe " .. addedItem.id .. " (" .. addedItem.name .. ")")
+  else
+    print("Could not add recipe: invalid item name")
   end
 end
 
 local args = {...}
 local cmd = args[1]
+
 if (cmd == "all") then
   addAllItems(true)
 elseif (cmd == "native") then
