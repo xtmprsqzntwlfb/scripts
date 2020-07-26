@@ -496,7 +496,7 @@ local function do_run_impl(zlevel, grid)
     local stats = {
         designated={label='Tiles designated', value=0, always=true},
         out_of_bounds={label='Tiles skipped (outside map boundary)', value=0},
-        invalid_keys={label='Invalid key sequence', value=0},
+        invalid_keys={label='Invalid key sequences', value=0},
     }
 
     for y, row in pairs(grid) do
@@ -506,8 +506,6 @@ local function do_run_impl(zlevel, grid)
             log('applying spreadsheet cell %s with text "%s" to map' ..
                 ' coordinates (%d, %d, %d)', cell, text, pos.x, pos.y, pos.z)
             local keys, extent = quickfort_common.parse_cell(text)
-            log('parsed cell: keys="%s", width=%d, height=%d',
-                keys, extent.width, extent.height)
             local marker_mode = quickfort_common.settings['force_marker_mode']
             if keys:startswith('m') then
                 keys = string.sub(keys, 2)
