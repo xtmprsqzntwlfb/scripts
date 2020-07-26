@@ -1,5 +1,14 @@
 -- place-related logic for the quickfort script
 --@ module = true
+--[[
+stockpiles data structure:
+  list of {type, cells, pos, width, height, extent_grid}
+- type: letter from stockpile designation screen
+- cells: list of source spreadsheet cell labels (for debugging)
+- pos: target map coordinates of upper left corner of extent (or nil if invalid)
+- width, height: number between 1 and 31 (could be 0 if pos == nil)
+- extent_grid: [x][y] -> boolean where 1 <= x <= width and 1 <= y <= height
+]]
 
 if not dfhack_flags.module then
     qerror('this script cannot be called directly')
@@ -9,8 +18,6 @@ require('dfhack.buildings') -- loads additional functions into dfhack.buildings
 local quickfort_common = reqscript('internal/quickfort/common')
 local log = quickfort_common.log
 local logfn = quickfort_common.logfn
-local is_within_map_bounds_x = quickfort_common.is_within_map_bounds_x
-local is_within_map_bounds_y = quickfort_common.is_within_map_bounds_y
 
 local stockpile_types = {
     a='Animal',
@@ -32,7 +39,7 @@ local stockpile_types = {
     d='Armor',
 }
 
--- returns number of invalid keys seen
+-- maps stockpile boundaries, returns number of invalid keys seen
 -- populates seen_grid coordinates with the stockpile id so we can build an
 -- extent_grid later. spreadsheet cells that define extents (e.g. a(5x5)) create
 -- stockpiles separate from adjacent cells, even if they have the same type.
@@ -48,8 +55,7 @@ local function flood_fill(grid, x, y, seen_grid, id, data)
                             cell, text))
         return 1
     end
-    local has_extent = extent.specified
-    if data.type and (data.type ~= keys or has_extent) then return 0 end
+    if data.type and (data.type ~= keys or extent.specified) then return 0 end
     log('mapping spreadsheet cell %s with text "%s"', cell, text)
     if not data.type then data.type = keys end
     table.insert(data.cells, cell)
@@ -64,7 +70,7 @@ local function flood_fill(grid, x, y, seen_grid, id, data)
             if target_y > data.y_max then data.y_max = target_y end
         end
     end
-    if not has_extent then
+    if not extent.specified then
         return flood_fill(grid, x-1, y, seen_grid, id, data) +
                 flood_fill(grid, x+1, y, seen_grid, id, data) +
                 flood_fill(grid, x, y-1, seen_grid, id, data) +
@@ -106,6 +112,7 @@ local function left_pad(num, width)
     return ret .. tostring(num)
 end
 
+-- pretty-prints the populated range of the seen_grid
 local function dump_seen_grid(args)
     local seen_grid, max_id = args[1], args[2]
     local x_min, x_max, y_min, y_max = 30000, -30000, 30000, -30000
@@ -133,10 +140,10 @@ local function dump_seen_grid(args)
     end
 end
 
--- build desired extent maps from blueprint grid
+-- build extent maps from blueprint grid input
 local function init_stockpiles(zlevel, grid, stockpiles)
     local invalid_keys = 0
-    local piles = {} -- list of pre-extent stockpiles
+    local piles = {} -- list of stockpile data tables
     local seen_grid = {} -- [x][y] -> id
     for y, row in pairs(grid) do
         for x, cell_and_text in pairs(row) do
@@ -163,7 +170,7 @@ local function init_stockpiles(zlevel, grid, stockpiles)
                           extent_grid=extent_grid})
         else
             log('all tiles are overwritten by other stockpiles for pile' ..
-                ' defined in spreadsheet cells: %s',
+                ' defined from spreadsheet cells: %s',
                 table.concat(data.cells, ', '))
         end
     end
@@ -171,14 +178,22 @@ local function init_stockpiles(zlevel, grid, stockpiles)
     return invalid_keys
 end
 
-local function is_within_map_bounds_xz(pos)
-    return quickfort_common.is_within_map_bounds_x(pos.x) and
-            quickfort_common.is_within_map_bounds_z(pos.z)
+local function is_on_map_x(x)
+    return quickfort_common.is_within_map_bounds_x(x) or
+            quickfort_common.is_on_map_edge_x(x)
 end
 
-local function is_within_map_bounds_yz(pos)
-    return quickfort_common.is_within_map_bounds_y(pos.y) and
-            quickfort_common.is_within_map_bounds_z(pos.z)
+local function is_on_map_y(y)
+    return quickfort_common.is_within_map_bounds_y(y) or
+            quickfort_common.is_on_map_edge_y(y)
+end
+
+local function is_on_map_xz(pos)
+    return is_on_map_x(pos.x) and quickfort_common.is_within_map_bounds_z(pos.z)
+end
+
+local function is_on_map_yz(pos)
+    return is_on_map_y(pos.y) and quickfort_common.is_within_map_bounds_z(pos.z)
 end
 
 -- check bounds against stockpile size limits and map edges, adjust pos, width,
@@ -193,7 +208,7 @@ local function crop_to_bounds(stockpiles)
                 table.concat(s.cells, ', '))
         end
         -- if pos is off the map, crop and move pos until we're ok (or empty)
-        while s.pos and s.width > 0 and not is_within_map_bounds_xz(s.pos) do
+        while s.pos and s.width > 0 and not is_on_map_xz(s.pos) do
             for extent_y=1,s.height do
                 if s.extent_grid[1][extent_y] then
                     out_of_bounds_tiles = out_of_bounds_tiles + 1
@@ -205,7 +220,7 @@ local function crop_to_bounds(stockpiles)
             s.pos.x = s.pos.x + 1
             if s.width == 0 then s.pos = nil end
         end
-        while s.pos and s.height > 0 and not is_within_map_bounds_yz(s.pos) do
+        while s.pos and s.height > 0 and not is_on_map_yz(s.pos) do
             for extent_x=1,s.width do
                 if s.extent_grid[extent_x][1] then
                     out_of_bounds_tiles = out_of_bounds_tiles + 1
@@ -219,8 +234,7 @@ local function crop_to_bounds(stockpiles)
         -- if stockpile is too big or off map to bottom or right, just crop
         while s.pos and
                 (s.width > 31 or
-                 (s.width > 0 and
-                  not is_within_map_bounds_x(s.pos.x+s.width-1))) do
+                 (s.width > 0 and not is_on_map_x(s.pos.x+s.width-1))) do
             for extent_y=1,s.height do
                 if s.extent_grid[s.width][extent_y] then
                     if s.width > 31 then
@@ -236,8 +250,7 @@ local function crop_to_bounds(stockpiles)
         end
         while s.pos and
                 (s.height > 31 or
-                 (s.height > 0 and
-                  not is_within_map_bounds_y(s.pos.y+s.height-1))) do
+                 (s.height > 0 and not is_on_map_y(s.pos.y+s.height-1))) do
             for extent_x=1,s.width do
                 if s.extent_grid[extent_x][s.height] then
                     if s.height > 31 then
@@ -259,9 +272,40 @@ local function crop_to_bounds(stockpiles)
     return stockpile_too_big_tiles, out_of_bounds_tiles
 end
 
+local function can_place_stockpile(pos)
+    local flags, occupancy = dfhack.maps.getTileFlags(pos)
+    if flags.hidden or occupancy.building ~= 0 then return false end
+    local shape = df.tiletype.attrs[dfhack.maps.getTileType(pos)].shape
+    return shape == df.tiletype_shape.FLOOR or
+            shape == df.tiletype_shape.BOULDER or
+            shape == df.tiletype_shape.PEBBLES or
+            shape == df.tiletype_shape.STAIR_UP or
+            shape == df.tiletype_shape.STAIR_DOWN or
+            shape == df.tiletype_shape.STAIR_UPDOWN or
+            shape == df.tiletype_shape.RAMP or
+            shape == df.tiletype_shape.TWIG or
+            shape == df.tiletype_shape.SAPLING or
+            shape == df.tiletype_shape.SHRUB
+end
+
 -- check tiles for validity, adjust extent_grid
 local function mask_occupied_tiles(stockpiles)
     local occupied_tiles = 0
+    for _, s in ipairs(stockpiles) do
+        for extent_x, col in ipairs(s.extent_grid) do
+            for extent_y, in_extent in ipairs(col) do
+                if not s.extent_grid[extent_x][extent_y] then goto continue end
+                local pos =
+                        xyz2pos(s.pos.x+extent_x-1, s.pos.y+extent_y-1, s.pos.z)
+                if not can_place_stockpile(pos) then
+                    log('tile occupied: (%d, %d, %d)', pos.x, pos.y, pos.z)
+                    s.extent_grid[extent_x][extent_y] = false
+                    occupied_tiles = occupied_tiles + 1
+                end
+                ::continue::
+            end
+        end
+    end
     return occupied_tiles
 end
 
@@ -271,8 +315,9 @@ local function make_extents(s)
     local extents = df.new('uint8_t', area)
     local num_tiles = 0
     for i=1,area do
-        local is_in_stockpile =
-                s.extent_grid[i%s.width+1][math.floor(i/s.height)]
+        local extent_x = (i-1) % s.width + 1
+        local extent_y = math.floor((i-1) / s.width) + 1
+        local is_in_stockpile = s.extent_grid[extent_x][extent_y]
         extents[i-1] = is_in_stockpile and 1 or 0
         if is_in_stockpile then num_tiles = num_tiles + 1 end
     end
@@ -280,6 +325,7 @@ local function make_extents(s)
 end
 
 local function init_stockpile_settings(bld, type)
+    print('TODO: initialize stockpile settings')
 end
 
 local function create_stockpile(s)
@@ -290,7 +336,7 @@ local function create_stockpile(s)
     local extents, ntiles = make_extents(s)
     if ntiles == 0 then
         log('no valid tiles; not creating stockpile')
-        df.free(extents)
+        df.delete(extents)
         return 0
     end
     local room = {x=s.pos.x, y=s.pos.y, width=s.width, height=s.height}
@@ -316,14 +362,6 @@ function do_run(zlevel, grid)
         invalid_keys={label='Invalid key sequences', value=0},
     }
 
-    -- data structure:
-    --   list of {type, cells, pos, width, height, extent_grid}
-    -- keys are target map coordinates
-    -- type: letter from stockpile designation screen
-    -- cells: list of source spreadsheet cell labels
-    -- pos: target map coordinates of upper left corner of extent (or nil)
-    -- width, height: number between 0 and 31 (after crop; if 0 then pos -> nil)
-    -- extent_grid: [x][y] -> boolean where 1 <= x <= width and 1 <= y <= height
     local stockpiles = {}
     stats.invalid_keys.value = init_stockpiles(zlevel, grid, stockpiles)
     stats.too_big.value, stats.out_of_bounds.value = crop_to_bounds(stockpiles)

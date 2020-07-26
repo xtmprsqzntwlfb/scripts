@@ -48,11 +48,16 @@ function is_within_map_bounds(pos)
             is_within_map_bounds_z(pos.z)
 end
 
+function is_on_map_edge_x(x)
+    return x == map_limits.x.min or x == map_limits.x.max
+end
+
+function is_on_map_edge_y(y)
+    return y == map_limits.y.min or y == map_limits.y.max
+end
+
 function is_on_map_edge(pos)
-    return (pos.x == map_limits.x.min or
-            pos.x == map_limits.x.max) and
-            (pos.y == map_limits.y.min or
-             pos.y == map_limits.y.max)
+    return is_on_map_edge_x(pos.x) and is_on_map_edge_y(pos.y)
 end
 
 -- returns a tuple of keys, extent where keys is a string and extent is of the
