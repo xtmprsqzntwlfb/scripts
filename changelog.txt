@@ -30,6 +30,7 @@ that repo.
 - `digfort`: documented that removing ramps, cutting trees, and gathering plants are indeed supported
 - `exportlegends`: changed some flags to be represented by self-closing tags instead of true/false strings (e.g. ``<is_volcano/>``) - note that this may require changes to other XML-parsing utilities
 - `exportlegends`: changed some enum values from numbers to their string representations
+- `exportlegends`: added ability to save all files to a subfolder, named after the region folder and date by default
 - `gui/advfort`: added support for specifying the entity used to determine available resources
 - `gui/gm-editor`: added support for automatically following ref-targets when pressing the ``i`` key
 - `modtools/moddable-gods`: added support for ``neuter`` gender
