@@ -22,7 +22,7 @@ The target/s must be alive, sane, and in fortress mode.
         and it's partner, bypassing almost all checks.
 
 ``gui/family-affairs [unitID] [unitID]``
-        divorces the two specificed units and their partners,
+        divorces the two specified units and their partners,
         then arranges for the two units to marry, bypassing
         almost all checks.  Use with caution.
 

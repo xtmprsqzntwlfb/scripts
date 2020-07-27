@@ -38,15 +38,11 @@ function addNemesisToUnretireList(advSetUpScreen,nemesis)
 end
 
 function getGenderString(gender)
-  local genderStr
-  if gender == 0 then
-    genderStr = string.char(12) -- ♀
-  elseif gender == 1 then
-    genderStr = string.char(11) -- ♂
-  else
+  local sym = df.pronoun_type.attrs[gender].symbol
+  if not sym then
     return ""
   end
-  return string.char(40)..genderStr..string.char(41) -- ( )
+  return "("..sym..")"
 end
 
 --luacheck: in=table
@@ -59,7 +55,7 @@ function showNemesisPrompt(advSetUpScreen)
       if (histFig.died_year == -1 or histFlags.ghost) and not histFlags.deity and not histFlags.force then
         local creature = df.creature_raw.find(histFig.race).caste[histFig.caste]
         local name = creature.caste_name[0]
-        name = name..' '..getGenderString(creature.gender)
+        name = name..' '..getGenderString(creature.sex)
         if histFlags.ghost then
           name = name.." ghost"
         end

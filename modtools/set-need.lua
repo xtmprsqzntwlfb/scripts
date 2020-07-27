@@ -68,7 +68,8 @@ Other arguments:
 :listunit:
     Prints a list of all a unit's needs, their strengths, and their current focus.
 
-Usage example - Satisfy all citizen's needs:
+Usage example - Satisfy all citizen's needs::
+
     modtools/set-need -edit -all -focus 400 -citizens
 ]====]
 

@@ -152,32 +152,42 @@ Usage:
 
 Examples:
 
-``assign-preferences -reset -likematerial [ INORGANIC:OBSIDAN PLANT:WILLOW:WOOD ]``
-    "likes alabaster and willow wood"
+* "likes alabaster and willow wood"::
 
-``assign-preferences -reset -likecreature SPARROW``
-    "likes sparrows for their ..."
+    assign-preferences -reset -likematerial [ INORGANIC:OBSIDAN PLANT:WILLOW:WOOD ]
 
-``assign-preferences -reset -likefood [ PLANT:MUSHROOM_HELMET_PLUMP:DRINK PLANT:OLIVE:FRUIT ]``
-    "prefers to consume dwarven wine and olives"
+* "likes sparrows for their ..."::
 
-``assign-preferences -reset -hatecreature SPIDER_JUMPING``
-    "absolutely detests jumping spiders
+    assign-preferences -reset -likecreature SPARROW
 
-``assign-preferences -reset -likeitem [ WOOD ITEM_WEAPON:ITEM_WEAPON_AXE_BATTLE ]``
-    "likes logs and battle axes"
+* "prefers to consume dwarven wine and olives"::
 
-``assign-preferences -reset -likeplant BERRIES_STRAW``
-    "likes straberry plants for their ..."
+    assign-preferences -reset -likefood [ PLANT:MUSHROOM_HELMET_PLUMP:DRINK PLANT:OLIVE:FRUIT ]
 
-``assign-preferences -reset -liketree OAK``
-    "likes oaks for their ..."
+* "absolutely detests jumping spiders::
 
-``assign-preferences -reset -likecolor AQUA``
-    "likes the color aqua"
+    assign-preferences -reset -hatecreature SPIDER_JUMPING
 
-``assign-preferences -reset -likeshape STAR``
-    "likes stars"
+* "likes logs and battle axes"::
+
+    assign-preferences -reset -likeitem [ WOOD ITEM_WEAPON:ITEM_WEAPON_AXE_BATTLE ]
+
+* "likes straberry plants for their ..."::
+
+    assign-preferences -reset -likeplant BERRIES_STRAW
+
+* "likes oaks for their ..."::
+
+    assign-preferences -reset -liketree OAK
+
+* "likes the color aqua"::
+
+    assign-preferences -reset -likecolor AQUA
+
+* "likes stars"::
+
+    assign-preferences -reset -likeshape STAR
+
 ]====]
 
 local utils = require("utils")

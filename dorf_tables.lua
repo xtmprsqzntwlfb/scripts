@@ -1,5 +1,5 @@
 -- dorf_tables has job distribution configurations, random number information for attributes generation, job configurations, profession configurations, dwarf types(ie. attributes/characteristic) configurations
--- usage: loaded by pimp-it.lua
+-- usage: loaded by dwarf-op.lua
 -- by josh cooper(cppcooper) [created: 12-2017 | last edited: 12-2018]
 --@ module = true
 
@@ -7,15 +7,13 @@ local help = [====[
 
 dorf_tables
 ===========
-Data tables for pimp-it.lua.
-
-Usage: load inside secondary script (pimp-it.lua)
+Data tables for `dwarf-op` - not intended to be called directly
 
 ]====]
 
 if not moduleMode then
     print("scripts/dorf_tables.lua is a content library; calling it does nothing.")
-    do return end
+    return
 end
 print("Loading data tables..")
 

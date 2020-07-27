@@ -20,7 +20,9 @@ food items. Several thousand cooked meals, three thousand plump
 helmets, just as many fish and meat. It gets pretty absurd. And your
 FPS doesn't like it.
 
-Usage: ``deterioratefood (start|stop)``
+Usage::
+
+    deterioratefood start|stop
 
 =end
 

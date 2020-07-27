@@ -27,8 +27,8 @@ All arguments are required.
 
 Example:
 
-    # Print a message if you load an elf fort, but not a dwarf, human, etc
-    # fort.
+- Print a message if you load an elf fort, but not a dwarf, human, etc. fort::
+
     if-entity -id "FOREST" -cmd [ lua "print('Dirty hippies.')" ]
 ]====]
 
