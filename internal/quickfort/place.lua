@@ -354,8 +354,8 @@ end
 
 function do_run(zlevel, grid)
     local stats = {
-        tiles_designated={label='Tiles designated', value=0, always=true},
         piles_designated={label='Stockpiles designated', value=0, always=true},
+        tiles_designated={label='Tiles designated', value=0},
         occupied={label='Tiles skipped (tile occupied)', value=0},
         too_big={label='Tiles skipped (stockpile too large)', value=0},
         out_of_bounds={label='Tiles skipped (outside map boundary)', value=0},
@@ -385,7 +385,29 @@ function do_orders(zlevel, grid)
 end
 
 function do_undo(zlevel, grid)
-    local stats = nil
-    print('"quickfort undo" not yet implemented for mode: place')
+    local stats = {
+        piles_removed={label='Stockpiles removed', value=0, always=true},
+        invalid_keys={label='Invalid key sequences', value=0},
+    }
+
+    local stockpiles = {}
+    stats.invalid_keys.value = init_stockpiles(zlevel, grid, stockpiles)
+
+    for _, s in ipairs(stockpiles) do
+        for extent_x, col in ipairs(s.extent_grid) do
+            for extent_y, in_extent in ipairs(col) do
+                if not s.extent_grid[extent_x][extent_y] then goto continue end
+                local pos =
+                        xyz2pos(s.pos.x+extent_x-1, s.pos.y+extent_y-1, s.pos.z)
+                local bld = dfhack.buildings.findAtTile(pos)
+                if bld and
+                        bld.stockpile_number and bld.stockpile_number > 0 then
+                    dfhack.buildings.deconstruct(bld)
+                    stats.piles_removed.value = stats.piles_removed.value + 1
+                end
+                ::continue::
+            end
+        end
+    end
     return stats
 end
