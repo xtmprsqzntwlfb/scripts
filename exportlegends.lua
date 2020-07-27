@@ -10,7 +10,11 @@ The 'info' option exports more data than is possible in vanilla, to a
 :file:`region-date-legends_plus.xml` file developed to extend
 :forums:`World Viewer <128932>` and other legends utilities.
 
-Options:
+Usage::
+
+    exportlegends OPTION [FOLDER_NAME]
+
+Valid values for ``OPTION`` are:
 
 :info:   Exports the world/gen info, the legends XML, and a custom XML with more information
 :custom: Exports a custom XML with more information
@@ -18,17 +22,28 @@ Options:
 :maps:   Exports all seventeen detailed maps
 :all:    Equivalent to calling all of the above, in that order
 
-Argument:
-:folder_name: (optional) The name of the folder where all the files will be saved.
-Default is to use the format: "regionX-YYYYY-MM-DD".
-A path is also allowed although everything but the last folder has to exist.
-If you export all the files in your current directory by using the file_name ".".
+``FOLDER_NAME``, if specified, is the name of the folder where all the files
+will be saved. This defaults to the ``regionX-YYYYY-MM-DD`` format. A path is
+also allowed, although everything but the last folder has to exist. To export
+to the top-level DF folder, pass ``.`` for this argument.
 
-Usage:
+Examples:
+
+* Export all information to the ``regionX-YYYYY-MM-DD`` folder::
+
     exportlegends all
+
+* Export all information to the ``region6`` folder::
+
     exportlegends all region6
+
+* Export just the files included in ``info`` (above) to the ``regionX-YYYYY-MM-DD`` folder::
+
     exportlegends info
-    exportlegends info .
+
+* Export just the custom XML file to the DF folder (no subfolder)::
+
+    exportlegends custom .
 
 ]====]
 
