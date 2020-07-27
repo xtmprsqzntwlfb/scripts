@@ -23,13 +23,13 @@ Valid values for ``OPTION`` are:
 :all:    Equivalent to calling all of the above, in that order
 
 ``FOLDER_NAME``, if specified, is the name of the folder where all the files
-will be saved. This defaults to the ``regionX-YYYYY-MM-DD`` format. A path is
+will be saved. This defaults to the ``legends-regionX-YYYYY-MM-DD`` format. A path is
 also allowed, although everything but the last folder has to exist. To export
 to the top-level DF folder, pass ``.`` for this argument.
 
 Examples:
 
-* Export all information to the ``regionX-YYYYY-MM-DD`` folder::
+* Export all information to the ``legends-regionX-YYYYY-MM-DD`` folder::
 
     exportlegends all
 
@@ -37,7 +37,7 @@ Examples:
 
     exportlegends all region6
 
-* Export just the files included in ``info`` (above) to the ``regionX-YYYYY-MM-DD`` folder::
+* Export just the files included in ``info`` (above) to the ``legends-regionX-YYYYY-MM-DD`` folder::
 
     exportlegends info
 
@@ -82,8 +82,7 @@ local MAPS = {
 function get_world_date_str()
     local month = dfhack.world.ReadCurrentMonth() + 1 --days and months are 1-indexed
     local day = dfhack.world.ReadCurrentDay()
-    local year_str = string.format('%0'..math.max(5, string.len(''..df.global.cur_year))..'d', df.global.cur_year)
-    local date_str = year_str..string.format('-%02d-%02d', month, day)
+    local date_str = string.format('%05d-%02d-%02d', df.global.cur_year, month, day)
     return date_str
 end
 
@@ -93,7 +92,7 @@ function move_back_to_main_folder()
 end
 
 -- Set default folder name
-local folder_name = df.global.world.cur_savegame.save_dir.."-"..get_world_date_str()
+local folder_name = "legends-" .. df.global.world.cur_savegame.save_dir .. "-" .. get_world_date_str()
 -- Go to save folder, returns true if successfully
 function move_to_save_folder()
     if move_back_to_main_folder() then
