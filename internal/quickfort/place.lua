@@ -400,8 +400,7 @@ function do_undo(zlevel, grid)
                 local pos =
                         xyz2pos(s.pos.x+extent_x-1, s.pos.y+extent_y-1, s.pos.z)
                 local bld = dfhack.buildings.findAtTile(pos)
-                if bld and
-                        bld.stockpile_number and bld.stockpile_number > 0 then
+                if bld and bld:getType() == df.building_type.Stockpile then
                     dfhack.buildings.deconstruct(bld)
                     stats.piles_removed.value = stats.piles_removed.value + 1
                 end
