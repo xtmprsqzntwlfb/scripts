@@ -100,7 +100,7 @@ starty = y - 1
 
 map = df.world.map
 
-if x < 0 or y < 0 or x+max_x >= map.x_count or y+max_y >= map.y_count
+if x < 0 or y < 0 or x+max_x > map.x_count or y+max_y > map.y_count
     max_x = max_x + x + 1
     max_y = max_y + y + 1
     raise "Position would designate outside map limits. Selected limits are from (#{x+1}, #{y+1}) to (#{max_x},#{max_y})"

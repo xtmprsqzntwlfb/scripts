@@ -15,6 +15,7 @@ that repo.
 
 ## Fixes
 - `digfort`: fixed y-line tracking when .csv files contain lines with only commas
+- `digfort`: fixed an issue causing blueprints touching the southern or eastern edges of the map to be rejected (northern and western edges were already allowed). This allows blueprints that span the entire embark area.
 - `exportlegends`: fixed an issue where two different ``<reason>`` tags could be included in a ``<historical_event>``
 - `exportlegends`: stopped including some tags with ``-1`` values which don't provide useful information
 - `gui/advfort`: fixed "operate pump" job
