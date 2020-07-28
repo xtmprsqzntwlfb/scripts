@@ -13,6 +13,9 @@ that repo.
 
 # Future
 
+## New Scripts
+- `quickfort`: DFHack-native implementation of quickfort with many new features and integrations. Implementation in progress.
+
 ## Fixes
 - `digfort`: fixed y-line tracking when .csv files contain lines with only commas
 - `digfort`: fixed an issue causing blueprints touching the southern or eastern edges of the map to be rejected (northern and western edges were already allowed). This allows blueprints that span the entire embark area.
