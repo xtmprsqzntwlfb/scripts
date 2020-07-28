@@ -34,12 +34,20 @@ drop in z.
 The script takes the plan filename, starting from the root df folder (where
 ``dfhack.init`` is found).
 
+Additional options can be specified after the filename:
+
+* ``force``: if the blueprint would extend beyond the edge of the map, still
+  draw the parts that remain on the map. (The default behavior in this case
+  is to fail with an error message.)
+
 =end
 
 fname = $script_args[0].to_s
+opts = $script_args[1..-1] or []
+force = opts.any?{ |arg| arg == "force" }
 
 if not $script_args[0] then
-    puts "  Usage: digfort <plan filename>"
+    puts "  Usage: digfort <plan filename> [options]"
     throw :script_finished
 end
 if not fname[-4..-1] == ".csv" then
@@ -103,7 +111,12 @@ map = df.world.map
 if x < 0 or y < 0 or x+max_x > map.x_count or y+max_y > map.y_count
     max_x = max_x + x + 1
     max_y = max_y + y + 1
-    raise "Position would designate outside map limits. Selected limits are from (#{x+1}, #{y+1}) to (#{max_x},#{max_y})"
+    msg = "Position would designate outside map limits. Selected limits are from (#{x+1}, #{y+1}) to (#{max_x},#{max_y})"
+    if force then
+        puts msg
+    else
+        raise msg
+    end
 end
 
 tiles.each { |line|
@@ -117,6 +130,7 @@ tiles.each { |line|
             next
         end
         t = df.map_tile_at(x, y, z)
+        next if t.nil?  # probably off map edge with "force" specified
         s = t.shape_basic
         case tile
         when 'd'; t.dig(:Default) if s == :Wall

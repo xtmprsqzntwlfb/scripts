@@ -29,6 +29,7 @@ that repo.
 - `add-recipe`: added a command explanation or error message when entering an invalid command
 - `digfort`: handled double quotes (") at the start of a string, allowing .csv files exported from spreadsheets to work without manual modification
 - `digfort`: documented that removing ramps, cutting trees, and gathering plants are indeed supported
+- `digfort`: added a ``force`` option to truncate blueprints if the full blueprint would extend off the edge of the map
 - `exportlegends`: changed some flags to be represented by self-closing tags instead of true/false strings (e.g. ``<is_volcano/>``) - note that this may require changes to other XML-parsing utilities
 - `exportlegends`: changed some enum values from numbers to their string representations
 - `exportlegends`: added ability to save all files to a subfolder, named after the region folder and date by default
