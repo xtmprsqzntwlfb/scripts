@@ -376,7 +376,7 @@ local function get_col_name(col)
 end
 
 local function make_cell_label(col_num, row_num)
-    return get_col_name(col_num) .. tostring(row_num)
+    return get_col_name(col_num) .. tostring(math.floor(row_num))
 end
 
 -- returns a grid representation of the current section and the next z-level
