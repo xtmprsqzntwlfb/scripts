@@ -4,7 +4,7 @@ add-recipe
 ==========
 Adds unknown weapon and armor crafting recipes to your civ.
 E.g. some civilizations never learn to craft high boots. This script can
-help with that, and more. Only weapons and armor are currently supported;
+help with that, and more. Only weapons, armor, and tools are currently supported;
 things such as instruments are not. Available options:
 
 * ``add-recipe all`` adds *all* available weapons and armor, including exotic items
@@ -14,9 +14,11 @@ things such as instruments are not. Available options:
   pick randomly from a pool of possible recipes, which means not all civs get
   high boots, for instance. This command gives you all the recipes your
   civilisation could have gotten.
-  
+
 * ``add-recipe single <item token>`` adds a single item by the given
-  item token. For example, ``add-recipe single SHOES:ITEM_SHOES_BOOTS``.
+  item token. For example::
+
+    add-recipe single SHOES:ITEM_SHOES_BOOTS
 ]====]
 
 local itemDefs = df.global.world.raws.itemdefs
@@ -36,7 +38,7 @@ end
   --1: the currently known recipes to the player civ
   --2: the native (non-exotic) recipes to the player civ
   --3: all possible recipes including exotic
-local categories = {
+local categories = { --as:{1:'number[]',2:'number[]',3:'df.itemdef[]'}[]
   weapon = {resources.weapon_type, civ.equipment.weapon_id, itemDefs.weapons },
   shield = {resources.shield_type, civ.equipment.shield_id, itemDefs.shields },
   ammo = {resources.ammo_type, civ.equipment.ammo_id, itemDefs.ammo },
@@ -44,7 +46,8 @@ local categories = {
   gloves = {resources.gloves_type, civ.equipment.gloves_id, itemDefs.gloves },
   shoes = {resources.shoes_type, civ.equipment.shoes_id, itemDefs.shoes },
   helm = {resources.helm_type, civ.equipment.helm_id, itemDefs.helms },
-  pants = {resources.pants_type, civ.equipment.pants_id, itemDefs.pants }
+  pants = {resources.pants_type, civ.equipment.pants_id, itemDefs.pants },
+  tool = {resources.tool_type, civ.equipment.tool_id, itemDefs.tools}
 }
 
 local diggers = resources.digger_type
@@ -81,19 +84,20 @@ function addItems(category, exotic)
     --category: the category of items we're adding
     --exotic: whether to add exotic items
   --returns: list of item objects that were added
-  known = category[1]
-  native = category[2]
-  all = category[3]
-  added = {}
-  
+  local known = category[1]
+  local native = category[2]
+  local all = category[3]
+  local added = {} --as:df.itemdef[]
+
   for _, item in ipairs(all) do
-    subtype = item.subtype
-    itemOk = false
-    
+    local item = item --as:df.itemdef_weaponst
+    local subtype = item.subtype
+    local itemOk = false
+
     --check if it's a training weapon
-    t1, t2 = pcall(function () return item.flags.TRAINING == false end)
-    training = not(not t1 or t2)
-    
+    local t1, t2 = pcall(function () return item.flags.TRAINING == false end)
+    local training = not(not t1 or t2)
+
     --we don't want procedural items with adjectives such as "wavy spears"
     --(because they don't seem to be craftable even if added)
     --nor do we want known items or training items (because adding training
@@ -101,29 +105,30 @@ function addItems(category, exotic)
     if (item.adjective == "" and not training and not checkKnown(known, subtype)) then
       itemOk = true
     end
-    
+
     if (not exotic and not checkNative(native, subtype)) then
       itemOk = false
     end
-    
+
     --check that the weapon we're adding is not already known to the civ as
     --a digging implement so picks don't get duplicated
     if (checkKnown(diggers, subtype)) then
       itemOk = false
     end
-    
+
     if (itemOk) then
       known:insert('#', subtype)
       table.insert(added, item)
     end
   end
-  
+
   return added
 end
 
 
 function printItems(itemList)
-  for _, v in ipairs(added) do
+  for _, v in ipairs(itemList) do
+    local v = v --as:df.itemdef_weaponst
     print("Added recipe " .. v.id .. " (" .. v.name .. ")")
   end
 end
@@ -137,17 +142,29 @@ function addAllItems(exotic)
   printItems(addItems(categories.shoes, exotic))
   printItems(addItems(categories.helm, exotic))
   printItems(addItems(categories.pants, exotic))
+  printItems(addItems(categories.tool, exotic))
 end
 
 function addSingleItem(itemstring)
-  itemType, itemId = string.match(itemstring, "(.*):(.*)")
-  if (itemType == nil or itemId == nil) then return end
-  category = categories[string.lower(itemType)]
+  local itemType = nil  --The category of the item, the word before the ":"
+  local itemId = nil    --The item within that category, what goes after the ":"
+
+  if (itemstring ~= nil) then
+    itemType, itemId = string.match(itemstring, "(.*):(.*)")
+  else
+    print("Usage: add-recipe single <item name> | Example: add-recipe single SHOES:ITEM_SHOES_BOOTS")
+    return
+  end
+  if (itemType == nil or itemId == nil) then
+    print("Usage: add-recipe single <item name> | Example: add-recipe single SHOES:ITEM_SHOES_BOOTS")
+    return
+  end
+  local category = categories[string.lower(itemType)]
   if (category == nil) then return end
-  known = category[1]
-  all = category[3]
-  
-  addedItem = nil
+  local known = category[1]
+  local all = category[3]
+
+  local addedItem = nil
   --assume the user knows what they're doing, so no need for sanity checks
   for _, item in ipairs(all) do
     if (item.id == itemId) then
@@ -156,14 +173,18 @@ function addSingleItem(itemstring)
       break
     end
   end
-  
+
   if (addedItem ~= nil) then
+    local addedItem = addedItem --as:df.itemdef_weaponst
     print("Added recipe " .. addedItem.id .. " (" .. addedItem.name .. ")")
+  else
+    print("Could not add recipe: invalid item name")
   end
 end
 
 local args = {...}
 local cmd = args[1]
+
 if (cmd == "all") then
   addAllItems(true)
 elseif (cmd == "native") then

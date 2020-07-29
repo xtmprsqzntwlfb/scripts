@@ -4,11 +4,9 @@
 names
 =====
 
-Rename units or items.  Usage:
-:-help:    print this help message
-:-if a first name is desired press f, leave blank to clear current first name
-:-if viewing an artifact you can rename it
-:-if viewing a unit you can rename them
+Rename units or items (including artifacts) with the native interface.
+If a first name is desired, press ``f``. To clear the current first name,
+leave this blank.
 
 ]====]
 
@@ -57,7 +55,7 @@ function namescr:init()
     elseif df.global.ui_advmode.menu == df.ui_advmode_menu.Look then
         local t_look = df.global.ui_look_list.items[df.global.ui_look_cursor]
         if t_look.type == df.ui_look_list.T_items.T_type.Unit then
-            trg = t_look.unit --luacheck: retype
+            trg = t_look.data.Unit --luacheck: retype
         end
     else
         qerror('Could not find valid target')

@@ -9,17 +9,38 @@ Triggers dfhack commands when syndromes are applied to units.
 Arguments::
 
     -clear
-        clear all triggers
-    -syndrome name
-        specify the name of a syndrome
+        clear any previously registered syndrome triggers
+
+    -syndrome SYN_NAME
+        specify a syndrome by its SYN_NAME
+        enclose the name in quotation marks if it includes spaces
+        example:
+            -syndrome "gila monster bite"
+
+    -synclass SYN_CLASS
+        any syndrome with the specified SYN_CLASS will act as a trigger
+        enclose in quotation marks if it includes spaces
+        example:
+            -synclass VAMPCURSE
+
     -command [ commandStrs ]
         specify the command to be executed after infection
-        args
-            \\SYNDROME_ID
+        remember to include a space after/before the square brackets!
+        the following may be added to appropriate commands where relevant:
             \\UNIT_ID
+                inserts the ID of the infected unit
             \\LOCATION
+                inserts the x, y, z coordinates of the infected unit
+            \\SYNDROME_ID
+                inserts the ID of the syndrome
+        note that:
             \\anything -> \anything
             anything -> anything
+        examples:
+            -command [ full-heal -unit \\UNIT_ID ]
+                heals units when they acquire the specified syndrome
+            -command [ modtools/spawn-flow -flowType Dragonfire -location [ \\LOCATION ] ]
+                spawns dragonfire at the location of infected units
 
 ]====]
 local eventful = require 'plugins.eventful'
@@ -93,15 +114,17 @@ end
 
 if args.clear then
  onInfection = {}
+ if not args.command and not args.syndrome then
+  return
+ end
+end
+
+if not args.syndrome and not args.synclass then
+ qerror('Syndrome not specified! Enter "modtools/syndrome-trigger -help" for more information.')
 end
 
 if not args.command then
- return
-end
-
-if not args.syndrome
-and not args.synclass then
- error 'Select a syndrome.'
+ qerror('Command not specified! Enter "modtools/syndrome-trigger -help" for more information.')
 end
 
 function processSyndrome(syndrome)
@@ -109,30 +132,33 @@ function processSyndrome(syndrome)
  table.insert(onInfection[syndrome], args)
 end
 
-local syndrome
+local synFound = false
 for _,syn in ipairs(df.global.world.raws.syndromes.all) do
+ local matchedSyn = false
  if args.syndrome then
   if syn.syn_name == args.syndrome then
    if syndrome then
-    error ('Multiple syndromes with same name: ' .. syn.syn_name)
+    qerror ('Multiple syndromes with the same name: ' .. syn.syn_name)
    end
-   syndrome = syn.id
+   synFound = true
+   matchedSyn = true
    processSyndrome(syn.id)
   end
- elseif args.synclass then
+ end
+ if not matchedSyn and args.synclass then -- no need to check for a SYN_CLASS match if the syndrome has already been registered
   for _,synclass in ipairs(syn.syn_class) do
    if synclass.value == args.synclass then
-    syndrome = syn.id
+    synFound = true
     processSyndrome(syn.id)
    end
   end
  end
 end
 
-if not syndrome then
+if not synFound then
  if args.syndrome then
-  error ('Invalid syndrome name: '..args.syndrome..'')
+  qerror ('Invalid syndrome name: '..args.syndrome..'')
  elseif args.synclass then
-  error ('Invalid syndrome class: '..args.synclass..'')
+  qerror ('Invalid syndrome class: '..args.synclass..'')
  end
 end

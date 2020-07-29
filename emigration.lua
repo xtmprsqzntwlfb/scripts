@@ -13,7 +13,9 @@ The check is made monthly.
 
 A happy dwarf (ie with negative stress) will never emigrate.
 
-Usage:  ``emigration enable|disable``
+Usage::
+
+    emigration enable|disable
 
 ]====]
 
@@ -61,11 +63,11 @@ function canLeave(unit)
     if not unit.status.current_soul then
         return false
     end
-    
+
     for _, skill in pairs(unit.status.current_soul.skills) do
         if skill.rating > 14 then return false end
     end
-    
+
     return dfhack.units.isOwnRace(unit) and  --  Doubtful check. naturalized citizens
            dfhack.units.isOwnCiv(unit) and   --  might also want to leave.
            dfhack.units.isActive(unit) and

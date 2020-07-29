@@ -4,9 +4,12 @@
 unforbid
 ========
 
- unforbid all
+Unforbids all items.
 
-   Options available: ``all``, ```help```
+Usage::
+
+    unforbid all
+    unforbid help
 
 =end
 

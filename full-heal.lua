@@ -52,8 +52,8 @@ if args.help then
 end
 
 function isCitizen(unit)
--- required as dfhack.units.isCitizen() returns false for dead units
-    local hf = unit.hist_figure_id ~= -1 and df.historical_figure.find(unit.hist_figure_id)
+--  required as dfhack.units.isCitizen() returns false for dead units
+    local hf = df.historical_figure.find(unit.hist_figure_id)
     if not hf then
         return false
     end
@@ -70,6 +70,16 @@ function isFortCivMember(unit)
     end
 end
 
+function addResurrectionEvent(histFigID)
+    local event = df.history_event_hist_figure_revivedst:new()
+    event.histfig = histFigID
+    event.year = df.global.cur_year
+    event.seconds = df.global.cur_year_tick
+    event.id = df.global.hist_event_next_id
+    df.global.world.history.events:insert('#', event)
+    df.global.hist_event_next_id = df.global.hist_event_next_id + 1
+end
+
 function heal(unit,resurrect,keep_corpse)
     if not unit then
         return
@@ -83,34 +93,39 @@ function heal(unit,resurrect,keep_corpse)
             unit.flags3.ghostly = false -- TO DO: check whether ghost is currently walking through walls before removing ghostliness
             unit.ghost_info = nil
 
+            local _, occupancy = dfhack.maps.getTileFlags(pos2xyz(unit.pos))
+            occupancy.unit_grounded = true -- it's simpler to always set the tile occupancy to unit_grounded, as determining whether occupancy.unit is correct would require one to check for the presence of other units on that tile
+            unit.flags1.on_ground = true -- this also fits the script thematically
+
             if unit.hist_figure_id ~= -1 then
                 local hf = df.historical_figure.find(unit.hist_figure_id)
                 hf.died_year = -1
                 hf.died_seconds = -1
                 hf.flags.ghost = false
+                addResurrectionEvent(hf.id)
+            end
 
-                if dfhack.world.isFortressMode and isFortCivMember(unit) then
-                    unit.flags2.resident = false -- appears to be set to true for dead citizens in a reclaimed fortress, which causes them to be marked as hostile when resurrected
+            if dfhack.world.isFortressMode() and isFortCivMember(unit) then
+                unit.flags2.resident = false -- appears to be set to true for dead citizens in a reclaimed fortress, which causes them to be marked as hostile when resurrected
 
-                    local deadCitizens = df.global.ui.main.dead_citizens
-                    for i = #deadCitizens-1,0,-1 do
-                        if deadCitizens[i].unit_id == unit.id then
-                            deadCitizens:erase(i)
-                        end
+                local deadCitizens = df.global.ui.main.dead_citizens
+                for i = #deadCitizens-1,0,-1 do
+                    if deadCitizens[i].unit_id == unit.id then
+                        deadCitizens:erase(i)
+                    end
+                end
+            end
+
+            if not keep_corpse then
+                local corpses = df.global.world.items.other.CORPSE
+                for i = #corpses-1,0,-1 do
+                    local corpse = corpses[i] --as:df.item_body_component
+                    if corpse.unit_id == unit.id then
+                        dfhack.items.remove(corpse)
                     end
                 end
             end
         end
-        if not keep_corpse then
-            for _, corpse in ipairs(df.global.world.items.other.CORPSE) do --as:df.item_body_component
-                if corpse.unit_id == unit.id then
-                    corpse.flags.garbage_collect = true
-                    corpse.flags.forbid = true
-                    corpse.flags.hidden = true
-                end
-            end
-        end
-        --unit.unk_100 = 3
     end
 
     --print("Erasing wounds...")
@@ -204,44 +219,42 @@ function heal(unit,resurrect,keep_corpse)
         status.severed_or_jammed = false
     end
 
-    for i = #unit.status2.body_part_temperature-1,0,-1 do
-      unit.status2.body_part_temperature:erase(i) -- attempting to rewrite temperature was causing body parts to melt for some reason; forcing repopulation in this manner appears to be safer
-    end
+    unit.status2.body_part_temperature:resize(0) -- attempting to rewrite temperature was causing body parts to melt for some reason; forcing repopulation in this manner appears to be safer
 
     for i = 0,#unit.enemy.body_part_8a8-1,1 do
-      unit.enemy.body_part_8a8[i] = 1 -- not sure what this does, but values appear to change following injuries
+        unit.enemy.body_part_8a8[i] = 1 -- not sure what this does, but values appear to change following injuries
     end
     for i = 0,#unit.enemy.body_part_8d8-1,1 do
-      unit.enemy.body_part_8d8[i] = 0 -- same as above
+        unit.enemy.body_part_8d8[i] = 0 -- same as above
     end
     for i = 0,#unit.enemy.body_part_878-1,1 do
-      unit.enemy.body_part_878[i] = 3 -- as above
+        unit.enemy.body_part_878[i] = 3 -- as above
     end
     for i = 0,#unit.enemy.body_part_888-1,1 do
-      unit.enemy.body_part_888[i] = 3 -- as above
+        unit.enemy.body_part_888[i] = 3 -- as above
     end
 
     local histFig = df.historical_figure.find(unit.hist_figure_id)
     if histFig and histFig.info and histFig.info.wounds then
-      --print("Clearing historical wounds...")
-      histFig.info.wounds = nil
+        --print("Clearing historical wounds...")
+        histFig.info.wounds = nil
     end
 
     local health = unit.health
     if health then
-      for i = 0, #health.flags-1,1 do
-        health.flags[i] = false
-      end
-      for _,bpFlags in ipairs(health.body_part_flags) do
-        for i = 0, #bpFlags-1,1 do
-          bpFlags[i] = false
+        for i = 0, #health.flags-1,1 do
+            health.flags[i] = false
         end
-      end
-      health.immobilize_cntdn = 0
-      health.dressing_cntdn = 0
-      health.suture_cntdn = 0
-      health.crutch_cntdn = 0
-      health.unk_18_cntdn = 0
+        for _,bpFlags in ipairs(health.body_part_flags) do
+            for i = 0, #bpFlags-1,1 do
+                bpFlags[i] = false
+            end
+        end
+        health.immobilize_cntdn = 0
+        health.dressing_cntdn = 0
+        health.suture_cntdn = 0
+        health.crutch_cntdn = 0
+        health.unk_18_cntdn = 0
     end
 
     local job = unit.job.current_job
@@ -253,15 +266,15 @@ function heal(unit,resurrect,keep_corpse)
 
     local job_link = df.global.world.jobs.list.next
     while job_link do
-      local doctor_job = job_link.item
-      if doctor_job then
-        local patientRef = dfhack.job.getGeneralRef(doctor_job, df.general_ref_type['UNIT_PATIENT']) --as:df.general_ref_unit_patientst
-        if patientRef and patientRef.unit_id == unit.id then
-          patientRef.unit_id = -1 -- causes active healthcare job to be cancelled, generating a job cancellation announcement indicating the lack of a patient
-          break
+        local doctor_job = job_link.item
+        if doctor_job then
+            local patientRef = dfhack.job.getGeneralRef(doctor_job, df.general_ref_type['UNIT_PATIENT']) --as:df.general_ref_unit_patientst
+            if patientRef and patientRef.unit_id == unit.id then
+                patientRef.unit_id = -1 -- causes active healthcare job to be cancelled, generating a job cancellation announcement indicating the lack of a patient
+                break
+            end
         end
-      end
-      job_link = job_link.next
+        job_link = job_link.next
     end
 end
 
@@ -287,17 +300,26 @@ if not dfhack_flags.module then
         end
 
     else
-        local item = dfhack.gui.getSelectedItem(true)
         local unit
         if args.unit then
             unit = df.unit.find(tonumber(args.unit))
-        elseif df.item_corpsest:is_instance(item) then
-            unit = df.unit.find(item.unit_id)
+            if not unit then
+                qerror('Invalid unit ID: ' .. args.unit)
+            end
         else
-            unit = dfhack.gui.getSelectedUnit()
+            local item = dfhack.gui.getSelectedItem(true)
+            if item and df.item_corpsest:is_instance(item) then
+                unit = df.unit.find(item.unit_id)
+                if not unit then
+                    qerror('This corpse can no longer be resurrected.') -- unit has been offloaded
+                end
+                unit.pos:assign(xyz2pos(dfhack.items.getPosition(item))) -- to make the unit resurrect at the location of the corpse, rather than the location of death
+            else
+                unit = dfhack.gui.getSelectedUnit()
+            end
         end
         if not unit then
-            qerror('Error: please select a unit or pass its ID as an argument.')
+            qerror('Please select a unit or corpse, or specify its ID via the -unit argument.')
         end
         heal(unit,args.r,args.keep_corpse)
     end

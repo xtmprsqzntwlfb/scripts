@@ -360,12 +360,24 @@ end},
         v.relationship_ids.GroupLeader=-1
         local u_nem=dfhack.units.getNemesis(v)
         if u_nem then
-            u_nem.relationship_ids.GroupLeader=-1
+            u_nem.group_leader_id=-1
         end
         if t_nem and u_nem then
             for k,v in pairs(t_nem.companions) do
                 if v==u_nem.id then
                     t_nem.companions:erase(k)
+                    break
+                end
+            end
+            for k,v in pairs(t_nem.figure.histfig_links) do
+                if df.histfig_hf_link_companionst:is_instance(v) and v.target_hf == u_nem.figure.id then
+                    t_nem.figure.histfig_links:erase(k)
+                    break
+                end
+            end
+            for k,v in pairs(u_nem.figure.histfig_links) do
+                if df.histfig_hf_link_companionst:is_instance(v) and v.target_hf == t_nem.figure.id then
+                    u_nem.figure.histfig_links:erase(k)
                     break
                 end
             end

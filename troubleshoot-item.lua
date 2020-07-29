@@ -4,7 +4,8 @@
 
 troubleshoot-item
 =================
-Print various properties of the selected item.
+Print various properties of the selected item. Sometimes useful for
+troubleshooting issues such as why dwarves won't pick up a certain item.
 
 ]====]
 
@@ -54,10 +55,10 @@ function troubleshoot_item(item, out)
         out('In job')
         local ref = find_specific_ref(item, df.specific_ref_type.JOB)
         if ref then
-            out('Job type: ' .. df.job_type[ref.job.job_type])
-            out('Job position: ' .. coord_to_str(ref.job.pos))
+            out('Job type: ' .. df.job_type[ref.data.JOB.job_type])
+            out('Job position: ' .. coord_to_str(ref.data.JOB.pos))
             local found_job_item = false
-            for i, job_item_ref in pairs(ref.job.items) do
+            for i, job_item_ref in pairs(ref.data.JOB.items) do
                 if item == job_item_ref.item then found_job_item = true end
             end
             if not found_job_item then warn('Item not attached to job') end

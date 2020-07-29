@@ -3,7 +3,10 @@
 
 devel/prepare-save
 ==================
-WARNING: THIS SCRIPT IS STRICTLY FOR DFHACK DEVELOPERS.
+
+.. warning::
+
+    THIS SCRIPT IS STRICTLY FOR DFHACK DEVELOPERS.
 
 This script prepares the current savegame to be used
 with `devel/find-offsets`. It CHANGES THE GAME STATE

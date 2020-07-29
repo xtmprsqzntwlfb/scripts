@@ -15,12 +15,12 @@ Arguments::
         if there's already a god of that name, the script halts
     -spheres [ sphereList ]
         define a space-separated list of spheres of influence of the god
+    -gender male|female|neuter
+        sets the gender of the god
     -depictedAs str
         often depicted as a str
-    -domain str
-        set the domain of the god
-    -description str
-        set the description of the god
+    -verbose
+        if specified, prints details about the created god
 
 ]====]
 local utils = require 'utils'
@@ -31,8 +31,7 @@ local validArgs = utils.invert({
  'spheres',
  'gender',
  'depictedAs',
- 'domain',
- 'description',
+ 'verbose',
 -- 'entities',
 })
 local args = utils.processArgs({...}, validArgs)
@@ -42,7 +41,7 @@ if args.help then
  return
 end
 
-if not args.name or not args.depictedAs or not args.domain or not args.description or not args.spheres or not args.gender then
+if not args.name or not args.depictedAs or not args.spheres or not args.gender then
  error('All arguments must be specified.')
 end
 
@@ -62,8 +61,21 @@ if args.gender == 'male' then
  gender = 1
 elseif args.gender == 'female' then
  gender = 0
+elseif args.gender == "neuter" then
+ gender = -1
 else
  error 'invalid gender'
+end
+
+local race
+for k,v in ipairs(df.global.world.raws.creatures.all) do
+    if v.creature_id == args.depictedAs or v.name[0] == args.depictedAs then
+        race = k
+        break
+    end
+end
+if not race then
+  error('invalid race: ' .. args.depictedAs)
 end
 
 for _,fig in ipairs(df.global.world.history.figures) do
@@ -90,8 +102,9 @@ godFig.id = df.global.hist_figure_next_id
 df.global.hist_figure_next_id = 1+df.global.hist_figure_next_id
 godFig.info = df.historical_figure_info:new()
 godFig.info.spheres = {new=true}
-godFig.info.secret = df.historical_figure_info.T_secret:new()
-
+godFig.info.known_info = df.historical_figure_info.T_known_info:new()
+godFig.race = race
+godFig.caste = 0
 godFig.sex = gender
 godFig.name.first_name = args.name
 for _,sphere in ipairs(args.spheres) do
@@ -99,4 +112,6 @@ for _,sphere in ipairs(args.spheres) do
 end
 df.global.world.history.figures:insert('#',godFig)
 
-
+if args.verbose then
+  print(godFig.name.first_name .. " created as historical figure " .. tostring(godFig.id))
+end

@@ -1,14 +1,18 @@
 -- Find some global addresses
+--luacheck:skip-entirely
 --[====[
 
 devel/find-offsets
 ==================
-WARNING: THIS SCRIPT IS STRICTLY FOR DFHACK DEVELOPERS.
 
-Running this script on a new DF version will NOT
-MAKE IT RUN CORRECTLY if any data structures
-changed, thus possibly leading to CRASHES AND/OR
-PERMANENT SAVE CORRUPTION.
+.. warning::
+
+    THIS SCRIPT IS STRICTLY FOR DFHACK DEVELOPERS.
+
+    Running this script on a new DF version will NOT
+    MAKE IT RUN CORRECTLY if any data structures
+    changed, thus possibly leading to CRASHES AND/OR
+    PERMANENT SAVE CORRUPTION.
 
 Finding the first few globals requires this script to be
 started immediately after loading the game, WITHOUT

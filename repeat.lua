@@ -14,6 +14,7 @@ Usage examples::
 
     repeat -name jim -time delay -timeUnits units -command [ printArgs 3 1 2 ]
     repeat -time 1 -timeUnits months -command [ multicmd cleanowned scattered x; clean all ] -name clean
+    repeat -list
 
 The first example is abstract; the second will regularly remove all contaminants
 and worn items from the game.
@@ -33,6 +34,8 @@ Arguments:
     ``...`` specifies the command to be run
 ``-cancel NAME``
     cancels the repetition with the name NAME
+``-list``
+    prints names of scheduled commands
 
 ]====]
 
@@ -45,7 +48,8 @@ local validArgs = utils.invert({
  'name',
  'time',
  'timeUnits',
- 'command'
+ 'command',
+ 'list'
 })
 
 local args = utils.processArgs({...}, validArgs)
@@ -60,22 +64,27 @@ if args.cancel then
  if args.name then
   repeatUtil.cancel(args.name)
  end
+elseif args.command then
+ local time = tonumber(args.time)
+
+ if not args.name then
+  args.name = args.command[1]
+ end
+
+ if not args.timeUnits then
+  args.timeUnits = 'ticks'
+ end
+
+ local callCommand = function()
+  dfhack.run_command(table.unpack(args.command))
+ end
+
+ repeatUtil.scheduleEvery(args.name,time,args.timeUnits,callCommand)
+end
+
+if args.list then
+ for k in pairs(repeatUtil.repeating) do
+  print(k)
+ end
  return
 end
-
-local time = tonumber(args.time)
-
-if not args.name then
- args.name = args.command[1]
-end
-
-if not args.timeUnits then
- args.timeUnits = 'ticks'
-end
-
-local callCommand = function()
- dfhack.run_command(table.unpack(args.command))
-end
-
-repeatUtil.scheduleEvery(args.name,time,args.timeUnits,callCommand)
-
