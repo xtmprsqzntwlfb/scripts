@@ -1,12 +1,19 @@
+-- Module for advfort item handling.
+--@ module = true
+
 --Does something with items in adventure mode jobs
 --[====[
 
 gui/advfort_items
 =================
-Does something with items in adventure mode jobs.
+A module to support item handling in `gui/advfort` - not intended to be called
+directly.
 
 ]====]
-local _ENV = mkmodule('hack.scripts.gui.advfort_items')
+
+if not dfhack_flags.module then
+    qerror('this script cannot be called directly')
+end
 
 local gui=require('gui')
 local wid=require('gui.widgets')
@@ -203,5 +210,3 @@ function showItemEditor(job,item_selections)
 
     return gscript.wait()
 end
-
-return _ENV
