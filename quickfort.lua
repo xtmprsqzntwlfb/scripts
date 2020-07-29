@@ -97,24 +97,18 @@ files are described in the files themselves.
 .. _original Quickfort documentation: https://github.com/joelpt/quickfort#manual-material-selection
 ]====]
 
+-- reqscript all internal files here, even if they're not directly used by this
+-- top-level file. this ensures transitive dependencies are reloaded if any
+-- files have changed.
+local quickfort_build = reqscript('internal/quickfort/build')
+local quickfort_command = reqscript('internal/quickfort/command')
 local quickfort_common = reqscript('internal/quickfort/common')
-
--- set up the module table. we have to do this here instead of just using
--- reqscript in each internal file since transitive dependencies don't get
--- reloaded automatically when files change. we have to be careful here to
--- initialize modules in order so that dependencies are initialized before they
--- are used. we also need to be careful not to introduce circular dependencies
--- among the internal modules.
-quickfort_common.modules = {
-    set = reqscript('internal/quickfort/set'),
-    parse = reqscript('internal/quickfort/parse'),
-    list = reqscript('internal/quickfort/list'),
-    dig = reqscript('internal/quickfort/dig'),
-    build = reqscript('internal/quickfort/build'),
-    place = reqscript('internal/quickfort/place'),
-    query = reqscript('internal/quickfort/query'),
-    command = reqscript('internal/quickfort/command'),
-}
+local quickfort_dig = reqscript('internal/quickfort/dig')
+local quickfort_list = reqscript('internal/quickfort/list')
+local quickfort_parse = reqscript('internal/quickfort/parse')
+local quickfort_place = reqscript('internal/quickfort/place')
+local quickfort_query = reqscript('internal/quickfort/query')
+local quickfort_set = reqscript('internal/quickfort/set')
 
 -- keep this in sync with the full help text above
 local function print_short_help()
@@ -157,12 +151,12 @@ For more info, see: https://docs.dfhack.org/en/stable/docs/_auto/base.html#quick
 end
 
 local action_switch = {
-    set=quickfort_common.modules.set.do_set,
-    reset=quickfort_common.modules.set.do_reset,
-    list=quickfort_common.modules.list.do_list,
-    run=quickfort_common.modules.command.do_command,
-    orders=quickfort_common.modules.command.do_command,
-    undo=quickfort_common.modules.command.do_command
+    set=quickfort_set.do_set,
+    reset=quickfort_set.do_reset,
+    list=quickfort_list.do_list,
+    run=quickfort_command.do_command,
+    orders=quickfort_command.do_command,
+    undo=quickfort_command.do_command
 }
 setmetatable(action_switch, {__index=function() return print_short_help end})
 

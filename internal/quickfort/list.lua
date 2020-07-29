@@ -7,7 +7,7 @@ end
 
 local utils = require('utils')
 local quickfort_common = reqscript('internal/quickfort/common')
-local quickfort_parse = quickfort_common.modules.parse
+local quickfort_parse = reqscript('internal/quickfort/parse')
 
 local function get_modeline(filepath)
     local file = io.open(filepath)

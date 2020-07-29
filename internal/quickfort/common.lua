@@ -7,9 +7,6 @@ end
 
 local utils = require('utils')
 
--- the module jump table is maintained in the top-level quickfort.lua script
-modules = {}
-
 valid_modes = utils.invert({
     'dig',
     'build',

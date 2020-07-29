@@ -7,12 +7,12 @@ end
 
 local utils = require('utils')
 local quickfort_common = reqscript('internal/quickfort/common')
-local quickfort_parse = quickfort_common.modules.parse
-local quickfort_list = quickfort_common.modules.list
+local quickfort_parse = reqscript('internal/quickfort/parse')
+local quickfort_list = reqscript('internal/quickfort/list')
 
 local mode_modules = {}
 for mode, _ in pairs(quickfort_common.valid_modes) do
-    mode_modules[mode] = quickfort_common.modules[mode]
+    mode_modules[mode] = reqscript('internal/quickfort/'..mode)
 end
 
 local command_switch = {
