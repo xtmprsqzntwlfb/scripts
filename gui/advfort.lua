@@ -950,7 +950,7 @@ function AssignJobItems(args)
     end]]
 
     if settings.gui_item_select and #job.job_items>0 then
-        local item_dialog=require('hack.scripts.gui.advfort_items')
+        local item_dialog=reqscript('gui/advfort_items')
 
         if settings.quick then --TODO not so nice hack. instead of rewriting logic for job item filling i'm using one in gui dialog...
             local item_editor=item_dialog.jobitemEditor{
@@ -1150,7 +1150,7 @@ function LinkBuilding(args)
         local job_items={copyall(input_filter_defaults),copyall(input_filter_defaults)}
         local its=EnumItems_with_settings(args)
         local suitability=find_suitable_items(nil,its,job_items)
-        require('hack.scripts.gui.advfort_items').jobitemEditor{items=suitability,job_items=job_items,on_okay=dfhack.curry(fake_linking,lever_bld,bld)}:show()
+        reqscript('gui/advfort_items').jobitemEditor{items=suitability,job_items=job_items,on_okay=dfhack.curry(fake_linking,lever_bld,bld)}:show()
         lever_id=nil
     end
     --one item as LinkToTrigger role
