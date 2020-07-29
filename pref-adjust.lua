@@ -140,16 +140,16 @@ if profile == "GOTH" then
     insert_preference(unit, df.unit_preference.T_type.HateCreature, list_of_creatures.ELF)
     insert_preference(unit, df.unit_preference.T_type.HateCreature, list_of_creatures.HUMAN)
     insert_preference(unit, df.unit_preference.T_type.HateCreature, list_of_creatures.DWARF)
-    if list_of_creatures.DEMON_1 and df.global.world.raws.creatures.all[list_of_creatures.DEMON_1].prefstring[0] then
+    if list_of_creatures.DEMON_1 and df.global.world.raws.creatures.all[list_of_creatures.DEMON_1].prefstring[0] ~= '' then
         insert_preference(unit, df.unit_preference.T_type.LikeCreature, list_of_creatures.DEMON_1)
     end
-    if #df.global.world.poetic_forms.all then
+    if #df.global.world.poetic_forms.all > 0 then
         insert_preference(unit, df.unit_preference.T_type.LikePoeticForm, 0) -- this just inserts the first song out of typically many.
     end
-    if #df.global.world.musical_forms.all then
+    if #df.global.world.musical_forms.all > 0 then
         insert_preference(unit, df.unit_preference.T_type.LikeMusicalForm, 0) -- same goes for music
     end
-    if #df.global.world.dance_forms.all then
+    if #df.global.world.dance_forms.all > 0 then
         insert_preference(unit, df.unit_preference.T_type.LikeDanceForm, 0) -- and dancing
     end
 end -- end GOTH profile
