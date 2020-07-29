@@ -55,7 +55,7 @@ function insert_preference(unit, preftype, val1)
             type = preftype,
             item_type = consumable_type,
             poetic_form_id = consumable_type,
-            musical_form_id = df.consumable_type,
+            musical_form_id = consumable_type,
             dance_form_id = consumable_type,
             item_subtype = dfhack.matinfo.find(consumable_name).subtype,
             mattype = dfhack.matinfo.find(consumable_name).type,
