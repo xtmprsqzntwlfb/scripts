@@ -57,7 +57,6 @@ returns a table in the format {mode, startx, starty, start_comment, comment}
 or nil if the modeline is invalid
 ]]
 function parse_modeline(modeline)
-    --print('parsing modeline: '..modeline)
     if not modeline then return nil end
     local _, mode_end, mode = string.find(modeline, '^#([%l]+)')
     if not mode or not quickfort_common.valid_modes[mode] then

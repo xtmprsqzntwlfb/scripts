@@ -29,7 +29,7 @@ local function scan_blueprint(path)
     return blueprint_cache[path].modeline
 end
 
-local blueprint_files = {}
+local blueprint_files = blueprint_files or {}
 
 local function scan_blueprints()
     local paths = dfhack.filesystem.listdir_recursive(
