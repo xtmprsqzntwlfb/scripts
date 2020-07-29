@@ -395,7 +395,7 @@ local function do_command(in_args)
         end
         blueprint_file = blueprint_files[list_num]
         if not blueprint_file then
-            error(string.format('invalid list index: %d', list_num))
+            qerror(string.format('invalid list index: %d', list_num))
         end
         filename = blueprint_files[list_num].path
     end
