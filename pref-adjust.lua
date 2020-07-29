@@ -30,27 +30,67 @@ automatically cleared, normally.
 
 ]====]
 -- ---------------------------------------------------------------------------
-function insert_preference(unit,mytype,val1)
+function insert_preference(unit, preftype, val1)
 
-    if mytype == 0 then
-        utils.insert_or_update(unit.status.current_soul.preferences, { new = true, type = 0 , item_type = -1 , poetic_form_id = -1, musical_form_id = -1, dance_form_id = -1, mattype = dfhack.matinfo.find(val1).type , mat_state = 0, matindex = dfhack.matinfo.find(val1).index , active = true, prefstring_seed = pss_counter }, 'prefstring_seed')
-        -- mattype for some is non zero, those non-iorganice like creature:gazelle:hoof is 42,344
+    if preftype == df.unit_preference.T_type.LikeMaterial then
+        utils.insert_or_update(unit.status.current_soul.preferences, {
+            new = true,
+            type = preftype,
+            item_type = -1,
+            poetic_form_id = -1,
+            musical_form_id = -1,
+            dance_form_id = -1,
+            mattype = dfhack.matinfo.find(val1).type,
+            mat_state = df.matter_state.Solid,
+            matindex = dfhack.matinfo.find(val1).index,
+            active = true,
+            prefstring_seed = pss_counter,
+        }, 'prefstring_seed')
+        -- mattype for some is non zero, those non-inorganic like creature:gazelle:hoof is 42,344
+    elseif preftype == df.unit_preference.T_type.LikeFood then
+        consumable_type = val1[1]
+        consumable_name = val1[2]
+        utils.insert_or_update(unit.status.current_soul.preferences, {
+            new = true,
+            type = preftype,
+            item_type = consumable_type,
+            poetic_form_id = consumable_type,
+            musical_form_id = df.consumable_type,
+            dance_form_id = consumable_type,
+            item_subtype = dfhack.matinfo.find(consumable_name).subtype,
+            mattype = dfhack.matinfo.find(consumable_name).type,
+            mat_state = df.matter_state.Solid,
+            matindex = dfhack.matinfo.find(consumable_name).index,
+            active = true,
+            prefstring_seed = pss_counter,
+        }, 'prefstring_seed')
+    elseif df.unit_preference.T_type[preftype] ~= nil then
+        utils.insert_or_update(unit.status.current_soul.preferences, {
+            new = true,
+            type = preftype,
+            item_type = val1,
+            creature_id = val1,
+            color_id = val1,
+            shape_id = val1,
+            plant_id = val1,
+            poetic_form_id = val1,
+            musical_form_id = val1,
+            dance_form_id = val1,
+            item_subtype = -1,
+            mattype = -1,
+            mat_state = df.matter_state.Solid,
+            matindex = -1,
+            active = true,
+            prefstring_seed = pss_counter,
+        }, 'prefstring_seed')
+    else
+        error('Unrecognized preference type: ' .. tostring(preftype))
     end
 
-    if mytype == 2 then
-        consumable_type=val1[1]
-        consumable_name=val1[2]
-        utils.insert_or_update(unit.status.current_soul.preferences, { new = true, type = 2 , item_type = consumable_type , poetic_form_id = consumable_type, musical_form_id = df.consumable_type, dance_form_id = consumable_type, item_subtype = dfhack.matinfo.find(consumable_name).subtype , mattype = dfhack.matinfo.find(consumable_name).type , mat_state = 0, matindex = dfhack.matinfo.find(consumable_name).index , active = true, prefstring_seed = pss_counter }, 'prefstring_seed')
-    end
-
-    if mytype == 1 or (mytype >= 3 and mytype <= 11) then
-        utils.insert_or_update(unit.status.current_soul.preferences, { new = true, type = mytype , item_type = val1 , creature_id = val1 , color_id = val1 , shape_id = val1 , plant_id = val1 , poetic_form_id = val1, musical_form_id = val1, dance_form_id = val1, item_subtype = -1 , mattype = -1 , mat_state = 0, matindex = -1 , active = true, prefstring_seed = pss_counter }, 'prefstring_seed')
-    end
-
-pss_counter = pss_counter + 1
+    pss_counter = pss_counter + 1
 end
 -- ---------------------------------------------------------------------------
-function brainwash_unit(unit,profile)
+function brainwash_unit(unit, profile)
     if unit==nil then
         print ("No unit available!  Aborting with extreme prejudice.")
         return
