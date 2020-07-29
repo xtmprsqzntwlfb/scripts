@@ -31,7 +31,7 @@ for i=df.job_item_vector_id._first_item,df.job_item_vector_id._last_item do
     else
         ptr = items.other[id]
     end
-    if ptr then
+    if ptr and df.job_item_vector_id[i] then
         local _,addr = df.sizeof(ptr)
         lookup[addr] = 'df.job_item_vector_id.'..df.job_item_vector_id[i]
     end
