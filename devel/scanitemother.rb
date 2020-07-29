@@ -10,7 +10,7 @@ tg = df.item_find
 raise 'select an item' if not tg
 
 o = df.world.items.other
-# discard ANY/BAD
-o._indexenum::ENUM.sort.transpose[1][1..-2].each { |k|
+# discard ANY
+o._indexenum::ENUM.sort.transpose[1][1..-1].each { |k|
     puts k if o[k].find { |i| i == tg }
 }
