@@ -151,6 +151,26 @@ For more info, see: https://docs.dfhack.org/en/stable/docs/_auto/base.html#quick
 ]]
 end
 
+local function set_setting(key, value)
+    if quickfort_common.settings[key] == nil then
+        qerror(string.format('error: invalid setting: "%s"', key))
+    end
+    local val = value
+    if type(quickfort_common.settings[key]) == 'boolean' then
+        val = value == 'true'
+    end
+    quickfort_common.settings[key] = val
+end
+
+local function read_config(filename)
+    for line in io.lines(filename) do
+        local _, _, key, value = string.find(line, '^%s*([%a_]+)%s*=%s*(%S.*)')
+        if (key) then
+            set_setting(key, value)
+        end
+    end
+end
+
 local function do_set(args)
     if #args == 0 then
         print('active settings:')
@@ -158,10 +178,11 @@ local function do_set(args)
         return
     end
     if #args ~= 2 then
-        error('error: expected "quickfort set [<key> <value>]"')
+        qerror('error: expected "quickfort set [<key> <value>]"')
     end
-    print('NOT YET IMPLEMENTED')
-    print(string.format('would set %s to "%s"', args[1], tostring(args[2])))
+    set_setting(args[1], args[2])
+    print(string.format('successfully set %s to "%s"',
+                        args[1], quickfort_common.settings[args[1]]))
 end
 
 local valid_list_args = utils.invert({
@@ -195,12 +216,12 @@ local valid_command_args = utils.invert({
 local function do_command(in_args)
     local command = in_args.action
     if not command or not command_switch[command] then
-        error(string.format('invalid command: "%s"', command))
+        qerror(string.format('invalid command: "%s"', command))
     end
 
     local filename = table.remove(in_args, 1)
     if not filename or filename == '' then
-        error("expected <list_num> or <filename> parameter")
+        qerror("expected <list_num> or <filename> parameter")
     end
     local list_num = tonumber(filename)
     if list_num then
@@ -215,7 +236,7 @@ local function do_command(in_args)
     local sheet = tonumber(args['s']) or tonumber(args['-sheet'])
 
     if command ~= 'orders' and df.global.cursor.x == -30000 then
-        error('please position the game cursor at the blueprint start location')
+        qerror('please position the game cursor at the blueprint start location')
     end
 
     quickfort_common.verbose = verbose
@@ -228,6 +249,8 @@ end
 
 
 -- initialize script
+read_config('dfhack-config/quickfort/quickfort.txt')
+
 action_switch = {
     reset=do_reset,
     set=do_set,
