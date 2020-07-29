@@ -62,7 +62,7 @@ function do_command(in_args)
     for zlevel, section_data_list in pairs(data) do
         for _, section_data in ipairs(section_data_list) do
             local modeline = section_data.modeline
-            local stats = mode_switch[modeline.mode][command_switch[command]](
+            local stats = mode_modules[modeline.mode][command_switch[command]](
                 zlevel,
                 section_data.grid)
             if stats and not quiet then
