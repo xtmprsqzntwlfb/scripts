@@ -1,0 +1,81 @@
+-- command routing logic for the quickfort script
+--@ module = true
+
+if not dfhack_flags.module then
+    qerror('this script cannot be called directly')
+end
+
+local utils = require('utils')
+local quickfort_common = reqscript('internal/quickfort/common')
+local quickfort_parse = quickfort_common.modules.parse
+local quickfort_list = quickfort_common.modules.list
+
+local mode_modules = {}
+for mode, _ in pairs(quickfort_common.valid_modes) do
+    mode_modules[mode] = quickfort_common.modules[mode]
+end
+
+local command_switch = {
+    run='do_run',
+    orders='do_orders',
+    undo='do_undo',
+}
+
+local valid_command_args = utils.invert({
+    'q',
+    '-quiet',
+    'v',
+    '-verbose',
+    's',
+    '-sheet',
+})
+
+function do_command(in_args)
+    local command = in_args.action
+    if not command or not command_switch[command] then
+        qerror(string.format('invalid command: "%s"', command))
+    end
+
+    local blueprint_name = table.remove(in_args, 1)
+    if not blueprint_name or blueprint_name == '' then
+        qerror("expected <list_num> or <blueprint_name> parameter")
+    end
+    local list_num = tonumber(blueprint_name)
+    if list_num then
+        blueprint_name = quickfort_list.get_blueprint_by_number(list_num)
+    end
+
+    local args = utils.processArgs(in_args, valid_command_args)
+    local quiet = args['q'] ~= nil or args['-quiet'] ~= nil
+    local verbose = args['v'] ~= nil or args['-verbose'] ~= nil
+    local sheet = tonumber(args['s']) or tonumber(args['-sheet'])
+
+    if command ~= 'orders' and df.global.cursor.x == -30000 then
+        qerror('please position the game cursor at the blueprint start ' ..
+               'location')
+    end
+
+    quickfort_common.verbose = verbose
+
+    local filepath = quickfort_common.get_blueprint_filepath(blueprint_name)
+    local data = quickfort_parse.process_file(filepath, df.global.cursor)
+    for zlevel, section_data_list in pairs(data) do
+        for _, section_data in ipairs(section_data_list) do
+            local modeline = section_data.modeline
+            local stats = mode_switch[modeline.mode][command_switch[command]](
+                zlevel,
+                section_data.grid)
+            if stats and not quiet then
+                print(string.format('%s on z-level %d', modeline.mode, zlevel))
+                for _, stat in pairs(stats) do
+                    if stat.always or stat.value > 0 then
+                        print(string.format('  %s: %d', stat.label, stat.value))
+                    end
+                end
+            end
+        end
+    end
+    print(string.format('%s "%s" successfully completed',
+                        command, blueprint_name))
+end
+
