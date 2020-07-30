@@ -17,14 +17,16 @@ dorf_tables
 Data tables for `dwarf-op`
 
 Arguments:
-    list [jobs|professions|types]
+    - ``-list [jobs|professions|types]``
 
-Examples
-    # dorf_tables -list jobs
-    # dorf_tables -list professions
-    # dorf_tables -list types
+Examples::
 
--~~~~~~~~~~
+    dorf_tables -list jobs
+    dorf_tables -list professions
+    dorf_tables -list types
+
+~~~~~~~~~~
+
 The data tables defined are described below.
 
 job_distributions:
@@ -54,11 +56,6 @@ professions:
     ensure a minimum threshold is passed for certain skills deemed
     critical to a profession.
 
-    To see a full list of built-in professions and jobs you can run
-    these commands:
-    # devel/query -table df.profession -listkeys
-    # devel/query -table df.job_skill -listkeys
-
 types:
     These are a sort of archetype system for applying to dwarves. It
     primarily includes physical attributes, but can include skills as well.
@@ -71,11 +68,12 @@ types:
     a minimum value and maximum value, the given value is an evening
     distributed random number between these two numbers (inclusive).
 
--~~~~~~~~~~
-    To see a full list of built-in professions and jobs you can run
-    these commands:
-    # devel/query -table df.profession -listkeys
-    # devel/query -table df.job_skill -listkeys
+~~~~~~~~~~
+
+To see a full list of built-in professions and jobs, you can run these commands::
+
+    devel/query -table df.profession -listkeys
+    devel/query -table df.job_skill -listkeys
 
 ]====]
 
