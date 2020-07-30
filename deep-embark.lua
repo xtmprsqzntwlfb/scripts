@@ -20,7 +20,8 @@ cause the script to run automatically and should hence
 be especially useful for modders who want their mod
 to include underground embarks by default.
 
-example:
+Example::
+
     deep-embark -depth CAVERN_2
 
 Usage::

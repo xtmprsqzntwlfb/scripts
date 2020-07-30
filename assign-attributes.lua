@@ -53,19 +53,19 @@ Usage:
                     are present, the unit attributes will be reset
                     and then the listed attributes will be modified.
 
-Example:
+Example::
 
-``assign-attributes -reset -attributes [ STRENGTH 2 AGILITY -1 SPATIAL_SENSE -1 ]``
-    This will reset all attributes to a neutral value and will set
-    the following values (if the currently selected unit is a dwarf):
+    assign-attributes -reset -attributes [ STRENGTH 2 AGILITY -1 SPATIAL_SENSE -1 ]
 
-     * Strength: a random value between 1750 and 1999 (tier 2);
-     * Agility: a random value between 401 and 650 (tier -1);
-     * Spatial sense: a random value between 1043 and 1292 (tier -1).
+This will reset all attributes to a neutral value and will set the following
+values (if the currently selected unit is a dwarf):
 
-    The final result will be:
-    ``She is very strong, but she is clumsy.
-    She has a questionable spatial sense.``
+ * Strength: a random value between 1750 and 1999 (tier 2);
+ * Agility: a random value between 401 and 650 (tier -1);
+ * Spatial sense: a random value between 1043 and 1292 (tier -1).
+
+The final result will be: "She is very strong, but she is clumsy.
+She has a questionable spatial sense."
 ]====]
 
 local utils = require("utils")

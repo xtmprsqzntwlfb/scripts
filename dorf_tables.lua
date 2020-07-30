@@ -1,5 +1,5 @@
 -- dorf_tables has job distribution configurations, random number information for attributes generation, job configurations, profession configurations, dwarf types(ie. attributes/characteristic) configurations
--- usage: loaded by dwopit.lua
+-- usage: loaded by dwarf-op.lua
 -- by josh cooper(cppcooper) [created: Dec. 2017 | last modified: 2020-02-21]
 --@ module = true
 
@@ -82,7 +82,7 @@ types:
 if not args.list and not moduleMode then
     print(help)
     print("scripts/dorf_tables.lua is a content library; calling it does nothing.")
-    do return end
+    return
 else
     print("Loading data tables..")
 end
@@ -127,7 +127,7 @@ Stat Rolling:
              *or don't.
         <-End Loop
     <-End Loop
-    
+
     ->Loop dorf_profs.<prof>.types{}
         -Apply attribs{}
         -Apply skills{}
@@ -442,7 +442,7 @@ types = {
     spaceaware3 = {
         p = 0.1111,
         attribs = {KINESTHETIC_SENSE={'amazing'},SPATIAL_SENSE={'unbelievable'}}},
-        
+
 --with skills
     agile = {
         p = 0.1111,

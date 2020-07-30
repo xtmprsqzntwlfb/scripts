@@ -369,7 +369,7 @@ function load_screen:onDismiss()
 end
 
 load_screen_options = gui.FramedScreen{
-    frame_width = 40,
+    frame_width = 42,
     frame_height = 6,
     frame_title = "",
     frame_inset = 1,
@@ -383,7 +383,7 @@ function load_screen_options:onRenderBody(p)
         self:dismiss()
         return
     end
-    p:string('Last saved: ' .. self.save_mtime):newline()
+    p:string(self.last_saved_message):newline()
     p:string('Last DF Version: ' .. self.save_version):newline()
     p:key_string('CUSTOM_R', 'Rename'):newline()
     -- p:key_string('CUSTOM_C', 'Copy')
@@ -417,7 +417,7 @@ end
 
 function load_screen_options:refresh()
     self.frame_title = "Load game: " .. self.save.folder_name
-    self.frame_width = math.min(df.global.gps.dimx, math.max(40, #self.frame_title + 4))
+    self.frame_width = math.min(df.global.gps.dimx, math.max(40, #self.frame_title + 4, #self.last_saved_message))
 end
 
 function load_screen_options:dialog(title, text, input, callback)
@@ -479,6 +479,7 @@ function load_screen_options:display(parent, save)
 
     local world_sav_path = 'data/save/' .. save.folder_name .. '/world.sav'
     self.save_mtime = os.date('%c', dfhack.filesystem.mtime(world_sav_path))
+    self.last_saved_message = 'Last saved: ' .. self.save_mtime
     local f = io.open(world_sav_path, 'rb')
     if f then
         local v_raw = {f:read(4):byte(1, 4)}

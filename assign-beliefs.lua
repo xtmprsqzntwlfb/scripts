@@ -48,24 +48,25 @@ Usage:
                     first all the unit beliefs will be reset and then those
                     beliefs listed after ``-beliefs`` will be modified.
 
-Example:
+Example::
 
-``assign-beliefs -reset -beliefs [ TRADITION 2 CRAFTSMANSHIP 3 POWER 0 CUNNING -1 ]``
-    Resets all the unit beliefs, then sets the listed
-    beliefs to the following values:
+    assign-beliefs -reset -beliefs [ TRADITION 2 CRAFTSMANSHIP 3 POWER 0 CUNNING -1 ]
 
-    * Tradition: a random value between 26 and 40 (level 2);
-    * Craftsmanship: a random value between 41 and 50 (level 3);
-    * Power: a random value between -10 and 10 (level 0);
-    * Cunning: a random value between -25 and -11 (level -1).
+Resets all the unit beliefs, then sets the listed beliefs to the following
+values:
 
-    The final result (for a dwarf) will be:
-    ``She personally is a firm believer in
-    the value of tradition and sees guile and
-    cunning as indirect and somewhat worthless.``
+* Tradition: a random value between 26 and 40 (level 2);
+* Craftsmanship: a random value between 41 and 50 (level 3);
+* Power: a random value between -10 and 10 (level 0);
+* Cunning: a random value between -25 and -11 (level -1).
 
-Note that the beliefs aligned with the cultural
-values of the unit have not triggered a report.
+The final result (for a dwarf) will be: "She personally is a firm believer in
+the value of tradition and sees guile and cunning as indirect and somewhat
+worthless."
+
+Note that the beliefs aligned with the cultural values of the unit have not
+triggered a report.
+
 ]====]
 
 local utils = require("utils")

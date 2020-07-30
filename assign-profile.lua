@@ -50,22 +50,24 @@ Usage:
 
 Examples:
 
-``assign-profile -reset ALL``
-    Resets/clears all the characteristics of the
-    unit, leaving behind a very bland character.
+* Resets/clears all the characteristics of the unit, leaving behind a very bland
+  character::
 
-``assign-profile -profile CARPENTER -reset PROFILE``
-    Loads and applies the profile called "CARPENTER"
-    in the default json file, resetting/clearing
-    all the characteristics listed in the
-    profile, and then applying the new values.
+    assign-profile -reset ALL
 
-``assign-profile -file /hack/scripts/military_profiles.json -profile ARCHER -reset ATTRIBUTES``
-    Loads and applies the profile called "ARCHER"
-    in the provided json file, keeping all the old
-    characteristics but the attributes, which will
-    be reset (and then, if the profile provides some
-    attributes values, those value will be applied).
+* Loads and applies the profile called "CARPENTER" in the default json file,
+  resetting/clearing all the characteristics listed in the profile, and then
+  applying the new values::
+
+    assign-profile -profile CARPENTER -reset PROFILE
+
+* Loads and applies the profile called "ARCHER" in the provided json file,
+  keeping all the old characteristics but the attributes, which will be reset
+  (and then, if the profile provides some attributes values, those value will be
+  applied)::
+
+    assign-profile -file /hack/scripts/military_profiles.json -profile ARCHER -reset ATTRIBUTES
+
 ]====]
 
 local json = require "json"

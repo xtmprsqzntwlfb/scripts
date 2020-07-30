@@ -12,7 +12,7 @@ The following controls apply to the gems currently listed:
 - ``s``: Searches for matching gems
 - ``Shift+Enter``: Toggles the status of all listed gems
 
-The following controls apply to the gems currenty listed, as well as gems listed
+The following controls apply to the gems currently listed, as well as gems listed
 *before* the current search with ``s``, if applicable:
 
 - ``r``: Displays only "rock crystal" gems

@@ -4,20 +4,26 @@
 
 gui/advfort
 ===========
-This script allows to perform jobs in adventure mode. For more complete help
-press :kbd:`?` while script is running. It's most comfortable to use this as a
+This script allows performing jobs in adventure mode. For more complete help
+press :kbd:`?` while the script is running. It's most comfortable to use this as a
 keybinding (see below for the default binding). Possible arguments:
 
-:-a, --nodfassign:  uses different method to assign items.
-:-i, --inventory:   checks inventory for possible items to use in the job.
-:-c, --cheat:       relaxes item requirements for buildings (e.g. walls from bones). Implies -a
-:job:               selects that job (e.g. Dig or FellTree)
+* ``-a``, ``--nodfassign``:
+    uses a different method to assign job items, instead of relying on DF.
+* ``-i``, ``--inventory``:
+    checks inventory for possible items to use in the job.
+* ``-c``, ``--cheat``:
+    relaxes item requirements for buildings (e.g. walls from bones). Implies -a
+* ``-e [NAME]``, ``--entity [NAME]``:
+    uses the given civ to determine available resources (specified as an entity raw ID). Defaults to ``MOUNTAIN``; if the entity name is omitted, uses the adventurer's civ
+* ``job``: selects the specified job (must be a valid ``job_type``, e.g. ``Dig`` or ``FellTree``)
 
-An example of player digging in adventure mode:
+.. warning::
+    changes only persist in non-procedural sites, namely player forts, caves, and camps.
+
+An example of a player digging in adventure mode:
 
 .. image:: /docs/images/advfort.png
-
-**WARNING:**  changes only persist in non procedural sites, namely: player forts, caves, and camps.
 
 ]====]
 
@@ -127,7 +133,7 @@ local gscript=require 'gui.script'
 
 local tile_attrs = df.tiletype.attrs
 
-local settings={build_by_items=false,use_worn=false,check_inv=true,teleport_items=true,df_assign=false,gui_item_select=true,only_in_sites=false}
+local settings={build_by_items=false,use_worn=false,check_inv=true,teleport_items=true,df_assign=false,gui_item_select=true,only_in_sites=false,set_civ="MOUNTAIN"}
 
 function hasValue(tbl,val)
     for k,v in pairs(tbl) do
@@ -159,29 +165,45 @@ function deon_filter(name,type_id,subtype_id,custom_id, parent)
     end
 end
 local mode_name
-for k,v in ipairs({...}) do --setting parsing
-    if v=="-c" or v=="--cheat" then
-        settings.build_by_items=true
-        settings.df_assign=false
-    elseif v=="-q" or v=="--quick" then
-        settings.quick=true
-    elseif v=="-u" or v=="--unsafe" then --ignore pain and etc
-        settings.unsafe=true
-    elseif v=="-s" or v=="--safe" then
-        settings.safe=true
-    elseif v=="-i" or v=="--inventory" then
-        settings.check_inv=true
-        settings.df_assign=false
-    elseif v=="-a" or v=="--nodfassign" then
-        settings.df_assign=false
-    elseif v=="-h" or v=="--help" then
-        settings.help=true
-    elseif v=="--clear_jobs" then
-        settings.clear_jobs=true
-    else
-        mode_name=v
+local args={...}
+function parse_args(  )
+    --NOTE(warmist): this duplicates most of stuff in utils, but i don't want to change some functionality
+    local i=1
+    while i<=#args do
+        local v=args[i]
+        if v=="-c" or v=="--cheat" then
+            settings.build_by_items=true
+            settings.df_assign=false
+        elseif v=="-q" or v=="--quick" then
+            settings.quick=true
+        elseif v=="-u" or v=="--unsafe" then --ignore pain and etc
+            settings.unsafe=true
+        elseif v=="-s" or v=="--safe" then
+            settings.safe=true
+        elseif v=="-i" or v=="--inventory" then
+            settings.check_inv=true
+            settings.df_assign=false
+        elseif v=="-a" or v=="--nodfassign" then
+            settings.df_assign=false
+        elseif v=="-e" or v=="--entity" then
+            if #args>i and not args[i+1]:startswith("-") then
+                settings.set_civ=args[i+1]
+                print(settings.set_civ)
+                i=i+1
+            else
+                settings.set_civ=true
+            end
+        elseif v=="-h" or v=="--help" then
+            settings.help=true
+        elseif v=="--clear_jobs" then
+            settings.clear_jobs=true
+        else
+            mode_name=v
+        end
+        i=i+1
     end
 end
+parse_args()
 
 mode=mode or 0
 last_building=last_building or {}
@@ -928,7 +950,7 @@ function AssignJobItems(args)
     end]]
 
     if settings.gui_item_select and #job.job_items>0 then
-        local item_dialog=require('hack.scripts.gui.advfort_items')
+        local item_dialog=reqscript('gui/advfort_items')
 
         if settings.quick then --TODO not so nice hack. instead of rewriting logic for job item filling i'm using one in gui dialog...
             local item_editor=item_dialog.jobitemEditor{
@@ -1128,7 +1150,7 @@ function LinkBuilding(args)
         local job_items={copyall(input_filter_defaults),copyall(input_filter_defaults)}
         local its=EnumItems_with_settings(args)
         local suitability=find_suitable_items(nil,its,job_items)
-        require('hack.scripts.gui.advfort_items').jobitemEditor{items=suitability,job_items=job_items,on_okay=dfhack.curry(fake_linking,lever_bld,bld)}:show()
+        reqscript('gui/advfort_items').jobitemEditor{items=suitability,job_items=job_items,on_okay=dfhack.curry(fake_linking,lever_bld,bld)}:show()
         lever_id=nil
     end
     --one item as LinkToTrigger role
@@ -1530,9 +1552,12 @@ function usetool:hiveActions(building)
     --CollectHiveProducts,
 end
 function usetool:operatePump(building)
-
+    --TODO: low priotity, but would be nice to have the job auto cleanup (i.e. one work would only pump and then you could press it again)
     local adv=df.global.world.units.active[0]
-    makeJob{unit=adv,post_actions={AssignBuildingRef},pos=adv.pos,from_pos=adv.pos,job_type=df.job_type.OperatePump,screen=self}
+    local set_operate=function ( args )
+        args.building.pump_manually=true
+    end
+    makeJob{unit=adv,building=building,post_actions={AssignBuildingRef,set_operate},pos=adv.pos,from_pos=adv.pos,job_type=df.job_type.OperatePump,screen=self}
 end
 function usetool:farmPlot(building)
     local adv=df.global.world.units.active[0]
@@ -1659,13 +1684,29 @@ end
 function usetool:wait_tick()
     self:sendInputToParent("A_SHORT_WAIT")
 end
+function find_entity_civ( raw_code )
+    for i,v in ipairs(df.global.world.entities.all) do
+        if v.type==df.historical_entity_type.Civilization and
+            v.entity_raw.code==raw_code then
+            return v
+        end
+    end
+end
 function usetool:setupFields()
-    local adv=df.global.world.units.active[0]
-    local civ_id=df.global.world.units.active[0].civ_id
     local ui=df.global.ui
-    ui.civ_id = civ_id
-    ui.main.fortress_entity=df.historical_entity.find(civ_id)
-    ui.race_id=adv.race
+
+    local adv=df.global.world.units.active[0]
+    if settings.set_civ==true then
+        ui.civ_id=adv.civ_id
+        ui.race_id=adv.race
+        ui.main.fortress_entity=df.historical_entity.find(adv.civ_id)
+    else
+        local civ_entity=find_entity_civ(settings.set_civ or "MOUNTAIN")
+        ui.civ_id=civ_entity.id
+        ui.race_id=civ_entity.race
+        ui.main.fortress_entity=civ_entity
+    end
+
     local nem=dfhack.units.getNemesis(adv)
     if nem then
         local links=nem.figure.entity_links

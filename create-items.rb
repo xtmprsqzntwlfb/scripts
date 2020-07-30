@@ -6,7 +6,7 @@ create-items
 Spawn items under the cursor, to get your fortress started.
 
 The first argument gives the item category, the second gives the material,
-and the optionnal third gives the number of items to create (defaults to 20).
+and the optional third gives the number of items to create (defaults to 20).
 
 Currently supported item categories: ``boulder``, ``bar``, ``plant``, ``log``,
 ``web``.

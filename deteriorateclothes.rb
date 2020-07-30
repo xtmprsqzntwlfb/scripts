@@ -9,7 +9,9 @@ scatter all over the place will deteriorate at a greatly increased rate,
 and eventually just crumble into nothing. As warm and fuzzy as a dining
 room full of used socks makes your dwarves feel, your FPS does not like it.
 
-Usage: ``deteriorateclothes (start|stop)``
+Usage::
+
+    deteriorateclothes start|stop
 
 =end
 

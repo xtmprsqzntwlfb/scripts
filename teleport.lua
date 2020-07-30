@@ -6,14 +6,25 @@
 
 teleport
 ========
-Teleports a unit to given coordinates.  Examples:
+Teleports a unit to given coordinates.
 
-:teleport -showunitid:  prints ID of unit beneath cursor
-:teleport -showpos:     prints coordinates beneath cursor
-:teleport -unit 1234 -x 56 -y 115 -z 26:
-                        teleports unit 1234 to 56,115,26
+.. note::
 
-See `gui/teleport` for an in-game UI.
+    `gui/teleport` is an in-game UI for this script.
+
+Examples:
+
+* prints ID of unit beneath cursor::
+
+    teleport -showunitid
+
+* prints coordinates beneath cursor::
+
+    teleport -showpos
+
+* teleports unit ``1234`` to ``56,115,26``
+
+    teleport -unit 1234 -x 56 -y 115 -z 26
 
 ]====]
 

@@ -49,15 +49,11 @@ function dfprint(s)
 end
 
 function getSexString(sex)
- local sexStr
- if sex==0 then
-  sexStr=string.char(12)
- elseif sex==1 then
-  sexStr=string.char(11)
- else
-  return ""
- end
- return string.char(40)..sexStr..string.char(41)
+  local sym = df.pronoun_type.attrs[sex].symbol
+  if not sym then
+    return ""
+  end
+  return "("..sym..")"
 end
 
 local function determineorientation(unit)

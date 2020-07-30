@@ -3,8 +3,8 @@
 
 devel/lua-example
 =================
-An example lua script, which reports the number of times it has
-been called.  Useful for testing environment persistence.
+An example Lua script which reports the number of times it has been called.
+Useful for testing environment persistence.
 
 ]====]
 

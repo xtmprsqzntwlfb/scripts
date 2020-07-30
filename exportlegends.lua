@@ -10,7 +10,11 @@ The 'info' option exports more data than is possible in vanilla, to a
 :file:`region-date-legends_plus.xml` file developed to extend
 :forums:`World Viewer <128932>` and other legends utilities.
 
-Options:
+Usage::
+
+    exportlegends OPTION [FOLDER_NAME]
+
+Valid values for ``OPTION`` are:
 
 :info:   Exports the world/gen info, the legends XML, and a custom XML with more information
 :custom: Exports a custom XML with more information
@@ -18,15 +22,41 @@ Options:
 :maps:   Exports all seventeen detailed maps
 :all:    Equivalent to calling all of the above, in that order
 
+``FOLDER_NAME``, if specified, is the name of the folder where all the files
+will be saved. This defaults to the ``legends-regionX-YYYYY-MM-DD`` format. A path is
+also allowed, although everything but the last folder has to exist. To export
+to the top-level DF folder, pass ``.`` for this argument.
+
+Examples:
+
+* Export all information to the ``legends-regionX-YYYYY-MM-DD`` folder::
+
+    exportlegends all
+
+* Export all information to the ``region6`` folder::
+
+    exportlegends all region6
+
+* Export just the files included in ``info`` (above) to the ``legends-regionX-YYYYY-MM-DD`` folder::
+
+    exportlegends info
+
+* Export just the custom XML file to the DF folder (no subfolder)::
+
+    exportlegends custom .
+
 ]====]
 
 --luacheck-flags: strictsubtype
+
+-- General note: If you are looking for main function look at the buttom of this script file.
 
 local gui = require 'gui'
 local script = require 'gui.script'
 local args = {...}
 local vs = dfhack.gui.getCurViewscreen()
 
+-- List of all the detailed maps
 local MAPS = {
     "Standard biome+site map",
     "Elevations including lake and ocean floors",
@@ -46,6 +76,30 @@ local MAPS = {
     "Nobility and Holdings",
     "Diplomacy",
 }
+
+-- Get that date of the world as a string
+-- Format: "YYYYY-MM-DD"
+function get_world_date_str()
+    local month = dfhack.world.ReadCurrentMonth() + 1 --days and months are 1-indexed
+    local day = dfhack.world.ReadCurrentDay()
+    local date_str = string.format('%05d-%02d-%02d', df.global.cur_year, month, day)
+    return date_str
+end
+
+-- Go back to root folder so dfhack does not break, returns true if successfully
+function move_back_to_main_folder()
+    return dfhack.filesystem.chdir(dfhack.getDFPath())
+end
+
+-- Set default folder name
+local folder_name = "legends-" .. df.global.world.cur_savegame.save_dir .. "-" .. get_world_date_str()
+-- Go to save folder, returns true if successfully
+function move_to_save_folder()
+    if move_back_to_main_folder() then
+        return dfhack.filesystem.chdir(folder_name)
+    end
+    return false
+end
 
 function getItemSubTypeName(itemType, subType)
     if (dfhack.items.getSubtypeCount(itemType)) <= 0 then
@@ -113,17 +167,29 @@ setmetatable(df_enums, {
     __newindex = function() error('read-only') end
 })
 
---create an extra legends xml with extra data, by Mason11987 for World Viewer
+-- prints a line with the value inside the tags if the value isn't -1. Intended to be used
+-- for fields where -1 is a known "no info" value. Relies on 'indentation' being set to indicate
+-- the current indentation level
+function printifvalue (file, indentation, tag, value)
+    if value ~= -1 then
+        file:write(string.rep("\t", indentation).."<"..tag..">"..tostring(value).."</"..tag..">\n")
+    end
+end
+
+-- Export additional legends data, legends_plus.xml
 function export_more_legends_xml()
-    local month = dfhack.world.ReadCurrentMonth() + 1 --days and months are 1-indexed
-    local day = dfhack.world.ReadCurrentDay()
-    local year_str = string.format('%0'..math.max(5, string.len(''..df.global.cur_year))..'d', df.global.cur_year)
-    local date_str = year_str..string.format('-%02d-%02d', month, day)
     local problem_elements = {}
 
-    local filename = df.global.world.cur_savegame.save_dir.."-"..date_str.."-legends_plus.xml"
+    -- Move into the save folder
+    if not move_to_save_folder() then
+        qerror('Could not move into the save folder.')
+    end
+    local filename = df.global.world.cur_savegame.save_dir.."-"..get_world_date_str().."-legends_plus.xml"
     local file = io.open(filename, 'w')
-    if not file then qerror("could not open file: " .. filename) end
+    move_back_to_main_folder()
+    if not file then
+      qerror("could not open file: " .. filename)
+    end
 
     file:write("<?xml version=\"1.0\" encoding='UTF-8'?>\n")
     file:write("<df_world>\n")
@@ -148,7 +214,9 @@ function export_more_legends_xml()
         file:write("\t\t<name>"..escape_xml(dfhack.df2utf(dfhack.TranslateName(mountainV.name,1))).."</name>\n")
         file:write("\t\t<coords>"..mountainV.pos.x..","..mountainV.pos.y.."</coords>\n")
         file:write("\t\t<height>"..mountainV.height.."</height>\n")
-        file:write("\t\t<is_volcano>"..tostring(mountainV.flags.is_volcano).."</is_volcano>\n")
+        if mountainV.flags.is_volcano then
+            file:write("\t\t<is_volcano/>\n")
+        end
         file:write("\t</mountain_peak>\n")
     end
     file:write("</mountain_peaks>\n")
@@ -213,7 +281,9 @@ function export_more_legends_xml()
         file:write("\t\t<name_singular>"..escape_xml(dfhack.df2utf(creatureV.name[0])).."</name_singular>\n")
         file:write("\t\t<name_plural>"..escape_xml(dfhack.df2utf(creatureV.name[1])).."</name_plural>\n")
         for flagK, flagV in ipairs (df.creature_raw_flags) do
-            file:write("\t\t<"..flagV:lower()..">"..tostring(creatureV.flags[flagV]).."</"..flagV:lower()..">\n")
+            if creatureV.flags[flagV] then
+                file:write("\t\t<"..flagV:lower().."/>\n")
+            end
         end
         file:write("\t</creature>\n")
     end
@@ -224,7 +294,8 @@ function export_more_legends_xml()
         file:write("\t<site>\n")
         for k,v in pairs(siteV) do
             if (k == "id" or k == "civ_id" or k == "cur_owner_id") then
-                file:write("\t\t<"..k..">"..tostring(v).."</"..k..">\n")
+                printifvalue(file, 2, k, v)
+--                file:write("\t\t<"..k..">"..tostring(v).."</"..k..">\n")
             elseif (k == "buildings") then
                 if (#siteV.buildings > 0) then
                     file:write("\t\t<structures>\n")
@@ -405,7 +476,7 @@ function export_more_legends_xml()
             file:write("\t\t<entity_position_assignment>\n")
             for k, v in pairs(assignmentV) do
                 if (k == "id" or k == "histfig" or k == "position_id" or k == "squad_id") then
-                    file:write("\t\t\t<"..k..">"..v.."</"..k..">\n")
+                    printifvalue(file, 3, k, v)  --  'id' should never be negative, and so won't be suppressed
                 end
             end
             file:write("\t\t</entity_position_assignment>\n")
@@ -597,22 +668,26 @@ function export_more_legends_xml()
                         df.history_event_entity_dissolvedst:is_instance(event) or
                         df.history_event_item_stolenst:is_instance(event) or
                         df.history_event_artifact_createdst:is_instance(event)) and k == "circumstance" then
-                    file:write("\t\t<circumstance>\n")
-                    file:write("\t\t\t<type>"..event.circumstance.type.."</type>\n")
-                    if event.circumstance.type == df.unit_thought_type.Death then
-                        file:write("\t\t\t<death>"..event.circumstance.data.Death.."</death>\n")
-                    elseif event.circumstance.type == df.unit_thought_type.Prayer then
-                        file:write("\t\t\t<prayer>"..event.circumstance.data.Prayer.."</prayer>\n")
-                    elseif event.circumstance.type == df.unit_thought_type.DreamAbout then
-                        file:write("\t\t\t<dream_about>"..event.circumstance.data.DreamAbout.."</dream_about>\n")
-                    elseif event.circumstance.type == df.unit_thought_type.Defeated then
-                        file:write("\t\t\t<defeated>"..event.circumstance.data.Defeated.."</defeated>\n")
-                    elseif event.circumstance.type == df.unit_thought_type.Murdered then
-                        file:write("\t\t\t<murdered>"..event.circumstance.data.Murdered.."</murdered>\n")
-                    elseif event.circumstance.type == df.unit_thought_type.HistEventCollection then
-                        file:write("\t\t\t<hist_event_collection>"..event.circumstance.data.HistEventCollection.."</hist_event_collection>\n")
+                    if event.circumstance.type ~= df.unit_thought_type.None then
+                        file:write("\t\t<circumstance>\n")
+                        file:write("\t\t\t<type>"..df_enums.unit_thought_type[event.circumstance.type]:lower().."</type>\n")
+                        if event.circumstance.type == df.unit_thought_type.Death then
+                            printifvalue (file, 3, "death", event.circumstance.data.Death)
+                        elseif event.circumstance.type == df.unit_thought_type.Prayer then
+                            printifvalue (file, 3, "prayer", event.circumstance.data.Prayer)
+                        elseif event.circumstance.type == df.unit_thought_type.DreamAbout then
+                            printifvalue (file, 3, "dream_about", event.circumstance.data.DreamAbout)
+                        elseif event.circumstance.type == df.unit_thought_type.Defeated then
+                            printifvalue (file, 3, "defeated", event.circumstance.data.Defeated)
+                        elseif event.circumstance.type == df.unit_thought_type.Murdered then
+                            printifvalue (file, 3, "murdered", event.circumstance.data.Murdered)
+                        elseif event.circumstance.type == df.unit_thought_type.HistEventCollection then
+                            file:write("\t\t\t<hist_event_collection>"..event.circumstance.data.HistEventCollection.."</hist_event_collection>\n")
+                        elseif event.circumstance.type == df.unit_thought_type.AfterAbducting then
+                            printifvalue (file, 3, "after_abducting", event.circumstance.data.AfterAbducting)
+                        end
+                        file:write("\t\t</circumstance>\n")
                     end
-                    file:write("\t\t</circumstance>\n")
                 elseif (df.history_event_artifact_possessedst:is_instance(event) or
                         df.history_event_poetic_form_createdst:is_instance(event) or
                         df.history_event_musical_form_createdst:is_instance(event) or
@@ -623,16 +698,18 @@ function export_more_legends_xml()
                         df.history_event_entity_dissolvedst:is_instance(event) or
                         df.history_event_item_stolenst:is_instance(event) or
                         df.history_event_artifact_createdst:is_instance(event)) and k == "reason" then
-                    file:write("\t\t<reason>\n")
-                    file:write("\t\t\t<type>"..df.history_event_reason[event.reason.type].."</type>\n")
-                    if event.reason.type == df.history_event_reason.glorify_hf then
-                        file:write("\t\t\t<glorify_hf>"..event.reason.data.glorify_hf.."</glorify_hf>\n")
-                    elseif event.reason.type == df.history_event_reason.artifact_is_heirloom_of_family_hfid then
-                        file:write("\t\t\t<artifact_is_heirloom_of_family_hfid>"..event.reason.data.artifact_is_heirloom_of_family_hfid.."</artifact_is_heirloom_of_family_hfid>\n")
-                    elseif event.reason.type == df.history_event_reason.artifact_is_symbol_of_entity_position then
-                        file:write("\t\t\t<artifact_is_symbol_of_entity_position>"..event.reason.data.artifact_is_symbol_of_entity_position.."</artifact_is_symbol_of_entity_position>\n")
+                    if event.reason.type ~= df.history_event_reason.none then
+                        file:write("\t\t<reason>"..df_enums.history_event_reason[event.reason.type]:lower().."</reason>\n")
+                        if event.reason.type == df.history_event_reason.glorify_hf then
+                            printifvalue (file, 2, "glorify_hf", event.reason.data.glorify_hf)
+                        elseif event.reason.type == df.history_event_reason.sanctify_hf then
+                            printifvalue (file, 2, "sanctify_hf", event.reason.data.sanctify_hf)
+                        elseif event.reason.type == df.history_event_reason.artifact_is_heirloom_of_family_hfid then
+                            printifvalue (file, 2, "artifact_is_heirloom_of_family_hfid", event.reason.data.artifact_is_heirloom_of_family_hfid)
+                        elseif event.reason.type == df.history_event_reason.artifact_is_symbol_of_entity_position then
+                            printifvalue (file, 2, "artifact_is_symbol_of_entity_position", event.reason.data.artifact_is_symbol_of_entity_position)
+                        end
                     end
-                    file:write("\t\t</reason>\n")
                 elseif (df.history_event_masterpiece_created_itemst:is_instance(event) or
                         df.history_event_masterpiece_created_item_improvementst:is_instance(event) or
                         df.history_event_masterpiece_created_foodst:is_instance(event) or
@@ -707,13 +784,22 @@ function export_more_legends_xml()
                             end
                         end
                     elseif event.abuse_type == df.history_event_body_abusedst.T_abuse_type.Piled then
-                        file:write("\t\t<pile_type>"..df.history_event_body_abusedst.T_abuse_data.T_Piled.T_pile_type [event.abuse_data.Piled.pile_type].."</pile_type>\n")
+                        local val = df.history_event_body_abusedst.T_abuse_data.T_Piled.T_pile_type [event.abuse_data.Piled.pile_type]
+                        if not val then
+                            file:write("\t\t<pile_type>unknown "..tostring(event.abuse_data.Piled.pile_type).."</pile_type>\n")
+                        else
+                            file:write("\t\t<pile_type>"..tostring(val):lower().."</pile_type>\n")
+                        end
                     elseif event.abuse_type == df.history_event_body_abusedst.T_abuse_type.Flayed then
                         file:write("\t\t<structure>"..tostring(event.abuse_data.Flayed.structure).."</structure>\n")
                     elseif event.abuse_type == df.history_event_body_abusedst.T_abuse_type.Hung then
                         file:write("\t\t<tree>"..tostring(event.abuse_data.Hung.tree).."</tree>\n")
-                        file:write("\t\t<mat_type>"..event.abuse_data.Hung.mat_type.."</mat_type>\n")
-                        file:write("\t\t<mat_index>"..event.abuse_data.Hung.mat_index.."</mat_index>\n")
+                        if (dfhack.matinfo.decode(event.abuse_data.Hung.mat_type, event.abuse_data.Hung.mat_index) == nil) then
+                            file:write("\t\t<mat_type>"..event.abuse_data.Hung.mat_type.."</mat_type>\n")
+                            file:write("\t\t<mat_index>"..event.abuse_data.Hung.mat_index.."</mat_index>\n")
+                        else
+                            file:write("\t\t<item_mat>"..dfhack.df2utf(dfhack.matinfo.toString(dfhack.matinfo.decode(event.abuse_data.Hung.mat_type, event.abuse_data.Hung.mat_index))).."</item_mat>\n")
+                        end
                     elseif event.abuse_type == df.history_event_body_abusedst.T_abuse_type.Mutilated then  --  For completeness. No fields
                     elseif event.abuse_type == df.history_event_body_abusedst.T_abuse_type.Animated then
                         file:write("\t\t<interaction>"..tostring(event.abuse_data.Animated.interaction).."</interaction>\n")
@@ -721,18 +807,11 @@ function export_more_legends_xml()
                 elseif df.history_event_assume_identityst:is_instance(event) and k == "identity" then
                     local identity = df.identity.find(v)
                     if identity then
-                        if identity.type == df.identity_type.HidingCurse or
-                           identity.type == df.identity_type.Unk_1 or
-                           identity.type == df.identity_type.TrueName or
-                           identity.type == df.identity_type.Unk_4 or
-                           identity.type == df.identity_type.Identity then
-                            if identity.histfig_id ~= -1 then
-                                file:write("\t\t<identity_histfig_id>"..identity.histfig_id.."</identity_histfig_id>\n")
-                            end
-                        elseif identity.type == df.identity_type.FalseIdentity then
-                            if identity.nemesis_id ~= -1 then
-                                file:write("\t\t<identity_nemesis_id>"..identity.nemesis_id.."</identity_nemesis_id>\n")
-                            end
+                        local id_tag = df.identity_type.attrs[identity.type].id_tag
+                        if id_tag == "histfig_id" then
+                            printifvalue(file, 2, "identity_histfig_id", identity.histfig_id)
+                        elseif id_tag == "nemesis_id" then
+                            printifvalue(file, 2, "identity_nemesis_id", identity.nemesis_id)
                         else
                             dfhack.printerr ("Unknown df.identity_type value encountered:"..tostring (identity.type)..". Please report to DFHack team.")
                         end
@@ -787,7 +866,6 @@ function export_more_legends_xml()
                                         end
                                     end
                                 end
-
                             end
                         elseif (detailK == "item_type") then
                             if event.weapon.item > -1 then
@@ -853,7 +931,17 @@ function export_more_legends_xml()
                     end
                     file:write("\t\t<"..k..">please report compound element for correction</"..k..">\n")
                 else
-                    file:write("\t\t<"..k..">"..tostring(v).."</"..k..">\n")
+                    local enum = event:_field (k)._type
+                    if enum._kind == "enum-type" then
+                        local val = enum [v]
+                        if not val then
+                            file:write("\t\t<"..k..">unknown "..tostring(v).."</"..k..">\n")
+                        else
+                            file:write("\t\t<"..k..">"..tostring(val):lower().."</"..k..">\n")
+                        end
+                    else
+                        file:write("\t\t<"..k..">"..tostring(v).."</"..k..">\n")
+                    end
                 end
             end
             file:write("\t</historical_event>\n")
@@ -865,7 +953,7 @@ function export_more_legends_xml()
         for k = 0, set.next_element - 1 do
             file:write("\t<historical_event_relationship>\n")
             file:write("\t\t<event>"..set.event[k].."</event>\n")
-            file:write("\t\t<relationship>"..set.relationship[k].."</relationship>\n")
+            file:write("\t\t<relationship>"..df_enums.vague_relationship_type[set.relationship[k]].."</relationship>\n")
             file:write("\t\t<source_hf>"..set.source_hf[k].."</source_hf>\n")
             file:write("\t\t<target_hf>"..set.target_hf[k].."</target_hf>\n")
             file:write("\t\t<year>"..set.year[k].."</year>\n")
@@ -893,8 +981,8 @@ function export_more_legends_xml()
         file:write("\t<written_content>\n")
         file:write("\t\t<id>"..wcV.id.."</id>\n")
         file:write("\t\t<title>"..escape_xml(dfhack.df2utf(wcV.title)).."</title>\n")
-        file:write("\t\t<page_start>"..wcV.page_start.."</page_start>\n")
-        file:write("\t\t<page_end>"..wcV.page_end.."</page_end>\n")
+        printifvalue(file, 2, "page_start", wcV.page_start)
+        printifvalue(file, 2, "page_end", wcV.page_end)
         for refK, refV in pairs(wcV.refs) do
             file:write("\t\t<reference>\n")
             file:write("\t\t\t<type>"..df_enums.general_ref_type[refV:getType()].."</type>\n")
@@ -972,45 +1060,87 @@ function export_more_legends_xml()
     end
 end
 
--- export information and XML ('p, x')
+-- Export world information and legends.xml (keys: 'p and x')
 function export_legends_info()
+    -- Move into the save folder
+    if not move_to_save_folder() then
+        qerror('Could not move into the save folder.')
+    end
     print('    Exporting:  World map/gen info')
     gui.simulateInput(vs, 'LEGENDS_EXPORT_MAP')
     print('    Exporting:  Legends xml')
     gui.simulateInput(vs, 'LEGENDS_EXPORT_XML')
+    move_back_to_main_folder() -- Move back out of the save folder
     print("    Exporting:  Extra legends_plus xml")
     export_more_legends_xml()
 end
 
+-- Export all the detailed maps like biome and elevation maps. (key: 'd')
 function export_detailed_maps()
-    script.start(function()
-        for i = 1, #MAPS do
-            local vs = dfhack.gui.getViewscreenByType(df.viewscreen_export_graphical_mapst, 0)
-            if not vs then
-                local legends_vs = dfhack.gui.getViewscreenByType(df.viewscreen_legendsst, 0)
-                    or qerror("Could not find legends screen")
-                gui.simulateInput(legends_vs, 'LEGENDS_EXPORT_DETAILED_MAP')
-            end
+    script.start(
+        function()
+        -- When script is finished run `move_back_to_main_folder()`
+        dfhack.with_finalize(
+            -- Function when script is finished
+            function()
+                -- This makes sure it will always go back to the main folder.
+                -- Even if an error occurs
+                move_back_to_main_folder()
+                -- Make sure this is always printed even when error occurs.
+                print("    Done exporting.")
+            end,
+            -- Run script
+            function()
+                -- Loop over all the detailed maps and export them.
+                for i = 1, #MAPS do
+                    -- Select the detailed map section
+                    local vs = dfhack.gui.getViewscreenByType(df.viewscreen_export_graphical_mapst, 0)
+                    if not vs then
+                        local legends_vs = dfhack.gui.getViewscreenByType(df.viewscreen_legendsst, 0)
+                        if not legends_vs then
+                            qerror("Could not find legends screen")
+                        end
 
-            vs = dfhack.gui.getViewscreenByType(df.viewscreen_export_graphical_mapst, 0)
-                or qerror("Could not find map export screen")
-            vs.sel_type = i - 1
-            print('    Exporting map: ' .. MAPS[i])
-            gui.simulateInput(vs, 'SELECT')
-            while dfhack.gui.getCurViewscreen() == vs do
-                script.sleep(10, 'frames')
+                        gui.simulateInput(legends_vs, 'LEGENDS_EXPORT_DETAILED_MAP')
+                    end
+
+                    vs = dfhack.gui.getViewscreenByType(df.viewscreen_export_graphical_mapst, 0)
+                    if not vs then
+                        qerror("Could not find map export screen")
+                    end
+
+                    vs.sel_type = i - 1
+                    -- Move into the save folder
+                    if not move_to_save_folder() then
+                        qerror('Could not move into the save folder.')
+                    end
+                    print('    Exporting map ' ..i.. '/' ..#MAPS..': '.. MAPS[i])
+                    -- Select the map and start exporting
+                    gui.simulateInput(vs, 'SELECT')
+                    -- Wait for the map to finish exporting
+                    while dfhack.gui.getCurViewscreen() == vs do
+                        script.sleep(10, 'frames')
+                    end
+                    -- Move back out of the save folder
+                    move_back_to_main_folder()
+                end
             end
+        )
         end
-    end)
+    )
 end
 
--- export site maps
+-- Export the maps of all the sites (cities, towns,...) (key: 'sites', 'p')
 function export_site_maps()
     local vs = dfhack.gui.getCurViewscreen()
     if ((dfhack.gui.getCurFocus() ~= "legends" ) and (not table_contains(vs, "main_cursor"))) then -- Using open-legends
         vs = vs.parent --luacheck: retype
     end
     if df.viewscreen_legendsst:is_instance(vs) then
+        -- Move into the save folder
+        if not move_to_save_folder() then
+            qerror('Could not move into the save folder.')
+        end
         print('    Exporting:  All possible site maps')
         vs.main_cursor = 1
         gui.simulateInput(vs, 'SELECT')
@@ -1019,12 +1149,40 @@ function export_site_maps()
             gui.simulateInput(vs, 'STANDARDSCROLL_DOWN')
         end
         gui.simulateInput(vs, 'LEAVESCREEN')
+        move_back_to_main_folder() -- Move back out of the save folder
     else
         qerror('this command can only be used in Legends mode')
     end
 end
 
--- main()
+-- Check if a folder with this name could be created or already exists
+function create_folder(folder_name)
+    if folder_name == "-00000-01-01" then
+        qerror('"'..folder_name..'" is the default foldername, this folder will not be created as you are probably not in the legends screen.')
+    end
+    -- check if it is a file, not a folder
+    if dfhack.filesystem.isfile(folder_name) then
+        qerror(folder_name..' is a file, not a folder')
+    end
+    if dfhack.filesystem.exists(folder_name) then
+        return true
+    else
+        return dfhack.filesystem.mkdir(folder_name)
+    end
+end
+
+-- If folder_name is given as a argument use that
+if #args >= 2 then
+    folder_name = args[2]
+end
+-- Create folder to export all files into, if possible.
+if not create_folder(folder_name) then
+    -- no valid folder name or could not create folder
+    qerror('The foldername '..folder_name..' could not be created')
+end
+print("Writing all files in: "..folder_name)
+
+-- Main: Check if on legends screen and trigger the correct export.
 if dfhack.gui.getCurFocus() == "legends" or dfhack.gui.getCurFocus() == "dfhack/lua/legends" then
     -- either native legends mode, or using the open-legends.lua script
     if args[1] == "all" then
@@ -1047,3 +1205,5 @@ elseif args[1] == "maps" and dfhack.gui.getCurFocus() == "export_graphical_map" 
 else
     qerror('exportlegends must be run from the main legends view')
 end
+
+print("Exported files can be found in the \""..folder_name.."\" folder.")
