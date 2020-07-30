@@ -116,9 +116,9 @@ function brainwash_unit(unit, profile)
         insert_preference(unit, df.unit_preference.T_type.HateCreature, list_of_creatures.BIRD_BUZZARD)
         insert_preference(unit, df.unit_preference.T_type.HateCreature, list_of_creatures.BIRD_VULTURE)
         insert_preference(unit, df.unit_preference.T_type.HateCreature, list_of_creatures.CRUNDLE)
-    end -- end IDEAL profile
+        -- end IDEAL profile
 
-    if profile == "GOTH" then
+    elseif profile == "GOTH" then
         insert_preference(unit, df.unit_preference.T_type.LikeMaterial, "CREATURE:DWARF:SKIN")
         insert_preference(unit, df.unit_preference.T_type.LikeItem, df.item_type.CORPSE)
         insert_preference(unit, df.unit_preference.T_type.LikeItem, df.item_type.CORPSEPIECE)
@@ -145,7 +145,10 @@ function brainwash_unit(unit, profile)
         if #df.global.world.dance_forms.all > 0 then
             insert_preference(unit, df.unit_preference.T_type.LikeDanceForm, 0) -- and dancing
         end
-    end -- end GOTH profile
+        -- end GOTH profile
+    else
+        error("Unrecognized profile: " .. profile)
+    end
 
     prefcount = #(unit.status.current_soul.preferences)
     print ("After adjusting, unit "..unit_name_to_console(unit).." has "..prefcount.." preferences")
@@ -348,7 +351,7 @@ else
     print ("goth_all   -- alter all dwarf preferences to Goth")
     print ("one        -- alter current dwarf preferences to Ideal")
     print ("all        -- alter all dwarf preferences to Ideal")
-    if opt ~= "help" then
+    if opt and opt ~= "help" then
         qerror("Unrecognized option: " .. opt)
     end
 end
