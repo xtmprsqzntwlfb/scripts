@@ -100,6 +100,7 @@ files are described in the files themselves.
 -- only initialize our globals once
 if not initialized then
 
+local guidm = require('gui.dwarfmode')
 local utils = require('utils')
 local quickfort_common = reqscript('internal/quickfort/common')
 local quickfort_dig = reqscript('internal/quickfort/dig')
@@ -486,15 +487,16 @@ local function do_command(in_args)
     local quiet = args['q'] ~= nil or args['-quiet'] ~= nil
     local verbose = args['v'] ~= nil or args['-verbose'] ~= nil
     local sheet = tonumber(args['s']) or tonumber(args['-sheet'])
+    local cursor = guidm.getCursorPos()
 
-    if command ~= 'orders' and df.global.cursor.x == -30000 then
+    if command ~= 'orders' and not cursor then
         qerror('please position the game cursor at the blueprint start location')
     end
 
     quickfort_common.verbose = verbose
 
     local filepath = get_blueprint_filepath(filename)
-    local data = process_file(filepath, df.global.cursor)
+    local data = process_file(filepath, cursor)
     for zlevel, section_data_list in pairs(data) do
         for _, section_data in ipairs(section_data_list) do
             local modeline = section_data.modeline
