@@ -29,6 +29,10 @@ and ``pref-adjust clear_all``, respectively. Existing preferences are
 automatically cleared, normally.
 
 ]====]
+
+utils = require 'utils'
+pss_counter = pss_counter or 31415926
+
 -- ---------------------------------------------------------------------------
 function insert_preference(unit, preftype, val1)
 
@@ -294,8 +298,6 @@ end
 -- ---------------------------------------------------------------------------
 -- main script operation starts here
 -- ---------------------------------------------------------------------------
-pss_counter=31415926
-utils = require 'utils'
 build_all_lists(false)
 
 local opt = ({...})[1]
