@@ -36,10 +36,7 @@ function insert_preference(unit, preftype, val1)
         utils.insert_or_update(unit.status.current_soul.preferences, {
             new = true,
             type = preftype,
-            item_type = -1,
-            poetic_form_id = -1,
-            musical_form_id = -1,
-            dance_form_id = -1,
+            poetic_form_id = -1, -- only set this field, because it's one of the largest in the union
             mattype = dfhack.matinfo.find(val1).type,
             mat_state = df.matter_state.Solid,
             matindex = dfhack.matinfo.find(val1).index,
@@ -54,9 +51,6 @@ function insert_preference(unit, preftype, val1)
             new = true,
             type = preftype,
             item_type = consumable_type,
-            poetic_form_id = consumable_type,
-            musical_form_id = consumable_type,
-            dance_form_id = consumable_type,
             item_subtype = dfhack.matinfo.find(consumable_name).subtype,
             mattype = dfhack.matinfo.find(consumable_name).type,
             mat_state = df.matter_state.Solid,
@@ -68,14 +62,9 @@ function insert_preference(unit, preftype, val1)
         utils.insert_or_update(unit.status.current_soul.preferences, {
             new = true,
             type = preftype,
-            item_type = val1,
-            creature_id = val1,
-            color_id = val1,
-            shape_id = val1,
-            plant_id = val1,
+            -- only set poetic_form_id because it's the largest field in the union.
+            -- setting a smaller field would truncate larger values
             poetic_form_id = val1,
-            musical_form_id = val1,
-            dance_form_id = val1,
             item_subtype = -1,
             mattype = -1,
             mat_state = df.matter_state.Solid,
