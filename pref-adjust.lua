@@ -294,51 +294,47 @@ pss_counter=31415926
 utils = require 'utils'
 build_all_lists(false)
 
-local opt = ...
+local opt = ({...})[1]
 
-if opt and opt ~= "help" then
-    if opt == "list" then
-        build_all_lists(true)
-    elseif opt == "clear" then
-        local unit = dfhack.gui.getSelectedUnit()
-        if unit==nil then
-            print ("No unit available!  Aborting with extreme prejudice.")
-            return
-        end
-        clear_preferences(unit)
-        prefcount = #(unit.status.current_soul.preferences)
-        print ("After clearing, unit "..dfhack.TranslateName(dfhack.units.getVisibleName(unit)).." has "..prefcount.." preferences")
-    elseif opt == "clear_all" then
-        clearpref_all_dwarves()
-    elseif opt == "goth" then
-        local profile="GOTH"
-        local unit = dfhack.gui.getSelectedUnit()
-        if unit==nil then
-            print ("No unit available!  Aborting with extreme prejudice.")
-            return
-        end
-        clear_preferences(unit)
-        brainwash_unit(unit,profile)
-    elseif opt == "one" then
-        local profile="IDEAL"
-        local unit = dfhack.gui.getSelectedUnit()
-        if unit==nil then
-            print ("No unit available!  Aborting with extreme prejudice.")
-            return
-        end
-        clear_preferences(unit)
-        brainwash_unit(unit,profile)
-    elseif opt == "all" then
-        local profile="IDEAL"
-        clearpref_all_dwarves()
-        adjust_all_dwarves(profile)
-    elseif opt == "goth_all" then
-        local profile="GOTH"
-        clearpref_all_dwarves()
-        adjust_all_dwarves(profile)
-    else
-        qerror("Unrecognized option: " .. opt)
+if opt == "list" then
+    build_all_lists(true)
+elseif opt == "clear" then
+    local unit = dfhack.gui.getSelectedUnit()
+    if unit==nil then
+        print ("No unit available!  Aborting with extreme prejudice.")
+        return
     end
+    clear_preferences(unit)
+    prefcount = #(unit.status.current_soul.preferences)
+    print ("After clearing, unit "..dfhack.TranslateName(dfhack.units.getVisibleName(unit)).." has "..prefcount.." preferences")
+elseif opt == "clear_all" then
+    clearpref_all_dwarves()
+elseif opt == "goth" then
+    local profile="GOTH"
+    local unit = dfhack.gui.getSelectedUnit()
+    if unit==nil then
+        print ("No unit available!  Aborting with extreme prejudice.")
+        return
+    end
+    clear_preferences(unit)
+    brainwash_unit(unit,profile)
+elseif opt == "one" then
+    local profile="IDEAL"
+    local unit = dfhack.gui.getSelectedUnit()
+    if unit==nil then
+        print ("No unit available!  Aborting with extreme prejudice.")
+        return
+    end
+    clear_preferences(unit)
+    brainwash_unit(unit,profile)
+elseif opt == "all" then
+    local profile="IDEAL"
+    clearpref_all_dwarves()
+    adjust_all_dwarves(profile)
+elseif opt == "goth_all" then
+    local profile="GOTH"
+    clearpref_all_dwarves()
+    adjust_all_dwarves(profile)
 else
     print ("Sets preferences of one dwarf, or of all dwarves, using profiles.")
     print ("Valid options:")
@@ -349,4 +345,7 @@ else
     print ("goth_all   -- alter all dwarf preferences to Goth")
     print ("one        -- alter current dwarf preferences to Ideal")
     print ("all        -- alter all dwarf preferences to Ideal")
+    if opt ~= "help" then
+        qerror("Unrecognized option: " .. opt)
+    end
 end
