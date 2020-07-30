@@ -23,6 +23,7 @@ that repo.
 - `modtools/moddable-gods`: fixed an error when creating the historical figure
 - `modtools/moddable-gods`: removed unused ``-domain`` and ``-description`` arguments
 - `modtools/moddable-gods`: made ``-depictedAs`` argument work
+- `pref-adjust`: fixed some compatibility issues and a potential crash
 
 ## Misc Improvements
 - `add-recipe`: added tool recipes (minecarts, wheelbarrows, stepladders, etc.)
@@ -36,6 +37,8 @@ that repo.
 - `gui/advfort`: added support for specifying the entity used to determine available resources
 - `gui/gm-editor`: added support for automatically following ref-targets when pressing the ``i`` key
 - `modtools/moddable-gods`: added support for ``neuter`` gender
+- `pref-adjust`: added support for adjusting just the selected dwarf
+- `pref-adjust`: added a new ``goth`` profile
 - `remove-stress`: added a ``-value`` argument to enable setting stress level directly
 - `workorder`: changed default frequency from "Daily" to "OneTime"
 
