@@ -144,7 +144,7 @@ function brainwash_unit(unit, profile)
     end -- end GOTH profile
 
     prefcount = #(unit.status.current_soul.preferences)
-    print ("After adjusting, unit "..dfhack.TranslateName(dfhack.units.getVisibleName(unit)).." has "..prefcount.." preferences")
+    print ("After adjusting, unit "..unit_name_to_console(unit).." has "..prefcount.." preferences")
 end -- end of function brainwash_unit
 -- ---------------------------------------------------------------------------
 function clear_preferences(v)
@@ -159,7 +159,7 @@ end
 function clearpref_all_dwarves()
     for _,v in ipairs(df.global.world.units.active) do
         if v.race == df.global.ui.race_id then
-            print("Clearing Preferences for "..dfhack.TranslateName(dfhack.units.getVisibleName(v)))
+            print("Clearing Preferences for "..unit_name_to_console(v))
             clear_preferences(v)
         end
     end
@@ -168,7 +168,7 @@ end
 function adjust_all_dwarves(profile)
     for _,v in ipairs(df.global.world.units.active) do
         if v.race == df.global.ui.race_id then
-            print("Adjusting "..dfhack.TranslateName(dfhack.units.getVisibleName(v)))
+            print("Adjusting "..unit_name_to_console(v))
             brainwash_unit(v,profile)
         end
     end
@@ -259,7 +259,7 @@ function build_all_lists(printflag)
         list_of_poems_string=list_of_poems_string..k..":"..name..","
     end
     if printflag then
-        print("\nTYPE 9 POEMS:"..list_of_poems_string) -- printall(list_of_poems)
+        print("\nTYPE 9 POEMS:"..dfhack.df2console(list_of_poems_string)) -- printall(list_of_poems)
     end
 -- ------------------------------------
     list_of_music={} -- Type 10 "Likes the sound of.."
@@ -271,7 +271,7 @@ function build_all_lists(printflag)
         list_of_music_string=list_of_music_string..k..":"..name..","
     end
     if printflag then
-        print("\nTYPE 10 MUSIC:"..list_of_music_string) --    printall(list_of_music)
+        print("\nTYPE 10 MUSIC:"..dfhack.df2console(list_of_music_string)) --    printall(list_of_music)
     end
 -- ------------------------------------
     list_of_dances={} -- Type 11
@@ -283,9 +283,14 @@ function build_all_lists(printflag)
         list_of_dances_string=list_of_dances_string..k..":"..name..","
     end
     if printflag then
-        print("\nTYPE 11 DANCES:"..list_of_dances_string) --    printall(list_of_dances)
+        print("\nTYPE 11 DANCES:"..dfhack.df2console(list_of_dances_string)) --    printall(list_of_dances)
     end
 end -- end func build_all_lists
+-- ---------------------------------------------------------------------------
+function unit_name_to_console(unit)
+    return dfhack.df2console(dfhack.TranslateName(dfhack.units.getVisibleName(unit)))
+end
+
 
 -- ---------------------------------------------------------------------------
 -- main script operation starts here
@@ -306,7 +311,7 @@ elseif opt == "clear" then
     end
     clear_preferences(unit)
     prefcount = #(unit.status.current_soul.preferences)
-    print ("After clearing, unit "..dfhack.TranslateName(dfhack.units.getVisibleName(unit)).." has "..prefcount.." preferences")
+    print ("After clearing, unit "..unit_name_to_console(unit).." has "..prefcount.." preferences")
 elseif opt == "clear_all" then
     clearpref_all_dwarves()
 elseif opt == "goth" then
