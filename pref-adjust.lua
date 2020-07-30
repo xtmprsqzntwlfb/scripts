@@ -147,8 +147,7 @@ function brainwash_unit(unit, profile)
     print ("After adjusting, unit "..unit_name_to_console(unit).." has "..prefcount.." preferences")
 end -- end of function brainwash_unit
 -- ---------------------------------------------------------------------------
-function clear_preferences(v)
-    local unit=v
+function clear_preferences(unit)
     local prefs=unit.status.current_soul.preferences
     for index,pref in ipairs(prefs) do
         pref:delete()
@@ -157,19 +156,19 @@ function clear_preferences(v)
 end
 -- ---------------------------------------------------------------------------
 function clearpref_all_dwarves()
-    for _,v in ipairs(df.global.world.units.active) do
-        if v.race == df.global.ui.race_id then
-            print("Clearing Preferences for "..unit_name_to_console(v))
-            clear_preferences(v)
+    for _,unit in ipairs(df.global.world.units.active) do
+        if unit.race == df.global.ui.race_id then
+            print("Clearing Preferences for "..unit_name_to_console(unit))
+            clear_preferences(unit)
         end
     end
 end
 -- ---------------------------------------------------------------------------
 function adjust_all_dwarves(profile)
-    for _,v in ipairs(df.global.world.units.active) do
-        if v.race == df.global.ui.race_id then
-            print("Adjusting "..unit_name_to_console(v))
-            brainwash_unit(v,profile)
+    for _,unit in ipairs(df.global.world.units.active) do
+        if unit.race == df.global.ui.race_id then
+            print("Adjusting "..unit_name_to_console(unit))
+            brainwash_unit(unit,profile)
         end
     end
 end
