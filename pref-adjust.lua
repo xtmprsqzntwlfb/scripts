@@ -302,6 +302,21 @@ build_all_lists(false)
 
 local opt = ({...})[1]
 
+function handle_one(profile)
+    local unit = dfhack.gui.getSelectedUnit()
+    if unit == nil then
+        print ("No unit available!  Aborting with extreme prejudice.")
+        return
+    end
+    clear_preferences(unit)
+    brainwash_unit(unit, profile)
+end
+
+function handle_all(profile)
+    clearpref_all_dwarves()
+    adjust_all_dwarves(profile)
+end
+
 if opt == "list" then
     build_all_lists(true)
 elseif opt == "clear" then
@@ -311,36 +326,18 @@ elseif opt == "clear" then
         return
     end
     clear_preferences(unit)
-    prefcount = #(unit.status.current_soul.preferences)
+    prefcount = #unit.status.current_soul.preferences
     print ("After clearing, unit "..unit_name_to_console(unit).." has "..prefcount.." preferences")
 elseif opt == "clear_all" then
     clearpref_all_dwarves()
 elseif opt == "goth" then
-    local profile="GOTH"
-    local unit = dfhack.gui.getSelectedUnit()
-    if unit==nil then
-        print ("No unit available!  Aborting with extreme prejudice.")
-        return
-    end
-    clear_preferences(unit)
-    brainwash_unit(unit,profile)
+    handle_one("GOTH")
 elseif opt == "one" then
-    local profile="IDEAL"
-    local unit = dfhack.gui.getSelectedUnit()
-    if unit==nil then
-        print ("No unit available!  Aborting with extreme prejudice.")
-        return
-    end
-    clear_preferences(unit)
-    brainwash_unit(unit,profile)
+    handle_one("IDEAL")
 elseif opt == "all" then
-    local profile="IDEAL"
-    clearpref_all_dwarves()
-    adjust_all_dwarves(profile)
+    handle_all("IDEAL")
 elseif opt == "goth_all" then
-    local profile="GOTH"
-    clearpref_all_dwarves()
-    adjust_all_dwarves(profile)
+    handle_all("GOTH")
 else
     print ("Sets preferences of one dwarf, or of all dwarves, using profiles.")
     print ("Valid options:")
