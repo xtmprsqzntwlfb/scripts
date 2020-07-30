@@ -14,7 +14,7 @@ local help = [====[
 
 dorf_tables
 ===========
-Data tables for dwopit.lua.
+Data tables for `dwarf-op`
 
 Arguments:
     list [jobs|professions|types]
@@ -33,7 +33,7 @@ job_distributions:
     Every other row references an entry in 'jobs'
 
 jobs:
-    Defines dwopit's nameable jobs. This is preferable to taking every
+    Defines `dwarf-op`'s nameable jobs. This is preferable to taking every
     profession and making a distribution that covers all 100+ profs.
 
     Each job is comprised of required professions, optional professions,
