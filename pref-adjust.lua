@@ -24,7 +24,7 @@ is quite challenging, for a single dwarf::
 
 To see what values can be used with each type of preference, use
 ``pref-adjust list``.  Optionally, a single dwarf or all dwarves can have
-their preferences cleared manually with the use of ``pref-adjust clear_one``
+their preferences cleared manually with the use of ``pref-adjust clear``
 and ``pref-adjust clear_all``, respectively. Existing preferences are
 automatically cleared, normally.
 
@@ -300,7 +300,7 @@ if opt and opt ~= "help" then
     if opt == "list" then
         build_all_lists(true)
         return
-    elseif opt == "clear_one" then
+    elseif opt == "clear" then
         local unit = dfhack.gui.getSelectedUnit()
         if unit==nil then
             print ("No unit available!  Aborting with extreme prejudice.")
@@ -348,7 +348,7 @@ else
     print ("Sets preferences of one dwarf, or of all dwarves, using profiles.")
     print ("Valid options:")
     print ("list       -- show available preference type lists")
-    print ("clear_one  -- clear preferences of selected unit")
+    print ("clear      -- clear preferences of selected unit")
     print ("clear_all  -- clear preferences of all units")
     print ("goth       -- alter current dwarf preferences to Goth")
     print ("goth_all   -- alter all dwarf preferences to Goth")
