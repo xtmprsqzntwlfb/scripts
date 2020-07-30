@@ -183,7 +183,7 @@ function build_all_lists(printflag)
         list_of_inorganics[name]=k
         list_of_inorganics_string=list_of_inorganics_string..name..","
     end
-    if printflag==1 then
+    if printflag then
         print("\nTYPE 0 INORGANICS:"..list_of_inorganics_string) --    printall(list_of_inorganics)
     end
 -- ------------------------------------
@@ -195,7 +195,7 @@ function build_all_lists(printflag)
         list_of_creatures[name]=k
         list_of_creatures_string=list_of_creatures_string..name..","
     end
-    if printflag==1 then
+    if printflag then
         print("\nTYPE 1,3 CREATURES:"..list_of_creatures_string) --    printall(list_of_creatures)
     end
 -- ------------------------------------
@@ -208,7 +208,7 @@ function build_all_lists(printflag)
         list_of_plants[name]=k
         list_of_plants_string=list_of_plants_string..name..","
     end
-    if printflag==1 then
+    if printflag then
         print("\nTYPE 2,5 PLANTS:"..list_of_plants_string) --    printall(list_of_plants)
     end
 -- ------------------------------------
@@ -222,7 +222,7 @@ function build_all_lists(printflag)
         list_of_items[v]=k
         list_of_items_string=list_of_items_string..v..","
     end
-    if printflag==1 then
+    if printflag then
         print("\nTYPE 4 ITEMS:"..list_of_items_string) --    printall(list_of_items)
     end
 -- ------------------------------------
@@ -234,7 +234,7 @@ function build_all_lists(printflag)
         list_of_colors[name]=k
         list_of_colors_string=list_of_colors_string..name..","
     end
-    if printflag==1 then
+    if printflag then
         print("\nTYPE 7 COLORS:"..list_of_colors_string) --    printall(list_of_colors)
     end
 -- ------------------------------------
@@ -246,7 +246,7 @@ function build_all_lists(printflag)
         list_of_shapes[name]=k
         list_of_shapes_string=list_of_shapes_string..name..","
     end
-    if printflag==1 then
+    if printflag then
         print("\nTYPE 8 SHAPES:"..list_of_shapes_string) --    printall(list_of_shapes)
     end
 -- ------------------------------------
@@ -258,7 +258,7 @@ function build_all_lists(printflag)
         list_of_poems[name]=k
         list_of_poems_string=list_of_poems_string..k..":"..name..","
     end
-    if printflag==1 then
+    if printflag then
         print("\nTYPE 9 POEMS:"..list_of_poems_string) -- printall(list_of_poems)
     end
 -- ------------------------------------
@@ -270,7 +270,7 @@ function build_all_lists(printflag)
         list_of_music[name]=k
         list_of_music_string=list_of_music_string..k..":"..name..","
     end
-    if printflag==1 then
+    if printflag then
         print("\nTYPE 10 MUSIC:"..list_of_music_string) --    printall(list_of_music)
     end
 -- ------------------------------------
@@ -282,7 +282,7 @@ function build_all_lists(printflag)
         list_of_dances[name]=k
         list_of_dances_string=list_of_dances_string..k..":"..name..","
     end
-    if printflag==1 then
+    if printflag then
         print("\nTYPE 11 DANCES:"..list_of_dances_string) --    printall(list_of_dances)
     end
 end -- end func build_all_lists
@@ -292,15 +292,13 @@ end -- end func build_all_lists
 -- ---------------------------------------------------------------------------
 pss_counter=31415926
 utils = require 'utils'
-printflag=0
-build_all_lists(printflag)
+build_all_lists(false)
 
 local opt = ...
 
 if opt and opt ~= "help" then
     if opt=="list" then
-        printflag=1
-        build_all_lists(printflag)
+        build_all_lists(true)
         return
     end
     if opt=="clear_one" then
