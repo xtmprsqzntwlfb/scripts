@@ -299,7 +299,6 @@ local opt = ...
 if opt and opt ~= "help" then
     if opt == "list" then
         build_all_lists(true)
-        return
     elseif opt == "clear" then
         local unit = dfhack.gui.getSelectedUnit()
         if unit==nil then
@@ -309,10 +308,8 @@ if opt and opt ~= "help" then
         clear_preferences(unit)
         prefcount = #(unit.status.current_soul.preferences)
         print ("After clearing, unit "..dfhack.TranslateName(dfhack.units.getVisibleName(unit)).." has "..prefcount.." preferences")
-        return
     elseif opt == "clear_all" then
         clearpref_all_dwarves()
-        return
     elseif opt == "goth" then
         local profile="GOTH"
         local unit = dfhack.gui.getSelectedUnit()
@@ -322,7 +319,6 @@ if opt and opt ~= "help" then
         end
         clear_preferences(unit)
         brainwash_unit(unit,profile)
-        return
     elseif opt == "one" then
         local profile="IDEAL"
         local unit = dfhack.gui.getSelectedUnit()
@@ -332,17 +328,16 @@ if opt and opt ~= "help" then
         end
         clear_preferences(unit)
         brainwash_unit(unit,profile)
-        return
     elseif opt == "all" then
         local profile="IDEAL"
         clearpref_all_dwarves()
         adjust_all_dwarves(profile)
-        return
     elseif opt == "goth_all" then
         local profile="GOTH"
         clearpref_all_dwarves()
         adjust_all_dwarves(profile)
-        return
+    else
+        qerror("Unrecognized option: " .. opt)
     end
 else
     print ("Sets preferences of one dwarf, or of all dwarves, using profiles.")
