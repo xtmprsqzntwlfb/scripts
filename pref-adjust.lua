@@ -297,11 +297,10 @@ build_all_lists(false)
 local opt = ...
 
 if opt and opt ~= "help" then
-    if opt=="list" then
+    if opt == "list" then
         build_all_lists(true)
         return
-    end
-    if opt=="clear_one" then
+    elseif opt == "clear_one" then
         local unit = dfhack.gui.getSelectedUnit()
         if unit==nil then
             print ("No unit available!  Aborting with extreme prejudice.")
@@ -311,12 +310,10 @@ if opt and opt ~= "help" then
         prefcount = #(unit.status.current_soul.preferences)
         print ("After clearing, unit "..dfhack.TranslateName(dfhack.units.getVisibleName(unit)).." has "..prefcount.." preferences")
         return
-    end
-    if opt=="clear_all" then
+    elseif opt == "clear_all" then
         clearpref_all_dwarves()
         return
-    end
-    if opt=="goth" then
+    elseif opt == "goth" then
         local profile="GOTH"
         local unit = dfhack.gui.getSelectedUnit()
         if unit==nil then
@@ -326,8 +323,7 @@ if opt and opt ~= "help" then
         clear_preferences(unit)
         brainwash_unit(unit,profile)
         return
-    end
-    if opt=="one" then
+    elseif opt == "one" then
         local profile="IDEAL"
         local unit = dfhack.gui.getSelectedUnit()
         if unit==nil then
@@ -337,14 +333,12 @@ if opt and opt ~= "help" then
         clear_preferences(unit)
         brainwash_unit(unit,profile)
         return
-    end
-    if opt=="all" then
+    elseif opt == "all" then
         local profile="IDEAL"
         clearpref_all_dwarves()
         adjust_all_dwarves(profile)
         return
-    end
-    if opt=="goth_all" then
+    elseif opt == "goth_all" then
         local profile="GOTH"
         clearpref_all_dwarves()
         adjust_all_dwarves(profile)
