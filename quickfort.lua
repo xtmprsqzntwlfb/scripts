@@ -101,6 +101,7 @@ files are described in the files themselves.
 -- top-level file. this ensures transitive dependencies are reloaded if any
 -- files have changed.
 local quickfort_build = reqscript('internal/quickfort/build')
+local quickfort_building = reqscript('internal/quickfort/building')
 local quickfort_command = reqscript('internal/quickfort/command')
 local quickfort_common = reqscript('internal/quickfort/common')
 local quickfort_dig = reqscript('internal/quickfort/dig')
