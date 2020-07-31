@@ -80,7 +80,6 @@ These options are used to specify what animals you want or do not want to select
 
 ]====]
 
-local Units = df.global.world.units.active
 
 if args.race and not tonumber(args.race) then
     args.race=string.upper(args.race)
@@ -97,28 +96,6 @@ if args.race and not tonumber(args.race) then
     args.race = raceID
 end
 
-function safe_pairs(item, keys_only)
-    if keys_only then
-        local mt = debug.getmetatable(item)
-        if mt and mt._index_table then
-            local idx = 0
-            return function()
-                idx = idx + 1
-                if mt._index_table[idx] then
-                    return mt._index_table[idx]
-                end
-            end
-        end
-    end
-    local ret = table.pack(pcall(function() return pairs(item) end))
-    local ok = ret[1]
-    table.remove(ret, 1)
-    if ok then
-        return table.unpack(ret)
-    else
-        return function() end
-    end
-end
 bfilters=(args.id or args.race or args.markedfor or args.notmarkedfor or args.gelded or args.notgelded or args.male or args.female)
 bcommands=(args.showstats or args.markfor or args.unmarkfor)
 bvalid=(args.all and not bfilters) or (not args.all and (bfilters or bcommands))
@@ -135,7 +112,7 @@ else
         print(string.format("%-20s %-6s %-9s %-9s %-5s %-22s %-8s %-25s"
             , "animal type", "id", "unit id", "race id", "sex", "marked for slaughter", "gelded", "marked for gelding"))
     end
-    for k,v in safe_pairs(Units) do
+    for k,v in ipairs(df.global.world.units.active) do
         if v.civ_id == df.global.ui.civ_id and v.flags1.tame then
             if not (args.male or args.female) or args.male and v.sex == 1 or args.female and v.sex == 0 then
                 if not args.race or tonumber(args.race) == v.race then
