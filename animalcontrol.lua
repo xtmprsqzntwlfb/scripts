@@ -81,6 +81,18 @@ These options are used to specify what animals you want or do not want to select
 ]====]
 
 
+header_format = "%-20s %-6s %-9s %-9s %-5s %-22s %-8s %-25s"
+row_format    = "%-20s %-6s %-9d %-9d %-5s %-22s %-8s %-25s"
+stats_header_format = "%-20s %-6s %-9s %-9s %-5s %-22s %-8s %-25s %-7s %-7s %-7s %-7s %-7s %-7s"
+stats_row_format    = "%-20s %-6s %-9d %-9d %-5s %-22s %-8s %-25s %-7d %-7d %-7d %-7d %-7d %-7d"
+
+header = header_format:format(
+    "animal type", "id", "unit id", "race id", "sex", "marked for slaughter",
+    "gelded", "marked for gelding")
+stats_header = stats_header_format:format(
+    "animal type", "id", "unit id", "race id", "sex", "marked for slaughter",
+    "gelded", "marked for gelding", "str", "agi", "tgh", "endur", "recup", "disres")
+
 if args.race and not tonumber(args.race) then
     args.race=string.upper(args.race)
     local raceID
@@ -96,21 +108,18 @@ if args.race and not tonumber(args.race) then
     args.race = raceID
 end
 
-bfilters=(args.id or args.race or args.markedfor or args.notmarkedfor or args.gelded or args.notgelded or args.male or args.female)
-bcommands=(args.showstats or args.markfor or args.unmarkfor)
-bvalid=(args.all and not bfilters) or (not args.all and (bfilters or bcommands))
+bfilters = (args.id or args.race or args.markedfor or args.notmarkedfor or args.gelded or args.notgelded or args.male or args.female)
+bcommands = (args.showstats or args.markfor or args.unmarkfor)
+bvalid = (args.all and not bfilters) or (not args.all and (bfilters or bcommands))
 
 if args.help or not bvalid then
     print(help)
 else
     count=0
     if args.showstats then
-        print(string.format("%-20s %-6s %-9s %-9s %-5s %-22s %-8s %-25s %-7s %-7s %-7s %-7s %-7s %-7s"
-            , "animal type", "id", "unit id", "race id", "sex", "marked for slaughter", "gelded", "marked for gelding"
-            ,"str","agi","tgh","endur","recup","disres"))
+        print(stats_header)
     else
-        print(string.format("%-20s %-6s %-9s %-9s %-5s %-22s %-8s %-25s"
-            , "animal type", "id", "unit id", "race id", "sex", "marked for slaughter", "gelded", "marked for gelding"))
+        print(header)
     end
     for k,v in ipairs(df.global.world.units.active) do
         if v.civ_id == df.global.ui.civ_id and v.flags1.tame then
@@ -144,23 +153,23 @@ else
                                         attr = v.body.physical_attrs
                                         if v.sex == 1 then
                                             if args.showstats then
-                                                print(string.format("%-20s %-6s %-9d %-9d %-5s %-22s %-8s %-25s %-7d %-7d %-7d %-7d %-7d %-7d"
+                                                print(string.format(stats_row_format
                                                     ,name,v.id,k,v.race,sex
                                                     ,tostring(v.flags2.slaughter),tostring(v.flags3.gelded),tostring(v.flags3.marked_for_gelding)
                                                     ,attr.STRENGTH.value,attr.AGILITY.value,attr.TOUGHNESS.value,attr.ENDURANCE.value,attr.RECUPERATION.value,attr.DISEASE_RESISTANCE.value))
                                             else
-                                                print(string.format("%-20s %-6s %-9d %-9d %-5s %-22s %-8s %-25s"
+                                                print(string.format(row_format
                                                     ,name,v.id,k,v.race,sex
                                                     ,tostring(v.flags2.slaughter),tostring(v.flags3.gelded),tostring(v.flags3.marked_for_gelding)))
                                             end
                                         else
                                             if args.showstats then
-                                                print(string.format("%-20s %-6s %-9d %-9d %-5s %-22s %-8s %-25s %-7d %-7d %-7d %-7d %-7d %-7d"
+                                                print(string.format(stats_row_format
                                                     ,name,v.id,k,v.race,sex
                                                     ,tostring(v.flags2.slaughter),"-","-"
                                                     ,attr.STRENGTH.value,attr.AGILITY.value,attr.TOUGHNESS.value,attr.ENDURANCE.value,attr.RECUPERATION.value,attr.DISEASE_RESISTANCE.value))
                                             else
-                                                print(string.format("%-20s %-6s %-9d %-9d %-5s %-22s %-8s %-25s"
+                                                print(string.format(row_format
                                                     ,name,v.id,k,v.race,sex
                                                     ,tostring(v.flags2.slaughter),"-","-"))
                                             end
@@ -176,12 +185,9 @@ else
     end
     if not args.id then
         if args.showstats then
-            print(string.format("%-20s %-6s %-9s %-9s %-5s %-22s %-8s %-25s %-7s %-7s %-7s %-7s %-7s %-7s"
-                , "animal type", "id", "unit id", "race id", "sex", "marked for slaughter", "gelded", "marked for gelding"
-                ,"str","agi","tgh","endur","recup","disres"))
+            print(stats_header)
         else
-            print(string.format("%-20s %-6s %-9s %-9s %-5s %-22s %-8s %-25s"
-                , "animal type", "id", "unit id", "race id", "sex", "marked for slaughter", "gelded", "marked for gelding"))
+            print(header)
         end
     else
         print("")
