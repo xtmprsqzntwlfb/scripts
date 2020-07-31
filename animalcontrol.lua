@@ -25,56 +25,58 @@ animalcontrol
 =============
 Animal control is a script useful for deciding what animals to butcher and geld.
 
-I developed this because I found Dwarf Therapist had a bug for my version of
-dwarf fortress which prevented the geld status of animals from updating. So
-I would be queuing animals to be gelded that had already been gelded.
-
 While not as powerful as Dwarf Therapist in managing animals - in so far as
 DT allows you to sort by various stats and flags - this script does provide
 many options for filtering animals. Additionally you can mark animals for
 slaughter or gelding, you can even do so enmasse if you so choose.
 
-Examples:
-  [DFHack]# animalcontrol -race 170
-  [DFHack]# animalcontrol -race 170 -male -notgelded -showstats
-  [DFHack]# animalcontrol -markfor gelding -id 1988
-  [DFHack]# animalcontrol -markfor slaughter -id 1988
-  [DFHack]# animalcontrol -gelded -markedfor slaughter -unmarkfor slaughter
+Examples::
 
--~~~~~~~~~~~
-selection options:
+  animalcontrol -race DOG
+  animalcontrol -race DOG -male -notgelded -showstats
+  animalcontrol -markfor gelding -id 1988
+  animalcontrol -markfor slaughter -id 1988
+  animalcontrol -gelded -markedfor slaughter -unmarkfor slaughter
 
-  These options are used to specify what animals you want or do not want to select.
-    all                  - Selects all units
-                           Note: cannot be used in conjunction with other selection options.
+**Selection options:**
 
-    id <value>           - Selects the unit with the specified id value provided.
-    race <value>         - Selects units which match the race value provided.
+These options are used to specify what animals you want or do not want to select.
 
-    markedfor <value>    - Selects units which have been marked for the value provided.
-                           valid values: slaughter, gelding
+``-all``:                   Selects all units.
+                            Note: cannot be used in conjunction with other
+                            selection options.
 
-    notmarkedfor <value> - Selects units which have not been marked for the value provided.
-                           valid values: slaughter, gelding
+``-id <value>``:            Selects the unit with the specified id value provided.
 
-    gelded               - Selects units which have already been gelded.
-    notgelded            - Selects units which have not been gelded.
-    male                 - Selects units which are male.
-    female               - Selects units which are female.
+``-race <value>``:          Selects units which match the race value provided.
 
--~~~~~~~~~~~
-command options:
+``-markedfor <action>``:    Selects units which have been marked for the action provided.
+                            Valid actions: ``slaughter``, ``gelding``
 
-    showstats            - Displays physical attributes of the selected animals.
+``-notmarkedfor <action>``: Selects units which have not been marked for the action provided.
+                            Valid actions: ``slaughter``, ``gelding``
 
-    markfor <value>      - Marks selected animals for the value provided.
-                           valid values: slaughter, gelding
+``-gelded``:                Selects units which have already been gelded.
 
-    unmarkfor <value>    - Unmarks selected animals for the value provided.
-                           valid values: slaughter, gelding
+``-notgelded``:             Selects units which have not been gelded.
 
-other options:
-    help                 - Displays this information
+``-male``:                  Selects units which are male.
+
+``-female``:                Selects units which are female.
+
+**Command options:**
+
+- ``-showstats``:           Displays physical attributes of the selected animals.
+
+- ``-markfor <action>``:    Marks selected animals for the action provided.
+                            Valid actions: ``slaughter``, ``gelding``
+
+- ``-unmarkfor <action>``:  Unmarks selected animals for the action provided.
+                            Valid actions: ``slaughter``, ``gelding``
+
+**Other options:**
+
+- ``-help``: Displays this information
 
 ]====]
 
