@@ -24,7 +24,7 @@ local validArgs = utils.invert({
  'setkey',
 
  'includeitall',
- 
+
  'safer',
  'dumb',
  'disableprint',
@@ -64,91 +64,97 @@ finds a match it then prints it to the console.
 
 You can control most aspects of this process, the script is fairly flexible. So
 much so that you can easily create an infinitely recursing query and/or potentially
-crash dwarf fortress and dfhack. In previous iterations memory bloat was even a
+crash Dwarf Fortress and DFHack. In previous iterations memory bloat was even a
 concern, where RAM would be used up in mere minutes or seconds; you can probably
 get this to happen as well if you are careless with the depth settings and don't
-print everything walked over (ie. have a search term).
+print everything walked over (i.e. have a search term). The `kill-lua` command
+may be able to stop this script if it gets out of control.
 
 Before recursing or printing things to the console the script checks several things.
 A few important ones:
 
- - Is the data structure capable of being iterated
- - Is the data structure pointing to a parent data structure
- - Is the current level of recursion too high, and do we need to unwind it first
- - Is the number of entries too high (eg. 70,000 table entries that would be printed)
- - Is the data going to be usefully readable
- - Does the field or key match the field or key query or queries
- - Is printing fields allowed
- - Is printing keys allowed
+ - Is the data structure capable of being iterated?
+ - Is the data structure pointing to a parent data structure?
+ - Is the current level of recursion too high, and do we need to unwind it first?
+ - Is the number of entries too high (eg. 70,000 table entries that would be printed)?
+ - Is the data going to be usefully readable?
+ - Does the field or key match the field or key query or queries?
+ - Is printing fields allowed?
+ - Is printing keys allowed?
 
-Examples:
-  [DFHack]# devel/query -table df -query dead
-  [DFHack]# devel/query -table df.global.ui.main -depth 0
-  [DFHack]# devel/query -table df.profession -querykeys WAR
-  [DFHack]# devel/query -unit -query STRENGTH
-  [DFHack]# devel/query -unit -query physical_attrs -listkeys
-  [DFHack]# devel/query -unit -getfield id
+Examples::
 
--~~~~~~~~~~~~
-selection options:
+  devel/query -table df -query dead
+  devel/query -table df.global.ui.main -depth 0
+  devel/query -table df.profession -querykeys WAR
+  devel/query -unit -query STRENGTH
+  devel/query -unit -query physical_attrs -listkeys
+  devel/query -unit -getfield id
 
-  These options are used to specify where the query will run,
-  or specifically what key to print inside a unit.
+**Selection options:**
 
-    unit               - Selects the highlighted unit
+These options are used to specify where the query will run,
+or specifically what key to print inside a unit.
 
-    item               - Selects the highlighted item.
+``-unit``:              Selects the highlighted unit
 
-    tile               - Selects the highlighted tile's block and then attempts
-                         to find the tile, and perform your queries on it.
+``-item``:              Selects the highlighted item.
 
-    table <value>      - Selects the specified table (ie. 'value').
-                         Must use dot notation to denote sub-tables.
-                         (eg. -table df.global.world)
+``-tile``:              Selects the highlighted tile's block and then attempts to find the tile, and perform your queries on it.
 
-    getfield <value>   - Gets the specified field from the selected unit.
-                         Must use dot notation to denote sub-fields.
-                         Useful if there would be several matching
-                         fields with the input as a substring (eg. 'id', 'gui')
+``-table <value>``:     Selects the specified table (ie. 'value').
 
--~~~~~~~~~~~~
-query options:
+                        Must use dot notation to denote sub-tables.
+                        (eg. ``-table df.global.world``)
 
-    query <value>      - Searches the selection for fields with substrings matching
-                         the specified value.
+``-getfield <value>``:  Gets the specified field from the selected unit.
 
-    querykeys <value>  - Lists only keys matching the specified value.
+                        Must use dot notation to denote sub-fields.
+                        Useful if there would be several matching
+                        fields with the input as a substring (eg. 'id', 'gui')
 
-    listall            - Lists both fields and keys, useful if you aren't running a search.
-    listfields         - Lists fields. Useful if you aren't running a search.
-    listkeys           - Lists keys. Useful. Ya, period.
+**Query options:**
 
-    depth <value>          - Limits the field recursion depth (default: 10)
-    keydepth <value>       - Limits the key recursion depth (default: 4)
-    maxtablelength <value> - Limits the table sizes that will be walked (default: 257)
+``-query <value>``:     Searches the selection for fields with substrings matching the specified value.
 
-    includeitall       - Removes blacklist filtering, and disregards readabiliy of output.
+``-querykeys <value>``: Lists only keys matching the specified value.
 
-    safer              - Disables walking struct data. I figure this is probably the most
-                         likely to be misaligned, and it could crash dfhack so consider
-                         using this if you're running an alpha or beta build of dfhack.
+``-listall``:           Lists both fields and keys, useful if you aren't running a search.
 
-    dumb               - Disables intelligent checks for things such as reasonable recursion
-                         depth(ie. depth maxes are increased, not removed. [25,25]) and also
-                         checks for recursive data structures.
-                         (ie. to avoid walking a child that goes to a parent)
+``-listfields``:        Lists fields. Useful if you aren't running a search.
 
-command options:
+``-listkeys``:          Lists keys. Useful. Ya, period.
 
-    debug <value>      - Enables debug log lines equal to or less than the value provided.
-                         Some lines are commented out entirely, and you probably won't even
-                         use this.. but hey now you know it exists.
+``-depth <value>``:          Limits the field recursion depth (default: 10)
 
-    disableprint       - Disables printing fields and keys. Might be useful if you are
-                         debugging this script. Or to see if a query will crash (faster)
-                         but not sure what else you could use it for.
+``-keydepth <value>``:       Limits the key recursion depth (default: 4)
 
-    help               - Prints this help information.
+``-maxtablelength <value>``: Limits the table sizes that will be walked (default: 257)
+
+``-includeitall``:  Removes blacklist filtering, and disregards readability of output.
+
+``-safer``:         Disables walking struct data.
+
+                    Unlike native Lua types, struct data can sometimes be misaligned,
+                    which can cause crashes when accessing it. This option may be useful
+                    if you're running an alpha or beta build of DFHack.
+
+``-dumb``:          Disables intelligent checks for things such as reasonable
+recursion depth (i.e. depth maximums are increased, not removed) and also checks
+for recursive data structures (i.e. to avoid walking a child that goes to a
+parent)
+
+**Command options:**
+
+``-debug <value>``: Enables debug log lines equal to or less than the value
+provided. Some lines are commented out entirely, and you probably won't even use
+this.. but hey, now you know it exists.
+
+``-disableprint``: Disables printing fields and keys. Might be useful if you are
+debugging this script. Or to see if a query will crash (faster) but not sure
+what else you could use it for.
+
+``-help``: Prints this help information.
 
 ]====]
 
@@ -681,7 +687,7 @@ function Query(t,query,parent,field,bprintparent)
                         bprintparent=false
                     end
                     debugf(10,"query: stage 2")
-                    
+
                     -- query recursively
                     bprintedkeys=false
                     if canRecurseField(parent,field,value) then
@@ -689,7 +695,7 @@ function Query(t,query,parent,field,bprintparent)
                         bprintedkeys=Query(t[field],query,newParent,field,bprintparent)
                     end
                     debugf(10,"query: stage 3")
-                    
+
                     -- print keys
                     if bprintkeys and not bprintedkeys and isFieldValueMatch(field,value) and canRecurseKey(parent,field,value) then
                         debugf(8,"query->print_keys")
