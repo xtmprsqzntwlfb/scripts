@@ -78,6 +78,18 @@ These options are used to specify what animals you want or do not want to select
 
 - ``-help``: Displays this information
 
+**Column abbreviations**
+
+Due to space constraints, the names of some output columns are abbreviated
+as follows:
+
+- ``str``: strength
+- ``agi``: agility
+- ``tgh``: toughness
+- ``endur``: endurance
+- ``recup``: recuperation
+- ``disres``: disease resistance
+
 ]====]
 
 
