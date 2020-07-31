@@ -1,37 +1,36 @@
--- build-related logic for the quickfort script
+-- build-related data and logic for the quickfort script
 --@ module = true
+--[[
+In general, we enforce the same rules as the in-game UI for allowed placement of
+buildings (e.g. beds have to be inside, doors have to be adjacent to a wall,
+etc.). A notable exception is that we allow constructions to be designated
+regardless of whether they are reachable or currently supported. This allows the
+user to designate an entire floor of an above-ground building without
+micromanagement. We also don't enforce that materials are accessible from the
+designation location. That is something that the player can manage.
+]]
+
 
 if not dfhack_flags.module then
     qerror('this script cannot be called directly')
 end
 
+local utils = require('utils')
 local quickfort_common = reqscript('internal/quickfort/common')
 local quickfort_building = reqscript('internal/quickfort/building')
 local log = quickfort_common.log
 
-local function is_valid_tile_dirt(pos)
-    local tileattrs = df.tiletype.attrs[dfhack.maps.getTileType(pos)]
-    local shape = tileattrs.shape
-    local mat = tileattrs.material
-    local good_shape =
-            shape == df.tiletype_shape.FLOOR or
-            shape == df.tiletype_shape.TWIG or
-            shape == df.tiletype_shape.SAPLING or
-            shape == df.tiletype_shape.SHRUB
-    local good_material =
-            mat == df.tiletype_material.SOIL or
-            mat == df.tiletype_material.GRASS_LIGHT or
-            mat == df.tiletype_material.GRASS_DARK or
-            mat == df.tiletype_material.GRASS_DRY or
-            mat == df.tiletype_material.GRASS_DEAD or
-            mat == df.tiletype_material.PLANT or
-            -- below here need to verify
-            mat == df.tiletype_material.DRIFTWOOD
+--
+-- ************ tile validity checking functions ************ --
+--
+
+local function is_valid_tile_base(pos)
+    local flags, occupancy = dfhack.maps.getTileFlags(pos)
+    return not flags.hidden and occupancy.building == 0
 end
 
-local function is_valid_tile_construction(pos)
-    local flags, occupancy = dfhack.maps.getTileFlags(pos)
-    if flags.hidden or occupancy.building ~= 0 then return false end
+local function is_valid_tile_generic(pos)
+    if not is_valid_tile_base(pos) then return false end
     local shape = df.tiletype.attrs[dfhack.maps.getTileType(pos)].shape
     return shape == df.tiletype_shape.FLOOR or
             shape == df.tiletype_shape.BOULDER or
@@ -41,10 +40,85 @@ local function is_valid_tile_construction(pos)
             shape == df.tiletype_shape.SHRUB
 end
 
-local function is_valid_tile_bridge(pos)
+local function is_valid_tile_inside(pos)
+    return is_valid_tile_generic(pos) and
+            not dfhack.maps.getTileFlags(pos).outside
+end
+
+local function is_valid_tile_dirt(pos)
+    local tileattrs = df.tiletype.attrs[dfhack.maps.getTileType(pos)]
+    local shape = tileattrs.shape
+    local mat = tileattrs.material
+    local bad_shape =
+            shape == df.tiletype_shape.BOULDER or
+            shape == df.tiletype_shape.PEBBLES
+    local good_material =
+            mat == df.tiletype_material.SOIL or
+            mat == df.tiletype_material.GRASS_LIGHT or
+            mat == df.tiletype_material.GRASS_DARK or
+            mat == df.tiletype_material.GRASS_DRY or
+            mat == df.tiletype_material.GRASS_DEAD or
+            mat == df.tiletype_material.PLANT
+    return is_valid_tile_generic(pos) and not bad_shape and good_material
+end
+
+local function is_valid_tile_construction(pos)
+    if not is_valid_tile_base(pos) then return false end
     local shape = df.tiletype.attrs[dfhack.maps.getTileType(pos)].shape
-    return is_valid_tile_construction(pos) or
-            shape == df.tiletype_shape.EMPTY
+    return shape == df.tiletype_shape.EMPTY or
+            shape == df.tiletype_shape.FLOOR or
+            shape == df.tiletype_shape.BOULDER or
+            shape == df.tiletype_shape.PEBBLES or
+            shape == df.tiletype_shape.RAMP_TOP or
+            shape == df.tiletype_shape.BROOK_TOP or
+            shape == df.tiletype_shape.TWIG or
+            shape == df.tiletype_shape.SAPLING or
+            shape == df.tiletype_shape.SHRUB
+end
+
+local function is_shape_at(pos, allowed_shapes)
+    if not quickfort_common.is_within_map_bounds(pos) and
+            not quickfort_common.is_on_map_edge(pos) then return false end
+    return allowed_shapes[df.tiletype.attrs[dfhack.maps.getTileType(pos)].shape]
+end
+
+-- for doors
+local function is_tile_wall_adjacent(pos)
+    if not is_valid_tile_base(pos) then return false end
+    -- TODO: are fortifications ok? Any other shapes?
+    local allowed_shapes = utils.invert({df.tiletypes_shape.WALL})
+    return is_shape_at(xyz2pos(pos.x+1, pos.y, pos.z), allowed_shapes) or
+            is_shape_at(xyz2pos(pos.x-1, pos.y, pos.z), allowed_shapes) or
+            is_shape_at(xyz2pos(pos.x, pos.y+1, pos.z), allowed_shapes) or
+            is_shape_at(xyz2pos(pos.x, pos.y-1, pos.z), allowed_shapes)
+end
+
+-- for wells
+local function is_tile_empty_and_floor_adjacent(pos)
+    if not is_valid_tile_base(pos) or
+            df.tiletype.attrs[dfhack.maps.getTileType(pos)].shape ~=
+            df.tiletype_shape.EMPTY then
+        return false
+    end
+    return is_valid_tile_generic(xyz2pos(pos.x+1, pos.y, pos.z)) or
+            is_valid_tile_generic(xyz2pos(pos.x-1, pos.y, pos.z)) or
+            is_valid_tile_generic(xyz2pos(pos.x, pos.y+1, pos.z)) or
+            is_valid_tile_generic(xyz2pos(pos.x, pos.y-1, pos.z))
+end
+
+--
+-- ************ extent validity checking functions ************ --
+--
+
+local function is_extent_solid(b)
+    local area = b.width * b.height
+    local num_tiles = 0
+    for extent_x, col in ipairs(b.extent_grid) do
+        for extent_y, in_extent in ipairs(col) do
+            if in_extent then num_tiles = num_tiles + 1 end
+        end
+    end
+    return num_tiles == area
 end
 
 local function flood_extent(extent_grid, x, y, reachable_grid)
@@ -89,17 +163,6 @@ local function is_extent_connected(b)
     return true
 end
 
-local function is_extent_solid(b)
-    local area = b.width * b.height
-    local num_tiles = 0
-    for extent_x, col in ipairs(b.extent_grid) do
-        for extent_y, in_extent in ipairs(col) do
-            if in_extent then num_tiles = num_tiles + 1 end
-        end
-    end
-    return num_tiles == area
-end
-
 local function is_extent_nonempty(b)
     for extent_x, col in ipairs(b.extent_grid) do
         for extent_y, in_extent in ipairs(col) do
@@ -109,19 +172,28 @@ local function is_extent_nonempty(b)
     return false
 end
 
-local function is_extent_solid_and_supported(b)
-    print("TODO: check that bridges are supported")
-    return is_extent_solid(b)
+--
+-- ************ post construction fixup functions ************ --
+--
+
+local function post_construction_open_gate(bld)
+    bld.gate_flags.closed = false
 end
+
+--
+-- ************ the database ************ --
+--
 
 -- grouped by type, generally in ui order
 local building_db = {
     -- basic building types
     a={label='Armor Stand', type=df.building_type.Armorstand},
-    b={label='Bed', type=df.building_type.Bed},
+    b={label='Bed', type=df.building_type.Bed,
+       is_valid_tile_fn=is_valid_tile_inside},
     c={label='Seat', type=df.building_type.Chair},
     n={label='Burial Receptacle', type=df.building_type.Coffin},
-    d={label='Door', type=df.building_type.Door},
+    d={label='Door', type=df.building_type.Door,
+       is_valid_tile_fn=is_tile_wall_adjacent},
     x={label='Floodgate', type=df.building_type.Floodgate},
     H={label='Floor Hatch', type=df.building_type.Hatch},
     W={label='Wall Grate', type=df.building_type.GrateWall},
@@ -134,56 +206,62 @@ local building_db = {
     s={label='Statue', type=df.building_type.Statue},
     ['{Alt}s']={label='Slab', type=df.building_type.Slab},
     t={label='Table', type=df.building_type.Table},
-    g={label='Bridge',
-       type=df.building_type.Bridge,
-       min_width=1, max_width=10, min_height=1, max_height=10,
-       is_valid_tile_fn=is_valid_tile_bridge,
-       is_valid_extent_fn=is_extent_solid_and_supported},
-    l={label='Well', type=df.building_type.Well},
+    g={label='Bridge (Retracting)', type=df.building_type.Bridge,
+       direction=df.building_bridgest.T_direction.Retracting},
+    gs={label='Bridge (Retracting)', type=df.building_type.Bridge,
+       direction=df.building_bridgest.T_direction.Retracting},
+    ga={label='Bridge (Raises to West)', type=df.building_type.Bridge,
+       direction=df.building_bridgest.T_direction.Left},
+    gd={label='Bridge (Raises to East)', type=df.building_type.Bridge,
+       direction=df.building_bridgest.T_direction.Right},
+    gw={label='Bridge (Raises to North)', type=df.building_type.Bridge,
+       direction=df.building_bridgest.T_direction.Up},
+    gx={label='Bridge (Raises to South)', type=df.building_type.Bridge,
+       direction=df.building_bridgest.T_direction.Down},
+    l={label='Well', type=df.building_type.Well,
+       is_valid_tile_fn=is_tile_empty_and_floor_adjacent},
     y={label='Glass Window', type=df.building_type.WindowGlass},
     Y={label='Gem Window', type=df.building_type.WindowGem},
     D={label='Trade Depot', type=df.building_type.TradeDepot,
        min_width=5, max_width=5, min_height=5, max_height=5},
     Ms={label='Screw Pump (Pump From North)', type=df.building_type.ScrewPump,
         min_width=1, max_width=1, min_height=2, max_height=2,
-        fields={direction=df.screw_pump_direction.FromNorth}},
+        direction=df.screw_pump_direction.FromNorth},
     Msu={label='Screw Pump (Pump From North)', type=df.building_type.ScrewPump,
          min_width=1, max_width=1, min_height=2, max_height=2,
-         fields={direction=df.screw_pump_direction.FromNorth}},
+         direction=df.screw_pump_direction.FromNorth},
     Msk={label='Screw Pump (Pump From East)', type=df.building_type.ScrewPump,
          min_width=2, max_width=2, min_height=1, max_height=1,
-         fields={direction=df.screw_pump_direction.FromEast}},
+         direction=df.screw_pump_direction.FromEast},
     Msm={label='Screw Pump (Pump From South)', type=df.building_type.ScrewPump,
          min_width=1, max_width=1, min_height=2, max_height=2,
-         fields={direction=df.screw_pump_direction.FromSouth}},
+         direction=df.screw_pump_direction.FromSouth},
     Msh={label='Screw Pump (Pump From West)', type=df.building_type.ScrewPump,
          min_width=2, max_width=2, min_height=1, max_height=1,
-         fields={direction=df.screw_pump_direction.FromWest}},
+         direction=df.screw_pump_direction.FromWest},
     Mw={label='Water Wheel (N/S)', type=df.building_type.WaterWheel,
-        min_width=1, max_width=1, min_height=3, max_height=3,
-        fields={is_vertical=true}},
+        min_width=1, max_width=1, min_height=3, max_height=3, direction=true},
     Mws={label='Water Wheel (E/W)', type=df.building_type.WaterWheel,
          min_width=3, max_width=3, min_height=1, max_height=1},
     Mg={label='Gear Assembly', type=df.building_type.GearAssembly},
     Mh={label='Horizontal Axle (E/W)', type=df.building_type.AxleHorizontal,
         min_width=1, max_width=10, min_height=1, max_height=1},
     Mhs={label='Horizontal Axle (N/S)', type=df.building_type.AxleHorizontal,
-         min_width=1, max_width=1, min_height=1, max_height=10,
-         fields={is_vertical=true}},
+         min_width=1, max_width=1, min_height=1, max_height=10, direction=true},
     Mv={label='Vertical Axle', type=df.building_type.AxleVertical},
     -- TODO: handle q* suffixes to set the speed
     Mr={label='Rollers (N->S)', type=df.building_type.Rollers,
         min_width=1, max_width=1, min_height=1, max_height=10,
-        fields={direction=df.screw_pump_direction.FromNorth}},
+        direction=df.screw_pump_direction.FromNorth},
     Mrs={label='Rollers (E->W)', type=df.building_type.Rollers,
          min_width=1, max_width=10, min_height=1, max_height=1,
-         fields={direction=df.screw_pump_direction.FromEast}},
+         direction=df.screw_pump_direction.FromEast},
     Mrss={label='Rollers (S->N)', type=df.building_type.Rollers,
           min_width=1, max_width=1, min_height=1, max_height=10,
-          fields={direction=df.screw_pump_direction.FromSouth}},
+          direction=df.screw_pump_direction.FromSouth},
     Mrsss={label='Rollers (W->E)', type=df.building_type.Rollers,
            min_width=1, max_width=10, min_height=1, max_height=1,
-           fields={direction=df.screw_pump_direction.FromWest}},
+           direction=df.screw_pump_direction.FromWest},
     I={label='Instrument', type=df.building_type.Instrument},
     S={label='Support', type=df.building_type.Support},
     m={label='Animal Trap', type=df.building_type.AnimalTrap},
@@ -431,29 +509,29 @@ local building_db = {
 for _, v in pairs(building_db) do
     if v.has_extents then
         if not v.min_width then
-            v.min_width = 1
-            v.max_width = 10
-            v.min_height = 1
-            v.max_height = 10
+            v.min_width, v.max_width, v.min_height, v.max_height = 1, 10, 1, 10
         end
     elseif v.type == df.building_type.Workshop or
             v.type == df.building_type.SiegeEngine then
         if not v.min_width then
-            v.min_width = 3
-            v.max_width = 3
-            v.min_height = 3
-            v.max_height = 3
+            v.min_width, v.max_width, v.min_height, v.max_height = 3, 3, 3, 3
         end
     else
         if not v.min_width then
-            v.min_width = 1
-            v.max_width = 1
-            v.min_height = 1
-            v.max_height = 1
+            v.min_width, v.max_width, v.min_height, v.max_height = 1, 1, 1, 1
         end
     end
+    if v.type == df.building_type.Bridge then
+       v.min_width, v.max_width, v.min_height, v.max_height = 1, 10, 1, 10
+       v.is_valid_tile_fn = is_valid_tile_construction
+       v.post_construction_fn = post_construction_open_gate
+    end
     if not v.is_valid_tile_fn then
-        v.is_valid_tile_fn = is_valid_tile_construction
+        if v.type == df.building_type.Construction then
+            v.is_valid_tile_fn = is_valid_tile_construction
+        else
+            v.is_valid_tile_fn = is_valid_tile_generic
+        end
     end
     if not v.is_valid_extent_fn then
         v.is_valid_extent_fn = is_extent_solid
@@ -498,20 +576,27 @@ local aliases = {
     trackrampnsew='trackrampNSEW',
 }
 
+--
+-- ************ command logic functions ************ --
+--
+
 local function create_building(b)
     db_entry = building_db[b.type]
-    log('creating %s at map coordinates (%d, %d, %d), defined from ' ..
+    log('creating %dx%d %s at map coordinates (%d, %d, %d), defined from ' ..
         'spreadsheet cells: %s',
-        db_entry.label, b.pos.x, b.pos.y, b.pos.z,
+        b.width, b.height, db_entry.label, b.pos.x, b.pos.y, b.pos.z,
         table.concat(b.cells, ', '))
     local extents, room = nil, nil
+    local fields = {}
+    if db_entry.fields then fields = copyall(db_entry.fields) end
     if db_entry.has_extents then
         extents = quickfort_building.make_extents(b, building_db)
-        room = {x=b.pos.x, y=b.pos.y, width=b.width, height=b.height}
+        fields.room = {x=b.pos.x, y=b.pos.y, width=b.width, height=b.height}
     end
     local bld, err = dfhack.buildings.constructBuilding{
         type=db_entry.type, subtype=db_entry.subtype, pos=b.pos,
-        width=b.width, height=b.height, fields={room=room}}
+        width=b.width, height=b.height, direction=db_entry.direction,
+        fields=fields}
     if not bld then
         if extents then df.delete(extents) end
         -- this is an error instead of a qerror since our validity checking
@@ -522,14 +607,14 @@ local function create_building(b)
     if db_entry.has_extents then
         bld.room.extents = extents
     end
+    if db_entry.post_construction_fn then db_entry.post_construction_fn(bld) end
 end
 
 function do_run(zlevel, grid)
     local stats = {
         designated={label='Buildings designated', value=0, always=true},
-        occupied={label='Buildings skipped (tile occupied)', value=0},
-        out_of_bounds={label='Buildings skipped (outside map boundary)',
-                       value=0},
+        unsuitable={label='Unsuitable tiles', value=0},
+        out_of_bounds={label='Tiles outside map boundary', value=0},
         invalid_keys={label='Invalid key sequences', value=0},
     }
 
@@ -538,7 +623,7 @@ function do_run(zlevel, grid)
         zlevel, grid, buildings, building_db)
     stats.out_of_bounds.value = quickfort_building.crop_to_bounds(
         buildings, building_db)
-    stats.occupied.value = quickfort_building.check_tiles_and_extents(
+    stats.unsuitable.value = quickfort_building.check_tiles_and_extents(
         buildings, building_db)
 
     for _, b in ipairs(buildings) do

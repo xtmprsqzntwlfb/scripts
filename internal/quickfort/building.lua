@@ -9,6 +9,52 @@ local quickfort_common = reqscript('internal/quickfort/common')
 local log = quickfort_common.log
 local logfn = quickfort_common.logfn
 
+local function get_digit_count(num)
+    local num_digits = 1
+    while num >= 10 do
+        num = num / 10
+        num_digits = num_digits + 1
+    end
+    return num_digits
+end
+
+local function left_pad(num, width)
+    local num_digit_count = get_digit_count(num)
+    local ret = ''
+    for i=num_digit_count,width do
+        ret = ret .. ' '
+    end
+    return ret .. tostring(num)
+end
+
+-- pretty-prints the populated range of the seen_grid
+local function dump_seen_grid(args)
+    local seen_grid, max_id = args[1], args[2]
+    local x_min, x_max, y_min, y_max = 30000, -30000, 30000, -30000
+    for x, row in pairs(seen_grid) do
+        if x < x_min then x_min = x end
+        if x > x_max then x_max = x end
+        for y, _ in pairs(row) do
+            if y < y_min then y_min = y end
+            if y > y_max then y_max = y end
+        end
+    end
+    print('building/stockpile boundary map:')
+    local field_width = get_digit_count(max_id)
+    local blank = string.rep(' ', field_width+1)
+    for y=y_min,y_max do
+        local line = ''
+        for x=x_min,x_max do
+            if seen_grid[x] and tonumber(seen_grid[x][y]) then
+                line = line .. left_pad(seen_grid[x][y], field_width)
+            else
+                line = line .. blank
+            end
+        end
+        print(line)
+    end
+end
+
 -- maps building boundaries, returns number of invalid keys seen
 -- populates seen_grid coordinates with the building id so we can build an
 -- extent_grid later. spreadsheet cells that define extents (e.g. a(5x5)) create
@@ -70,16 +116,16 @@ local function split_by_width(data_tables, seen_grid, db)
             cuts = cuts + 1
             local data_copy = copyall(data)
             data_copy.id = #data_tables + #trimmings + 1
-            data_copy.x_max = data.x_min + max_width - 1
-            data.x_min = data_copy.x_max + 1
+            data.x_max = data.x_min + max_width - 1
+            data_copy.x_min = data.x_max + 1
             swap_id(data_copy, seen_grid, data.id)
             table.insert(trimmings, data_copy)
             width = width - max_width
         end
         if cuts > 0 then
-            log('building/stockpile too wide; splitting into %d parts ' ..
+            log('%s building/stockpile too wide; splitting into %d parts ' ..
                 '(defined in spreadsheet cells %s)',
-                cuts+1, table.concat(data.cells, ', '))
+                db[data.type].label, cuts+1, table.concat(data.cells, ', '))
         end
     end
     for _, v in ipairs(trimmings) do table.insert(data_tables, v) end
@@ -96,16 +142,16 @@ local function split_by_height(data_tables, seen_grid, db)
             cuts = cuts + 1
             local data_copy = copyall(data)
             data_copy.id = #data_tables + #trimmings + 1
-            data_copy.y_max = data.y_min + max_height - 1
-            data.y_min = data_copy.y_max + 1
+            data.y_max = data.y_min + max_height - 1
+            data_copy.y_min = data.y_max + 1
             swap_id(data_copy, seen_grid, data.id)
             table.insert(trimmings, data_copy)
             height = height - max_height
         end
         if cuts > 0 then
-            log('building/stockpile too tall; splitting into %d parts ' ..
+            log('%s building/stockpile too tall; splitting into %d parts ' ..
                 '(defined in spreadsheet cells %s)',
-                cuts+1, table.concat(data.cells, ', '))
+                db[data.type].label, cuts+1, table.concat(data.cells, ', '))
         end
     end
     for _, v in ipairs(trimmings) do table.insert(data_tables, v) end
@@ -138,52 +184,6 @@ local function expand_buildings(data_tables, seen_grid, db)
             end
         end
         ::continue::
-    end
-end
-
-local function get_digit_count(num)
-    local num_digits = 1
-    while num >= 10 do
-        num = num / 10
-        num_digits = num_digits + 1
-    end
-    return num_digits
-end
-
-local function left_pad(num, width)
-    local num_digit_count = get_digit_count(num)
-    local ret = ''
-    for i=num_digit_count,width do
-        ret = ret .. ' '
-    end
-    return ret .. tostring(num)
-end
-
--- pretty-prints the populated range of the seen_grid
-local function dump_seen_grid(args)
-    local seen_grid, max_id = args[1], args[2]
-    local x_min, x_max, y_min, y_max = 30000, -30000, 30000, -30000
-    for x, row in pairs(seen_grid) do
-        if x < x_min then x_min = x end
-        if x > x_max then x_max = x end
-        for y, _ in pairs(row) do
-            if y < y_min then y_min = y end
-            if y > y_max then y_max = y end
-        end
-    end
-    print('building/stockpile boundary map:')
-    local field_width = get_digit_count(max_id)
-    local blank = string.rep(' ', field_width+1)
-    for y=y_min,y_max do
-        local line = ''
-        for x=x_min,x_max do
-            if seen_grid[x] and tonumber(seen_grid[x][y]) then
-                line = line .. left_pad(seen_grid[x][y], field_width)
-            else
-                line = line .. blank
-            end
-        end
-        print(line)
     end
 end
 
@@ -231,13 +231,14 @@ function init_buildings(zlevel, grid, buildings, db)
     for _, data in ipairs(data_tables) do
         local extent_grid, is_solid = build_extent_grid(seen_grid, data)
         if not extent_grid then
-            log('building/stockpile completely overwritten by other elements' ..
-                ' (defined in spreadsheet cells %s)',
-                table.concat(data.cells, ', '))
+            log('%s building/stockpile completely overwritten by other ' ..
+                'elements (defined in spreadsheet cells %s)',
+                db[data.type].label, table.concat(data.cells, ', '))
         elseif not db[data.type].has_extents and not is_solid then
-            log('building partially overwritten by other buildings, and it ' ..
-                ' cannot be built unless all tiles are free (defined in ' ..
-               'spreadsheet cells %s)', table.concat(data.cells, ', '))
+            log('%s partially overwritten by other buildings, and it ' ..
+                'cannot be built unless all tiles are free (defined in ' ..
+               'spreadsheet cells %s)',
+                db[data.type].label, table.concat(data.cells, ', '))
         else
             table.insert(buildings,
                          {type=data.type,
@@ -339,7 +340,7 @@ function check_tiles_and_extents(buildings, db)
                 local pos =
                         xyz2pos(b.pos.x+extent_x-1, b.pos.y+extent_y-1, b.pos.z)
                 if not db[b.type].is_valid_tile_fn(pos) then
-                    log('tile occupied: (%d, %d, %d)', pos.x, pos.y, pos.z)
+                    log('tile not usable: (%d, %d, %d)', pos.x, pos.y, pos.z)
                     b.extent_grid[extent_x][extent_y] = false
                     occupied_tiles = occupied_tiles + 1
                 end

@@ -1,4 +1,4 @@
--- place-related logic for the quickfort script
+-- place-related data and logic for the quickfort script
 --@ module = true
 --[[
 stockpiles data structure:
