@@ -6,6 +6,7 @@ if not dfhack_flags.module then
 end
 
 local utils = require('utils')
+local guidm = require('gui.dwarfmode')
 local quickfort_common = reqscript('internal/quickfort/common')
 local quickfort_parse = reqscript('internal/quickfort/parse')
 local quickfort_list = reqscript('internal/quickfort/list')
@@ -50,7 +51,8 @@ function do_command(in_args)
     local verbose = args['v'] ~= nil or args['-verbose'] ~= nil
     local sheet = tonumber(args['s']) or tonumber(args['-sheet'])
 
-    if command ~= 'orders' and df.global.cursor.x == -30000 then
+    local cursor = guidm.getCursorPos()
+    if command ~= 'orders' and not cursor then
         qerror('please position the game cursor at the blueprint start ' ..
                'location')
     end
@@ -58,7 +60,7 @@ function do_command(in_args)
     quickfort_common.verbose = verbose
 
     local filepath = quickfort_common.get_blueprint_filepath(blueprint_name)
-    local data = quickfort_parse.process_file(filepath, df.global.cursor)
+    local data = quickfort_parse.process_file(filepath, cursor)
     for zlevel, section_data_list in pairs(data) do
         for _, section_data in ipairs(section_data_list) do
             local modeline = section_data.modeline
@@ -78,4 +80,3 @@ function do_command(in_args)
     print(string.format('%s "%s" successfully completed',
                         command, blueprint_name))
 end
-
