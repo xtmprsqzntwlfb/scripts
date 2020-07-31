@@ -1,4 +1,4 @@
--- digs a square channel around the tile selected (use: dig x y z, dig 3 3 3 -> 7x7x3 channel)
+-- digs a square channel around the tile selected
 args = {...}
 width = tonumber(args[1])
 height = tonumber(args[2])
@@ -6,13 +6,16 @@ depth = tonumber(args[3])-1
 
 local help = [====[
 
-dig
-===
+clear-channel
+=============
 Digs a channel around the tile selected (inclusive).
-If no arguements are provided dig will channel the highlighted tile only.
+If no arguments are provided, will channel the highlighted tile only.
 
-Usage: dig <x-radius> <y-radius> <depth>
-        When specifying a size, depth is optional.
+Usage::
+
+    clear-channel [x-radius] [y-radius] [depth]
+
+``depth`` is optional and defaults to 1.
 
 ]====]
 
