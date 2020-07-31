@@ -120,6 +120,7 @@ local function split_by_width(data_tables, seen_grid, db)
             data_copy.x_min = data.x_max + 1
             swap_id(data_copy, seen_grid, data.id)
             table.insert(trimmings, data_copy)
+            data = data_copy
             width = width - max_width
         end
         if cuts > 0 then
@@ -146,6 +147,7 @@ local function split_by_height(data_tables, seen_grid, db)
             data_copy.y_min = data.y_max + 1
             swap_id(data_copy, seen_grid, data.id)
             table.insert(trimmings, data_copy)
+            data = data_copy
             height = height - max_height
         end
         if cuts > 0 then

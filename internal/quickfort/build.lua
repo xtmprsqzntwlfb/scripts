@@ -3,11 +3,12 @@
 --[[
 In general, we enforce the same rules as the in-game UI for allowed placement of
 buildings (e.g. beds have to be inside, doors have to be adjacent to a wall,
-etc.). A notable exception is that we allow constructions to be designated
-regardless of whether they are reachable or currently supported. This allows the
-user to designate an entire floor of an above-ground building without
-micromanagement. We also don't enforce that materials are accessible from the
-designation location. That is something that the player can manage.
+etc.). A notable exception is that we allow constructions and machine components
+to be designated regardless of whether they are reachable or currently
+supported. This allows the user to designate an entire floor of an above-ground
+building or an entire power train without micromanagement. We also don't enforce
+that materials are accessible from the designation location. That is something
+that the player can manage.
 ]]
 
 
@@ -83,8 +84,8 @@ local function is_shape_at(pos, allowed_shapes)
 end
 
 -- for doors
-local function is_tile_wall_adjacent(pos)
-    if not is_valid_tile_base(pos) then return false end
+local function is_tile_generic_and_wall_adjacent(pos)
+    if not is_valid_tile_generic(pos) then return false end
     -- TODO: are fortifications ok? Any other shapes?
     local allowed_shapes = utils.invert({df.tiletypes_shape.WALL})
     return is_shape_at(xyz2pos(pos.x+1, pos.y, pos.z), allowed_shapes) or
@@ -184,6 +185,26 @@ end
 -- ************ the database ************ --
 --
 
+local roller_data = {
+    [df.screw_pump_direction.FromNorth]={label='Rollers (N->S)', vertical=true},
+    [df.screw_pump_direction.FromEast]={label='Rollers (E->W)'},
+    [df.screw_pump_direction.FromSouth]={label='Rollers (S->N)', vertical=true},
+    [df.screw_pump_direction.FromWest]={label='Rollers (W->E)'}
+}
+local function make_roller_entry(direction, speed)
+    return {
+        label=roller_data[direction].label,
+        type=df.building_type.Rollers,
+        min_width=1,
+        max_width=not roller_data[direction].vertical and 10 or 1,
+        min_height=1,
+        max_height=roller_data[direction].vertical and 10 or 1,
+        direction=direction,
+        fields={speed=speed},
+        is_valid_tile_fn=is_valid_tile_construction
+    }
+end
+
 -- grouped by type, generally in ui order
 local building_db = {
     -- basic building types
@@ -193,7 +214,7 @@ local building_db = {
     c={label='Seat', type=df.building_type.Chair},
     n={label='Burial Receptacle', type=df.building_type.Coffin},
     d={label='Door', type=df.building_type.Door,
-       is_valid_tile_fn=is_tile_wall_adjacent},
+       is_valid_tile_fn=is_tile_generic_and_wall_adjacent},
     x={label='Floodgate', type=df.building_type.Floodgate},
     H={label='Floor Hatch', type=df.building_type.Hatch},
     W={label='Wall Grate', type=df.building_type.GrateWall},
@@ -226,42 +247,62 @@ local building_db = {
        min_width=5, max_width=5, min_height=5, max_height=5},
     Ms={label='Screw Pump (Pump From North)', type=df.building_type.ScrewPump,
         min_width=1, max_width=1, min_height=2, max_height=2,
-        direction=df.screw_pump_direction.FromNorth},
+        direction=df.screw_pump_direction.FromNorth,
+        is_valid_tile_fn=is_valid_tile_construction},
     Msu={label='Screw Pump (Pump From North)', type=df.building_type.ScrewPump,
          min_width=1, max_width=1, min_height=2, max_height=2,
-         direction=df.screw_pump_direction.FromNorth},
+         direction=df.screw_pump_direction.FromNorth,
+         is_valid_tile_fn=is_valid_tile_construction},
     Msk={label='Screw Pump (Pump From East)', type=df.building_type.ScrewPump,
          min_width=2, max_width=2, min_height=1, max_height=1,
-         direction=df.screw_pump_direction.FromEast},
+         direction=df.screw_pump_direction.FromEast,
+         is_valid_tile_fn=is_valid_tile_construction},
     Msm={label='Screw Pump (Pump From South)', type=df.building_type.ScrewPump,
          min_width=1, max_width=1, min_height=2, max_height=2,
-         direction=df.screw_pump_direction.FromSouth},
+         direction=df.screw_pump_direction.FromSouth,
+         is_valid_tile_fn=is_valid_tile_construction},
     Msh={label='Screw Pump (Pump From West)', type=df.building_type.ScrewPump,
          min_width=2, max_width=2, min_height=1, max_height=1,
-         direction=df.screw_pump_direction.FromWest},
+         direction=df.screw_pump_direction.FromWest,
+         is_valid_tile_fn=is_valid_tile_construction},
+    -- there is no enum for water wheel and horiz axle directions, we just have
+    -- to pass a non-zero integer (but not a boolean)
     Mw={label='Water Wheel (N/S)', type=df.building_type.WaterWheel,
-        min_width=1, max_width=1, min_height=3, max_height=3, direction=true},
+        min_width=1, max_width=1, min_height=3, max_height=3, direction=1,
+        is_valid_tile_fn=is_valid_tile_construction},
     Mws={label='Water Wheel (E/W)', type=df.building_type.WaterWheel,
-         min_width=3, max_width=3, min_height=1, max_height=1},
-    Mg={label='Gear Assembly', type=df.building_type.GearAssembly},
+         min_width=3, max_width=3, min_height=1, max_height=1,
+         is_valid_tile_fn=is_valid_tile_construction},
+    Mg={label='Gear Assembly', type=df.building_type.GearAssembly,
+        is_valid_tile_fn=is_valid_tile_construction},
     Mh={label='Horizontal Axle (E/W)', type=df.building_type.AxleHorizontal,
-        min_width=1, max_width=10, min_height=1, max_height=1},
+        min_width=1, max_width=10, min_height=1, max_height=1,
+        is_valid_tile_fn=is_valid_tile_construction},
     Mhs={label='Horizontal Axle (N/S)', type=df.building_type.AxleHorizontal,
-         min_width=1, max_width=1, min_height=1, max_height=10, direction=true},
-    Mv={label='Vertical Axle', type=df.building_type.AxleVertical},
-    -- TODO: handle q* suffixes to set the speed
-    Mr={label='Rollers (N->S)', type=df.building_type.Rollers,
-        min_width=1, max_width=1, min_height=1, max_height=10,
-        direction=df.screw_pump_direction.FromNorth},
-    Mrs={label='Rollers (E->W)', type=df.building_type.Rollers,
-         min_width=1, max_width=10, min_height=1, max_height=1,
-         direction=df.screw_pump_direction.FromEast},
-    Mrss={label='Rollers (S->N)', type=df.building_type.Rollers,
-          min_width=1, max_width=1, min_height=1, max_height=10,
-          direction=df.screw_pump_direction.FromSouth},
-    Mrsss={label='Rollers (W->E)', type=df.building_type.Rollers,
-           min_width=1, max_width=10, min_height=1, max_height=1,
-           direction=df.screw_pump_direction.FromWest},
+         min_width=1, max_width=1, min_height=1, max_height=10, direction=1,
+         is_valid_tile_fn=is_valid_tile_construction},
+    Mv={label='Vertical Axle', type=df.building_type.AxleVertical,
+        is_valid_tile_fn=is_valid_tile_construction},
+    Mr=make_roller_entry(df.screw_pump_direction.FromNorth, 50000),
+    Mrq=make_roller_entry(df.screw_pump_direction.FromNorth, 40000),
+    Mrqq=make_roller_entry(df.screw_pump_direction.FromNorth, 30000),
+    Mrqqq=make_roller_entry(df.screw_pump_direction.FromNorth, 20000),
+    Mrqqqq=make_roller_entry(df.screw_pump_direction.FromNorth, 10000),
+    Mrs=make_roller_entry(df.screw_pump_direction.FromEast, 50000),
+    Mrsq=make_roller_entry(df.screw_pump_direction.FromEast, 40000),
+    Mrsqq=make_roller_entry(df.screw_pump_direction.FromEast, 30000),
+    Mrsqqq=make_roller_entry(df.screw_pump_direction.FromEast, 20000),
+    Mrsqqqq=make_roller_entry(df.screw_pump_direction.FromEast, 10000),
+    Mrss=make_roller_entry(df.screw_pump_direction.FromSouth, 50000),
+    Mrssq=make_roller_entry(df.screw_pump_direction.FromSouth, 40000),
+    Mrssqq=make_roller_entry(df.screw_pump_direction.FromSouth, 30000),
+    Mrssqqq=make_roller_entry(df.screw_pump_direction.FromSouth, 20000),
+    Mrssqqqq=make_roller_entry(df.screw_pump_direction.FromSouth, 10000),
+    Mrsss=make_roller_entry(df.screw_pump_direction.FromWest, 50000),
+    Mrsssq=make_roller_entry(df.screw_pump_direction.FromWest, 40000),
+    Mrsssqq=make_roller_entry(df.screw_pump_direction.FromWest, 30000),
+    Mrsssqqq=make_roller_entry(df.screw_pump_direction.FromWest, 20000),
+    Mrsssqqqq=make_roller_entry(df.screw_pump_direction.FromWest, 10000),
     I={label='Instrument', type=df.building_type.Instrument},
     S={label='Support', type=df.building_type.Support},
     m={label='Animal Trap', type=df.building_type.AnimalTrap},
@@ -538,8 +579,38 @@ for _, v in pairs(building_db) do
     end
 end
 
--- case insensitive aliases for tricky keys in the db
+-- case insensitive aliases for keys in the db (compat with python quickfort)
 local aliases = {
+    rollerh='Mrs',
+    rollerv='Mr',
+    rollerns='Mr',
+    rollersn='Mrss',
+    rollderew='Mrs',
+    rollerwe='Mrsss',
+    rollerhq='Mrsq',
+    rollervq='Mrq',
+    rollernsq='Mrq',
+    rollersnq='Mrssq',
+    rollderewq='Mrsq',
+    rollerweq='Mrsssq',
+    rollerhqq='Mrsqq',
+    rollervqq='Mrqq',
+    rollernsqq='Mrqq',
+    rollersnqq='Mrssqq',
+    rollderewqq='Mrsqq',
+    rollerweqq='Mrsssqq',
+    rollerhqqq='Mrsqqq',
+    rollervqqq='Mrqqq',
+    rollernsqqq='Mrqqq',
+    rollersnqqq='Mrssqqq',
+    rollderewqqq='Mrsqqq',
+    rollerweqqq='Mrsssqqq',
+    rollerhqqqq='Mrsqqqq',
+    rollervqqqq='Mrqqqq',
+    rollernsqqqq='Mrqqqq',
+    rollersnqqqq='Mrssqqqq',
+    rollderewqqqq='Mrsqqqq',
+    rollerweqqqq='Mrsssqqqq',
     trackstopn='CSd',
     trackstops='CSdd',
     trackstope='CSddd',
