@@ -63,7 +63,8 @@ local function is_valid_tile_dirt(pos)
     return is_valid_tile_generic(pos) and not bad_shape and good_material
 end
 
-local function is_valid_tile_construction(pos)
+-- essentially, anywhere you could build a construction, plus constructed floors
+local function is_valid_tile_has_space(pos)
     if not is_valid_tile_base(pos) then return false end
     local shape = df.tiletype.attrs[dfhack.maps.getTileType(pos)].shape
     return shape == df.tiletype_shape.EMPTY or
@@ -75,6 +76,12 @@ local function is_valid_tile_construction(pos)
             shape == df.tiletype_shape.TWIG or
             shape == df.tiletype_shape.SAPLING or
             shape == df.tiletype_shape.SHRUB
+end
+
+local function is_valid_tile_construction(pos)
+    local material = df.tiletype.attrs[dfhack.maps.getTileType(pos)].material
+    return is_valid_tile_has_space(pos) and
+            material ~= df.tiletype_material.CONSTRUCTION
 end
 
 local function is_shape_at(pos, allowed_shapes)
@@ -111,6 +118,7 @@ end
 -- ************ extent validity checking functions ************ --
 --
 
+-- extent checking functions assume valid, non-zero width or height extents
 local function is_extent_solid(b)
     local area = b.width * b.height
     local num_tiles = 0
@@ -120,48 +128,6 @@ local function is_extent_solid(b)
         end
     end
     return num_tiles == area
-end
-
-local function flood_extent(extent_grid, x, y, reachable_grid)
-    if reachable_grid[x] and reachable_grid[x][y] then return end
-    if not extent_grid[x] or not extent_grid[x][y] then return end
-    reachable_grid[x][y] = true
-    -- diagonal connections count
-    flood_extent(extent_grid, x-1, y-1, reachable_grid)
-    flood_extent(extent_grid, x-1, y, reachable_grid)
-    flood_extent(extent_grid, x-1, y+1, reachable_grid)
-    flood_extent(extent_grid, x, y-1, reachable_grid)
-    flood_extent(extent_grid, x, y+1, reachable_grid)
-    flood_extent(extent_grid, x+1, y-1, reachable_grid)
-    flood_extent(extent_grid, x+1, y, reachable_grid)
-    flood_extent(extent_grid, x+1, y+1, reachable_grid)
-end
-
--- extent checking functions assume valid, non-zero width or height extents
-local function is_extent_connected(b)
-    local extent_grid = b.extent_grid
-    local reachable_grid = {}
-    for x, col in ipairs(extent_grid) do
-        reachable_grid[x] = {}
-        for y, _ in ipairs(col) do reachable_grid[x][y] = false end
-    end
-    local done = false
-    for x, col in ipairs(extent_grid) do
-        for y, in_extent in ipairs(col) do
-            if in_extent then
-                -- flood from any tile in the extent
-                flood_extent(extent_grid, x, y, reachable_grid)
-                done = true
-            end
-        end
-        if done then break end
-    end
-    for x, col in ipairs(extent_grid) do
-        for y, _ in ipairs(col) do
-            if extent_grid[x][y] ~= reachable_grid[x][y] then return false end
-        end
-    end
-    return true
 end
 
 local function is_extent_nonempty(b)
@@ -201,7 +167,32 @@ local function make_roller_entry(direction, speed)
         max_height=roller_data[direction].vertical and 10 or 1,
         direction=direction,
         fields={speed=speed},
-        is_valid_tile_fn=is_valid_tile_construction
+        is_valid_tile_fn=is_valid_tile_has_space
+    }
+end
+
+local trackstop_data = {
+    dump_y_shift={[-1]='Track Stop (Dump North)',
+                  [1]='Track Stop (Dump South)'},
+    dump_x_shift={[-1]='Track Stop (Dump West)',
+                  [1]='Track Stop (Dump East)'}
+}
+local function make_trackstop_entry(direction, friction)
+    local label, fields = nil, {friction=friction}
+    if not direction then
+        label = 'Track Stop (No Dump)'
+    else
+        fields.use_dump = 1
+        for k,v in pairs(direction) do
+            label = trackstop_data[k][v]
+            fields[k] = v
+        end
+    end
+    return {
+        label=label,
+        type=df.building_type.Trap,
+        subtype=df.trap_type.TrackStop,
+        fields=fields
     }
 end
 
@@ -248,41 +239,41 @@ local building_db = {
     Ms={label='Screw Pump (Pump From North)', type=df.building_type.ScrewPump,
         min_width=1, max_width=1, min_height=2, max_height=2,
         direction=df.screw_pump_direction.FromNorth,
-        is_valid_tile_fn=is_valid_tile_construction},
+        is_valid_tile_fn=is_valid_tile_has_space},
     Msu={label='Screw Pump (Pump From North)', type=df.building_type.ScrewPump,
          min_width=1, max_width=1, min_height=2, max_height=2,
          direction=df.screw_pump_direction.FromNorth,
-         is_valid_tile_fn=is_valid_tile_construction},
+         is_valid_tile_fn=is_valid_tile_has_space},
     Msk={label='Screw Pump (Pump From East)', type=df.building_type.ScrewPump,
          min_width=2, max_width=2, min_height=1, max_height=1,
          direction=df.screw_pump_direction.FromEast,
-         is_valid_tile_fn=is_valid_tile_construction},
+         is_valid_tile_fn=is_valid_tile_has_space},
     Msm={label='Screw Pump (Pump From South)', type=df.building_type.ScrewPump,
          min_width=1, max_width=1, min_height=2, max_height=2,
          direction=df.screw_pump_direction.FromSouth,
-         is_valid_tile_fn=is_valid_tile_construction},
+         is_valid_tile_fn=is_valid_tile_has_space},
     Msh={label='Screw Pump (Pump From West)', type=df.building_type.ScrewPump,
          min_width=2, max_width=2, min_height=1, max_height=1,
          direction=df.screw_pump_direction.FromWest,
-         is_valid_tile_fn=is_valid_tile_construction},
+         is_valid_tile_fn=is_valid_tile_has_space},
     -- there is no enum for water wheel and horiz axle directions, we just have
     -- to pass a non-zero integer (but not a boolean)
     Mw={label='Water Wheel (N/S)', type=df.building_type.WaterWheel,
         min_width=1, max_width=1, min_height=3, max_height=3, direction=1,
-        is_valid_tile_fn=is_valid_tile_construction},
+        is_valid_tile_fn=is_valid_tile_has_space},
     Mws={label='Water Wheel (E/W)', type=df.building_type.WaterWheel,
          min_width=3, max_width=3, min_height=1, max_height=1,
-         is_valid_tile_fn=is_valid_tile_construction},
+         is_valid_tile_fn=is_valid_tile_has_space},
     Mg={label='Gear Assembly', type=df.building_type.GearAssembly,
-        is_valid_tile_fn=is_valid_tile_construction},
+        is_valid_tile_fn=is_valid_tile_has_space},
     Mh={label='Horizontal Axle (E/W)', type=df.building_type.AxleHorizontal,
         min_width=1, max_width=10, min_height=1, max_height=1,
-        is_valid_tile_fn=is_valid_tile_construction},
+        is_valid_tile_fn=is_valid_tile_has_space},
     Mhs={label='Horizontal Axle (N/S)', type=df.building_type.AxleHorizontal,
          min_width=1, max_width=1, min_height=1, max_height=10, direction=1,
-         is_valid_tile_fn=is_valid_tile_construction},
+         is_valid_tile_fn=is_valid_tile_has_space},
     Mv={label='Vertical Axle', type=df.building_type.AxleVertical,
-        is_valid_tile_fn=is_valid_tile_construction},
+        is_valid_tile_fn=is_valid_tile_has_space},
     Mr=make_roller_entry(df.screw_pump_direction.FromNorth, 50000),
     Mrq=make_roller_entry(df.screw_pump_direction.FromNorth, 40000),
     Mrqq=make_roller_entry(df.screw_pump_direction.FromNorth, 30000),
@@ -304,7 +295,8 @@ local building_db = {
     Mrsssqqq=make_roller_entry(df.screw_pump_direction.FromWest, 20000),
     Mrsssqqqq=make_roller_entry(df.screw_pump_direction.FromWest, 10000),
     I={label='Instrument', type=df.building_type.Instrument},
-    S={label='Support', type=df.building_type.Support},
+    S={label='Support', type=df.building_type.Support,
+       is_valid_tile_fn=is_valid_tile_has_space},
     m={label='Animal Trap', type=df.building_type.AnimalTrap},
     v={label='Restraint', type=df.building_type.Chain},
     j={label='Cage', type=df.building_type.Cage},
@@ -316,6 +308,8 @@ local building_db = {
     ['{Alt}c']={label='Bookcase', type=df.building_type.Bookcase},
     F={label='Display Furniture', type=df.building_type.DisplayFurniture},
     -- basic building types with extents
+    -- in the UI, these are required to be connected regions, but for
+    -- player convenience we remove that restriction
     p={label='Farm Plot',
        type=df.building_type.FarmPlot, has_extents=true,
        no_extents_if_solid=true,
@@ -323,26 +317,28 @@ local building_db = {
        is_valid_extent_fn=is_extent_nonempty},
     o={label='Paved Road',
        type=df.building_type.RoadPaved, has_extents=true,
-       no_extents_if_solid=true, is_valid_extent_fn=is_extent_connected},
+       no_extents_if_solid=true, is_valid_extent_fn=is_extent_nonempty},
     O={label='Dirt Road',
        type=df.building_type.RoadDirt, has_extents=true,
        no_extents_if_solid=true,
        is_valid_tile_fn=is_valid_tile_dirt,
-       is_valid_extent_fn=is_extent_connected},
+       is_valid_extent_fn=is_extent_nonempty},
     -- workshops
     k={label='Kennels',
-       type=df.building_type.Workshop, subtype=df.workshop_type.Kennels},
+       type=df.building_type.Workshop, subtype=df.workshop_type.Kennels,
+       min_width=5, max_width=5, min_height=5, max_height=5},
     we={label='Leather Works',
         type=df.building_type.Workshop, subtype=df.workshop_type.Leatherworks},
     wq={label='Quern',
         type=df.building_type.Workshop, subtype=df.workshop_type.Quern,
         min_width=1, max_width=1, min_height=1, max_height=1},
     wM={label='Millstone',
-        type=df.building_type.Workshop, subtype=df.workshop_type.Millstone},
+        type=df.building_type.Workshop, subtype=df.workshop_type.Millstone,
+        min_width=1, max_width=1, min_height=1, max_height=1},
     wo={label='Loom',
         type=df.building_type.Workshop, subtype=df.workshop_type.Loom},
     wk={label='Clothier\'s shop',
-        type=df.building_type.Workshop, subtype=df.workshop_type.Clotheirs},
+        type=df.building_type.Workshop, subtype=df.workshop_type.Clothiers},
     wb={label='Bowyer\'s Workshop',
         type=df.building_type.Workshop, subtype=df.workshop_type.Bowyers},
     wc={label='Carpenter\'s Workshop',
@@ -361,9 +357,10 @@ local building_db = {
     wn={label='Tanner\'s Shop',
         type=df.building_type.Workshop, subtype=df.workshop_type.Tanners},
     wr={label='Craftsdwarf\'s Workshop',
-        type=df.building_type.Workshop, subtype=df.workshop_type.Craftdwarfs},
+        type=df.building_type.Workshop, subtype=df.workshop_type.Craftsdwarfs},
     ws={label='Siege Workshop',
-        type=df.building_type.Workshop, subtype=df.workshop_type.Siege},
+        type=df.building_type.Workshop, subtype=df.workshop_type.Siege,
+        min_width=5, max_width=5, min_height=5, max_height=5},
     wt={label='Mechanic\'s Workshop',
         type=df.building_type.Workshop, subtype=df.workshop_type.Mechanics},
     wl={label='Still',
@@ -379,31 +376,30 @@ local building_db = {
     wd={label='Dyer\'s Shop',
         type=df.building_type.Workshop, subtype=df.workshop_type.Dyers},
     wS={label='Soap Maker\'s Workshop',
-        type=df.building_type.Workshop, subtype=df.workshop_type.Custom},
+        type=df.building_type.Workshop, subtype=df.workshop_type.Custom,
+        custom=0},
     wp={label='Screw Press',
-        type=df.building_type.Workshop, subtype=df.workshop_type.Tool},
+        type=df.building_type.Workshop, subtype=df.workshop_type.Tool,
+        min_width=1, max_width=1, min_height=1, max_height=1},
     -- furnaces
     ew={label='Wood Furnace',
-        type=df.building_type.Furnace, subtype=df.siegeengine_type.WoodFurnace},
+        type=df.building_type.Furnace, subtype=df.furnace_type.WoodFurnace},
     es={label='Smelter',
-        type=df.building_type.Furnace, subtype=df.siegeengine_type.Smelter},
+        type=df.building_type.Furnace, subtype=df.furnace_type.Smelter},
     el={label='Magma Smelter',
-        type=df.building_type.Furnace, subtype=df.siegeengine_type.MagmaSmelter},
+        type=df.building_type.Furnace, subtype=df.furnace_type.MagmaSmelter},
     eg={label='Glass Furnace',
-        type=df.building_type.Furnace, subtype=df.siegeengine_type.GlassFurnace},
-    ea={label='Magma Glass Furnace',
-        type=df.building_type.Furnace,
-        subtype=df.siegeengine_type.MagmaGlassFurnace},
+        type=df.building_type.Furnace, subtype=df.furnace_type.GlassFurnace},
+    ea={label='Magma Glass Furnace', type=df.building_type.Furnace,
+        subtype=df.furnace_type.MagmaGlassFurnace},
     ek={label='Kiln',
-        type=df.building_type.Furnace, subtype=df.siegeengine_type.Kiln},
+        type=df.building_type.Furnace, subtype=df.furnace_type.Kiln},
     en={label='Magma Kiln',
-        type=df.building_type.Furnace, subtype=df.siegeengine_type.MagmaKiln},
+        type=df.building_type.Furnace, subtype=df.furnace_type.MagmaKiln},
     -- siege engines
-    ib={label='Ballista',
-        type=df.building_type.SiegeEngine,
+    ib={label='Ballista', type=df.building_type.SiegeEngine,
         subtype=df.siegeengine_type.Ballista},
-    ic={label='Catapult',
-        type=df.building_type.SiegeEngine,
+    ic={label='Catapult', type=df.building_type.SiegeEngine,
         subtype=df.siegeengine_type.Catapult},
     -- constructions
     Cw={label='Wall',
@@ -425,31 +421,43 @@ local building_db = {
         type=df.building_type.Construction,
         subtype=df.construction_type.Fortification},
     -- traps
-    -- TODO: CSd*a* for friction options; high=10000
-    CS={label='Track Stop (No Dump)',
-        type=df.building_type.Trap, subtype=df.trap_type.TrackStop},
-    CSd={label='Track Stop (Dump North)',
-         type=df.building_type.Trap, subtype=df.trap_type.TrackStop,
-         fields={use_dump=true, dump_y_shift=-1}},
-    CSdd={label='Track Stop (Dump South)',
-          type=df.building_type.Trap, subtype=df.trap_type.TrackStop,
-          fields={use_dump=true, dump_y_shift=1}},
-    CSddd={label='Track Stop (Dump East)',
-           type=df.building_type.Trap, subtype=df.trap_type.TrackStop,
-           fields={use_dump=true, dump_x_shift=1}},
-    CSdddd={label='Track Stop (Dump West)',
-            type=df.building_type.Trap, subtype=df.trap_type.TrackStop,
-            fields={use_dump=true, dump_x_shift=-1}},
+    CS=make_trackstop_entry(nil, 50000),
+    CSa=make_trackstop_entry(nil, 10000),
+    CSaa=make_trackstop_entry(nil, 500),
+    CSaaa=make_trackstop_entry(nil, 50),
+    CSaaaa=make_trackstop_entry(nil, 10),
+    CSd=make_trackstop_entry({dump_y_shift=-1}, 50000),
+    CSda=make_trackstop_entry({dump_y_shift=-1}, 10000),
+    CSdaa=make_trackstop_entry({dump_y_shift=-1}, 500),
+    CSdaaa=make_trackstop_entry({dump_y_shift=-1}, 50),
+    CSdaaaa=make_trackstop_entry({dump_y_shift=-1}, 10),
+    CSdd=make_trackstop_entry({dump_y_shift=1}, 50000),
+    CSdda=make_trackstop_entry({dump_y_shift=1}, 10000),
+    CSddaa=make_trackstop_entry({dump_y_shift=1}, 500),
+    CSddaaa=make_trackstop_entry({dump_y_shift=1}, 50),
+    CSddaaaa=make_trackstop_entry({dump_y_shift=1}, 10),
+    CSddd=make_trackstop_entry({dump_x_shift=1}, 50000),
+    CSddda=make_trackstop_entry({dump_x_shift=1}, 10000),
+    CSdddaa=make_trackstop_entry({dump_x_shift=1}, 500),
+    CSdddaaa=make_trackstop_entry({dump_x_shift=1}, 50),
+    CSdddaaaa=make_trackstop_entry({dump_x_shift=1}, 10),
+    CSdddd=make_trackstop_entry({dump_x_shift=-1}, 50000),
+    CSdddda=make_trackstop_entry({dump_x_shift=-1}, 10000),
+    CSddddaa=make_trackstop_entry({dump_x_shift=-1}, 500),
+    CSddddaaa=make_trackstop_entry({dump_x_shift=-1}, 50),
+    CSddddaaaa=make_trackstop_entry({dump_x_shift=-1}, 10),
     Ts={label='Stone-Fall Trap',
         type=df.building_type.Trap, subtype=df.trap_type.StoneFallTrap},
+    -- TODO: maybe TwS1 through Tw10 for how many weapons?
     Tw={label='Weapon Trap',
         type=df.building_type.Trap, subtype=df.trap_type.WeaponTrap},
     Tl={label='Lever',
         type=df.building_type.Trap, subtype=df.trap_type.Lever},
+    -- TODO: lots of configuration here
     Tp={label='Pressure Plate',
         type=df.building_type.Trap, subtype=df.trap_type.PressurePlate},
     Tc={label='Cage Trap',
-        type=df.building_type.Trap, subtype=df.trap_type.CateTrap},
+        type=df.building_type.Trap, subtype=df.trap_type.CageTrap},
     -- TODO: maybe TS1 through TS10 for how many weapons?
     TS={label='Upright Spear/Spike',
         type=df.building_type.Weapon, subtype=df.trap_type.StoneFallTrap},
@@ -553,6 +561,7 @@ for _, v in pairs(building_db) do
             v.min_width, v.max_width, v.min_height, v.max_height = 1, 10, 1, 10
         end
     elseif v.type == df.building_type.Workshop or
+            v.type == df.building_type.Furnace or
             v.type == df.building_type.SiegeEngine then
         if not v.min_width then
             v.min_width, v.max_width, v.min_height, v.max_height = 3, 3, 3, 3
@@ -564,7 +573,7 @@ for _, v in pairs(building_db) do
     end
     if v.type == df.building_type.Bridge then
        v.min_width, v.max_width, v.min_height, v.max_height = 1, 10, 1, 10
-       v.is_valid_tile_fn = is_valid_tile_construction
+       v.is_valid_tile_fn = is_valid_tile_has_space
        v.post_construction_fn = post_construction_open_gate
     end
     if not v.is_valid_tile_fn then
@@ -615,6 +624,22 @@ local aliases = {
     trackstops='CSdd',
     trackstope='CSddd',
     trackstopw='CSdddd',
+    trackstopna='CSda',
+    trackstopsa='CSdda',
+    trackstopea='CSddda',
+    trackstopwa='CSdddda',
+    trackstopnaa='CSdaa',
+    trackstopsaa='CSddaa',
+    trackstopeaa='CSdddaa',
+    trackstopwaa='CSddddaa',
+    trackstopnaaa='CSdaaa',
+    trackstopsaaa='CSddaaa',
+    trackstopeaaa='CSdddaaa',
+    trackstopwaaa='CSddddaaa',
+    trackstopnaaaa='CSdaaaa',
+    trackstopsaaaa='CSddaaaa',
+    trackstopeaaaa='CSdddaaaa',
+    trackstopwaaaa='CSddddaaaa',
     trackn='trackN',
     tracks='trackS',
     tracke='trackE',
@@ -660,23 +685,23 @@ local function create_building(b)
     local extents, room = nil, nil
     local fields = {}
     if db_entry.fields then fields = copyall(db_entry.fields) end
-    if db_entry.has_extents then
-        extents = quickfort_building.make_extents(b, building_db)
+    local use_extents = db_entry.has_extents and
+            not (db_entry.no_extents_if_solid and is_extent_solid(b))
+    if use_extents then
         fields.room = {x=b.pos.x, y=b.pos.y, width=b.width, height=b.height}
     end
     local bld, err = dfhack.buildings.constructBuilding{
-        type=db_entry.type, subtype=db_entry.subtype, pos=b.pos,
-        width=b.width, height=b.height, direction=db_entry.direction,
+        type=db_entry.type, subtype=db_entry.subtype, custom=db_entry.custom,
+        pos=b.pos, width=b.width, height=b.height, direction=db_entry.direction,
         fields=fields}
     if not bld then
-        if extents then df.delete(extents) end
         -- this is an error instead of a qerror since our validity checking
         -- is supposed to prevent this from ever happening
         error(string.format('unable to place %s: %s', db_entry.label, err))
     end
     -- constructBuilding deallocates extents, so we have to assign it after
-    if db_entry.has_extents then
-        bld.room.extents = extents
+    if use_extents then
+        bld.room.extents = quickfort_building.make_extents(b, building_db)
     end
     if db_entry.post_construction_fn then db_entry.post_construction_fn(bld) end
 end
@@ -723,7 +748,7 @@ end
 
 function do_undo(zlevel, grid)
     local stats = {
-        removed={label='Planned buildings removed', value=0, always=true},
+        removed={label='Buildings removed', value=0, always=true},
         marked={label='Buildings marked for removal', value=0},
         invalid_keys={label='Invalid key sequences', value=0},
     }
