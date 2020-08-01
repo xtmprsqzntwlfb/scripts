@@ -448,20 +448,24 @@ local building_db = {
     CSddddaaaa=make_trackstop_entry({dump_x_shift=-1}, 10),
     Ts={label='Stone-Fall Trap',
         type=df.building_type.Trap, subtype=df.trap_type.StoneFallTrap},
-    -- TODO: maybe TwS1 through Tw10 for how many weapons?
+    -- TODO: by default a weapon trap is configured with a single weapon.
+    -- maybe add Tw1 through Tw10 for choosing how many weapons?
+    -- material preferences can help here for choosing weapon types.
     Tw={label='Weapon Trap',
         type=df.building_type.Trap, subtype=df.trap_type.WeaponTrap},
     Tl={label='Lever',
         type=df.building_type.Trap, subtype=df.trap_type.Lever},
-    -- TODO: lots of configuration here
+    -- TODO: lots of configuration here with no natural order. may need
+    -- special-case logic when we read the keys.
     Tp={label='Pressure Plate',
         type=df.building_type.Trap, subtype=df.trap_type.PressurePlate},
     Tc={label='Cage Trap',
         type=df.building_type.Trap, subtype=df.trap_type.CageTrap},
-    -- TODO: maybe TS1 through TS10 for how many weapons?
+    -- TODO: Same as weapon trap above
     TS={label='Upright Spear/Spike',
         type=df.building_type.Weapon, subtype=df.trap_type.StoneFallTrap},
-    -- tracks (CT...)
+    -- tracks (CT...). there aren't any shortcut keys in the UI so we use the
+    -- aliases from python quickfort
     trackN={label='Track (N)',
             type=df.building_type.Construction,
             subtype=df.construction_type.TrackN},
@@ -589,7 +593,8 @@ for _, v in pairs(building_db) do
 end
 
 -- case insensitive aliases for keys in the db
--- this allows us to keep compatibility with the old python quickfort
+-- this allows us to keep compatibility with the old python quickfort and makes
+-- us a little more forgiving for some of the trickier keys in the db.
 local building_aliases = {
     rollerh='Mrs',
     rollerv='Mr',
