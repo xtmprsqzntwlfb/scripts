@@ -588,8 +588,9 @@ for _, v in pairs(building_db) do
     end
 end
 
--- case insensitive aliases for keys in the db (compat with python quickfort)
-local aliases = {
+-- case insensitive aliases for keys in the db
+-- this allows us to keep compatibility with the old python quickfort
+local building_aliases = {
     rollerh='Mrs',
     rollerv='Mr',
     rollerns='Mr',
@@ -716,7 +717,7 @@ function do_run(zlevel, grid)
 
     local buildings = {}
     stats.invalid_keys.value = quickfort_building.init_buildings(
-        zlevel, grid, buildings, building_db)
+        zlevel, grid, buildings, building_db, building_aliases)
     stats.out_of_bounds.value = quickfort_building.crop_to_bounds(
         buildings, building_db)
     stats.unsuitable.value = quickfort_building.check_tiles_and_extents(
@@ -755,7 +756,7 @@ function do_undo(zlevel, grid)
 
     local buildings = {}
     stats.invalid_keys.value = quickfort_building.init_buildings(
-        zlevel, grid, buildings, building_db)
+        zlevel, grid, buildings, building_db, building_aliases)
 
     for _, s in ipairs(buildings) do
         for extent_x, col in ipairs(s.extent_grid) do

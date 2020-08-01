@@ -59,11 +59,12 @@ end
 -- populates seen_grid coordinates with the building id so we can build an
 -- extent_grid later. spreadsheet cells that define extents (e.g. a(5x5)) create
 -- buildings separate from adjacent cells, even if they have the same type.
-local function flood_fill(grid, x, y, seen_grid, data, db)
+local function flood_fill(grid, x, y, seen_grid, data, db, aliases)
     if seen_grid[x] and seen_grid[x][y] then return 0 end
     if not grid[y] or not grid[y][x] then return 0 end
     local cell, text = grid[y][x].cell, grid[y][x].text
     local keys, extent = quickfort_common.parse_cell(text)
+    if aliases[string.lower(keys)] then keys = aliases[string.lower(keys)] end
     if not db[keys] then
         if not seen_grid[x] then seen_grid[x] = {} end
         seen_grid[x][y] = true -- seen, but not part of any stockpile
@@ -87,10 +88,10 @@ local function flood_fill(grid, x, y, seen_grid, data, db)
         end
     end
     if not extent.specified then
-        return flood_fill(grid, x-1, y, seen_grid, data, db) +
-                flood_fill(grid, x+1, y, seen_grid, data, db) +
-                flood_fill(grid, x, y-1, seen_grid, data, db) +
-                flood_fill(grid, x, y+1, seen_grid, data, db)
+        return flood_fill(grid, x-1, y, seen_grid, data, db, aliases) +
+                flood_fill(grid, x+1, y, seen_grid, data, db, aliases) +
+                flood_fill(grid, x, y-1, seen_grid, data, db, aliases) +
+                flood_fill(grid, x, y+1, seen_grid, data, db, aliases)
     end
     return 0
 end
@@ -209,10 +210,11 @@ local function build_extent_grid(seen_grid, data)
 end
 
 -- build boundaries and extent maps from blueprint grid input
-function init_buildings(zlevel, grid, buildings, db)
+function init_buildings(zlevel, grid, buildings, db, aliases)
     local invalid_keys = 0
     local data_tables = {}
     local seen_grid = {} -- [x][y] -> id
+    aliases = aliases or {}
     for y, row in pairs(grid) do
         for x, cell_and_text in pairs(row) do
             if seen_grid[x] and seen_grid[x][y] then goto continue end
@@ -221,7 +223,7 @@ function init_buildings(zlevel, grid, buildings, db)
                 x_min=30000, x_max=-30000, y_min=30000, y_max=-30000
             }
             invalid_keys = invalid_keys +
-                    flood_fill(grid, x, y, seen_grid, data, db)
+                    flood_fill(grid, x, y, seen_grid, data, db, aliases)
             if data.type then table.insert(data_tables, data) end
             ::continue::
         end
