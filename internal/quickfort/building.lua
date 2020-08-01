@@ -1,4 +1,4 @@
--- building-related logic for the quickfort build and place modules
+-- building-related logic shared between the quickfort build and place modules
 --@ module = true
 
 if not dfhack_flags.module then

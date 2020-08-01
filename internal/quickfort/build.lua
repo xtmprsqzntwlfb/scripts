@@ -6,9 +6,9 @@ buildings (e.g. beds have to be inside, doors have to be adjacent to a wall,
 etc.). A notable exception is that we allow constructions and machine components
 to be designated regardless of whether they are reachable or currently
 supported. This allows the user to designate an entire floor of an above-ground
-building or an entire power train without micromanagement. We also don't enforce
-that materials are accessible from the designation location. That is something
-that the player can manage.
+building or an entire power system without micromanagement. We also don't
+enforce that materials are accessible from the designation location. That is
+something that the player can manage.
 ]]
 
 
@@ -91,14 +91,16 @@ local function is_shape_at(pos, allowed_shapes)
 end
 
 -- for doors
+local allowed_door_shapes = utils.invert({
+    df.tiletype_shape.WALL,
+    df.tiletype_shape.FORTIFICATION
+})
 local function is_tile_generic_and_wall_adjacent(pos)
     if not is_valid_tile_generic(pos) then return false end
-    -- TODO: are fortifications ok? Any other shapes?
-    local allowed_shapes = utils.invert({df.tiletypes_shape.WALL})
-    return is_shape_at(xyz2pos(pos.x+1, pos.y, pos.z), allowed_shapes) or
-            is_shape_at(xyz2pos(pos.x-1, pos.y, pos.z), allowed_shapes) or
-            is_shape_at(xyz2pos(pos.x, pos.y+1, pos.z), allowed_shapes) or
-            is_shape_at(xyz2pos(pos.x, pos.y-1, pos.z), allowed_shapes)
+    return is_shape_at(xyz2pos(pos.x+1, pos.y, pos.z), allowed_door_shapes) or
+            is_shape_at(xyz2pos(pos.x-1, pos.y, pos.z), allowed_door_shapes) or
+            is_shape_at(xyz2pos(pos.x, pos.y+1, pos.z), allowed_door_shapes) or
+            is_shape_at(xyz2pos(pos.x, pos.y-1, pos.z), allowed_door_shapes)
 end
 
 -- for wells
@@ -308,8 +310,12 @@ local building_db = {
     ['{Alt}c']={label='Bookcase', type=df.building_type.Bookcase},
     F={label='Display Furniture', type=df.building_type.DisplayFurniture},
     -- basic building types with extents
-    -- in the UI, these are required to be connected regions, but for
-    -- player convenience we remove that restriction
+    -- in the UI, these are required to be connected regions, which we could
+    -- easily enforce with a flood fill check. However, requiring connected
+    -- regions can make tested blueprints fail if, for example, you happen to
+    -- try to put a farm plot where there is some surface rock. There is no
+    -- technical issue with allowing disconnected regions, and so for player
+    -- convenience we allow them.
     p={label='Farm Plot',
        type=df.building_type.FarmPlot, has_extents=true,
        no_extents_if_solid=true,
