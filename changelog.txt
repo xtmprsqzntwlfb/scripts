@@ -14,7 +14,7 @@ that repo.
 # Future
 
 ## New Scripts
-- `quickfort`: DFHack-native implementation of quickfort with many new features and integrations. Implementation in progress.
+- `quickfort`: DFHack-native implementation of quickfort with many new features and integrations.
 
 ## Fixes
 - `digfort`: fixed y-line tracking when .csv files contain lines with only commas
