@@ -100,11 +100,13 @@ files are described in the files themselves.
 -- reqscript all internal files here, even if they're not directly used by this
 -- top-level file. this ensures transitive dependencies are reloaded if any
 -- files have changed.
+local quickfort_aliases = reqscript('internal/quickfort/aliases')
 local quickfort_build = reqscript('internal/quickfort/build')
 local quickfort_building = reqscript('internal/quickfort/building')
 local quickfort_command = reqscript('internal/quickfort/command')
 local quickfort_common = reqscript('internal/quickfort/common')
 local quickfort_dig = reqscript('internal/quickfort/dig')
+local quickfort_keycodes = reqscript('internal/quickfort/keycodes')
 local quickfort_list = reqscript('internal/quickfort/list')
 local quickfort_parse = reqscript('internal/quickfort/parse')
 local quickfort_place = reqscript('internal/quickfort/place')
