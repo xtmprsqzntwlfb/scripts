@@ -18,18 +18,18 @@ local function get_modeline(filepath)
         quickfort_parse.tokenize_csv_line(first_line)[1])
 end
 
-local blueprint_cache = blueprint_cache or {}
+local blueprint_cache = {}
 
 local function scan_blueprint(path)
     local filepath = quickfort_common.get_blueprint_filepath(path)
-    local hash = dfhack.internal.md5File(filepath)
-    if not blueprint_cache[path] or blueprint_cache[path].hash ~= hash then
-        blueprint_cache[path] = {modeline=get_modeline(filepath), hash=hash}
+    local mtime = dfhack.filesystem.mtime(filepath)
+    if not blueprint_cache[path] or blueprint_cache[path].mtime ~= mtime then
+        blueprint_cache[path] = {modeline=get_modeline(filepath), mtime=mtime}
     end
     return blueprint_cache[path].modeline
 end
 
-local blueprint_files = blueprint_files or {}
+local blueprint_files = {}
 
 local function scan_blueprints()
     local paths = dfhack.filesystem.listdir_recursive(

@@ -9,6 +9,7 @@ local quickfort_common = reqscript('internal/quickfort/common')
 
 -- adapted from example on http://lua-users.org/wiki/LuaCsv
 function tokenize_csv_line(line)
+    line = string.gsub(line, '[\r\n]*$', '')
     local tokens = {}
     local pos = 1
     local sep = ','
@@ -102,8 +103,9 @@ local function make_cell_label(col_num, row_num)
     return get_col_name(col_num) .. tostring(math.floor(row_num))
 end
 
--- returns a grid representation of the current section and the next z-level
--- modifier, if any. See process_file for grid format.
+-- returns a grid representation of the current section, the number of lines
+-- read from the input, and the next z-level modifier, if any. See process_file
+-- for grid format.
 local function process_section(file, start_line_num, start_coord)
     local grid = {}
     local y = start_coord.y
@@ -142,7 +144,7 @@ contents are non-nil.
 function process_file(filepath, start_cursor_coord)
     local file = io.open(filepath)
     if not file then
-        error(string.format('failed to open blueprint file: "%s"', filepath))
+        qerror(string.format('failed to open blueprint file: "%s"', filepath))
     end
     local line = file:read()
     local modeline = parse_modeline(tokenize_csv_line(line)[1])
