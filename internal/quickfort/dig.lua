@@ -73,7 +73,8 @@ end
 
 local function get_engraving(pos)
     -- scan through engravings until we find the one at this pos
-    -- super inefficient; is there a better way to do this?
+    -- super inefficient. we could cache, but it's unlikely that players will
+    -- have so many engravings that it would matter.
     for _, engraving in ipairs(df.global.world.engravings) do
         if same_xyz(pos, engraving.pos) then
             return engraving
@@ -82,6 +83,8 @@ local function get_engraving(pos)
     return nil
 end
 
+-- TODO: it would be useful to migrate has_designation and clear_designation to
+-- the Maps module
 local function has_designation(flags, occupancy)
     return flags.dig ~= df.tile_dig_designation.No or
             flags.smooth ~= 0 or
@@ -440,37 +443,36 @@ local function do_traffic_restricted(ctx)
     ctx.flags.traffic = values.traffic_restricted
 end
 
--- add on the 'd' prefix to avoid spelling out reserved words (like 'or')
 local designate_switch = {
-    dd=do_mine,
-    dh=do_channel,
-    du=do_up_stair,
-    dj=do_down_stair,
-    di=do_up_down_stair,
-    dr=do_ramp,
-    dz=do_remove_ramps,
-    dt=do_mine,
-    dp=do_gather,
-    ds=do_smooth,
-    de=do_engrave,
-    dF=do_fortification,
-    dT=do_track,
-    dv=do_toggle_engravings,
-    dM=do_toggle_marker,
-    dn=do_remove_construction,
-    dx=do_remove_designation,
-    dbc=do_claim,
-    dbf=do_forbid,
-    dbm=do_melt,
-    dbM=do_remove_melt,
-    dbd=do_dump,
-    dbD=do_remove_dump,
-    dbh=do_hide,
-    dbH=do_unhide,
-    doh=do_traffic_high,
-    don=do_traffic_normal,
-    dol=do_traffic_low,
-    dor=do_traffic_restricted,
+    d=do_mine,
+    h=do_channel,
+    u=do_up_stair,
+    j=do_down_stair,
+    i=do_up_down_stair,
+    r=do_ramp,
+    z=do_remove_ramps,
+    t=do_mine,
+    p=do_gather,
+    s=do_smooth,
+    e=do_engrave,
+    F=do_fortification,
+    T=do_track,
+    v=do_toggle_engravings,
+    M=do_toggle_marker,
+    n=do_remove_construction,
+    x=do_remove_designation,
+    bc=do_claim,
+    bf=do_forbid,
+    bm=do_melt,
+    bM=do_remove_melt,
+    bd=do_dump,
+    bD=do_remove_dump,
+    bh=do_hide,
+    bH=do_unhide,
+    oh=do_traffic_high,
+    on=do_traffic_normal,
+    ol=do_traffic_low,
+    ['or']=do_traffic_restricted,
 }
 
 local function dig_tile(ctx, code, marker_mode)
@@ -511,8 +513,7 @@ local function do_run_impl(zlevel, grid)
                 keys = string.sub(keys, 2)
                 marker_mode = true
             end
-            local code = 'd'..keys
-            if not designate_switch[code] then
+            if not designate_switch[keys] then
                 print(string.format('invalid key sequence: "%s"', text))
                 stats.invalid_keys.value = stats.invalid_keys.value+1
                 goto continue
@@ -539,7 +540,7 @@ local function do_run_impl(zlevel, grid)
                         log('coordinates out of bounds; skipping')
                         stats.out_of_bounds.value = stats.out_of_bounds.value+1
                     else
-                        if dig_tile(ctx, code, marker_mode) then
+                        if dig_tile(ctx, keys, marker_mode) then
                             stats.designated.value = stats.designated.value+1
                         end
                     end
