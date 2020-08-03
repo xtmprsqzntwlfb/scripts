@@ -1,11 +1,9 @@
 -- ungelds animals
 -- Written by Josh Cooper(cppcooper) on 2019-12-10, last modified: 2020-02-23
-utils ={}
 utils = require('utils')
 local validArgs = utils.invert({
     'unit',
-    'help'
-
+    'help',
 })
 local args = utils.processArgs({...}, validArgs)
 local help = [====[
@@ -27,44 +25,11 @@ if args.help then
     return
 end
 
-unit=nil
+local geld_args = {'-ungeld'}
 
 if args.unit then
-    id=tonumber(args.unit)
-    if id then
-        for _,unit_ in pairs (df.global.world.units.active) do
-            if unit_ and unit_.id == id then
-                unit=unit_
-            end
-        end
-    else
-        qerror("Invalid id provided.")
-    end
-else
-    unit = dfhack.gui.getSelectedUnit()
+    table.insert(geld_args, '-unit')
+    table.insert(geld_args, args.unit)
 end
 
-if not unit then
-    qerror("Invalid unit selection.")
-end
-
-unit.flags3.gelded = false
-function FindBodyPart(unit)
-    bfound=false
-    for i,wound in ipairs(unit.body.wounds) do
-        for j,part in ipairs(wound.parts) do
-            if type(unit.body.wounds[i].parts[j].flags2.gelded) ~= "nil" then
-                bfound=true
-                unit.body.wounds[i].parts[j].flags2.gelded=false
-            else
-                --print("no body part found")
-            end
-        end
-    end
-    return bfound
-end
-if not FindBodyPart(unit) then
-    qerror("something went wrong")
-end
-
-print("unit ungelded.")
+dfhack.run_script('geld', table.unpack(geld_args))
