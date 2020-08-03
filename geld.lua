@@ -79,7 +79,8 @@ end
 function Geld(unit)
     unit.flags3.gelded = true
     if not FindBodyPart(unit,true) then
-        utils.insert_or_update(unit.body.wounds,{ new = true, id = 1 }, 'id')
+        utils.insert_or_update(unit.body.wounds,{ new = true, id = unit.body.wound_next_id }, 'id')
+        unit.body.wound_next_id = unit.body.wound_next_id + 1
         AddParts(unit)
         if not FindBodyPart(unit,true) then
             error("could not find body part")
