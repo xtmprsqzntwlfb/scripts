@@ -48,8 +48,6 @@ if not unit then
     qerror("Invalid unit selection.")
 end
 
-oldstate = unit.flags3.gelded
-
 if unit.sex == df.pronoun_type.she then
     qerror("Cannot geld female animals")
     return
@@ -79,6 +77,7 @@ function AddParts(unit)
 end
 
 function Geld(unit)
+    unit.flags3.gelded = true
     if not FindBodyPart(unit,true) then
         utils.insert_or_update(unit.body.wounds,{ new = true, id = 1 }, 'id')
         AddParts(unit)
@@ -86,10 +85,18 @@ function Geld(unit)
             error("could not find body part")
         end
     end
+    print(string.format("unit %s gelded.",unit.id))
 end
 
 function Ungeld(unit)
+    unit.flags3.gelded = false
     FindBodyPart(unit,false)
+    print(string.format("unit %s ungelded.",unit.id))
+end
+
+if args.help then
+    print(help)
+    return
 end
 
 if args.find then
@@ -97,22 +104,23 @@ if args.find then
     return
 end
 
-if args.help then
-    print(help)
+local oldstate = dfhack.units.isGelded(unit)
+local newstate
+
+if args.ungeld then
+    newstate = false
 elseif args.toggle then
     newstate = not oldstate
-    unit.flags3.gelded = newstate
-    print(string.format("gelded unit %s: %s => %s\n", unit.id, oldstate, newstate))
-elseif args.ungeld then
-    unit.flags3.gelded = false
-    print(string.format("unit %s ungelded.",unit.id))
 else
-    unit.flags3.gelded = true
-    print(string.format("unit %s gelded.",unit.id))
+    newstate = true
 end
 
-if unit.flags3.gelded then
-    Geld(unit)
+if newstate ~= oldstate then
+    if newstate then
+        Geld(unit)
+    else
+        Ungeld(unit)
+    end
 else
-    Ungeld(unit)
+    qerror(string.format("unit %s is already %s", unit.id, oldstate and "gelded" or "ungelded"))
 end
