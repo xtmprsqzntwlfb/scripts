@@ -10,13 +10,15 @@ local log = quickfort_common.log
 
 -- special key sequences inherited from python quickfort. these cannot be
 -- overridden with aliases
-local specials = {
+local special_keys = {
     ['&']='Enter',
     ['+']='{Shift}',
     ['@']={'{Shift}','Enter'},
     ['^']='ESC',
-    ['{ExitMenu}']='ESC',
     ['%']='{Wait}'
+}
+local special_aliases = {
+    ExitMenu='ESC'
 }
 
 local alias_stack = {}
@@ -38,7 +40,6 @@ function push_aliases_csv_file(filename)
         line = line:gsub('[\r\n]*$', '')
         _, _, alias, definition = line:find('^([%w]+):%s*(.*)')
         if alias and #definition > 0 then
-            log('found alias: "%s" -> "%s"', alias, definition)
             aliases[alias] = definition
         end
     end
@@ -56,44 +57,44 @@ local function process_text(text, tokens, depth)
     local i = 1
     while i <= #text do
         local next_char = text:sub(i, i)
-        log('processing next character: "%s"', next_char)
-        local token, expansion, repititions = next_char, {}, 1
+        local expansion, repetitions = {}, 1
         if next_char ~= '{' then
-            -- token is a sepcial key or a key literal
-            expansion[1] = specials[token] or token
+            -- token is a special key or a key literal
+            expansion[1] = special_keys[next_char] or next_char
         else
-            -- find the next closing bracket, skipping one space to allow for
-            -- '{}}' and it's kin
-            local b, e, extended_token = text:find('{(.[^}]*)}', i)
-            if not extended_token then
+            -- find the next closing bracket to find the bounds of the extended
+            -- token, skipping one space to allow for '{}}' and it's kin
+            local b, e, etoken = text:find('{(.[^}]*)}', i)
+            if not etoken then
                 qerror(string.format(
                         'invalid extended token: "%s"; did you mean "{{}"?',
                         text:sub(i)))
             end
-            log('matched extended token: "%s"', extended_token)
-            local _, _, rep_tok, rep_rep = extended_token:find('(.-)%s+(%d+)$')
+            local _, _, rep_tok, rep_rep = etoken:find('(.-)%s+(%d+)$')
             if rep_tok then
-                token = rep_tok
-                repititions = rep_rep
+                etoken = rep_tok
+                repetitions = rep_rep
             end
-            if token == 'Numpad' and repititions then
-                token = string.format('%s %d', token, repititions)
+            if etoken == 'Numpad' and repetitions then
+                etoken = string.format('%s %d', etoken, repetitions)
             end
-            log('found token: "%s" with repitition count: "%s"',
-                token, tostring(repititions))
-            if not repititions then repititions = 1 end
-            if alias_stack[token] then
-                log('expanding alias')
-                process_text(alias_stack[token], expansion, depth+1)
+            if not repetitions then repetitions = 1 end
+            if not special_aliases[etoken] and alias_stack[etoken] then
+                process_text(alias_stack[etoken], expansion, depth+1)
             else
-                expansion[1] = token
+                expansion[1] = special_aliases[etoken] or etoken
             end
-            i = i + #extended_token + 1
+            i = i + e - b
         end
-        for j=1,repititions do
-            log('adding tokens: "%s"', table.concat(expansion, ''))
+        for j=1,repetitions do
             for k=1, #expansion do
-                tokens[#tokens+1] = expansion[k]
+                if type(expansion[k]) == "string" then
+                    tokens[#tokens+1] = expansion[k]
+                else
+                    for _, token in ipairs(expansion[k]) do
+                        tokens[#tokens+1] = token
+                    end
+                end
             end
         end
         i = i + 1
@@ -107,19 +108,21 @@ end
 -- can contain other aliases, but must use the {} format if they do. Literal
 -- key names can also appear in curly brackets to allow the parser to recognize
 -- multi-character keys, such as '{F10}'. Anything in curly brackets can be
--- followed by a number to indicate repitition. For example, '{Down 5}'
+-- followed by a number to indicate repetition. For example, '{Down 5}'
 -- indicates 'Down' 5 times. 'Numpad' is treated specially so that '{Numpad 8}'
 -- doesn't get expanded to 'Numpad' 8 times, but rather 'Numpad 8' once. You can
 -- repeat Numpad keys like this: '{Numpad 8 5}'.
 -- returns an array of character key tokens
 function expand_aliases(text)
     local tokens = {}
-    log('processing cell text: "%s"', text)
     if alias_stack[text] then
-        log('expanding alias')
         process_text(alias_stack[text], tokens, 1)
     else
         process_text(text, tokens, 1)
+    end
+    local expanded_text = table.concat(tokens, '')
+    if text ~= expanded_text then
+        log('expanded keys to: "%s"', expanded_text)
     end
     return tokens
 end
