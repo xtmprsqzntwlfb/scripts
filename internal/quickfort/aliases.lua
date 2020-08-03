@@ -36,14 +36,18 @@ function push_aliases_csv_file(filename)
         return
     end
     local aliases = {}
+    local num_aliases = 0
     for line in file:lines() do
         line = line:gsub('[\r\n]*$', '')
-        _, _, alias, definition = line:find('^([%w]+):%s*(.*)')
+        -- aliases must be at two alphanumerics long to distinguish them from
+        -- regular keystrokes
+        _, _, alias, definition = line:find('^(%w[%w]+):%s*(.*)')
         if alias and #definition > 0 then
             aliases[alias] = definition
+            num_aliases = num_aliases + 1
         end
     end
-    log('successfully read in aliases from "%s"', filename)
+    log('successfully read in %d aliases from "%s"', num_aliases, filename)
     local prev = alias_stack
     setmetatable(aliases, {__index=function(_, key) return prev[key] end})
     alias_stack = aliases
