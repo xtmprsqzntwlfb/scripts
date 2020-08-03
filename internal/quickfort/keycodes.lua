@@ -53,7 +53,7 @@ function get_keycodes(code, modifiers)
         mod = mod + 4
     end
     local key = nil
-    if mod == 0 and #code == 1 and tonumber(code) == nil then
+    if mod == 0 and #code == 1 then
         key = string.format('[KEY:%s]', code)
     else
         key = string.format('[SYM:%d:%s]', mod, code)
