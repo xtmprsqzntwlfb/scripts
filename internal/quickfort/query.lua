@@ -30,18 +30,7 @@ end
 
 local function move_cursor(screen, overlay, pos)
     overlay:moveCursorTo(pos)
-    -- wiggle the cursor so the building under the cursor gets properly selected
-    -- is there a better way to do this? I've tried:
-    -- - DwarfOverlay:simulateCursorMovement
-    -- - DwarfOverlay:selectBuilding
-    -- - setting the ui.main.mode to something else then back to QueryBuilding
-    if pos.y > 0 then
-        gui.simulateInput(screen, 'CURSOR_UP')
-        gui.simulateInput(screen, 'CURSOR_DOWN')
-    else
-        gui.simulateInput(screen, 'CURSOR_DOWN')
-        gui.simulateInput(screen, 'CURSOR_UP')
-    end
+    dfhack.gui.refreshSidebar()
 end
 
 local function handle_modifiers(token, modifiers)
@@ -53,7 +42,7 @@ local function handle_modifiers(token, modifiers)
         return true
     end
     if token_lower == '{wait}' then
-        print('{wait} not yet implemented')
+        print('{Wait} not yet implemented')
         return true
     end
     return false
