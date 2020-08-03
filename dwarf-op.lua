@@ -1,7 +1,7 @@
 -- Optimizes dwarves for labor. Very flexible. Very robust. Check the help.
 -- written by josh cooper(cppcooper) [created: Dec. 2017 | last modified: 2020-03-01]
 
-print("v1.4")
+print(dfhack.current_script_name() .. " v1.4")
 utils ={}
 utils = require('utils')
 json = require('json')
@@ -167,7 +167,7 @@ Examples:
 
 -~~~~~~~~~~~
     Other Arguments:
-    
+
       help - displays this help information.
       debug - enables debugging print lines
 
@@ -298,7 +298,7 @@ function spairs(t, cmp)
     end
 
     utils.sort_vector(keys, nil, cmp)
-    
+
     -- return the iterator function
     local i = 0
     return function()
@@ -316,7 +316,7 @@ function rpairs(t, gen)
     for k,v in pairs(t) do
         table.insert(keys,k)
     end
-    
+
     -- return the iterator function
     return function()
         local i = gen:next()
@@ -601,7 +601,7 @@ function ApplyJob(dwf, jobName) --job = dorf_jobs[X]
     end
     dwf.custom_profession = jobName
     RollStats(dwf, job.types)
-    
+
     -- Apply required professions
     local bAlreadySetProf2 = false
     local job_req_sequence = rng.num_sequence:new()
@@ -628,7 +628,7 @@ function ApplyJob(dwf, jobName) --job = dorf_jobs[X]
         --These are required professions for this job class
         ApplyProfession(dwf, prof, 11, 17)
     end
-        
+
     -- Loop tertiary professions
     -- Sort loop (asc)
     local points = 11
@@ -659,7 +659,7 @@ function ApplyJob(dwf, jobName) --job = dorf_jobs[X]
                     table.insert(DwarvesData[id]['professions'], prof)
                     OpData[jobName].profs[prof].count = OpData[jobName].profs[prof].count + 1
                     if args.debug and tonumber(args.debug) >= 1 then print("count: ", OpData[jobName].profs[prof].count) end
-                    
+
                     if not bAlreadySetProf2 then
                         bAlreadySetProf2 = true
                         dwf.profession2 = df.profession[prof]
@@ -677,7 +677,7 @@ function ApplyJob(dwf, jobName) --job = dorf_jobs[X]
                         table.insert(DwarvesData[id]['professions'], prof)
                         OpData[jobName].profs[prof].count = OpData[jobName].profs[prof].count + 1
                         if args.debug and tonumber(args.debug) >= 1 then print("dwf id:", dwf.id, "count: ", OpData[jobName].profs[prof].count, jobName, prof) end
-                        
+
                         if not bAlreadySetProf2 then
                             bAlreadySetProf2 = true
                             dwf.profession2 = df.profession[prof]
@@ -1208,7 +1208,7 @@ elseif args.select and (args.debug or args.clean or args.clear or args.optimize 
     selection = {}
     count = 0
     print("Selected Dwarves: " .. LoopUnits(ActiveUnits, CheckWorker, SelectDwarf, args.select))
-    
+
     if args.b_clear ~= args.b_reroll or not args.b_clear then
         --error("Clear is implied with Reroll. Choose one, not both.")
         if args.b_reroll and args.b_optimize then
@@ -1227,7 +1227,7 @@ elseif args.select and (args.debug or args.clean or args.clear or args.optimize 
                 temp = LoopUnits(selection, nil, ZeroDwarf)
                 affected = affected < temp and temp or affected
             end
-            
+
             if args.optimize then
                 print("\nOptimizing selected dwarves..")
                 temp = LoopUnits(selection, nil, FindJob)
