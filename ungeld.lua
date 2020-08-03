@@ -24,7 +24,7 @@ Valid options:
 
 if args.help then
     print(help)
-    do return end
+    return
 end
 
 unit=nil

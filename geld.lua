@@ -53,7 +53,7 @@ oldstate = unit.flags3.gelded
 
 if unit.sex == 0 then
     qerror("cannot geld female animals")
-    do return end
+    return
 end
 
 function exists(thing)
@@ -101,7 +101,7 @@ end
 
 if args.find then
     FindBodyPart(unit)
-    do return end
+    return
 end
 
 if args.help then

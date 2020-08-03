@@ -26,7 +26,7 @@ local args = utils.processArgs({...}, validArgs)
 
 if args.help then
     print(help)
-    do return end
+    return
 end
 
 if selected ~= nil then
