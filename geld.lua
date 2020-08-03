@@ -32,11 +32,7 @@ unit=nil
 if args.unit then
     id=tonumber(args.unit)
     if id then
-        for _,unit_ in pairs (df.global.world.units.active) do
-            if unit.id == id then
-                unit=unit_
-            end
-        end
+        unit = df.unit.find(id)
     else
         qerror("Invalid ID provided.")
     end
