@@ -1,4 +1,4 @@
--- Gelds animals by default. Optional args: -toggle or -ungeld
+-- Gelds or ungelds animals
 -- Written by Josh Cooper(cppcooper) on 2019-12-10, last modified: 2020-02-23
 
 utils = require('utils')
@@ -18,13 +18,15 @@ geld
 Geld allows the user to geld and ungeld animals.
 
 Valid options:
-    unit <id> - Performs action on the provided unit id, this is optional.
-                If this argument is not given, the highlighted unit is
-                used instead.
 
-    toggle    - Changes the geld status to the opposite of its current state
-    ungeld    - Sets the geld status to false
-    help      - Shows this help information
+``-unit <id>``: Gelds the unit with the specified ID.
+                This is optional; if not specified, the selected unit is used instead.
+
+``-ungeld``:    Ungelds the specified unit instead (see also `ungeld`).
+
+``-toggle``:    Toggles the gelded status of the specified unit.
+
+``-help``:      Shows this help information
 
 ]====]
 

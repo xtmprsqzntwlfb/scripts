@@ -1,4 +1,4 @@
--- ungelds animals
+-- Ungelds animals
 -- Written by Josh Cooper(cppcooper) on 2019-12-10, last modified: 2020-02-23
 utils = require('utils')
 local validArgs = utils.invert({
@@ -10,13 +10,14 @@ local help = [====[
 
 ungeld
 ======
-It sets the geld status to false.
+A wrapper around `geld` that ungelds the specified animal.
 
 Valid options:
 
-    unit <id> - Performs action on the provided unit id, this is optional.
-                If this argument is not given, the highlighted unit is
-                used instead.
+``-unit <id>``: Ungelds the unit with the specified ID.
+                This is optional; if not specified, the selected unit is used instead.
+
+``-help``:      Shows this help information
 
 ]====]
 
