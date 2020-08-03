@@ -14,10 +14,11 @@ valid_modes = utils.invert({
     'query'
 })
 
+-- keep deprecated settings in the table so we don't break existing configs
 settings = {
-    blueprints_dir = 'blueprints',
-    force_marker_mode = false,
-    force_interactive_build = false,
+    blueprints_dir={value='blueprints'},
+    force_marker_mode={value=false},
+    force_interactive_build={value=false, deprecated=true},
 }
 
 verbose = false
@@ -32,7 +33,8 @@ end
 
 -- blueprint_name is relative to the blueprints dir
 function get_blueprint_filepath(blueprint_name)
-    return string.format("%s/%s", settings['blueprints_dir'], blueprint_name)
+    return string.format("%s/%s",
+                         settings['blueprints_dir'].value, blueprint_name)
 end
 
 local map_limits = {
