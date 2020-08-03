@@ -7,8 +7,7 @@ local validArgs = utils.invert({
     'toggle',
     'ungeld',
     'help',
-    'find'
-
+    'find',
 })
 local args = utils.processArgs({...}, validArgs)
 local help = [====[
@@ -39,7 +38,7 @@ if args.unit then
             end
         end
     else
-        qerror("Invalid id provided.")
+        qerror("Invalid ID provided.")
     end
 else
     unit = dfhack.gui.getSelectedUnit()
@@ -51,26 +50,20 @@ end
 
 oldstate = unit.flags3.gelded
 
-if unit.sex == 0 then
-    qerror("cannot geld female animals")
+if unit.sex == df.pronoun_type.she then
+    qerror("Cannot geld female animals")
     return
 end
 
-function exists(thing)
-    if thing then return true else return false end
-end
-
 function FindBodyPart(unit,newstate)
-    bfound=false
+    bfound = false
     for i,wound in ipairs(unit.body.wounds) do
         for j,part in ipairs(wound.parts) do
-            if type(unit.body.wounds[i].parts[j].flags2.gelded) ~= "nil" then
-                bfound=true
-                if type(newstate) ~= "nil" then
-                    unit.body.wounds[i].parts[j].flags2.gelded=newstate
+            if unit.body.wounds[i].parts[j].flags2.gelded ~= newstate then
+                bfound = true
+                if newstate ~= nil then
+                    unit.body.wounds[i].parts[j].flags2.gelded = newstate
                 end
-            else
-                --print("no body part found")
             end
         end
     end
@@ -90,7 +83,7 @@ function Geld(unit)
         utils.insert_or_update(unit.body.wounds,{ new = true, id = 1 }, 'id')
         AddParts(unit)
         if not FindBodyPart(unit,true) then
-            error("sorry, don't know what went wrong.. but the command didn't work")
+            error("could not find body part")
         end
     end
 end
@@ -100,7 +93,7 @@ function Ungeld(unit)
 end
 
 if args.find then
-    FindBodyPart(unit)
+    print(FindBodyPart(unit) and "found" or "not found")
     return
 end
 
@@ -109,7 +102,7 @@ if args.help then
 elseif args.toggle then
     newstate = not oldstate
     unit.flags3.gelded = newstate
-    print(string.format("gelded unit %s: %s => %s\n", unit.id, state(oldstate), state(newstate)))
+    print(string.format("gelded unit %s: %s => %s\n", unit.id, oldstate, newstate))
 elseif args.ungeld then
     unit.flags3.gelded = false
     print(string.format("unit %s ungelded.",unit.id))
@@ -122,12 +115,4 @@ if unit.flags3.gelded then
     Geld(unit)
 else
     Ungeld(unit)
-end
-
-function state(st)
-    if st then
-        return "true"
-    else
-        return "false"
-    end
 end
