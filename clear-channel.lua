@@ -1,20 +1,20 @@
--- digs a square channel around the tile selected
+-- clears a square channel around the tile selected
 args = {...}
 width = tonumber(args[1])
 height = tonumber(args[2])
-depth = tonumber(args[3])-1
+depth = tonumber(args[3]) or 1
 
 local help = [====[
 
 clear-channel
 =============
-Digs a channel around the tile selected (inclusive).
-If no arguments are provided, will channel the highlighted tile only.
+Clears a channel around the tile selected by changing all tiles to empty space.
 
 Usage::
 
     clear-channel [x-radius] [y-radius] [depth]
 
+If no arguments are provided, will channel the highlighted tile only.
 ``depth`` is optional and defaults to 1.
 
 ]====]
