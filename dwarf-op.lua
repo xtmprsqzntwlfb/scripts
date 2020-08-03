@@ -173,10 +173,6 @@ Examples:
 
 ]====]
 
-if args.help then
-    ShowHelp()
-    do return end
-end
 
 if args.debug and tonumber(args.debug) >= 0 then print("Debug info [ON]") end
 if args.select and args.select == 'optimized' then
@@ -1176,6 +1172,11 @@ function ShowHint()
     print("  [DFHack]# dwarf-op -select Urist -reroll inclusive -applyprofession RECRUIT")
 end
 
+if args.help then
+    ShowHelp()
+    return
+end
+
 local ActiveUnits = df.global.world.units.active
 dwarf_count = LoopUnits(ActiveUnits, isDwarfCitizen)
 work_force = LoopUnits(ActiveUnits, CanWork)
@@ -1202,9 +1203,7 @@ end
 
 bRanCommands=true
 
-if args.help then
-    ShowHelp()
-elseif args.select and (args.debug or args.clean or args.clear or args.optimize or args.reroll or args.applyjobs or args.applyprofessions or args.applytypes or args.renamejob) then
+if args.select and (args.debug or args.clean or args.clear or args.optimize or args.reroll or args.applyjobs or args.applyprofessions or args.applytypes or args.renamejob) then
     selection = {}
     count = 0
     print("Selected Dwarves: " .. LoopUnits(ActiveUnits, CheckWorker, SelectDwarf, args.select))
