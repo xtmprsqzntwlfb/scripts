@@ -26,7 +26,7 @@ y = pos.y%16
 
 --block = dfhack.maps.ensureTileBlock(pos.x,pos.y,pos.z)
 --print(block.tiletype[x][y])
---block.tiletype[x][y] = 32
+--block.tiletype[x][y] = df.tiletype.OpenSpace
 
 if width and height then
     if depth then
@@ -34,7 +34,7 @@ if width and height then
             for ix=pos.x-width, pos.x+width, 1 do
                 for iy=pos.y-height, pos.y+height, 1 do
                     block = dfhack.maps.ensureTileBlock(ix,iy,iz)
-                    block.tiletype[ix%16][iy%16] = 32
+                    block.tiletype[ix%16][iy%16] = df.tiletype.OpenSpace
                 end
             end
         end
@@ -42,12 +42,11 @@ if width and height then
         for ix=pos.x-width, pos.x+width, 1 do
             for iy=pos.y-height, pos.y+height, 1 do
                 block = dfhack.maps.ensureTileBlock(ix,iy,iz)
-                block.tiletype[ix%16][iy%16] = 32
+                block.tiletype[ix%16][iy%16] = df.tiletype.OpenSpace
             end
         end
     end
 else
     block = dfhack.maps.ensureTileBlock(pos.x,pos.y,pos.z)
-    print(block.tiletype[x][y])
-    block.tiletype[x][y] = 32
+    block.tiletype[x][y] = df.tiletype.OpenSpace
 end
