@@ -1,4 +1,4 @@
--- getwaves displays migration wave information for citizens/units
+-- displays migration wave information for citizens/units
 -- Written by Josh Cooper(cppcooper) sometime around Decement 2019, last modified: 2020-02-19
 utils ={}
 utils = require('utils')
@@ -14,8 +14,40 @@ local help = [====[
 
 getwaves
 ========
-Get waves is a script useful for finding migration waves information for citizen dwarfs.
+This script displays information about migration waves of the specified citizen(s).
 
+Examples::
+
+  getwaves -all -showarrival -granularity days
+  getwaves -all -showarrival
+  getwaves -unit -granularity days
+  getwaves -unit
+  getwaves -unit -all -showarrival -granularity days
+
+**Selection options:**
+
+These options are used to specify what wave information to display
+
+``-unit``:
+    Displays the highlighted unit's arrival wave information
+
+``-all``:
+    Displays all citizens' arrival wave information
+
+**Other options:**
+
+``-granularity <value>``:
+    Specifies the granularity of wave enumeration: ``years``, ``seasons``, ``months``, ``days``
+    If omitted, the default granularity is ``seasons``, the same as Dwarf Therapist
+
+``-showarrival``:
+    Shows the arrival information for the selected unit.
+    If ``-all`` is specified the info displayed will be relative to the
+    granularity used. Note: this option is always used when ``-unit`` is used.
+
+]====]
+
+--[[
 The script must loop through all active units in df.global.world.units.active and build
 each wave one dwarf at a time. This requires calculating arrival information for each
 dwarf and combining this information into a sort of unique wave ID number. After this
@@ -26,34 +58,7 @@ As you might surmise, this is a relatively dumb script and every execution has t
 worst case big O execution. I've taken the liberty of only counting citizen units,
 this should only include dwarves as far as I know.
 
-Examples:
-  [DFHack]# getwaves -all -showarrival -granularity days
-  [DFHack]# getwaves -all -showarrival
-  [DFHack]# getwaves -unit -granularity days
-  [DFHack]# getwaves -unit
-  [DFHack]# getwaves -unit -all -showarrival -granularity days
-
--~~~~~~~~~~~
-selection options:
-
-  These options are used to specify what wave information to display
-    unit                 - Displays the highlighted unit's arrival wave information
-    all                  - Displays all citizens' arrival wave information
-
--~~~~~~~~~~~
-other options:
-
-    granularity <value>  - Specifies the granularity of wave enumeration
-                           (ie. years, seasons, months, days)
-                            Note: if omitted the default granularity is the same as
-                            Dwarf Therapist, ie. 'seasons'
-
-    showarrival          - Shows the arrival information for the selected unit
-                           If '-all' is specified the info displayed will be
-                           relative to the granularity used.
-                           Note: this option is always used when '-unit' is used
-
-]====]
+]]
 
 selected = dfhack.gui.getSelectedUnit()
 local ticks_per_day = 1200
