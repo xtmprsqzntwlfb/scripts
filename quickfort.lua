@@ -21,9 +21,8 @@ real" in Dwarf Fortress, and then export your map using the DFHack
 `blueprint plugin`_ for later replay. Blueprint files should go in the
 ``blueprints`` subfolder in the main DF folder.
 
-You can read more about how to create blueprint files in the
-`blueprints/README.txt`_ file, and there are ready-to-use examples of blueprints
-in each of the four modes in the `blueprints/library`_ folder.
+For more details on blueprint file syntax, look at the ready-to-use examples in
+the `blueprints/library`_ folder.
 
 Usage:
 
@@ -82,14 +81,19 @@ configuration stored in the file:
     will be designated in marker mode.
 
 There are also two other configuration files in the ``dfhack-config/quickfort``
-folder: ``aliases.txt`` and ``materials.txt``. ``aliases.txt`` defines keycode
+folder: `aliases.txt`_ and `materials.txt`_. ``aliases.txt`` defines keycode
 shortcuts for query blueprints, and ``materials.txt`` defines forbidden
 materials and material preferences for build blueprints. The formats for these
-files are described in the files themselves.
+files are described in the files themselves, and default configuration that all
+players can build on is stored in `aliases-common.txt`_ and
+`materials-common.txt`_ in the ``hack/data/quickfort/`` directory.
 
 .. _blueprint plugin: https://docs.dfhack.org/en/stable/docs/Plugins.html#blueprint
-.. _blueprints/README.txt: https://github.com/DFHack/dfhack/tree/develop/data/blueprints/README.txt
 .. _blueprints/library: https://github.com/DFHack/dfhack/tree/develop/data/blueprints/library
+.. _aliases.txt: https://github.com/DFHack/dfhack/tree/develop/dfhack-config/quickfort/aliases.txt
+.. _materials.txt: https://github.com/DFHack/dfhack/tree/develop/dfhack-config/quickfort/materials.txt
+.. _aliases-common.txt: https://github.com/DFHack/dfhack/tree/develop/data/quickfort/aliases-common.txt
+.. _materials-common.txt: https://github.com/DFHack/dfhack/tree/develop/data/quickfort/materials-common.txt
 ]====]
 
 -- reqscript all internal files here, even if they're not directly used by this
