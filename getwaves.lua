@@ -74,28 +74,6 @@ function TableLength(table)
     end
     return count
 end
-function safe_pairs(item, keys_only)
-    if keys_only then
-        local mt = debug.getmetatable(item)
-        if mt and mt._index_table then
-            local idx = 0
-            return function()
-                idx = idx + 1
-                if mt._index_table[idx] then
-                    return mt._index_table[idx]
-                end
-            end
-        end
-    end
-    local ret = table.pack(pcall(function() return pairs(item) end))
-    local ok = ret[1]
-    table.remove(ret, 1)
-    if ok then
-        return table.unpack(ret)
-    else
-        return function() end
-    end
-end
 --sorted pairs
 function spairs(t, cmp)
     -- collect the keys
@@ -153,9 +131,7 @@ function getWave(dwf)
     end
 end
 
-Units = df.global.world.units.active
-
-for k,v in safe_pairs(Units) do
+for _,v in ipairs(df.global.world.units.active) do
     if isDwarfCitizen(v) then
         getWave(v)
     end
@@ -222,7 +198,7 @@ else
 
     if args.all then
         for i = 0, TableLength(zwaves)-1 do
-            print(string.format("  Wave %2s has %2d dwarf citizens.", i, TableLength(zwaves[i])))
+            print(string.format("  Wave %2s has %2d dwarf citizens.", i, #zwaves[i]))
         end
     end
 end
