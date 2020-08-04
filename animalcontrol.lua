@@ -1,4 +1,4 @@
--- animalcontrol helps manage the butchery and gelding of animals
+-- helps manage the butchery and gelding of animals
 -- Written by Josh Cooper(cppcooper) on 2020-02-18, last modified: 2020-03-01
 local utils=require('utils')
 local validArgs = utils.invert({

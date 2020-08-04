@@ -13,6 +13,12 @@ that repo.
 
 # Future
 
+## New Scripts
+- `animalcontrol`: helps manage the butchery and gelding of animals
+- `geld`: gelds or ungelds animals
+- `getwaves`: displays migration wave information for citizens/units
+- `ungeld`: ungelds animals (wrapper around `geld`)
+
 ## Fixes
 - `digfort`: fixed y-line tracking when .csv files contain lines with only commas
 - `digfort`: fixed an issue causing blueprints touching the southern or eastern edges of the map to be rejected (northern and western edges were already allowed). This allows blueprints that span the entire embark area.
@@ -28,9 +34,12 @@ that repo.
 ## Misc Improvements
 - `add-recipe`: added tool recipes (minecarts, wheelbarrows, stepladders, etc.)
 - `add-recipe`: added a command explanation or error message when entering an invalid command
+- `devel/query`: added many new query options
 - `digfort`: handled double quotes (") at the start of a string, allowing .csv files exported from spreadsheets to work without manual modification
 - `digfort`: documented that removing ramps, cutting trees, and gathering plants are indeed supported
 - `digfort`: added a ``force`` option to truncate blueprints if the full blueprint would extend off the edge of the map
+- `dwarf-op`: added ability to select dwarves based on migration wave
+- `dwarf-op`: added ability to protect dwarves based on symbols in their custom professions
 - `exportlegends`: changed some flags to be represented by self-closing tags instead of true/false strings (e.g. ``<is_volcano/>``) - note that this may require changes to other XML-parsing utilities
 - `exportlegends`: changed some enum values from numbers to their string representations
 - `exportlegends`: added ability to save all files to a subfolder, named after the region folder and date by default
