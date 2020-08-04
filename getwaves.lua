@@ -47,7 +47,7 @@ other options:
                            (ie. years, seasons, months, days)
                             Note: if omitted the default granularity is the same as
                             Dwarf Therapist, ie. 'seasons'
-                            
+
     showarrival          - Shows the arrival information for the selected unit
                            If '-all' is specified the info displayed will be
                            relative to the granularity used.
@@ -56,10 +56,10 @@ other options:
 ]====]
 
 selected = dfhack.gui.getSelectedUnit()
-local ticks_per_day = 1200;
-local ticks_per_month = 28 * ticks_per_day;
-local ticks_per_season = 3 * ticks_per_month;
-local ticks_per_year = 12 * ticks_per_month;
+local ticks_per_day = 1200
+local ticks_per_month = 28 * ticks_per_day
+local ticks_per_season = 3 * ticks_per_month
+local ticks_per_year = 12 * ticks_per_month
 local current_tick = df.global.cur_year_tick
 local seasons = {
     'spring',
@@ -105,7 +105,7 @@ function spairs(t, cmp)
     end
 
     utils.sort_vector(keys, nil, cmp)
-    
+
     -- return the iterator function
     local i = 0
     return function()
@@ -123,11 +123,11 @@ end
 
 waves={}
 function getWave(dwf)
-    arrival_time = current_tick - dwf.curse.time_on_site;
+    arrival_time = current_tick - dwf.curse.time_on_site
     --print(string.format("Current year %s, arrival_time = %s, ticks_per_year = %s", df.global.cur_year, arrival_time, ticks_per_year))
-    arrival_year = df.global.cur_year + (arrival_time // ticks_per_year);
-    arrival_season = 1 + (arrival_time % ticks_per_year) // ticks_per_season;
-    arrival_month = 1 + (arrival_time % ticks_per_year) // ticks_per_month;
+    arrival_year = df.global.cur_year + (arrival_time // ticks_per_year)
+    arrival_season = 1 + (arrival_time % ticks_per_year) // ticks_per_season
+    arrival_month = 1 + (arrival_time % ticks_per_year) // ticks_per_month
     arrival_day = 1 + ((arrival_time % ticks_per_year) % ticks_per_month) // ticks_per_day
     if args.granularity then
         if args.granularity == "days" then
@@ -219,7 +219,7 @@ else
         end
         i = i + 1
     end
-        
+
     if args.all then
         for i = 0, TableLength(zwaves)-1 do
             print(string.format("  Wave %2s has %2d dwarf citizens.", i, TableLength(zwaves[i])))
