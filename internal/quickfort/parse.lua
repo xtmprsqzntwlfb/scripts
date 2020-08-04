@@ -7,6 +7,11 @@ end
 
 local quickfort_common = reqscript('internal/quickfort/common')
 
+local function trim_and_insert(tokens, token)
+    _, _, token = token:find('^%s*(.-)%s*$')
+    table.insert(tokens, token)
+end
+
 -- adapted from example on http://lua-users.org/wiki/LuaCsv
 function tokenize_csv_line(line)
     line = string.gsub(line, '[\r\n]*$', '')
@@ -30,18 +35,18 @@ function tokenize_csv_line(line)
                 -- this is the way to "escape" the quote char in a quote.
                 -- example: "blub""blip""boing" -> blub"blip"boing
             until c ~= '"'
-            table.insert(tokens, txt)
+            trim_and_insert(tokens, txt)
             assert(c == sep or c == '')
             pos = pos + 1
         else
             -- no quotes used, just look for the first separator
             local startp, endp = string.find(line, sep, pos)
             if startp then
-                table.insert(tokens, string.sub(line, pos, startp-1))
+                trim_and_insert(tokens, string.sub(line, pos, startp-1))
                 pos = endp + 1
             else
                 -- no separator found -> use rest of string and terminate
-                table.insert(tokens, string.sub(line, pos))
+                trim_and_insert(tokens, string.sub(line, pos))
                 break
             end
         end

@@ -18,12 +18,11 @@ in cell ``A1``).
 You can create these blueprints by hand or by using any spreadsheet application,
 saving them as ``.xlsx`` or ``.csv`` files. You can also build your plan "for
 real" in Dwarf Fortress, and then export your map using the DFHack
-`blueprint plugin`_ for later replay in a different fort. Blueprint files should
-go in the ``blueprints`` subfolder in the main DF folder.
+`blueprint plugin`_ for later replay. Blueprint files should go in the
+``blueprints`` subfolder in the main DF folder.
 
-You can read more about how to create blueprint files in the
-`blueprints/README.txt`_ file, and there are ready-to-use examples of blueprints
-in each of the four modes in the `blueprints/library`_ folder.
+For more details on blueprint file syntax, look at the ready-to-use examples in
+the `blueprints/library`_ folder.
 
 Usage:
 
@@ -32,79 +31,81 @@ Usage:
     ``quickfort set`` to show current settings. See the Configuration section
     below for available keys and values.
 **quickfort reset**
-    Resets quickfort script state and re-reads all configuration files.
+    Resets quickfort configuration to the defaults in ``quickfort.txt``.
 **quickfort list [-l|--library]**
     Lists blueprints in the ``blueprints`` folder. Blueprints are ``.csv`` files
     or sheets within ``.xlsx`` files that contain a ``#<mode>`` comment in the
     upper-left cell. By default, blueprints in the ``blueprints/library/``
-    subfolder are not included. Specify ``-l`` to include library blueprints.
+    subfolder are not shown. Specify ``-l`` to include library blueprints.
 **quickfort <command> <list_num> [<options>]**
     Applies the blueprint with the number from the list command.
 **quickfort <command> <filename> [-s|--sheet <sheet_num>] [<options>]**
     Applies the blueprint from the named file. If it is an ``.xlsx`` file,
     the ``-s`` (or ``--sheet``) parameter is required to identify the sheet
-    number (the first sheet is ``-s 1``).
+    number. The first sheet is ``-s 1``.
 
 **<command>** can be one of:
 
-:run:     applies the blueprint at your current active cursor position.
-:orders:  uses the manager interface to queue up orders for the specified
+:run:     Applies the blueprint at your current cursor position. It doesn't
+          matter which mode you are in. You just need an active cursor.
+:orders:  Uses the manager interface to queue up orders for the specified
           build-mode blueprint.
-:undo:    applies the inverse of the specified blueprint, depending on its type.
-          Dig tiles are undesignated, buildings are canceled or removed
-          (depending on their construction status), and stockpiles are removed.
-          No effect for query blueprints.
+:undo:    Applies the inverse of the specified blueprint. Dig tiles are
+          undesignated, buildings are canceled or removed (depending on their
+          construction status), and stockpiles are removed. There is no effect
+          for query blueprints.
 
 **<options>** can be zero or more of:
 
 ``-q``, ``--quiet``
     Don't report on what actions were taken (error messages are still shown).
 ``-v``, ``--verbose``
-    Output extra debugging information.
+    Output extra debugging information. This is especially useful if the
+    blueprint isn't being applied like you expect.
 
 Configuration:
 
 The quickfort script reads its startup configuration from the
 ``dfhack-config/quickfort/quickfort.txt`` file, which you can customize. The
-following settings may be dynamically modified by the ``quickfort set`` command
-(note that settings changed with the ``quickfort set`` command will not change
-the configuration stored in the file):
+following settings may be dynamically modified by the ``quickfort set`` command,
+but settings changed with the ``quickfort set`` command will not change the
+configuration stored in the file:
 
 ``blueprints_dir`` (default: 'blueprints')
-    Can be set to an absolute or relative path. If set to a relative path,
-    resolves to a directory under the DF folder.
+    Directory tree to search for blueprints. Can be set to an absolute or
+    relative path. If set to a relative path, resolves to a directory under the
+    DF folder.
 ``force_marker_mode`` (default: 'false')
     Set to "true" or "false". If true, will designate dig blueprints in marker
-    mode. If false, only cells with dig codes prefixed with ``m`` will be
-    designated in marker mode.
-``force_interactive_build`` (default: 'false')
-    Allows you to manually select building materials for each
-    building/construction when running (or creating orders for) build
-    blueprints. Materials in selection dialogs are ordered according to
-    preferences in ``materials.txt`` (see below). If false, will only prompt for
-    materials that have :labels. See `original Quickfort documentation`_ for
-    details.
+    mode. If false, only cells with dig codes explicitly prefixed with ``m``
+    will be designated in marker mode.
 
 There are also two other configuration files in the ``dfhack-config/quickfort``
-folder: ``aliases.txt`` and ``materials.txt``. ``aliases.txt`` defines keycode
+folder: `aliases.txt`_ and `materials.txt`_. ``aliases.txt`` defines keycode
 shortcuts for query blueprints, and ``materials.txt`` defines forbidden
 materials and material preferences for build blueprints. The formats for these
-files are described in the files themselves.
+files are described in the files themselves, and default configuration that all
+players can build on is stored in `aliases-common.txt`_ and
+`materials-common.txt`_ in the ``hack/data/quickfort/`` directory.
 
 .. _blueprint plugin: https://docs.dfhack.org/en/stable/docs/Plugins.html#blueprint
-.. _blueprints/README.txt: https://github.com/DFHack/dfhack/tree/develop/data/blueprints/README.txt
 .. _blueprints/library: https://github.com/DFHack/dfhack/tree/develop/data/blueprints/library
-.. _original Quickfort documentation: https://github.com/joelpt/quickfort#manual-material-selection
+.. _aliases.txt: https://github.com/DFHack/dfhack/tree/develop/dfhack-config/quickfort/aliases.txt
+.. _materials.txt: https://github.com/DFHack/dfhack/tree/develop/dfhack-config/quickfort/materials.txt
+.. _aliases-common.txt: https://github.com/DFHack/dfhack/tree/develop/data/quickfort/aliases-common.txt
+.. _materials-common.txt: https://github.com/DFHack/dfhack/tree/develop/data/quickfort/materials-common.txt
 ]====]
 
 -- reqscript all internal files here, even if they're not directly used by this
 -- top-level file. this ensures transitive dependencies are reloaded if any
 -- files have changed.
+local quickfort_aliases = reqscript('internal/quickfort/aliases')
 local quickfort_build = reqscript('internal/quickfort/build')
 local quickfort_building = reqscript('internal/quickfort/building')
 local quickfort_command = reqscript('internal/quickfort/command')
 local quickfort_common = reqscript('internal/quickfort/common')
 local quickfort_dig = reqscript('internal/quickfort/dig')
+local quickfort_keycodes = reqscript('internal/quickfort/keycodes')
 local quickfort_list = reqscript('internal/quickfort/list')
 local quickfort_parse = reqscript('internal/quickfort/parse')
 local quickfort_place = reqscript('internal/quickfort/place')
@@ -120,7 +121,7 @@ quickfort set [<key> <value>]
     Allows you to modify the active quickfort configuration. Just run
     "quickfort set" to show current settings.
 quickfort reset
-    Resets quickfort script state and re-reads all configuration files.
+    Resets quickfort configuration to defaults.
 quickfort list [-l|--library]
     Lists blueprints in the "blueprints" folder. Specify -l to include library
     blueprints.
@@ -128,26 +129,29 @@ quickfort <command> <list_num> [<options>]
     Applies the blueprint with the number from the list command.
 quickfort <command> <filename> [-s|--sheet <sheet_num>] [<options>]
     Applies the blueprint from the named file. If it is an .xlsx file, the -s
-    parameter is required to identify the sheet (the first sheet is "-s 1").
+    parameter is required to identify the sheet. The first sheet is "-s 1".
 
 <command> can be one of:
 
-run     applies the blueprint at your current active cursor position.
-orders  uses the manager interface to queue up orders for the specified
+run     Applies the blueprint at your current cursor position. It doesn't matter
+        which mode you are in. You just need an active cursor.
+orders  Uses the manager interface to queue up orders for the specified
         build-mode blueprint.
-undo    applies the inverse of the specified blueprint, depending on its type.
-        Dig tiles are undesignated, buildings are canceled or removed
-        (depending on their construction status), and stockpiles are removed.
-        No effect for query blueprints.
+undo    Applies the inverse of the specified blueprint. Dig tiles are
+        undesignated, buildings are canceled or removed (depending on their
+        construction status), and stockpiles are removed. There is no effect for
+        query blueprints.
 
 <options> can be zero or more of:
 
 -q, --quiet
     Don't report on what actions were taken (error messages are still shown).
 -v, --verbose
-    Output extra debugging information.
+    Output extra debugging information. This is especially useful if the
+    blueprint isn't being applied like you expect.
 
-For more info, see: https://docs.dfhack.org/en/stable/docs/_auto/base.html#quickfort
+For more info, see:
+https://docs.dfhack.org/en/stable/docs/_auto/base.html#quickfort
 ]]
 end
 

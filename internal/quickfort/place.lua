@@ -17,6 +17,7 @@ end
 require('dfhack.buildings') -- loads additional functions into dfhack.buildings
 local quickfort_common = reqscript('internal/quickfort/common')
 local quickfort_building = reqscript('internal/quickfort/building')
+local quickfort_query = reqscript('internal/quickfort/query')
 local log = quickfort_common.log
 
 local function is_valid_stockpile_tile(pos)
@@ -45,23 +46,23 @@ local function is_valid_stockpile_extent(s)
 end
 
 local stockpile_db = {
-    a={label='Animal'},
-    f={label='Food'},
-    u={label='Furniture'},
-    n={label='Coins'},
-    y={label='Corpses'},
-    r={label='Refuse'},
-    s={label='Stone'},
-    w={label='Wood'},
-    e={label='Gem'},
-    b={label='Bar/Block'},
-    h={label='Cloth'},
-    l={label='Leather'},
-    z={label='Ammo'},
-    S={label='Sheets'},
-    g={label='Finished Goods'},
-    p={label='Weapons'},
-    d={label='Armor'},
+    a={label='Animal', index=0},
+    f={label='Food', index=1},
+    u={label='Furniture', index=2},
+    n={label='Coins', index=7},
+    y={label='Corpses', index=3},
+    r={label='Refuse', index=4},
+    s={label='Stone', index=5},
+    w={label='Wood', index=13},
+    e={label='Gem', index=9},
+    b={label='Bar/Block', index=8},
+    h={label='Cloth', index=12},
+    l={label='Leather', index=11},
+    z={label='Ammo', index=6},
+    S={label='Sheets', index=16},
+    g={label='Finished Goods', index=10},
+    p={label='Weapons', index=14},
+    d={label='Armor', index=15},
 }
 for _, v in pairs(stockpile_db) do
     v.has_extents = true
@@ -73,11 +74,37 @@ for _, v in pairs(stockpile_db) do
     v.is_valid_extent_fn = is_valid_stockpile_extent
 end
 
-local function init_stockpile_settings(bld, type)
-    print('stockpile settings initialization not yet implemented')
+local function init_stockpile_settings(zlevel, stockpile_query_grid)
+    local saved_verbosity = quickfort_common.verbose
+    quickfort_common.verbose = false
+    quickfort_query.do_run(zlevel, stockpile_query_grid)
+    quickfort_common.verbose = saved_verbosity
 end
 
-local function create_stockpile(s)
+local function get_stockpile_query_text(stockpile_type)
+    return string.format('s{Down %d}e^', stockpile_db[stockpile_type].index)
+end
+
+local function queue_stockpile_settings_init(s, stockpile_query_grid)
+    local query_x, query_y
+    for extent_x, col in ipairs(s.extent_grid) do
+        for extent_y, in_extent in ipairs(col) do
+            if in_extent then
+                query_x = s.pos.x + extent_x - 1
+                query_y = s.pos.y + extent_y - 1
+                break
+            end
+        end
+        if active_x then break end
+    end
+    if not stockpile_query_grid[query_y] then
+        stockpile_query_grid[query_y] = {}
+    end
+    stockpile_query_grid[query_y][query_x] =
+            {cell='',text=get_stockpile_query_text(s.type)}
+end
+
+local function create_stockpile(s, stockpile_query_grid)
     log('creating %s stockpile at map coordinates (%d, %d, %d), defined' ..
         ' from spreadsheet cells: %s',
         stockpile_db[s.type].label, s.pos.x, s.pos.y, s.pos.z,
@@ -95,7 +122,7 @@ local function create_stockpile(s)
     end
     -- constructBuilding deallocates extents, so we have to assign it after
     bld.room.extents = extents
-    init_stockpile_settings(bld, s.type)
+    queue_stockpile_settings_init(s, stockpile_query_grid)
     return ntiles
 end
 
@@ -116,13 +143,15 @@ function do_run(zlevel, grid)
     stats.occupied.value = quickfort_building.check_tiles_and_extents(
         stockpiles, stockpile_db)
 
+    local stockpile_query_grid = {}
     for _, s in ipairs(stockpiles) do
         if s.pos then
-            local ntiles = create_stockpile(s)
+            local ntiles = create_stockpile(s, stockpile_query_grid)
             stats.tiles_designated.value = stats.tiles_designated.value + ntiles
             stats.piles_designated.value = stats.piles_designated.value + 1
         end
     end
+    init_stockpile_settings(zlevel, stockpile_query_grid)
     return stats
 end
 

@@ -33,7 +33,7 @@ local blueprint_files = {}
 
 local function scan_blueprints()
     local paths = dfhack.filesystem.listdir_recursive(
-        quickfort_common.settings['blueprints_dir'], nil, false)
+        quickfort_common.settings['blueprints_dir'].value, nil, false)
     blueprint_files = {}
     local library_files = {}
     for _, v in ipairs(paths) do
@@ -97,7 +97,7 @@ function do_list(in_args)
             end
             local start_comment = ''
             if v.modeline.start_comment and #v.modeline.start_comment > 0 then
-                start_comment = string.format('; place cursor: %s',
+                start_comment = string.format('; cursor start: %s',
                                               v.modeline.start_comment)
             end
             print(string.format('%d) "%s" (%s%s%s',

@@ -508,7 +508,8 @@ local function do_run_impl(zlevel, grid)
             log('applying spreadsheet cell %s with text "%s" to map' ..
                 ' coordinates (%d, %d, %d)', cell, text, pos.x, pos.y, pos.z)
             local keys, extent = quickfort_common.parse_cell(text)
-            local marker_mode = quickfort_common.settings['force_marker_mode']
+            local marker_mode =
+                    quickfort_common.settings['force_marker_mode'].value
             if keys:startswith('m') then
                 keys = string.sub(keys, 2)
                 marker_mode = true
