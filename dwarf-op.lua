@@ -127,7 +127,7 @@ Examples::
 :waves:         selects dwarves from the specified migration waves. Waves are
                 enumerated starting at 0 and increasing by 1 with each wave. The
                 waves go by season and year and thus should match what you see
-                in `getwaves` or Dwarf Therapist. It is recommended that you
+                in `list-waves` or Dwarf Therapist. It is recommended that you
                 ``-show`` the selected dwarves before modifying.
 
                 Example::

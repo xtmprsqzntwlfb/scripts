@@ -21,8 +21,8 @@ local validArgs = utils.invert({
 local args = utils.processArgs({...}, validArgs)
 local help = [====[
 
-animalcontrol
-=============
+animal-control
+==============
 Animal control is a script useful for deciding what animals to butcher and geld.
 
 While not as powerful as Dwarf Therapist in managing animals - in so far as
@@ -32,11 +32,11 @@ slaughter or gelding, you can even do so enmasse if you so choose.
 
 Examples::
 
-  animalcontrol -race DOG
-  animalcontrol -race DOG -male -notgelded -showstats
-  animalcontrol -markfor gelding -id 1988
-  animalcontrol -markfor slaughter -id 1988
-  animalcontrol -gelded -markedfor slaughter -unmarkfor slaughter
+  animal-control -race DOG
+  animal-control -race DOG -male -notgelded -showstats
+  animal-control -markfor gelding -id 1988
+  animal-control -markfor slaughter -id 1988
+  animal-control -gelded -markedfor slaughter -unmarkfor slaughter
 
 **Selection options:**
 

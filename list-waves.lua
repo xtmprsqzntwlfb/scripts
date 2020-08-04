@@ -12,17 +12,17 @@ local validArgs = utils.invert({
 local args = utils.processArgs({...}, validArgs)
 local help = [====[
 
-getwaves
-========
+list-waves
+==========
 This script displays information about migration waves of the specified citizen(s).
 
 Examples::
 
-  getwaves -all -showarrival -granularity days
-  getwaves -all -showarrival
-  getwaves -unit -granularity days
-  getwaves -unit
-  getwaves -unit -all -showarrival -granularity days
+  list-waves -all -showarrival -granularity days
+  list-waves -all -showarrival
+  list-waves -unit -granularity days
+  list-waves -unit
+  list-waves -unit -all -showarrival -granularity days
 
 **Selection options:**
 
