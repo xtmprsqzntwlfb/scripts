@@ -96,68 +96,98 @@ local function flood_fill(grid, x, y, seen_grid, data, db, aliases)
     return 0
 end
 
+-- pass in data's id as from_id to just get a count of live extent tiles
 local function swap_id(data, seen_grid, from_id)
+    local num_swapped = 0
     for x=data.x_min,data.x_max do
         for y=data.y_min,data.y_max do
             if seen_grid[x][y] == from_id then
                 seen_grid[x][y] = data.id
+                num_swapped = num_swapped + 1
             end
         end
     end
+    return num_swapped
 end
 
--- split extents that are larger than their max_width into parts
-local function split_by_width(data_tables, seen_grid, db)
+-- move extent area until we have a live extent tile on the min side and adjust
+-- bounds of data and data_copy accordingly
+-- returns whether we found a live tile in our extent area
+local function trim_from_min(data, data_copy, max_dim, seen_grid, fns)
+    while fns.get_max_pos(data_copy) >= fns.get_min_pos(data) do
+        fns.set_max_pos(data, fns.get_min_pos(data))
+        if swap_id(data, seen_grid, data.id) > 0 then break end
+        fns.set_min_pos(data, fns.get_min_pos(data) + 1)
+    end
+    if fns.get_max_pos(data_copy) < fns.get_min_pos(data) then return false end
+    fns.set_max_pos(data,
+                    math.min(fns.get_max_pos(data_copy),
+                             fns.get_min_pos(data) + max_dim - 1))
+    fns.set_min_pos(data_copy, fns.get_max_pos(data) + 1)
+    return true
+end
+
+-- shrink extent area on max side until it has a live tile
+-- assumes we have at least one live tile
+local function trim_from_max(data, seen_grid, fns)
+    local saved_min_pos = fns.get_min_pos(data)
+    while true do
+        fns.set_min_pos(data, fns.get_max_pos(data))
+        if swap_id(data, seen_grid, data.id) > 0 then break end
+        fns.set_max_pos(data, fns.get_min_pos(data) - 1)
+    end
+    fns.set_min_pos(data, saved_min_pos)
+end
+
+-- split extents that are larger than their max dimension size into parts, but
+-- make sure each new extent is properly bounded (i.e. it has live tiles on each
+-- of its edges)
+local function split_extent(data_tables, seen_grid, db, fns)
     local trimmings = {}
-    for _, data in ipairs(data_tables) do
-        local width = data.x_max - data.x_min + 1
-        local max_width = db[data.type].max_width
+    for i, data in ipairs(data_tables) do
+        local max_dim = fns.get_max_dim(db[data.type])
         local cuts = 0
-        while width > max_width do
-            cuts = cuts + 1
+        while (fns.get_max_pos(data) - fns.get_min_pos(data) + 1) > max_dim do
             local data_copy = copyall(data)
-            data_copy.id = #data_tables + #trimmings + 1
-            data.x_max = data.x_min + max_width - 1
-            data_copy.x_min = data.x_max + 1
+            if not trim_from_min(data, data_copy, max_dim, seen_grid, fns) then
+                break
+            end
+            trim_from_max(data, seen_grid, fns)
+            cuts = cuts + 1
+            table.insert(trimmings, data)
+            data_copy.id = #data_tables - i + #trimmings + 1
             swap_id(data_copy, seen_grid, data.id)
-            table.insert(trimmings, data_copy)
             data = data_copy
-            width = width - max_width
         end
-        if cuts > 0 then
-            log('%s building/stockpile too wide; splitting into %d parts ' ..
+        if swap_id(data, seen_grid, data.id) > 0 then
+            cuts = cuts + 1
+            table.insert(trimmings, data)
+        end
+        if cuts > 1 then
+            log('%s area too big; splitting into %d parts ' ..
                 '(defined in spreadsheet cells %s)',
-                db[data.type].label, cuts+1, table.concat(data.cells, ', '))
+                db[data.type].label, cuts, table.concat(data.cells, ', '))
         end
     end
-    for _, v in ipairs(trimmings) do table.insert(data_tables, v) end
+    return trimmings
 end
 
--- split extents that are larger than their max_height into parts
+local function split_by_width(data_tables, seen_grid, db)
+    return split_extent(data_tables, seen_grid, db, {
+            get_max_dim=function (db_entry) return db_entry.max_width end,
+            get_min_pos=function (data) return data.x_min end,
+            get_max_pos=function (data) return data.x_max end,
+            set_min_pos=function (data, val) data.x_min = val end,
+            set_max_pos=function (data, val) data.x_max = val end})
+end
+
 local function split_by_height(data_tables, seen_grid, db)
-    trimmings = {}
-    for _, data in ipairs(data_tables) do
-        local height = data.y_max - data.y_min + 1
-        local max_height = db[data.type].max_height
-        local cuts = 0
-        while height > max_height do
-            cuts = cuts + 1
-            local data_copy = copyall(data)
-            data_copy.id = #data_tables + #trimmings + 1
-            data.y_max = data.y_min + max_height - 1
-            data_copy.y_min = data.y_max + 1
-            swap_id(data_copy, seen_grid, data.id)
-            table.insert(trimmings, data_copy)
-            data = data_copy
-            height = height - max_height
-        end
-        if cuts > 0 then
-            log('%s building/stockpile too tall; splitting into %d parts ' ..
-                '(defined in spreadsheet cells %s)',
-                db[data.type].label, cuts+1, table.concat(data.cells, ', '))
-        end
-    end
-    for _, v in ipairs(trimmings) do table.insert(data_tables, v) end
+    return split_extent(data_tables, seen_grid, db, {
+            get_max_dim=function (db_entry) return db_entry.max_height end,
+            get_min_pos=function (data) return data.y_min end,
+            get_max_pos=function (data) return data.y_max end,
+            set_min_pos=function (data, val) data.y_min = val end,
+            set_max_pos=function (data, val) data.y_max = val end})
 end
 
 -- expand multi-tile buildings that are less than their min dimensions around
@@ -228,8 +258,8 @@ function init_buildings(zlevel, grid, buildings, db, aliases)
             ::continue::
         end
     end
-    split_by_width(data_tables, seen_grid, db)
-    split_by_height(data_tables, seen_grid, db)
+    data_tables = split_by_width(data_tables, seen_grid, db)
+    data_tables = split_by_height(data_tables, seen_grid, db)
     expand_buildings(data_tables, seen_grid, db)
     logfn(dump_seen_grid, seen_grid, #data_tables)
     for _, data in ipairs(data_tables) do
