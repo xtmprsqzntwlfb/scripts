@@ -145,6 +145,10 @@ end
 -- ************ post construction fixup functions ************ --
 --
 
+local function post_construction_init_workshop(bld)
+    bld.profile.max_general_orders = 5
+end
+
 local function post_construction_open_gate(bld)
     bld.gate_flags.closed = false
 end
@@ -581,6 +585,9 @@ for _, v in pairs(building_db) do
             v.min_width, v.max_width, v.min_height, v.max_height = 1, 1, 1, 1
         end
     end
+    if v.type == df.building_type.Workshop then
+        v.post_construction_fn = post_construction_init_workshop
+    end
     if v.type == df.building_type.Bridge then
        v.min_width, v.max_width, v.min_height, v.max_height = 1, 10, 1, 10
        v.is_valid_tile_fn = is_valid_tile_has_space
@@ -740,6 +747,7 @@ function do_run(zlevel, grid)
             stats.designated.value = stats.designated.value + 1
         end
     end
+    dfhack.job.checkBuildingsNow()
     return stats
 end
 
