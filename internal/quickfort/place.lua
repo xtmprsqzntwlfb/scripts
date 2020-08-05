@@ -152,6 +152,7 @@ function do_run(zlevel, grid)
         end
     end
     init_stockpile_settings(zlevel, stockpile_query_grid)
+    dfhack.job.checkBuildingsNow()
     return stats
 end
 
