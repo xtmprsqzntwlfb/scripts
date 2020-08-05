@@ -79,9 +79,7 @@ configuration stored in the file:
     Set to "true" or "false". If true, will designate dig blueprints in marker
     mode. If false, only cells with dig codes explicitly prefixed with ``m``
     will be designated in marker mode.
-``stockpiles_max_barrels`` (default: -1)
-``stockpiles_max_bins`` (default: -1)
-``stockpiles_max_wheelbarrows`` (default: 0)
+``stockpiles_max_barrels``, ``stockpiles_max_bins``, and ``stockpiles_max_wheelbarrows`` (defaults: -1, -1, 0)
     Set to the maximum number of resources you want assigned to stockpiles of
     the relevant types. Set to -1 for DF defaults (number of stockpile tiles
     for stockpiles that take barrels and bins, 1 wheelbarrow for stone
