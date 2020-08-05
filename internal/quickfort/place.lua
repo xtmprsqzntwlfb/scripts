@@ -47,22 +47,22 @@ end
 
 local stockpile_db = {
     a={label='Animal', index=0},
-    f={label='Food', index=1},
+    f={label='Food', index=1, want_barrels=true},
     u={label='Furniture', index=2},
-    n={label='Coins', index=7},
+    n={label='Coins', index=7, want_bins=true},
     y={label='Corpses', index=3},
     r={label='Refuse', index=4},
-    s={label='Stone', index=5},
+    s={label='Stone', index=5, want_wheelbarrows=true},
     w={label='Wood', index=13},
-    e={label='Gem', index=9},
-    b={label='Bar/Block', index=8},
-    h={label='Cloth', index=12},
-    l={label='Leather', index=11},
-    z={label='Ammo', index=6},
-    S={label='Sheets', index=16},
-    g={label='Finished Goods', index=10},
-    p={label='Weapons', index=14},
-    d={label='Armor', index=15},
+    e={label='Gem', index=9, want_bins=true},
+    b={label='Bar/Block', index=8, want_bins=true},
+    h={label='Cloth', index=12, want_bins=true},
+    l={label='Leather', index=11, want_bins=true},
+    z={label='Ammo', index=6, want_bins=true},
+    S={label='Sheets', index=16, want_bins=true},
+    g={label='Finished Goods', index=10, want_bins=true},
+    p={label='Weapons', index=14, want_bins=true},
+    d={label='Armor', index=15, want_bins=true},
 }
 for _, v in pairs(stockpile_db) do
     v.has_extents = true
@@ -101,7 +101,7 @@ local function queue_stockpile_settings_init(s, stockpile_query_grid)
         stockpile_query_grid[query_y] = {}
     end
     stockpile_query_grid[query_y][query_x] =
-            {cell='',text=get_stockpile_query_text(s.type)}
+            {cell='generated',text=get_stockpile_query_text(s.type)}
 end
 
 local function create_stockpile(s, stockpile_query_grid)
@@ -110,10 +110,15 @@ local function create_stockpile(s, stockpile_query_grid)
         stockpile_db[s.type].label, s.pos.x, s.pos.y, s.pos.z,
         table.concat(s.cells, ', '))
     local extents, ntiles = quickfort_building.make_extents(s, stockpile_db)
-    local room = {x=s.pos.x, y=s.pos.y, width=s.width, height=s.height}
+    local fields = {room={x=s.pos.x, y=s.pos.y, width=s.width, height=s.height}}
+    if stockpile_db[s.type].want_barrels then fields.max_barrels = ntiles end
+    if stockpile_db[s.type].want_bins then fields.max_bins = ntiles end
+    if stockpile_db[s.type].want_wheelbarrows then
+        fields.max_wheelbarrows = 1
+    end
     local bld, err = dfhack.buildings.constructBuilding{
         type=df.building_type.Stockpile, abstract=true, pos=s.pos,
-        width=s.width, height=s.height, fields={room=room}}
+        width=s.width, height=s.height, fields=fields}
     if not bld then
         if extents then df.delete(extents) end
         -- this is an error instead of a qerror since our validity checking
