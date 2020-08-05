@@ -127,7 +127,7 @@ function expand_aliases(text)
     end
     local expanded_text = table.concat(tokens, '')
     if text ~= expanded_text then
-        log('expanded keys to: "%s"', expanded_text)
+        log('expanded keys to: "%s"', table.concat(tokens, ' '))
     end
     return tokens
 end
