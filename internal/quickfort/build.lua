@@ -389,8 +389,8 @@ local building_db = {
         type=df.building_type.Workshop, subtype=df.workshop_type.Custom,
         custom=0},
     wp={label='Screw Press',
-        type=df.building_type.Workshop, subtype=df.workshop_type.Tool,
-        min_width=1, max_width=1, min_height=1, max_height=1},
+        type=df.building_type.Workshop, subtype=df.workshop_type.Custom,
+        custom=1, min_width=1, max_width=1, min_height=1, max_height=1},
     -- furnaces
     ew={label='Wood Furnace',
         type=df.building_type.Furnace, subtype=df.furnace_type.WoodFurnace},
