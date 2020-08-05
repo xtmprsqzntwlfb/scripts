@@ -21,8 +21,8 @@ real" in Dwarf Fortress, and then export your map using the DFHack
 `blueprint plugin`_ for later replay. Blueprint files should go in the
 ``blueprints`` subfolder in the main DF folder.
 
-For more details on blueprint file syntax, look at the ready-to-use examples in
-the `blueprints/library`_ folder.
+For more details on blueprint file syntax, see the `Blueprints Guidebook`_ or
+browse through the ready-to-use examples in the `blueprints/library`_ folder.
 
 Usage:
 
@@ -95,6 +95,7 @@ players can build on is stored in `aliases-common.txt`_ and
 `materials-common.txt`_ in the ``hack/data/quickfort/`` directory.
 
 .. _blueprint plugin: https://docs.dfhack.org/en/stable/docs/Plugins.html#blueprint
+.. _Blueprints Guidebook: https://github.com/DFHack/dfhack/tree/develop/data/blueprints
 .. _blueprints/library: https://github.com/DFHack/dfhack/tree/develop/data/blueprints/library
 .. _aliases.txt: https://github.com/DFHack/dfhack/tree/develop/dfhack-config/quickfort/aliases.txt
 .. _materials.txt: https://github.com/DFHack/dfhack/tree/develop/dfhack-config/quickfort/materials.txt
