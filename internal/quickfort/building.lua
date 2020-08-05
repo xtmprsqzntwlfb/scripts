@@ -117,7 +117,10 @@ local function chunk_extents(data_tables, seen_grid, db)
         local max_height = db[data.type].max_height
         local width = data.x_max - data.x_min + 1
         local height = data.y_max - data.y_min + 1
-        if width <= max_width and height <= max_height then goto continue end
+        if width <= max_width and height <= max_height then
+            table.insert(chunks, data)
+            goto continue
+        end
         local chunk = nil
         local cuts = 0
         for x=data.x_min,data.x_max do
