@@ -104,6 +104,37 @@ local function queue_stockpile_settings_init(s, stockpile_query_grid)
             {cell='generated',text=get_stockpile_query_text(s.type)}
 end
 
+local function init_containers(db_entry, ntiles, fields)
+    if db_entry.want_barrels then
+        local max_barrels =
+                quickfort_common.settings['stockpiles_max_barrels'].value
+        if max_barrels < 0 or max_barrels >= ntiles then
+            fields.max_barrels = ntiles
+        else
+            fields.max_barrels = max_barrels
+        end
+    end
+    if db_entry.want_bins then
+        local max_bins = quickfort_common.settings['stockpiles_max_bins'].value
+        if max_bins < 0 or max_bins >= ntiles then
+            fields.max_bins = ntiles
+        else
+            fields.max_bins = max_bins
+        end
+    end
+    if db_entry.want_wheelbarrows then
+        local max_wb =
+                quickfort_common.settings['stockpiles_max_wheelbarrows'].value
+        if max_wb < 0 then
+            fields.max_wheelbarrows = 1
+        elseif max_wb >= ntiles then
+            fields.max_wheelbarrows = ntiles
+        else
+            fields.max_wheelbarrows = max_wb
+        end
+    end
+end
+
 local function create_stockpile(s, stockpile_query_grid)
     log('creating %s stockpile at map coordinates (%d, %d, %d), defined' ..
         ' from spreadsheet cells: %s',
@@ -111,11 +142,7 @@ local function create_stockpile(s, stockpile_query_grid)
         table.concat(s.cells, ', '))
     local extents, ntiles = quickfort_building.make_extents(s, stockpile_db)
     local fields = {room={x=s.pos.x, y=s.pos.y, width=s.width, height=s.height}}
-    if stockpile_db[s.type].want_barrels then fields.max_barrels = ntiles end
-    if stockpile_db[s.type].want_bins then fields.max_bins = ntiles end
-    if stockpile_db[s.type].want_wheelbarrows then
-        fields.max_wheelbarrows = 1
-    end
+    init_containers(stockpile_db[s.type], ntiles, fields)
     local bld, err = dfhack.buildings.constructBuilding{
         type=df.building_type.Stockpile, abstract=true, pos=s.pos,
         width=s.width, height=s.height, fields=fields}
