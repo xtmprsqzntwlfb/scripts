@@ -29,7 +29,7 @@ end
 
 -- pretty-prints the populated range of the seen_grid
 local function dump_seen_grid(args)
-    local seen_grid, max_id = args[1], args[2]
+    local label, seen_grid, max_id = args[1], args[2], args[3]
     local x_min, x_max, y_min, y_max = 30000, -30000, 30000, -30000
     for x, row in pairs(seen_grid) do
         if x < x_min then x_min = x end
@@ -39,7 +39,7 @@ local function dump_seen_grid(args)
             if y > y_max then y_max = y end
         end
     end
-    print('building/stockpile boundary map:')
+    print(string.format('boundary map (%s):', label))
     local field_width = get_digit_count(max_id)
     local blank = string.rep(' ', field_width+1)
     for y=y_min,y_max do
@@ -96,98 +96,54 @@ local function flood_fill(grid, x, y, seen_grid, data, db, aliases)
     return 0
 end
 
--- pass in data's id as from_id to just get a count of live extent tiles
 local function swap_id(data, seen_grid, from_id)
-    local num_swapped = 0
     for x=data.x_min,data.x_max do
         for y=data.y_min,data.y_max do
             if seen_grid[x][y] == from_id then
                 seen_grid[x][y] = data.id
-                num_swapped = num_swapped + 1
             end
         end
     end
-    return num_swapped
 end
 
--- move extent area until we have a live extent tile on the min side and adjust
--- bounds of data and data_copy accordingly
--- returns whether we found a live tile in our extent area
-local function trim_from_min(data, data_copy, max_dim, seen_grid, fns)
-    while fns.get_max_pos(data_copy) >= fns.get_min_pos(data) do
-        fns.set_max_pos(data, fns.get_min_pos(data))
-        if swap_id(data, seen_grid, data.id) > 0 then break end
-        fns.set_min_pos(data, fns.get_min_pos(data) + 1)
-    end
-    if fns.get_max_pos(data_copy) < fns.get_min_pos(data) then return false end
-    fns.set_max_pos(data,
-                    math.min(fns.get_max_pos(data_copy),
-                             fns.get_min_pos(data) + max_dim - 1))
-    fns.set_min_pos(data_copy, fns.get_max_pos(data) + 1)
-    return true
-end
-
--- shrink extent area on max side until it has a live tile
--- assumes we have at least one live tile
-local function trim_from_max(data, seen_grid, fns)
-    local saved_min_pos = fns.get_min_pos(data)
-    while true do
-        fns.set_min_pos(data, fns.get_max_pos(data))
-        if swap_id(data, seen_grid, data.id) > 0 then break end
-        fns.set_max_pos(data, fns.get_min_pos(data) - 1)
-    end
-    fns.set_min_pos(data, saved_min_pos)
-end
-
--- split extents that are larger than their max dimension size into parts, but
--- make sure each new extent is properly bounded (i.e. it has live tiles on each
--- of its edges)
-local function split_extent(data_tables, seen_grid, db, fns)
-    local trimmings = {}
+-- if an extent is too large in any dimension, chunk it up intelligently. we
+-- can't just split it into a grid since the pieces might not align cleanly
+-- (think of a solid block of staggered workshops of the same type). instead,
+-- scan the edges and break off pieces as we find them.
+local function chunk_extents(data_tables, seen_grid, db)
+    local chunks = {}
     for i, data in ipairs(data_tables) do
-        local max_dim = fns.get_max_dim(db[data.type])
+        local max_width = db[data.type].max_width
+        local max_height = db[data.type].max_height
+        local width = data.x_max - data.x_min + 1
+        local height = data.y_max - data.y_min + 1
+        if width <= max_width and height <= max_height then goto continue end
+        local chunk = nil
         local cuts = 0
-        while (fns.get_max_pos(data) - fns.get_min_pos(data) + 1) > max_dim do
-            local data_copy = copyall(data)
-            if not trim_from_min(data, data_copy, max_dim, seen_grid, fns) then
-                break
+        for x=data.x_min,data.x_max do
+            for y=data.y_min,data.y_max do
+                if seen_grid[x][y] == data.id then
+                    chunk = copyall(data)
+                    chunk.id = #data_tables - (i - 1) + #chunks + 1
+                    chunk.x_min, chunk.y_min = x, y
+                    chunk.x_max = math.min(x + max_width - 1, data.x_max)
+                    chunk.y_max = math.min(y + max_height - 1, data.y_max)
+                    swap_id(chunk, seen_grid, data.id)
+                    table.insert(chunks, chunk)
+                    cuts = cuts + 1
+                end
             end
-            trim_from_max(data, seen_grid, fns)
-            cuts = cuts + 1
-            table.insert(trimmings, data)
-            data_copy.id = #data_tables - i + #trimmings + 1
-            swap_id(data_copy, seen_grid, data.id)
-            data = data_copy
         end
-        if swap_id(data, seen_grid, data.id) > 0 then
-            cuts = cuts + 1
-            table.insert(trimmings, data)
-        end
-        if cuts > 1 then
-            log('%s area too big; splitting into %d parts ' ..
-                '(defined in spreadsheet cells %s)',
-                db[data.type].label, cuts, table.concat(data.cells, ', '))
-        end
+        -- use the original data.id for the last chunk so our ids are contiguous
+        local old_chunk_id = chunk.id
+        chunk.id = data.id
+        swap_id(chunk, seen_grid, old_chunk_id)
+        log('%s area too big; chunking into %d parts ' ..
+            '(defined in spreadsheet cells %s)',
+            db[data.type].label, cuts, table.concat(data.cells, ', '))
+        ::continue::
     end
-    return trimmings
-end
-
-local function split_by_width(data_tables, seen_grid, db)
-    return split_extent(data_tables, seen_grid, db, {
-            get_max_dim=function (db_entry) return db_entry.max_width end,
-            get_min_pos=function (data) return data.x_min end,
-            get_max_pos=function (data) return data.x_max end,
-            set_min_pos=function (data, val) data.x_min = val end,
-            set_max_pos=function (data, val) data.x_max = val end})
-end
-
-local function split_by_height(data_tables, seen_grid, db)
-    return split_extent(data_tables, seen_grid, db, {
-            get_max_dim=function (db_entry) return db_entry.max_height end,
-            get_min_pos=function (data) return data.y_min end,
-            get_max_pos=function (data) return data.y_max end,
-            set_min_pos=function (data, val) data.y_min = val end,
-            set_max_pos=function (data, val) data.y_max = val end})
+    return chunks
 end
 
 -- expand multi-tile buildings that are less than their min dimensions around
@@ -258,10 +214,11 @@ function init_buildings(zlevel, grid, buildings, db, aliases)
             ::continue::
         end
     end
-    data_tables = split_by_width(data_tables, seen_grid, db)
-    data_tables = split_by_height(data_tables, seen_grid, db)
+    logfn(dump_seen_grid, 'before chunking', seen_grid, #data_tables)
+    data_tables = chunk_extents(data_tables, seen_grid, db)
+    logfn(dump_seen_grid, 'after chunking', seen_grid, #data_tables)
     expand_buildings(data_tables, seen_grid, db)
-    logfn(dump_seen_grid, seen_grid, #data_tables)
+    logfn(dump_seen_grid, 'after expansion', seen_grid, #data_tables)
     for _, data in ipairs(data_tables) do
         local extent_grid, is_solid = build_extent_grid(seen_grid, data)
         if not extent_grid then
