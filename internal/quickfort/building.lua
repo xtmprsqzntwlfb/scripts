@@ -88,10 +88,14 @@ local function flood_fill(grid, x, y, seen_grid, data, db, aliases)
         end
     end
     if not extent.specified then
-        return flood_fill(grid, x-1, y, seen_grid, data, db, aliases) +
-                flood_fill(grid, x+1, y, seen_grid, data, db, aliases) +
+        return flood_fill(grid, x-1, y-1, seen_grid, data, db, aliases) +
+                flood_fill(grid, x-1, y, seen_grid, data, db, aliases) +
+                flood_fill(grid, x-1, y+1, seen_grid, data, db, aliases) +
                 flood_fill(grid, x, y-1, seen_grid, data, db, aliases) +
-                flood_fill(grid, x, y+1, seen_grid, data, db, aliases)
+                flood_fill(grid, x, y+1, seen_grid, data, db, aliases) +
+                flood_fill(grid, x+1, y-1, seen_grid, data, db, aliases) +
+                flood_fill(grid, x+1, y, seen_grid, data, db, aliases) +
+                flood_fill(grid, x+1, y+1, seen_grid, data, db, aliases)
     end
     return 0
 end
