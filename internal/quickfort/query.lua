@@ -28,8 +28,8 @@ local function is_queryable_tile(pos)
     return not flags.hidden and occupancy.building ~= 0
 end
 
-local function move_cursor(screen, overlay, pos)
-    overlay:moveCursorTo(pos)
+local function move_cursor(pos)
+    guidm.setCursorPos(pos)
     dfhack.gui.refreshSidebar()
 end
 
@@ -57,8 +57,6 @@ function do_run(zlevel, grid)
     load_aliases()
     local saved_cursor,saved_mode = guidm.getCursorPos(),df.global.ui.main.mode
     df.global.ui.main.mode = df.ui_sidebar_mode.QueryBuilding
-    local map_screen = dfhack.gui.getCurViewscreen(true)
-    local overlay = guidm.DwarfOverlay{}
 
     for y, row in pairs(grid) do
         for x, cell_and_text in pairs(row) do
@@ -74,7 +72,7 @@ function do_run(zlevel, grid)
             log('applying spreadsheet cell %s with text "%s" to map ' ..
                 'coordinates (%d, %d, %d)', cell, text, pos.x, pos.y, pos.z)
             local tokens = quickfort_aliases.expand_aliases(text)
-            move_cursor(map_screen, overlay, pos)
+            move_cursor(pos)
             local focus_string =
                     dfhack.gui.getFocusString(dfhack.gui.getCurViewscreen(true))
             local modifiers = {} -- tracks ctrl, shift, and alt modifiers
@@ -104,7 +102,7 @@ function do_run(zlevel, grid)
     end
 
     df.global.ui.main.mode = saved_mode
-    move_cursor(map_screen, overlay, saved_cursor)
+    move_cursor(saved_cursor)
     return stats
 end
 

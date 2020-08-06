@@ -55,6 +55,10 @@ local function is_gatherable(tileattrs)
     return tileattrs.shape == df.tiletype_shape.SHRUB
 end
 
+local function is_sapling(tileattrs)
+    return tileattrs.shape == df.tiletype_shape.SAPLING
+end
+
 local hard_natural_materials = utils.invert({
     df.tiletype_material.STONE,
     df.tiletype_material.FEATURE,
@@ -180,7 +184,9 @@ local function do_channel(ctx)
                  not is_fortification(ctx.tileattrs) and
                  not is_diggable_floor(ctx.tileattrs) and
                  not is_down_stair(ctx.tileattrs) and
-                 not is_removable_shape(ctx.tileattrs)) then
+                 not is_removable_shape(ctx.tileattrs) and
+                 not is_gatherable(ctx.tileattrs) and
+                 not is_sapling(ctx.tileattrs)) then
             return false
         end
     end
@@ -479,6 +485,7 @@ local function dig_tile(ctx, code, marker_mode)
     ctx.flags, ctx.occupancy = dfhack.maps.getTileFlags(ctx.pos)
     ctx.tileattrs = df.tiletype.attrs[dfhack.maps.getTileType(ctx.pos)]
     if designate_switch[code](ctx) then
+        dfhack.maps.getTileBlock(ctx.pos).flags.designated = true
         if not has_designation(ctx.flags, ctx.occupancy) then
             ctx.occupancy.dig_marked = false
         elseif code == "dM" then
@@ -555,7 +562,9 @@ end
 
 function do_run(zlevel, grid)
     values = values_run
-    return do_run_impl(zlevel, grid)
+    local stats = do_run_impl(zlevel, grid)
+    dfhack.job.checkDesignationsNow()
+    return stats
 end
 
 function do_orders(zlevel, grid)

@@ -21,8 +21,8 @@ real" in Dwarf Fortress, and then export your map using the DFHack
 `blueprint plugin`_ for later replay. Blueprint files should go in the
 ``blueprints`` subfolder in the main DF folder.
 
-For more details on blueprint file syntax, look at the ready-to-use examples in
-the `blueprints/library`_ folder.
+For more details on blueprint file syntax, see the `Blueprints Guidebook`_ or
+browse through the ready-to-use examples in the `blueprints/library`_ folder.
 
 Usage:
 
@@ -79,6 +79,12 @@ configuration stored in the file:
     Set to "true" or "false". If true, will designate dig blueprints in marker
     mode. If false, only cells with dig codes explicitly prefixed with ``m``
     will be designated in marker mode.
+``stockpiles_max_barrels``, ``stockpiles_max_bins``, and ``stockpiles_max_wheelbarrows`` (defaults: -1, -1, 0)
+    Set to the maximum number of resources you want assigned to stockpiles of
+    the relevant types. Set to -1 for DF defaults (number of stockpile tiles
+    for stockpiles that take barrels and bins, 1 wheelbarrow for stone
+    stockpiles). The default here for wheelbarrows is 0 since using wheelbarrows
+    normally *decreases* the efficiency of your fort.
 
 There are also two other configuration files in the ``dfhack-config/quickfort``
 folder: `aliases.txt`_ and `materials.txt`_. ``aliases.txt`` defines keycode
@@ -89,6 +95,7 @@ players can build on is stored in `aliases-common.txt`_ and
 `materials-common.txt`_ in the ``hack/data/quickfort/`` directory.
 
 .. _blueprint plugin: https://docs.dfhack.org/en/stable/docs/Plugins.html#blueprint
+.. _Blueprints Guidebook: https://github.com/DFHack/dfhack/tree/develop/data/blueprints
 .. _blueprints/library: https://github.com/DFHack/dfhack/tree/develop/data/blueprints/library
 .. _aliases.txt: https://github.com/DFHack/dfhack/tree/develop/dfhack-config/quickfort/aliases.txt
 .. _materials.txt: https://github.com/DFHack/dfhack/tree/develop/dfhack-config/quickfort/materials.txt

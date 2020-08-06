@@ -8,11 +8,12 @@ end
 local quickfort_common = reqscript('internal/quickfort/common')
 local log = quickfort_common.log
 
--- special key sequences inherited from python quickfort. these cannot be
--- overridden with aliases
+-- special keycode shortcuts inherited from python quickfort.
 local special_keys = {
     ['&']='Enter',
     ['+']='{Shift}',
+    ['!']='{Ctrl}',
+    ['~']='{Alt}',
     ['@']={'{Shift}','Enter'},
     ['^']='ESC',
     ['%']='{Wait}'
@@ -126,7 +127,7 @@ function expand_aliases(text)
     end
     local expanded_text = table.concat(tokens, '')
     if text ~= expanded_text then
-        log('expanded keys to: "%s"', expanded_text)
+        log('expanded keys to: "%s"', table.concat(tokens, ' '))
     end
     return tokens
 end

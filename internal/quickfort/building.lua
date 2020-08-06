@@ -29,7 +29,7 @@ end
 
 -- pretty-prints the populated range of the seen_grid
 local function dump_seen_grid(args)
-    local seen_grid, max_id = args[1], args[2]
+    local label, seen_grid, max_id = args[1], args[2], args[3]
     local x_min, x_max, y_min, y_max = 30000, -30000, 30000, -30000
     for x, row in pairs(seen_grid) do
         if x < x_min then x_min = x end
@@ -39,7 +39,7 @@ local function dump_seen_grid(args)
             if y > y_max then y_max = y end
         end
     end
-    print('building/stockpile boundary map:')
+    print(string.format('boundary map (%s):', label))
     local field_width = get_digit_count(max_id)
     local blank = string.rep(' ', field_width+1)
     for y=y_min,y_max do
@@ -106,58 +106,47 @@ local function swap_id(data, seen_grid, from_id)
     end
 end
 
--- split extents that are larger than their max_width into parts
-local function split_by_width(data_tables, seen_grid, db)
-    local trimmings = {}
-    for _, data in ipairs(data_tables) do
-        local width = data.x_max - data.x_min + 1
+-- if an extent is too large in any dimension, chunk it up intelligently. we
+-- can't just split it into a grid since the pieces might not align cleanly
+-- (think of a solid block of staggered workshops of the same type). instead,
+-- scan the edges and break off pieces as we find them.
+local function chunk_extents(data_tables, seen_grid, db)
+    local chunks = {}
+    for i, data in ipairs(data_tables) do
         local max_width = db[data.type].max_width
-        local cuts = 0
-        while width > max_width do
-            cuts = cuts + 1
-            local data_copy = copyall(data)
-            data_copy.id = #data_tables + #trimmings + 1
-            data.x_max = data.x_min + max_width - 1
-            data_copy.x_min = data.x_max + 1
-            swap_id(data_copy, seen_grid, data.id)
-            table.insert(trimmings, data_copy)
-            data = data_copy
-            width = width - max_width
-        end
-        if cuts > 0 then
-            log('%s building/stockpile too wide; splitting into %d parts ' ..
-                '(defined in spreadsheet cells %s)',
-                db[data.type].label, cuts+1, table.concat(data.cells, ', '))
-        end
-    end
-    for _, v in ipairs(trimmings) do table.insert(data_tables, v) end
-end
-
--- split extents that are larger than their max_height into parts
-local function split_by_height(data_tables, seen_grid, db)
-    trimmings = {}
-    for _, data in ipairs(data_tables) do
-        local height = data.y_max - data.y_min + 1
         local max_height = db[data.type].max_height
+        local width = data.x_max - data.x_min + 1
+        local height = data.y_max - data.y_min + 1
+        if width <= max_width and height <= max_height then
+            table.insert(chunks, data)
+            goto continue
+        end
+        local chunk = nil
         local cuts = 0
-        while height > max_height do
-            cuts = cuts + 1
-            local data_copy = copyall(data)
-            data_copy.id = #data_tables + #trimmings + 1
-            data.y_max = data.y_min + max_height - 1
-            data_copy.y_min = data.y_max + 1
-            swap_id(data_copy, seen_grid, data.id)
-            table.insert(trimmings, data_copy)
-            data = data_copy
-            height = height - max_height
+        for x=data.x_min,data.x_max do
+            for y=data.y_min,data.y_max do
+                if seen_grid[x][y] == data.id then
+                    chunk = copyall(data)
+                    chunk.id = #data_tables - (i - 1) + #chunks + 1
+                    chunk.x_min, chunk.y_min = x, y
+                    chunk.x_max = math.min(x + max_width - 1, data.x_max)
+                    chunk.y_max = math.min(y + max_height - 1, data.y_max)
+                    swap_id(chunk, seen_grid, data.id)
+                    table.insert(chunks, chunk)
+                    cuts = cuts + 1
+                end
+            end
         end
-        if cuts > 0 then
-            log('%s building/stockpile too tall; splitting into %d parts ' ..
-                '(defined in spreadsheet cells %s)',
-                db[data.type].label, cuts+1, table.concat(data.cells, ', '))
-        end
+        -- use the original data.id for the last chunk so our ids are contiguous
+        local old_chunk_id = chunk.id
+        chunk.id = data.id
+        swap_id(chunk, seen_grid, old_chunk_id)
+        log('%s area too big; chunking into %d parts ' ..
+            '(defined in spreadsheet cells %s)',
+            db[data.type].label, cuts, table.concat(data.cells, ', '))
+        ::continue::
     end
-    for _, v in ipairs(trimmings) do table.insert(data_tables, v) end
+    return chunks
 end
 
 -- expand multi-tile buildings that are less than their min dimensions around
@@ -228,10 +217,11 @@ function init_buildings(zlevel, grid, buildings, db, aliases)
             ::continue::
         end
     end
-    split_by_width(data_tables, seen_grid, db)
-    split_by_height(data_tables, seen_grid, db)
+    logfn(dump_seen_grid, 'before chunking', seen_grid, #data_tables)
+    data_tables = chunk_extents(data_tables, seen_grid, db)
+    logfn(dump_seen_grid, 'after chunking', seen_grid, #data_tables)
     expand_buildings(data_tables, seen_grid, db)
-    logfn(dump_seen_grid, seen_grid, #data_tables)
+    logfn(dump_seen_grid, 'after expansion', seen_grid, #data_tables)
     for _, data in ipairs(data_tables) do
         local extent_grid, is_solid = build_extent_grid(seen_grid, data)
         if not extent_grid then
