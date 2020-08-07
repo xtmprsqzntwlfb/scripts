@@ -1,3 +1,14 @@
+-- Lists all guildhall and temple agreements
+
+--[====[
+
+list-agreements
+===============
+
+Lists all guildhall and temple agreements in fortress mode.
+
+]====]
+
 local playerfortid = df.global.ui.site_id -- Player fortress id
 local templeagreements = {} -- Table of agreements for temples in player fort
 local guildhallagreements = {} -- Table of agreements for guildhalls in player fort
