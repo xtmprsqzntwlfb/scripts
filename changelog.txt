@@ -35,6 +35,7 @@ that repo.
 ## Misc Improvements
 - `add-recipe`: added tool recipes (minecarts, wheelbarrows, stepladders, etc.)
 - `add-recipe`: added a command explanation or error message when entering an invalid command
+- `armoks-blessing`: added adjustments to values and needs
 - `devel/query`: added many new query options
 - `digfort`: handled double quotes (") at the start of a string, allowing .csv files exported from spreadsheets to work without manual modification
 - `digfort`: documented that removing ramps, cutting trees, and gathering plants are indeed supported
