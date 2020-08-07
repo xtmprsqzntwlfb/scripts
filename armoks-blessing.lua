@@ -135,21 +135,23 @@ function brainwash_unit(unit)
         [df.value_type.COMMERCE]=41,
         [df.value_type.ROMANCE]=41,
         [df.value_type.PEACE]=-11,
-        [df.value_type.KNOWLEDGE]=41}
+        [df.value_type.KNOWLEDGE]=41,
+    }
     for k,v in pairs(list_of_values) do
         unit.status.current_soul.personality.values:insert("#",{new=true,type=k,strength=v})
     end
 
     unit.status.current_soul.personality.needs:resize(0)
     local list_of_needs={
-    [df.need_type.Socialize]=2,
-    [df.need_type.BeWithFriends]=2,
-    [df.need_type.TakeItEasy]=2,
-    [df.need_type.MakeMerry]=2,
-    [df.need_type.AdmireArt]=2,
---  [df.need_type.EatGoodMeal]=0, -- open bug 10262 as of 20200218
-    [df.need_type.PrayOrMeditate]=0,
-    [df.need_type.DrinkAlcohol]=1}
+        [df.need_type.Socialize]=2,
+        [df.need_type.BeWithFriends]=2,
+        [df.need_type.TakeItEasy]=2,
+        [df.need_type.MakeMerry]=2,
+        [df.need_type.AdmireArt]=2,
+    --  [df.need_type.EatGoodMeal]=0, -- open bug 10262 as of 20200218
+        [df.need_type.PrayOrMeditate]=0,
+        [df.need_type.DrinkAlcohol]=1,
+    }
     for k,v in pairs(list_of_needs) do
         if k == df.need_type.PrayOrMeditate then -- handle deity id, otherwise, the deity is set to -1
             if unit.hist_figure_id ~= -1 then
@@ -278,7 +280,7 @@ end
 function adjust_all_dwarves(skillname)
     for _,v in ipairs(df.global.world.units.all) do
         if v.race == df.global.ui.race_id and v.status.current_soul then
-            print("Adjusting "..dfhack.TranslateName(dfhack.units.getVisibleName(v)))
+            print("Adjusting "..dfhack.df2console(dfhack.TranslateName(dfhack.units.getVisibleName(v))))
             brainwash_unit(v)
             elevate_attributes(v)
             rejuvenate(v)
