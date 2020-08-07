@@ -116,6 +116,15 @@ function brainwash_unit(unit, profile)
         insert_preference(unit, df.unit_preference.T_type.HateCreature, list_of_creatures.BIRD_BUZZARD)
         insert_preference(unit, df.unit_preference.T_type.HateCreature, list_of_creatures.BIRD_VULTURE)
         insert_preference(unit, df.unit_preference.T_type.HateCreature, list_of_creatures.CRUNDLE)
+        if #df.global.world.poetic_forms.all > 0 then
+            insert_preference(unit, df.unit_preference.T_type.LikePoeticForm, 0) -- this just inserts the first song out of typically many.
+        end
+        if #df.global.world.musical_forms.all > 0 then
+            insert_preference(unit, df.unit_preference.T_type.LikeMusicalForm, 0) -- same goes for music
+        end
+        if #df.global.world.dance_forms.all > 0 then
+            insert_preference(unit, df.unit_preference.T_type.LikeDanceForm, 0) -- and dancing
+        end
         -- end IDEAL profile
 
     elseif profile == "GOTH" then
@@ -137,13 +146,13 @@ function brainwash_unit(unit, profile)
             insert_preference(unit, df.unit_preference.T_type.LikeCreature, list_of_creatures.DEMON_1)
         end
         if #df.global.world.poetic_forms.all > 0 then
-            insert_preference(unit, df.unit_preference.T_type.LikePoeticForm, 0) -- this just inserts the first song out of typically many.
+            insert_preference(unit, df.unit_preference.T_type.LikePoeticForm, #df.global.world.poetic_forms.all - 1) -- this just inserts the last song out of typically many.
         end
         if #df.global.world.musical_forms.all > 0 then
-            insert_preference(unit, df.unit_preference.T_type.LikeMusicalForm, 0) -- same goes for music
+            insert_preference(unit, df.unit_preference.T_type.LikeMusicalForm, #df.global.world.musical_forms.all - 1) -- same goes for music
         end
         if #df.global.world.dance_forms.all > 0 then
-            insert_preference(unit, df.unit_preference.T_type.LikeDanceForm, 0) -- and dancing
+            insert_preference(unit, df.unit_preference.T_type.LikeDanceForm, #df.global.world.dance_forms.all - 1) -- and dancing
         end
         -- end GOTH profile
     else
