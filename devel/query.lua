@@ -293,29 +293,6 @@ function TableLength(t)
     return count
 end
 
-function parseTableString(str)
-    tableParts = {}
-    for word in string.gmatch(str, '([^.]+)') do --thanks stack overflow
-        table.insert(tableParts, word)
-    end
-    curTable = nil
-    for k,v in pairs(tableParts) do
-      if curTable == nil then
-        if _G[v] ~= nil then
-            curTable = _G[v]
-        else
-            qerror("Table" .. v .. " does not exist.")
-        end
-      else
-        if curTable[v] ~= nil then
-            curTable = curTable[v]
-        else
-            qerror("Table" .. v .. " does not exist.")
-        end
-      end
-    end
-    return curTable
-end
 
 function parseKeyString(t,str)
     debugf(1,"parsing",t,str)
@@ -723,7 +700,7 @@ function main()
         print(help)
     elseif args.table then
         debugf(0,"table selection")
-        selection = parseTableString(args.table)
+        selection = utils.df_expr_to_ref(args.table)
         info=args.table
     elseif args.unit then
         debugf(0,"unit selection")
