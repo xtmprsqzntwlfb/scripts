@@ -68,7 +68,18 @@ function namescr:init()
     gui.simulateInput(setup_screen, 'SETUP_NAME_FORT')
 end
 function namescr:setName()
-    self.trg.name:assign(setup_screen.fort_name)
+    local name = setup_screen.fort_name
+    self.trg.name:assign(name)
+    if self.trg._type == df.unit then
+        local unit = self.trg
+        if unit.status and unit.status.current_soul then
+            unit.status.current_soul.name:assign(name)
+        end
+        local hf = df.historical_figure.find(unit.hist_figure_id)
+        if hf then
+            hf.name:assign(name)
+        end
+    end
 end
 function namescr:onRenderBody(dc)
     self._native.parent:render()
