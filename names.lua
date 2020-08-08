@@ -32,8 +32,8 @@ arguments:
     return
 end
 
-adv_screen = adv_screen or df.viewscreen_setupadventurest:new()
-adv_screen.page = df.viewscreen_setupadventurest.T_page.Background
+setup_screen = setup_screen or df.viewscreen_setupdwarfgamest:new()
+setup_screen.show_play_now = 0
 
 namescr = defclass(namescr, gui.Screen)
 namescr.focus_path = 'names'
@@ -64,11 +64,11 @@ function namescr:init()
         qerror("Target's name does not have a language")
     end
     self.trg = trg
-    adv_screen.adventurer.name:assign(trg.name)
-    gui.simulateInput(adv_screen, 'A_CUST_NAME')
+    setup_screen.fort_name:assign(trg.name)
+    gui.simulateInput(setup_screen, 'SETUP_NAME_FORT')
 end
 function namescr:setName()
-    self.trg.name:assign(self._native.parent.name) --hint:df.viewscreen_layer_choose_language_namest
+    self.trg.name:assign(setup_screen.fort_name)
 end
 function namescr:onRenderBody(dc)
     self._native.parent:render()
