@@ -13,6 +13,8 @@ that repo.
 
 # Future
 
+# 0.47.04-r2
+
 ## New Scripts
 - `animal-control`: helps manage the butchery and gelding of animals
 - `devel/kill-hf`: kills a historical figure
