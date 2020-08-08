@@ -27,6 +27,7 @@ that repo.
 - `exportlegends`: stopped including some tags with ``-1`` values which don't provide useful information
 - `gui/advfort`: fixed "operate pump" job
 - `gui/load-screen`: fixed an issue causing longer timezones to be cut off
+- `names`: fixed an error preventing the script from working
 - `modtools/moddable-gods`: fixed an error when creating the historical figure
 - `modtools/moddable-gods`: removed unused ``-domain`` and ``-description`` arguments
 - `modtools/moddable-gods`: made ``-depictedAs`` argument work
