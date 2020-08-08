@@ -15,6 +15,7 @@ that repo.
 
 ## New Scripts
 - `animal-control`: helps manage the butchery and gelding of animals
+- `devel/kill-hf`: kills a historical figure
 - `geld`: gelds or ungelds animals
 - `list-agreements`: lists all guildhall and temple agreements
 - `list-waves`: displays migration wave information for citizens/units
