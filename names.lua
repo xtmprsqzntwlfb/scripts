@@ -66,6 +66,7 @@ function namescr:init()
     self.trg = trg
     setup_screen.fort_name:assign(trg.name)
     gui.simulateInput(setup_screen, 'SETUP_NAME_FORT')
+    dfhack.gui.getCurViewscreen().type = 0 -- switch from site naming to unit naming mode to allow first name modification and make randomisation results unit-appropriate. Should eventually be replaced with an enum. Set to item naming mode for artifacts if this is available.
 end
 function namescr:setName()
     local name = setup_screen.fort_name
