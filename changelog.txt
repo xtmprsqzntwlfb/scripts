@@ -28,6 +28,7 @@ that repo.
 - `gui/advfort`: fixed "operate pump" job
 - `gui/load-screen`: fixed an issue causing longer timezones to be cut off
 - `names`: fixed an error preventing the script from working
+- `names`: fixed an issue causing the unit to display its old name in various places, including legends mode
 - `modtools/moddable-gods`: fixed an error when creating the historical figure
 - `modtools/moddable-gods`: removed unused ``-domain`` and ``-description`` arguments
 - `modtools/moddable-gods`: made ``-depictedAs`` argument work
