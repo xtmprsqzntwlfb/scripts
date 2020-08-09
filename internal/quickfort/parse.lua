@@ -13,6 +13,7 @@ local function trim_and_insert(tokens, token)
 end
 
 -- adapted from example on http://lua-users.org/wiki/LuaCsv
+-- returns a list of strings corresponding to the text in the cells in the row
 function tokenize_csv_line(line)
     line = string.gsub(line, '[\r\n]*$', '')
     local tokens = {}
@@ -108,16 +109,56 @@ local function make_cell_label(col_num, row_num)
     return get_col_name(col_num) .. tostring(math.floor(row_num))
 end
 
+local function read_csv_line(ctx)
+    local line = ctx.csv_file:read()
+    if not line then return nil end
+    return tokenize_csv_line(line)
+end
+
+local function cleanup_csv_ctx(ctx)
+    ctx.csv_file:close()
+end
+
+local function read_xlsx_line(ctx)
+    return dfhack.xlsxreader.get_row(ctx.xlsx_sheet)
+end
+
+local function cleanup_xslx_ctx(ctx)
+    dfhack.xlsxreader.close_sheet(ctx.xlsx_sheet)
+    dfhack.xlsxreader.close_xlsx_file(ctx.xlsx_file)
+end
+
+local function init_reader_ctx(filepath, sheet_name)
+    local reader_ctx = {}
+    if string.find(filepath:lower(), '[.]csv$') then
+        local file = io.open(filepath)
+        if not file then
+            qerror(string.format('failed to open blueprint file: "%s"',
+                                 filepath))
+        end
+        reader_ctx.csv_file = file
+        reader_ctx.get_row_tokens = read_csv_line
+        reader_ctx.cleanup = cleanup_csv_ctx
+    else
+        reader_ctx.xlsx_file = dfhack.xlsxreader.open_xlsx_file(filepath)
+        reader_ctx.xlsx_sheet =
+                dfhack.xlsxreader.open_sheet(reader_ctx.xlsx_file, sheet_name)
+        reader_ctx.get_row_tokens = read_xlsx_line
+        reader_ctx.cleanup = cleanup_xslx_ctx
+    end
+    return reader_ctx
+end
+
 -- returns a grid representation of the current section, the number of lines
 -- read from the input, and the next z-level modifier, if any. See process_file
 -- for grid format.
-local function process_section(file, start_line_num, start_coord)
+local function process_section(reader_ctx, start_line_num, start_coord)
     local grid = {}
     local y = start_coord.y
     while true do
-        local line = file:read()
-        if not line then return grid, y-start_coord.y end
-        for i, v in ipairs(tokenize_csv_line(line)) do
+        local row_tokens = reader_ctx.get_row_tokens(reader_ctx)
+        if not row_tokens then return grid, y-start_coord.y end
+        for i, v in ipairs(row_tokens) do
             if i == 1 then
                 if v == '#<' then return grid, y-start_coord.y, 1 end
                 if v == '#>' then return grid, y-start_coord.y, -1 end
@@ -146,13 +187,10 @@ Where the structure of modeline is defined as per parse_modeline and grid is a:
 Map keys are numbers, and the keyspace is sparse -- only elements that have
 contents are non-nil.
 ]]
-function process_file(filepath, start_cursor_coord)
-    local file = io.open(filepath)
-    if not file then
-        qerror(string.format('failed to open blueprint file: "%s"', filepath))
-    end
-    local line = file:read()
-    local modeline = parse_modeline(tokenize_csv_line(line)[1])
+function process_file(filepath, sheet_name, start_cursor_coord)
+    local reader_ctx = init_reader_ctx(filepath, sheet_name)
+    local row_tokens = reader_ctx.get_row_tokens(reader_ctx)
+    local modeline = parse_modeline(row_tokens[1])
     local cur_line_num = 2
     local x = start_cursor_coord.x - modeline.startx + 1
     local y = start_cursor_coord.y - modeline.starty + 1
@@ -160,7 +198,7 @@ function process_file(filepath, start_cursor_coord)
     local zlevels = {}
     while true do
         local grid, num_section_rows, zmod =
-                process_section(file, cur_line_num, xyz2pos(x, y, z))
+                process_section(reader_ctx, cur_line_num, xyz2pos(x, y, z))
         for _, _ in pairs(grid) do
             -- apparently, the only way to tell if a sparse array is not empty
             if not zlevels[z] then zlevels[z] = {} end
@@ -171,7 +209,6 @@ function process_file(filepath, start_cursor_coord)
         cur_line_num = cur_line_num + num_section_rows + 1
         z = z + zmod
     end
-    file:close()
+    reader_ctx.cleanup(reader_ctx)
     return zlevels
 end
-
