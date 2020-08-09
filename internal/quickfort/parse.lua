@@ -5,6 +5,7 @@ if not dfhack_flags.module then
     qerror('this script cannot be called directly')
 end
 
+local xlsxreader = require('plugins.xlsxreader')
 local quickfort_common = reqscript('internal/quickfort/common')
 
 local function trim_and_insert(tokens, token)
@@ -120,12 +121,12 @@ local function cleanup_csv_ctx(ctx)
 end
 
 local function read_xlsx_line(ctx)
-    return dfhack.xlsxreader.get_row(ctx.xlsx_sheet)
+    return xlsxreader.get_row(ctx.xlsx_sheet)
 end
 
 local function cleanup_xslx_ctx(ctx)
-    dfhack.xlsxreader.close_sheet(ctx.xlsx_sheet)
-    dfhack.xlsxreader.close_xlsx_file(ctx.xlsx_file)
+    xlsxreader.close_sheet(ctx.xlsx_sheet)
+    xlsxreader.close_xlsx_file(ctx.xlsx_file)
 end
 
 local function init_reader_ctx(filepath, sheet_name)
@@ -140,7 +141,7 @@ local function init_reader_ctx(filepath, sheet_name)
         reader_ctx.get_row_tokens = read_csv_line
         reader_ctx.cleanup = cleanup_csv_ctx
     else
-        reader_ctx.xlsx_file = dfhack.xlsxreader.open_xlsx_file(filepath)
+        reader_ctx.xlsx_file = xlsxreader.open_xlsx_file(filepath)
         if not reader_ctx.xlsx_file then
             qerror(string.format('failed to open blueprint file: "%s"',
                                  filepath))
@@ -148,7 +149,7 @@ local function init_reader_ctx(filepath, sheet_name)
         -- open_sheet succeeds even if the sheet cannot be found; we need to
         -- check that when we try to read
         reader_ctx.xlsx_sheet =
-                dfhack.xlsxreader.open_sheet(reader_ctx.xlsx_file, sheet_name)
+                xlsxreader.open_sheet(reader_ctx.xlsx_file, sheet_name)
         reader_ctx.get_row_tokens = read_xlsx_line
         reader_ctx.cleanup = cleanup_xslx_ctx
     end

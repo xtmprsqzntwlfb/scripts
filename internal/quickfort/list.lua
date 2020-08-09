@@ -6,6 +6,7 @@ if not dfhack_flags.module then
 end
 
 local utils = require('utils')
+local xlsxreader = require('plugins.xlsxreader')
 local quickfort_common = reqscript('internal/quickfort/common')
 local quickfort_parse = reqscript('internal/quickfort/parse')
 
@@ -39,18 +40,18 @@ local function scan_xlsx_blueprint(path)
         return blueprint_cache[path].sheet_infos
     end
     local sheet_infos = {}
-    local xlsx_file = dfhack.xlsxreader.open_xlsx_file(filepath)
-    for _, sheet_name in ipairs(dfhack.xlsxreader.list_sheets(xlsx_file)) do
-        local xlsx_sheet = dfhack.xlsxreader.open_sheet(xlsx_file, sheet_name)
-        local row_cells = dfhack.xlsxreader.get_row(xlsx_sheet)
-        dfhack.xlsxreader.close_sheet(xlsx_sheet)
+    local xlsx_file = xlsxreader.open_xlsx_file(filepath)
+    for _, sheet_name in ipairs(xlsxreader.list_sheets(xlsx_file)) do
+        local xlsx_sheet = xlsxreader.open_sheet(xlsx_file, sheet_name)
+        local row_cells = xlsxreader.get_row(xlsx_sheet)
+        xlsxreader.close_sheet(xlsx_sheet)
         if not row_cells or #row_cells == 0 then goto continue end
         local modeline = quickfort_parse.parse_modeline(row_cells[1])
         if not modeline then goto continue end
         table.insert(sheet_infos, {name=sheet_name, modeline=modeline})
         ::continue::
     end
-    dfhack.xlsxreader.close_xlsx_file(xlsx_file)
+    xlsxreader.close_xlsx_file(xlsx_file)
     if #sheet_infos == 0 then
         print(string.format(
                 'skipping "%s": no sheet with a #mode marker detected', v.path))
