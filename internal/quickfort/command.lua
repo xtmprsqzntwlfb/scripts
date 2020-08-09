@@ -47,11 +47,10 @@ function do_command(in_args)
         blueprint_name, sheet_name =
                 quickfort_list.get_blueprint_by_number(list_num)
     end
-
     local args = utils.processArgs(in_args, valid_command_args)
     local quiet = args['q'] ~= nil or args['-quiet'] ~= nil
     local verbose = args['v'] ~= nil or args['-verbose'] ~= nil
-    sheet_name = sheet_name or tonumber(args['n']) or tonumber(args['-name'])
+    sheet_name = sheet_name or args['n'] or args['-name']
 
     local cursor = guidm.getCursorPos()
     if command ~= 'orders' and not cursor then

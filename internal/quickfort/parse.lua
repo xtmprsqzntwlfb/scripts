@@ -141,6 +141,12 @@ local function init_reader_ctx(filepath, sheet_name)
         reader_ctx.cleanup = cleanup_csv_ctx
     else
         reader_ctx.xlsx_file = dfhack.xlsxreader.open_xlsx_file(filepath)
+        if not reader_ctx.xlsx_file then
+            qerror(string.format('failed to open blueprint file: "%s"',
+                                 filepath))
+        end
+        -- open_sheet succeeds even if the sheet cannot be found; we need to
+        -- check that when we try to read
         reader_ctx.xlsx_sheet =
                 dfhack.xlsxreader.open_sheet(reader_ctx.xlsx_file, sheet_name)
         reader_ctx.get_row_tokens = read_xlsx_line
@@ -190,6 +196,11 @@ contents are non-nil.
 function process_file(filepath, sheet_name, start_cursor_coord)
     local reader_ctx = init_reader_ctx(filepath, sheet_name)
     local row_tokens = reader_ctx.get_row_tokens(reader_ctx)
+    if not row_tokens then
+        qerror(string.format(
+                'sheet with name: "%s" in file "%s" empty or not found',
+                sheet_name, filepath))
+    end
     local modeline = parse_modeline(row_tokens[1])
     local cur_line_num = 2
     local x = start_cursor_coord.x - modeline.startx + 1
