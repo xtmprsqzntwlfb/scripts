@@ -214,7 +214,9 @@ local function do_down_stair(ctx)
                 (not is_wall(ctx.tileattrs) and
                  not is_fortification(ctx.tileattrs) and
                  not is_diggable_floor(ctx.tileattrs) and
-                 not is_removable_shape(ctx.tileattrs)) then
+                 not is_removable_shape(ctx.tileattrs) and
+                 not is_gatherable(ctx.tileattrs) and
+                 not is_sapling(ctx.tileattrs)) then
             return false
         end
     end
