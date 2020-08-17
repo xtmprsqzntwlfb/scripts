@@ -13,6 +13,9 @@ that repo.
 
 # Future
 
+## Fixes
+- `ban-cooking`: fixed an error in several subcommands
+
 # 0.47.04-r2
 
 ## New Scripts
