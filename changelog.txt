@@ -16,6 +16,9 @@ that repo.
 ## Fixes
 - `ban-cooking`: fixed an error in several subcommands
 
+## Misc Improvements
+- `unretire-anyone`: made undead creature names appear in the historical figure list
+
 # 0.47.04-r2
 
 ## New Scripts
