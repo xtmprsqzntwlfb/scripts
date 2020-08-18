@@ -53,10 +53,14 @@ function do_command(in_args)
     sheet_name = sheet_name or args['n'] or args['-name']
 
     local cursor = guidm.getCursorPos()
-    if command ~= 'orders' and not cursor then
-        qerror('please position the game cursor at the blueprint start ' ..
-               'location')
-    end
+    if not cursor then
+￼        if command == 'orders' then
+￼            cursor = {x=0, y=0, z=0}
+￼        else
+￼            qerror('please position the game cursor at the blueprint start ' ..
+￼                   'location')
+￼        end
+￼    end
 
     quickfort_common.verbose = verbose
 
@@ -69,7 +73,12 @@ function do_command(in_args)
                 zlevel,
                 section_data.grid)
             if stats and not quiet then
-                print(string.format('%s on z-level %d', modeline.mode, zlevel))
+                if command == 'orders' then
+￼                    print('ordered:')
+￼                else
+￼                    print(string.format('%s on z-level %d',
+￼                                        modeline.mode, zlevel))
+￼                end
                 for _, stat in pairs(stats) do
                     if stat.always or stat.value > 0 then
                         print(string.format('  %s: %d', stat.label, stat.value))
