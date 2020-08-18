@@ -39,10 +39,10 @@ Usage:
     subfolder are not shown. Specify ``-l`` to include library blueprints.
 **quickfort <command> <list_num> [<options>]**
     Applies the blueprint with the number from the list command.
-**quickfort <command> <filename> [-s|--sheet <sheet_num>] [<options>]**
+**quickfort <command> <filename> [-n|--name <sheet_name>] [<options>]**
     Applies the blueprint from the named file. If it is an ``.xlsx`` file,
-    the ``-s`` (or ``--sheet``) parameter is required to identify the sheet
-    number. The first sheet is ``-s 1``.
+    the ``-n`` (or ``--name``) parameter can identify the sheet name. If the
+    sheet name is not specified, the first sheet is used.
 
 **<command>** can be one of:
 

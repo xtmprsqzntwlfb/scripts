@@ -6,6 +6,7 @@ if not dfhack_flags.module then
 end
 
 local utils = require('utils')
+local xlsxreader = require('plugins.xlsxreader')
 local quickfort_common = reqscript('internal/quickfort/common')
 local quickfort_parse = reqscript('internal/quickfort/parse')
 
@@ -20,64 +21,109 @@ end
 
 local blueprint_cache = {}
 
-local function scan_blueprint(path)
+local function scan_csv_blueprint(path)
     local filepath = quickfort_common.get_blueprint_filepath(path)
     local mtime = dfhack.filesystem.mtime(filepath)
     if not blueprint_cache[path] or blueprint_cache[path].mtime ~= mtime then
         blueprint_cache[path] = {modeline=get_modeline(filepath), mtime=mtime}
     end
+    if not blueprint_cache[path].modeline then
+        print(string.format('skipping "%s": no #mode marker detected', path))
+    end
     return blueprint_cache[path].modeline
 end
 
-local blueprint_files = {}
+local function get_xlsx_sheet_modeline(xlsx_file, sheet_name)
+    local xlsx_sheet = xlsxreader.open_sheet(xlsx_file, sheet_name)
+    return dfhack.with_finalize(
+        function() xlsxreader.close_sheet(xlsx_sheet) end,
+        function()
+            local row_cells = xlsxreader.get_row(xlsx_sheet)
+            if not row_cells or #row_cells == 0 then return nil end
+            return quickfort_parse.parse_modeline(row_cells[1])
+        end
+    )
+end
+
+local function get_xlsx_file_sheet_infos(filepath)
+    local sheet_infos = {}
+    local xlsx_file = xlsxreader.open_xlsx_file(filepath)
+    if not xlsx_file then return sheet_infos end
+    return dfhack.with_finalize(
+        function() xlsxreader.close_xlsx_file(xlsx_file) end,
+        function()
+            for _, sheet_name in ipairs(xlsxreader.list_sheets(xlsx_file)) do
+                local modeline = get_xlsx_sheet_modeline(xlsx_file, sheet_name)
+                if modeline then
+                    table.insert(sheet_infos,
+                                 {name=sheet_name, modeline=modeline})
+                end
+            end
+            return sheet_infos
+        end
+    )
+end
+
+local function scan_xlsx_blueprint(path)
+    local filepath = quickfort_common.get_blueprint_filepath(path)
+    local mtime = dfhack.filesystem.mtime(filepath)
+    if blueprint_cache[path] and blueprint_cache[path].mtime == mtime then
+        return blueprint_cache[path].sheet_infos
+    end
+    local sheet_infos = get_xlsx_file_sheet_infos(filepath)
+    if #sheet_infos == 0 then
+        print(string.format(
+                'skipping "%s": no sheet with #mode markers detected', path))
+    end
+    blueprint_cache[path] = {sheet_infos=sheet_infos, mtime=mtime}
+    return sheet_infos
+end
+
+local blueprints = {}
 
 local function scan_blueprints()
     local paths = dfhack.filesystem.listdir_recursive(
         quickfort_common.settings['blueprints_dir'].value, nil, false)
-    blueprint_files = {}
-    local library_files = {}
+    blueprints = {}
+    local library_blueprints = {}
     for _, v in ipairs(paths) do
-        if not v.isdir and
-                (string.find(v.path, '[.]csv$') or
-                 string.find(v.path, '[.]xlsx$')) then
-            if string.find(v.path, '[.]xlsx$') then
-                print(string.format(
-                        'skipping "%s": .xlsx files not supported yet', v.path))
-                goto skip
+        local is_library = string.find(v.path, '^library/') ~= nil
+        local target_list = blueprints
+        if is_library then target_list = library_blueprints end
+        if not v.isdir and string.find(v.path:lower(), '[.]csv$') then
+            local modeline = scan_csv_blueprint(v.path)
+            if modeline then
+                table.insert(target_list,
+                        {path=v.path, modeline=modeline, is_library=is_library})
             end
-            local modeline = scan_blueprint(v.path)
-            if not modeline then
-                print(string.format(
-                        'skipping "%s": no #mode marker detected', v.path))
-                goto skip
+        elseif not v.isdir and string.find(v.path:lower(), '[.]xlsx$') then
+            local sheet_infos = scan_xlsx_blueprint(v.path)
+            if #sheet_infos > 0 then
+                for _, sheet_info in ipairs(sheet_infos) do
+                    table.insert(target_list,
+                            {path=v.path,
+                             sheet_name=sheet_info.name,
+                             modeline=sheet_info.modeline,
+                             is_library=is_library})
+                end
             end
-            if string.find(v.path, '^library/') ~= nil then
-                table.insert(
-                    library_files,
-                    {path=v.path, modeline=modeline, is_library=true})
-            else
-                table.insert(
-                    blueprint_files,
-                    {path=v.path, modeline=modeline, is_library=false})
-            end
-            ::skip::
         end
     end
     -- tack library files on to the end so user files are contiguous
-    for i=1, #library_files do
-        blueprint_files[#blueprint_files + 1] = library_files[i]
+    for i=1, #library_blueprints do
+        blueprints[#blueprints + 1] = library_blueprints[i]
     end
 end
 
 function get_blueprint_by_number(list_num)
-    if #blueprint_files == 0 then
+    if #blueprints == 0 then
         scan_blueprints()
     end
-    local blueprint_file = blueprint_files[list_num]
-    if not blueprint_file then
+    local blueprint = blueprints[list_num]
+    if not blueprint then
         qerror(string.format('invalid list index: %d', list_num))
     end
-    return blueprint_file.path
+    return blueprint.path, blueprint.sheet_name
 end
 
 local valid_list_args = utils.invert({
@@ -89,8 +135,12 @@ function do_list(in_args)
     local args = utils.processArgs(in_args, valid_list_args)
     local show_library = args['l'] ~= nil or args['-library'] ~= nil
     scan_blueprints()
-    for i, v in ipairs(blueprint_files) do
+    for i, v in ipairs(blueprints) do
         if show_library or not v.is_library then
+            local sheet_spec = ''
+            if v.sheet_name then
+                sheet_spec = string.format(' -n "%s"', v.sheet_name)
+            end
             local comment = ')'
             if #v.modeline.comment > 0 then
                 comment = string.format(': %s)', v.modeline.comment)
@@ -100,8 +150,8 @@ function do_list(in_args)
                 start_comment = string.format('; cursor start: %s',
                                               v.modeline.start_comment)
             end
-            print(string.format('%d) "%s" (%s%s%s',
-                                i, v.path, v.modeline.mode, comment,
+            print(string.format('%d) "%s"%s (%s%s%s',
+                                i, v.path, sheet_spec, v.modeline.mode, comment,
                                 start_comment))
         end
     end
