@@ -772,10 +772,10 @@ end
 
 function do_orders(zlevel, grid)
     local stats = {invalid_keys={label='Invalid key sequences', value=0}}
-￼    local buildings = {}
-￼    stats.invalid_keys.value = quickfort_building.init_buildings(
-￼        zlevel, grid, buildings, building_db, building_aliases, true)
-￼    quickfort_orders.enqueue_orders(stats, buildings, building_db)
+    local buildings = {}
+    stats.invalid_keys.value = quickfort_building.init_buildings(
+            zlevel, grid, buildings, building_db, building_aliases, true)
+    quickfort_orders.enqueue_orders(stats, buildings, building_db)
 end
 
 local function is_queued_for_destruction(bld)
