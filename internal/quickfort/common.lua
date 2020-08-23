@@ -5,18 +5,22 @@ if not dfhack_flags.module then
     qerror('this script cannot be called directly')
 end
 
+local guidm = require('gui.dwarfmode')
 local utils = require('utils')
 
 valid_modes = utils.invert({
     'dig',
     'build',
     'place',
-    'query'
+    'zone',
+    'query',
+    'meta',
 })
 
 -- keep deprecated settings in the table so we don't break existing configs
 settings = {
     blueprints_dir={value='blueprints'},
+    buildings_use_blocks={value=true},
     force_interactive_build={value=false, deprecated=true},
     force_marker_mode={value=false},
     stockpiles_max_barrels={value=-1},
@@ -91,4 +95,9 @@ function parse_cell(text)
     if not width or width <= 0 then width = 1 end
     if not height or height <= 0 then height = 1 end
     return keys, {width=width, height=height, specified=specified}
+end
+
+function move_cursor(pos)
+    guidm.setCursorPos(pos)
+    dfhack.gui.refreshSidebar()
 end

@@ -67,7 +67,7 @@ local function flood_fill(grid, x, y, seen_grid, data, db, aliases)
     if aliases[string.lower(keys)] then keys = aliases[string.lower(keys)] end
     if not db[keys] then
         if not seen_grid[x] then seen_grid[x] = {} end
-        seen_grid[x][y] = true -- seen, but not part of any stockpile
+        seen_grid[x][y] = true -- seen, but not part of any building
         print(string.format('invalid key sequence in cell %s: "%s"',
                             cell, text))
         return 1
@@ -370,4 +370,12 @@ function make_extents(b, db)
         if is_in_stockpile then num_tiles = num_tiles + 1 end
     end
     return extents, num_tiles
+end
+
+-- ensures we don't leak memory by overwriting extents
+-- constructBuilding deallocates any extents we pass in, so we have to assign it
+-- after the building is created
+function assign_extents(bld, extents)
+    if bld.room.extents then df.delete(bld.room.extents) end
+    bld.room.extents = extents
 end
