@@ -17,6 +17,7 @@ if not dfhack_flags.module then
 end
 
 local utils = require('utils')
+local buildingplan = require('plugins.buildingplan')
 local quickfort_common = reqscript('internal/quickfort/common')
 local quickfort_building = reqscript('internal/quickfort/building')
 local log = quickfort_common.log
@@ -715,7 +716,7 @@ local building_aliases = {
 --
 
 local function create_building(b)
-    db_entry = building_db[b.type]
+    local db_entry = building_db[b.type]
     log('creating %dx%d %s at map coordinates (%d, %d, %d), defined from ' ..
         'spreadsheet cells: %s',
         b.width, b.height, db_entry.label, b.pos.x, b.pos.y, b.pos.z,
@@ -740,6 +741,10 @@ local function create_building(b)
     -- constructBuilding deallocates extents, so we have to assign it after
     if use_extents then
         bld.room.extents = quickfort_building.make_extents(b, building_db)
+    end
+    if buildingplan.isPlannableBuilding(db_entry.type) then
+        log('registering with buildingplan')
+        buildingplan.addPlannedBuilding(bld)
     end
     if db_entry.post_construction_fn then db_entry.post_construction_fn(bld) end
 end
@@ -766,6 +771,7 @@ function do_run(zlevel, grid)
             stats.designated.value = stats.designated.value + 1
         end
     end
+    buildingplan.doCycle()
     dfhack.job.checkBuildingsNow()
     return stats
 end
