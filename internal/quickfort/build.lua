@@ -20,6 +20,7 @@ local utils = require('utils')
 local quickfort_common = reqscript('internal/quickfort/common')
 local quickfort_building = reqscript('internal/quickfort/building')
 local log = quickfort_common.log
+local quickfort_orders = reqscript('internal/quickfort/orders')
 
 --
 -- ************ tile validity checking functions ************ --
@@ -198,7 +199,8 @@ local function make_trackstop_entry(direction, friction)
         label=label,
         type=df.building_type.Trap,
         subtype=df.trap_type.TrackStop,
-        fields=fields
+        fields=fields,
+        additional_orders={'wooden minecart'}
     }
 end
 
@@ -308,7 +310,8 @@ local building_db = {
     v={label='Restraint', type=df.building_type.Chain},
     j={label='Cage', type=df.building_type.Cage},
     A={label='Archery Target', type=df.building_type.ArcheryTarget},
-    R={label='Traction Bench', type=df.building_type.TractionBench},
+    R={label='Traction Bench', type=df.building_type.TractionBench,
+       additional_orders={'table', 'mechanisms', 'cloth rope'}},
     N={label='Nest Box', type=df.building_type.NestBox},
     ['{Alt}h']={label='Hive', type=df.building_type.Hive},
     -- Offering Places, Bookcases, and Display Furniture are not yet supported
@@ -468,13 +471,15 @@ local building_db = {
     Tw={label='Weapon Trap',
         type=df.building_type.Trap, subtype=df.trap_type.WeaponTrap},
     Tl={label='Lever',
-        type=df.building_type.Trap, subtype=df.trap_type.Lever},
+        type=df.building_type.Trap, subtype=df.trap_type.Lever,
+        additional_orders={'mechanisms', 'mechanisms'}},
     -- TODO: lots of configuration here with no natural order. may need
     -- special-case logic when we read the keys.
     Tp={label='Pressure Plate',
         type=df.building_type.Trap, subtype=df.trap_type.PressurePlate},
     Tc={label='Cage Trap',
-        type=df.building_type.Trap, subtype=df.trap_type.CageTrap},
+        type=df.building_type.Trap, subtype=df.trap_type.CageTrap,
+        additional_orders={'wooden cage'}},
     -- TODO: Same as weapon trap above
     TS={label='Upright Spear/Spike',
         type=df.building_type.Weapon, subtype=df.trap_type.StoneFallTrap},
@@ -766,9 +771,11 @@ function do_run(zlevel, grid)
 end
 
 function do_orders(zlevel, grid)
-    local stats = nil
-    print('"quickfort orders" not yet implemented for mode: build')
-    return stats
+    local stats = {invalid_keys={label='Invalid key sequences', value=0}}
+    local buildings = {}
+    stats.invalid_keys.value = quickfort_building.init_buildings(
+            zlevel, grid, buildings, building_db, building_aliases, true)
+    quickfort_orders.enqueue_orders(stats, buildings, building_db)
 end
 
 local function is_queued_for_destruction(bld)
