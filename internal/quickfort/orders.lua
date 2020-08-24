@@ -13,7 +13,6 @@ local stockflow = require('plugins.stockflow')
 local quickfort_common = reqscript('internal/quickfort/common')
 local log = quickfort_common.log
 
---
 local function inc_order_spec(order_specs, quantity, reactions, label)
     if label == 'wood' then
         log('no manager order for creating wood; go chop some!')
@@ -115,7 +114,7 @@ local function get_num_items(b)
 end
 
 function create_orders(ctx)
-    for k,order_spec in pairs(ctx.order_specs) do
+    for k,order_spec in pairs(ctx.order_specs or {}) do
         local quantity = math.ceil(order_spec.quantity)
         log('ordering %d %s', quantity, k)
         stockflow.create_orders(order_spec.order, quantity)
@@ -123,10 +122,12 @@ function create_orders(ctx)
     end
 end
 
+-- ensure we don't reinit this; it contains allocated memory
+local reactions = reactions or stockflow.collect_reactions()
+
 function enqueue_orders(stats, buildings, building_db, ctx)
     local order_specs = ctx.order_specs or {}
     ctx.order_specs = order_specs
-    local reactions = stockflow.reaction_list -- don't cache this; it can reset
     for _, b in ipairs(buildings) do
         local db_entry = building_db[b.type]
         log('processing %s, defined from spreadsheet cell(s): %s',
