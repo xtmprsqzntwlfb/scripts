@@ -123,7 +123,7 @@ function create_orders(ctx)
 end
 
 -- ensure we don't reinit this; it contains allocated memory
-local reactions = reactions or stockflow.collect_reactions()
+reactions = reactions or stockflow.collect_reactions()
 
 function enqueue_orders(stats, buildings, building_db, ctx)
     local order_specs = ctx.order_specs or {}

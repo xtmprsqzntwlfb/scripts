@@ -14,10 +14,10 @@ local quickfort_list = reqscript('internal/quickfort/list')
 local min_dialog_width = 73
 
 -- persist these between dialog invocations
-local show_library = false
-local show_hidden = false
-local filter_text = nil
-local selected_id = nil
+show_library = show_library or false
+show_hidden = show_hidden or false
+filter_text = filter_text or nil
+selected_id = selected_id or nil
 
 local BlueprintDetails = defclass(BlueprintDetails, dialogs.MessageBox)
 
