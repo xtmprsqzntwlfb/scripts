@@ -181,7 +181,7 @@ function do_list(in_args)
         end
         local sheet_spec = ''
         if v.section_name then
-            sheet_spec = string.format(' -n "%s"', section_name)
+            sheet_spec = string.format(' -n "%s"', v.section_name)
         end
         local comment = ')'
         if v.comment then comment = string.format(': %s)', v.comment) end

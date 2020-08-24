@@ -101,7 +101,7 @@ local function parse_start(modeline, start_pos, filename, marker_values)
     if startx and starty then
         marker_values.startx = startx
         marker_values.starty = starty
-        marker_values.start_comment = start_comment
+        marker_values.start_comment = #start_comment>0 and start_comment or nil
     else
         -- the whole thing is a comment
         _, _, start_comment = string.find(start_str, '^%(%s*(.-)%s*%)$')
@@ -175,7 +175,7 @@ local function parse_modeline(modeline, filename, modeline_id)
             parse_markers(modeline, mode_end+1, filename)
     local _, _, comment = string.find(modeline, '^%s*(.*)', comment_start)
     modeline_data.mode = mode
-    modeline_data.comment = comment
+    modeline_data.comment = #comment > 0 and comment or nil
     modeline_data.label = modeline_data.label or modeline_id
     return modeline_data
 end
