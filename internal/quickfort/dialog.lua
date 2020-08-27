@@ -24,7 +24,7 @@ local BlueprintDetails = defclass(BlueprintDetails, dialogs.MessageBox)
 function BlueprintDetails:onRenderFrame(dc, rect)
     BlueprintDetails.super.onRenderFrame(self, dc, rect)
     dc:seek(rect.x1+2, rect.y2):string('Left arrow', dc.cur_key_pen):
-            string(': Back', COLOR_DARKGREY)
+            string(': Back', COLOR_GREY)
 end
 
 function BlueprintDetails:onInput(keys)
@@ -53,11 +53,11 @@ function BlueprintDialog:onRenderFrame(dc, rect)
     local filters_offset = rect.x1 + 2
     local library_offset = filters_offset + #filters_caption + 2
     local hidden_offset = library_offset + #library_caption + 9
-    dc:seek(filters_offset, rect.y1+1):string(filters_caption, COLOR_DARKGREY)
-    dc:seek(library_offset, rect.y1+1):key('CUSTOM_ALT_L'):
-            string(': '..library_caption, COLOR_DARKGREY)
-    dc:seek(hidden_offset, rect.y1+1):key('CUSTOM_ALT_H'):
-            string(': '..hidden_caption, COLOR_DARKGREY)
+    dc:seek(filters_offset, rect.y1+1):string(filters_caption, COLOR_GREY)
+    dc:seek(library_offset, rect.y1+1):
+            key_string('CUSTOM_ALT_L', library_caption)
+    dc:seek(hidden_offset, rect.y1+1):
+            key_string('CUSTOM_ALT_H', hidden_caption)
 
     -- render command help on bottom frame
     local orders_caption = "Queue orders"
@@ -65,10 +65,9 @@ function BlueprintDialog:onRenderFrame(dc, rect)
     local details_caption = ": Show details"
     local orders_offset = rect.x1 + 21
     local details_offset = orders_offset + #orders_caption + 9
-    dc:seek(orders_offset, rect.y2):key('CUSTOM_ALT_O'):
-            string(': '..orders_caption, COLOR_DARKGREY)
+    dc:seek(orders_offset, rect.y2):key_string('CUSTOM_ALT_O', orders_caption)
     dc:seek(details_offset, rect.y2):string(details_key, dc.cur_key_pen):
-            string(details_caption, COLOR_DARKGREY)
+            string(details_caption, COLOR_GREY)
 end
 
 local function truncate(text, width, max_lines)
