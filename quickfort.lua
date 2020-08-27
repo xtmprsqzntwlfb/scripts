@@ -32,19 +32,28 @@ Usage:
     below for available keys and values.
 **quickfort reset**
     Resets quickfort configuration to the defaults in ``quickfort.txt``.
-**quickfort list [search string] [-m|--mode <mode>] [-l|--library]**
+**quickfort gui**
+    Starts the quickfort dialog, where you can run blueprints from an
+    interactive list.
+**quickfort list [search string] [-m|--mode <mode>] [-l|--library] [-h|--hidden]**
     Lists blueprints in the ``blueprints`` folder. Blueprints are ``.csv`` files
     or sheets within ``.xlsx`` files that contain a ``#<mode>`` comment in the
     upper-left cell. By default, blueprints in the ``blueprints/library/``
-    subfolder are not shown. Specify ``-l`` to include library blueprints. The
-    list can be filtered by a specified mode (e.g. "-m build") and/or a
-    substring to search for in a path, filename, mode, or comment.
+    subfolder or blueprints that contain a ``hidden()`` marker in their modeline
+    are not shown. Specify ``-l`` or ``-h`` to include library or hidden
+    blueprints. The list can be filtered by a specified mode (e.g. "-m build")
+    and/or a substring to search for in a path, filename, mode, or comment. The
+    id numbers in the list may not be contiguous if there are hidden or filtered
+    blueprints that are not being shown.
 **quickfort <command> <list_num> [<options>]**
     Applies the blueprint with the number from the list command.
-**quickfort <command> <filename> [-n|--name <sheet_name>] [<options>]**
-    Applies the blueprint from the named file. If it is an ``.xlsx`` file,
-    the ``-n`` (or ``--name``) parameter can identify the sheet name. If the
-    sheet name is not specified, the first sheet is used.
+**quickfort <command> <filename> [-n|--name <name>] [<options>]**
+    Applies a blueprint in the specified file. The optional ``name`` parameter
+    can select a specific blueprint from a file that contains multiple
+    blueprints with the format "sheetname/label", or just "/label" for .csv
+    files. The label is defined in the blueprint modeline, defaulting to it's
+    order in the sheet or file if not defined. If the -n parameter is not
+    specified, the first blueprint in the first sheet is used.
 
 **<command>** can be one of:
 
@@ -77,6 +86,11 @@ configuration stored in the file:
     Directory tree to search for blueprints. Can be set to an absolute or
     relative path. If set to a relative path, resolves to a directory under the
     DF folder.
+``buildings_use_blocks`` (default: 'true')
+    Force all blueprint buildings that could be built with any building material
+    to only use blocks. The prevents logs, boulders, and bars (e.g. potash and
+    coal) from being wasted on constructions. If set to false, buildings will be
+    built with any available building material.
 ``force_marker_mode`` (default: 'false')
     Set to "true" or "false". If true, will designate dig blueprints in marker
     mode. If false, only cells with dig codes explicitly prefixed with ``m``
@@ -88,21 +102,17 @@ configuration stored in the file:
     stockpiles). The default here for wheelbarrows is 0 since using wheelbarrows
     normally *decreases* the efficiency of your fort.
 
-There are also two other configuration files in the ``dfhack-config/quickfort``
-folder: `aliases.txt`_ and `materials.txt`_. ``aliases.txt`` defines keycode
-shortcuts for query blueprints, and ``materials.txt`` defines forbidden
-materials and material preferences for build blueprints. The formats for these
-files are described in the files themselves, and default configuration that all
-players can build on is stored in `aliases-common.txt`_ and
-`materials-common.txt`_ in the ``hack/data/quickfort/`` directory.
+There is one other configuration file in the ``dfhack-config/quickfort`` folder:
+`aliases.txt`_. It defines keycode shortcuts for query blueprints. The format
+for this file is described in the file itself, and default aliases that all
+players can use and build on is stored in
+`hack/data/quickfort/aliases-common.txt`_.
 
 .. _blueprint plugin: https://docs.dfhack.org/en/stable/docs/Plugins.html#blueprint
 .. _Blueprints Guidebook: https://github.com/DFHack/dfhack/tree/develop/data/blueprints
 .. _blueprints/library: https://github.com/DFHack/dfhack/tree/develop/data/blueprints/library
 .. _aliases.txt: https://github.com/DFHack/dfhack/tree/develop/dfhack-config/quickfort/aliases.txt
-.. _materials.txt: https://github.com/DFHack/dfhack/tree/develop/dfhack-config/quickfort/materials.txt
-.. _aliases-common.txt: https://github.com/DFHack/dfhack/tree/develop/data/quickfort/aliases-common.txt
-.. _materials-common.txt: https://github.com/DFHack/dfhack/tree/develop/data/quickfort/materials-common.txt
+.. _hack/data/quickfort/aliases-common.txt: https://github.com/DFHack/dfhack/tree/develop/data/quickfort/aliases-common.txt
 ]====]
 
 -- reqscript all internal files here, even if they're not directly used by this
@@ -113,13 +123,17 @@ local quickfort_build = reqscript('internal/quickfort/build')
 local quickfort_building = reqscript('internal/quickfort/building')
 local quickfort_command = reqscript('internal/quickfort/command')
 local quickfort_common = reqscript('internal/quickfort/common')
+local quickfort_dialog = reqscript('internal/quickfort/dialog')
 local quickfort_dig = reqscript('internal/quickfort/dig')
 local quickfort_keycodes = reqscript('internal/quickfort/keycodes')
 local quickfort_list = reqscript('internal/quickfort/list')
+local quickfort_meta = reqscript('internal/quickfort/meta')
+local quickfort_orders = reqscript('internal/quickfort/orders')
 local quickfort_parse = reqscript('internal/quickfort/parse')
 local quickfort_place = reqscript('internal/quickfort/place')
 local quickfort_query = reqscript('internal/quickfort/query')
 local quickfort_set = reqscript('internal/quickfort/set')
+local quickfort_zone = reqscript('internal/quickfort/zone')
 
 -- keep this in sync with the full help text above
 local function print_short_help()
@@ -131,16 +145,21 @@ quickfort set [<key> <value>]
     "quickfort set" to show current settings.
 quickfort reset
     Resets quickfort configuration to defaults.
-quickfort list [search string] [-m|--mode <mode>] [-l|--library]
+quickfort gui
+    Starts the quickfort dialog, where you can run blueprints from an
+    interactive list.
+quickfort list [search string] [-m|--mode <mode>] [-l|--library] [-h|--hidden]
     Lists blueprints in the "blueprints" folder. Specify -l to include library
-    blueprints. The list can be filtered by a specified mode (e.g. "-m build")
-    and/or a substring to search for in a path, filename, mode, or comment.
+    blueprints and -h to include hidden blueprints. The list can be filtered by
+    a specified mode (e.g. "-m build") and/or a substring to search for in a
+    path, filename, mode, or comment.
 quickfort <command> <list_num> [<options>]
     Applies the blueprint with the number from the list command.
-quickfort <command> <filename> [-n|--name <sheet_name>] [<options>]
-    Applies the blueprint from the named file. If it is an .xlsx file, the -n
-    parameter is required to identify the sheet name. If the sheet name is not
-    specified, the first sheet is used.
+quickfort <command> <filename> [-n|--name <name>] [<options>]
+    Applies a blueprint in the specified file. The optional name parameter can
+    select a specific blueprint from a file that contains multiple blueprints
+    with the format "sheetname/label", or just "/label" for .csv files. If -n is
+    not specified, the first blueprint in the first sheet is used.
 
 <command> can be one of:
 
@@ -169,6 +188,7 @@ end
 local action_switch = {
     set=quickfort_set.do_set,
     reset=quickfort_set.do_reset,
+    gui=quickfort_dialog.do_dialog,
     list=quickfort_list.do_list,
     run=quickfort_command.do_command,
     orders=quickfort_command.do_command,

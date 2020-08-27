@@ -8,12 +8,23 @@ end
 local utils = require('utils')
 local guidm = require('gui.dwarfmode')
 local quickfort_common = reqscript('internal/quickfort/common')
-local quickfort_parse = reqscript('internal/quickfort/parse')
 local quickfort_list = reqscript('internal/quickfort/list')
+local quickfort_orders = reqscript('internal/quickfort/orders')
+local quickfort_parse = reqscript('internal/quickfort/parse')
 
 local mode_modules = {}
 for mode, _ in pairs(quickfort_common.valid_modes) do
     mode_modules[mode] = reqscript('internal/quickfort/'..mode)
+end
+
+function parse_section_name(section_name)
+    local sheet_name, label = nil, nil
+    if section_name then
+        _, _, sheet_name, label = section_name:find('^([^/]*)/?(.*)$')
+        if #sheet_name == 0 then sheet_name = nil end
+        if #label == 0 then label = nil end
+    end
+    return sheet_name, label
 end
 
 local command_switch = {
@@ -21,6 +32,47 @@ local command_switch = {
     orders='do_orders',
     undo='do_undo',
 }
+
+function do_command_internal(ctx, section_name)
+    ctx.stats.out_of_bounds = ctx.stats.out_of_bounds or
+            {label='Tiles outside map boundary', value=0}
+    ctx.stats.invalid_keys = ctx.stats.invalid_keys or
+            {label='Invalid key sequences', value=0}
+
+    local sheet_name, label = parse_section_name(section_name)
+    ctx.sheet_name = sheet_name
+    local filepath = quickfort_common.get_blueprint_filepath(ctx.blueprint_name)
+    local section_data_list = quickfort_parse.process_section(
+            filepath, sheet_name, label, ctx.cursor)
+    local command = ctx.command
+    local first_modeline = nil
+    for _, section_data in ipairs(section_data_list) do
+        if not first_modeline then first_modeline = section_data.modeline end
+        ctx.cursor.z = section_data.zlevel
+        mode_modules[section_data.modeline.mode][command_switch[ctx.command]](
+            section_data.zlevel, section_data.grid, ctx)
+    end
+    if first_modeline and first_modeline.message then
+        table.insert(ctx.messages, first_modeline.message)
+    end
+end
+
+function finish_command(ctx, section_name, quiet)
+    if ctx.command == 'orders' then quickfort_orders.create_orders(ctx) end
+    local section_name_str = ''
+    if section_name then
+        section_name_str = string.format(' -n "%s"', section_name)
+    end
+    print(string.format('%s "%s"%s successfully completed',
+                        ctx.command, ctx.blueprint_name, section_name_str))
+    if not quiet then
+        for _,stat in pairs(ctx.stats) do
+            if stat.always or stat.value > 0 then
+                print(string.format('  %s: %d', stat.label, stat.value))
+            end
+        end
+    end
+end
 
 local valid_command_args = utils.invert({
     'q',
@@ -41,43 +93,39 @@ function do_command(in_args)
     if not blueprint_name or blueprint_name == '' then
         qerror("expected <list_num> or <blueprint_name> parameter")
     end
-    local list_num = tonumber(blueprint_name)
-    local sheet_name = nil
-    if list_num then
-        blueprint_name, sheet_name =
-                quickfort_list.get_blueprint_by_number(list_num)
-    end
     local args = utils.processArgs(in_args, valid_command_args)
     local quiet = args['q'] ~= nil or args['-quiet'] ~= nil
     local verbose = args['v'] ~= nil or args['-verbose'] ~= nil
-    sheet_name = sheet_name or args['n'] or args['-name']
+    local section_name = args['n'] or args['-name']
+
+    local list_num = tonumber(blueprint_name)
+    if list_num then
+        blueprint_name, section_name =
+                quickfort_list.get_blueprint_by_number(list_num)
+    end
 
     local cursor = guidm.getCursorPos()
-    if command ~= 'orders' and not cursor then
-        qerror('please position the game cursor at the blueprint start ' ..
-               'location')
+    if not cursor then
+        if command == 'orders' then
+            cursor = {x=0, y=0, z=0}
+        else
+            qerror('please position the game cursor at the blueprint start ' ..
+                   'location')
+        end
     end
 
     quickfort_common.verbose = verbose
-
-    local filepath = quickfort_common.get_blueprint_filepath(blueprint_name)
-    local data = quickfort_parse.process_file(filepath, sheet_name, cursor)
-    for zlevel, section_data_list in pairs(data) do
-        for _, section_data in ipairs(section_data_list) do
-            local modeline = section_data.modeline
-            local stats = mode_modules[modeline.mode][command_switch[command]](
-                zlevel,
-                section_data.grid)
-            if stats and not quiet then
-                print(string.format('%s on z-level %d', modeline.mode, zlevel))
-                for _, stat in pairs(stats) do
-                    if stat.always or stat.value > 0 then
-                        print(string.format('  %s: %d', stat.label, stat.value))
-                    end
+    dfhack.with_finalize(
+        function() quickfort_common.verbose = false end,
+        function()
+            local ctx = {command=command, blueprint_name=blueprint_name,
+                         cursor=cursor, stats={}, messages={}}
+            do_command_internal(ctx, section_name)
+            finish_command(ctx, section_name, quiet)
+            if command == 'run' then
+                for _,message in ipairs(ctx.messages) do
+                    print('* '..message)
                 end
             end
-        end
-    end
-    print(string.format('%s "%s" successfully completed',
-                        command, blueprint_name))
+        end)
 end

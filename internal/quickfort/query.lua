@@ -6,7 +6,6 @@ if not dfhack_flags.module then
 end
 
 local gui = require('gui')
-local guidm = require('gui.dwarfmode')
 local quickfort_common = reqscript('internal/quickfort/common')
 local log = quickfort_common.log
 local quickfort_aliases = reqscript('internal/quickfort/aliases')
@@ -28,11 +27,6 @@ local function is_queryable_tile(pos)
     return not flags.hidden and occupancy.building ~= 0
 end
 
-local function move_cursor(pos)
-    guidm.setCursorPos(pos)
-    dfhack.gui.refreshSidebar()
-end
-
 local function handle_modifiers(token, modifiers)
     local token_lower = token:lower()
     if token_lower == '{shift}' or
@@ -48,14 +42,16 @@ local function handle_modifiers(token, modifiers)
     return false
 end
 
-function do_run(zlevel, grid)
-    local stats = {
-        keystrokes={label='Keystrokes sent', value=0, always=true},
-        tiles={label='Settings modified', value=0},
-    }
+function do_run(zlevel, grid, ctx)
+    local stats = ctx.stats
+    stats.query_keystrokes = stats.zone_designated or
+            {label='Keystrokes sent', value=0, always=true}
+    stats.query_tiles = stats.zone_tiles or
+            {label='Tiles modified', value=0}
 
     load_aliases()
-    local saved_cursor,saved_mode = guidm.getCursorPos(),df.global.ui.main.mode
+
+    local saved_mode = df.global.ui.main.mode
     df.global.ui.main.mode = df.ui_sidebar_mode.QueryBuilding
 
     for y, row in pairs(grid) do
@@ -72,7 +68,7 @@ function do_run(zlevel, grid)
             log('applying spreadsheet cell %s with text "%s" to map ' ..
                 'coordinates (%d, %d, %d)', cell, text, pos.x, pos.y, pos.z)
             local tokens = quickfort_aliases.expand_aliases(text)
-            move_cursor(pos)
+            quickfort_common.move_cursor(pos)
             local focus_string =
                     dfhack.gui.getFocusString(dfhack.gui.getCurViewscreen(true))
             local modifiers = {} -- tracks ctrl, shift, and alt modifiers
@@ -84,7 +80,7 @@ function do_run(zlevel, grid)
                 end
                 gui.simulateInput(dfhack.gui.getCurViewscreen(true), kcodes)
                 modifiers = {}
-                stats.keystrokes.value = stats.keystrokes.value + 1
+                stats.query_keystrokes.value = stats.query_keystrokes.value + 1
                 ::continue::
             end
             local new_focus_string =
@@ -96,22 +92,19 @@ function do_run(zlevel, grid)
                     'cell %s: "%s" (do you need a "^" at the end?)',
                     focus_string, new_focus_string, cell, text))
             end
-            stats.tiles.value = stats.tiles.value + 1
+            stats.query_tiles.value = stats.query_tiles.value + 1
             ::continue::
         end
     end
 
     df.global.ui.main.mode = saved_mode
-    move_cursor(saved_cursor)
-    return stats
+    quickfort_common.move_cursor(ctx.cursor)
 end
 
-function do_orders(zlevel, grid)
+function do_orders()
     log('nothing to do for blueprints in mode: query')
-    return nil
 end
 
-function do_undo(zlevel, grid)
-    print('cannot undo blueprints for mode: query')
-    return nil
+function do_undo()
+    log('cannot undo blueprints for mode: query')
 end
