@@ -14,7 +14,7 @@ that repo.
 # Future
 
 ## New Scripts
-- `quickfort`: DFHack-native implementation of quickfort with many new features and integrations.
+- `quickfort`: DFHack-native implementation of quickfort with many new features and integrations. See the command reference at https://docs.dfhack.org/en/stable/docs/_auto/base.html#quickfort and the user manual at https://github.com/DFHack/dfhack/tree/develop/data/blueprints#dfhack-quickfort-user-manual
 
 ## Fixes
 - `ban-cooking`: fixed an error in several subcommands
