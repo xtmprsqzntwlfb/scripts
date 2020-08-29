@@ -1,10 +1,9 @@
--- DFHack-native implementation of the classic Quickfort utility (PRE-RELEASE)
+-- DFHack-native implementation of the classic Quickfort utility
 --[====[
 
 quickfort
 =========
-Processes Quickfort-style blueprint files. This is a pre-release -- not all
-features are implemented yet.
+Processes Quickfort-style blueprint files.
 
 Quickfort blueprints record what you want at each map coordinate in a
 spreadsheet, storing the keys in a spreadsheet cell that you would press to make
