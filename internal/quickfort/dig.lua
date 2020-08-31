@@ -510,7 +510,7 @@ local function extended_parser(_, keys)
             return nil
         end
     end
-    if priority and #code == 0 then code = 'd' end
+    if #code == 0 then code = 'd' end
     if not rawget(dig_db, code) then return nil end
     local custom_designate = copyall(dig_db[code])
     custom_designate.marker_mode = marker_mode
