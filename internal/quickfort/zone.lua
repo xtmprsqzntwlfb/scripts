@@ -50,7 +50,7 @@ local function custom_zone(_, keys)
     local labels = {}
     local flags = {}
     for k in keys:gmatch('.') do
-        if not zone_db[k] then return nil end
+        if not rawget(zone_db, k) then return nil end
         table.insert(labels, zone_db[k].label)
         table.insert(flags, zone_db[k].flags[1])
     end

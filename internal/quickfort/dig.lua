@@ -499,7 +499,8 @@ local function extended_parser(_, keys)
         keys = string.sub(keys, 2)
         marker_mode = true
     end
-    local _, _, code, priority = keys:find('^(%D*)(%d*)$')
+    local found, _, code, priority = keys:find('^(%D*)(%d*)$')
+    if not found then return nil end
     if #priority == 0 then
         priority = 4
     else
@@ -510,7 +511,7 @@ local function extended_parser(_, keys)
         end
     end
     if priority and #code == 0 then code = 'd' end
-    if not dig_db[code] then return nil end
+    if not rawget(dig_db, code) then return nil end
     local custom_designate = copyall(dig_db[code])
     custom_designate.marker_mode = marker_mode
     custom_designate.priority = priority
