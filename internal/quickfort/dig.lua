@@ -579,8 +579,9 @@ local function do_run_impl(zlevel, grid, stats)
             local pos = xyz2pos(x, y, zlevel)
             log('applying spreadsheet cell %s with text "%s" to map' ..
                 ' coordinates (%d, %d, %d)', cell, text, pos.x, pos.y, pos.z)
+            local db_entry = nil
             local keys, extent = quickfort_common.parse_cell(text)
-            local db_entry = dig_db[keys]
+            if keys then db_entry = dig_db[keys] end
             if not db_entry then
                 print(string.format('invalid key sequence: "%s" in cell %s',
                                     text, cell))
