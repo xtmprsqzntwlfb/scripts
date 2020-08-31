@@ -175,7 +175,7 @@ function do_list(in_args)
     local num_filtered = 0
     for _,v in ipairs(list) do
         if (filter_string and not string.find(v.search_key, filter_string)) or
-                (filter_mode and v.modeline.mode ~= filter_mode) then
+                (filter_mode and v.mode ~= filter_mode) then
             num_filtered = num_filtered + 1
             goto continue
         end
