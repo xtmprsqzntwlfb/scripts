@@ -7,12 +7,12 @@ Processes Quickfort-style blueprint files.
 
 Quickfort blueprints record what you want at each map coordinate in a
 spreadsheet, storing the keys in a spreadsheet cell that you would press to make
-something happen at that spot on the DF map. Quickfort runs in one of four
-modes: ``dig``, ``build``, ``place``, or ``query``. ``dig`` designates tiles for
-digging, ``build`` builds buildings and constructions, ``place`` places
-stockpiles, and ``query`` changes building or stockpile settings. The mode is
-determined by a marker in the upper-left cell of the spreadsheet (e.g.: ``#dig``
-in cell ``A1``).
+something happen at that spot on the DF map. Quickfort runs in one of five
+modes: ``dig``, ``build``, ``place``, ``zone``, or ``query``. ``dig`` designates
+tiles for digging, ``build`` builds buildings and constructions, ``place``
+places stockpiles, ``zone`` manages activity zones, and ``query`` changes
+building or stockpile settings. The mode is determined by a marker in the
+upper-left cell of the spreadsheet (e.g.: ``#dig`` in cell ``A1``).
 
 You can create these blueprints by hand or by using any spreadsheet application,
 saving them as ``.xlsx`` or ``.csv`` files. You can also build your plan "for
