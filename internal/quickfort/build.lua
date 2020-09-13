@@ -728,7 +728,6 @@ local function create_building(b)
         'spreadsheet cells: %s',
         b.width, b.height, db_entry.label, b.pos.x, b.pos.y, b.pos.z,
         table.concat(b.cells, ', '))
-    local extents, room = nil, nil
     local fields = {}
     if db_entry.fields then fields = copyall(db_entry.fields) end
     local use_extents = db_entry.has_extents and
@@ -738,9 +737,16 @@ local function create_building(b)
     end
     local filters = nil
     if quickfort_common.settings['buildings_use_blocks'].value then
-        -- don't set the vector_id since that breaks custom buildings: it sets
-        -- all their building materials to use that vector id
-        local filter_mod = { material={item_type=df.item_type.BLOCKS} }
+        -- don't set the vector_id for custom buildings since it will get
+        -- applied to *all* their filters, not just the "generic building
+        -- material" ones.
+        local vector_id = nil
+        if not db_entry.custom then
+            vector_id = df.job_item_vector_id.BLOCKS
+        end
+        local filter_mod = {
+            material={item_type=df.item_type.BLOCKS, vector_id=vector_id}
+        }
         filters = dfhack.buildings.getFiltersByType(
             filter_mod, db_entry.type, db_entry.subtype, db_entry.custom)
     end
