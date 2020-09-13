@@ -18,7 +18,8 @@ local special_keys = {
     ['%']='{Wait}'
 }
 local special_aliases = {
-    ExitMenu='ESC'
+    ExitMenu='ESC',
+    ['r+']={'r','+','Enter'}
 }
 
 local alias_stack = {}
@@ -119,7 +120,14 @@ end
 -- returns an array of character key tokens
 function expand_aliases(text)
     local tokens = {}
-    if alias_stack[text] then
+    if special_aliases[text] then
+        local special_expansion = special_aliases[text]
+        if type(special_expansion) == "table" then
+            tokens = special_expansion
+        else
+            tokens = {special_expansion}
+        end
+    elseif alias_stack[text] then
         process_text(alias_stack[text], tokens, 1)
     else
         process_text(text, tokens, 1)
