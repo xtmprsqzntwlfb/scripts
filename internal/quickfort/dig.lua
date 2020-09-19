@@ -492,6 +492,11 @@ local dig_db = {
     ['or']={action=do_traffic_restricted},
 }
 
+-- set default dig priorities
+for _,v in pairs(dig_db) do
+    if v.use_priority then v.priority = 4 end
+end
+
 -- handles marker mode 'm' prefix and priority suffix
 local function extended_parser(_, keys)
     local marker_mode = false
@@ -538,7 +543,6 @@ local function set_priority(ctx, priority)
     local pbse = get_priority_block_square_event(block_events)
     if not pbse then
         if priority == 4 then return end
-        print("creating event")
         block_events:insert('#',
                             {new=df.block_square_event_designation_priorityst})
         pbse = block_events[#block_events-1]
@@ -563,7 +567,7 @@ local function dig_tile(ctx, db_entry)
                         quickfort_common.settings['force_marker_mode'].value
                 ctx.occupancy.dig_marked = marker_mode
             end
-            if db_entry.use_priority and db_entry.priority then
+            if db_entry.use_priority then
                 set_priority(ctx, db_entry.priority)
             end
         end
