@@ -78,7 +78,7 @@ local function custom_stockpile(_, keys)
     local indices = {}
     local want_bins, want_barrels, want_wheelbarrows = false, false, false
     for k in keys:gmatch('.') do
-        if not stockpile_db[k] then return nil end
+        if not rawget(stockpile_db, k) then return nil end
         table.insert(labels, stockpile_db[k].label)
         table.insert(indices, stockpile_db[k].indices[1])
         want_bins = want_bins or stockpile_db[k].want_bins

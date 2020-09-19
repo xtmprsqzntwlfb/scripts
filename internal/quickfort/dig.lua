@@ -95,11 +95,11 @@ end
 -- the Maps module
 local function has_designation(flags, occupancy)
     return flags.dig ~= df.tile_dig_designation.No or
-            flags.smooth ~= 0 or
-            occupancy.carve_track_north ~= 0 or
-            occupancy.carve_track_east ~= 0 or
-            occupancy.carve_track_south ~= 0 or
-            occupancy.carve_track_west ~= 0
+            flags.smooth > 0 or
+            occupancy.carve_track_north == 1 or
+            occupancy.carve_track_east == 1 or
+            occupancy.carve_track_south == 1 or
+            occupancy.carve_track_west == 1
 end
 
 local function clear_designation(flags, occupancy)
@@ -457,52 +457,119 @@ local function do_traffic_restricted(ctx)
     ctx.flags.traffic = values.traffic_restricted
 end
 
-local designate_switch = {
-    d=do_mine,
-    h=do_channel,
-    u=do_up_stair,
-    j=do_down_stair,
-    i=do_up_down_stair,
-    r=do_ramp,
-    z=do_remove_ramps,
-    t=do_mine,
-    p=do_gather,
-    s=do_smooth,
-    e=do_engrave,
-    F=do_fortification,
-    T=do_track,
-    v=do_toggle_engravings,
-    M=do_toggle_marker,
-    n=do_remove_construction,
-    x=do_remove_designation,
-    bc=do_claim,
-    bf=do_forbid,
-    bm=do_melt,
-    bM=do_remove_melt,
-    bd=do_dump,
-    bD=do_remove_dump,
-    bh=do_hide,
-    bH=do_unhide,
-    oh=do_traffic_high,
-    on=do_traffic_normal,
-    ol=do_traffic_low,
-    ['or']=do_traffic_restricted,
+local dig_db = {
+    d={action=do_mine, use_priority=true},
+    h={action=do_channel, use_priority=true},
+    u={action=do_up_stair, use_priority=true},
+    j={action=do_down_stair, use_priority=true},
+    i={action=do_up_down_stair, use_priority=true},
+    r={action=do_ramp, use_priority=true},
+    z={action=do_remove_ramps, use_priority=true},
+    t={action=do_mine, use_priority=true},
+    p={action=do_gather, use_priority=true},
+    s={action=do_smooth, use_priority=true},
+    e={action=do_engrave, use_priority=true},
+    F={action=do_fortification, use_priority=true},
+    T={action=do_track, use_priority=true},
+    v={action=do_toggle_engravings},
+    -- the semantics are unclear if the code is M but m or force_marker_mode is
+    -- also specified. skipping all other marker mode settings when toggling
+    -- marker mode seems to make the most sense.
+    M={action=do_toggle_marker, skip_marker_mode=true},
+    n={action=do_remove_construction, use_priority=true},
+    x={action=do_remove_designation},
+    bc={action=do_claim},
+    bf={action=do_forbid},
+    bm={action=do_melt},
+    bM={action=do_remove_melt},
+    bd={action=do_dump},
+    bD={action=do_remove_dump},
+    bh={action=do_hide},
+    bH={action=do_unhide},
+    oh={action=do_traffic_high},
+    on={action=do_traffic_normal},
+    ol={action=do_traffic_low},
+    ['or']={action=do_traffic_restricted},
 }
 
-local function dig_tile(ctx, code, marker_mode)
+-- set default dig priorities
+for _,v in pairs(dig_db) do
+    if v.use_priority then v.priority = 4 end
+end
+
+-- handles marker mode 'm' prefix and priority suffix
+local function extended_parser(_, keys)
+    local marker_mode = false
+    if keys:startswith('m') then
+        keys = string.sub(keys, 2)
+        marker_mode = true
+    end
+    local found, _, code, priority = keys:find('^(%D*)(%d*)$')
+    if not found then return nil end
+    if #priority == 0 then
+        priority = 4
+    else
+        priority = tonumber(priority)
+        if priority < 1 or priority > 7 then
+            log('priority must be between 1 and 7 (inclusive)')
+            return nil
+        end
+    end
+    if #code == 0 then code = 'd' end
+    if not rawget(dig_db, code) then return nil end
+    local custom_designate = copyall(dig_db[code])
+    custom_designate.marker_mode = marker_mode
+    custom_designate.priority = priority
+    return custom_designate
+end
+
+setmetatable(dig_db, {__index=extended_parser})
+
+local function get_priority_block_square_event(block_events)
+    for i,v in ipairs(block_events) do
+        if v:getType() == df.block_square_event_type.designation_priority then
+            return v
+        end
+    end
+    return nil
+end
+
+-- modifies any existing priority block_square_event to the specified priority.
+-- if the block_square_event doesn't already exist, create it iff we're setting
+-- the priority to any number but 4 (the default)
+local function set_priority(ctx, priority)
+    log('setting priority to %d', priority)
+    local block_events = dfhack.maps.getTileBlock(ctx.pos).block_events
+    local pbse = get_priority_block_square_event(block_events)
+    if not pbse then
+        if priority == 4 then return end
+        block_events:insert('#',
+                            {new=df.block_square_event_designation_priorityst})
+        pbse = block_events[#block_events-1]
+    end
+    pbse.priority[ctx.pos.x % 16][ctx.pos.y % 16] = priority * 1000
+end
+
+local function dig_tile(ctx, db_entry)
     ctx.flags, ctx.occupancy = dfhack.maps.getTileFlags(ctx.pos)
     ctx.tileattrs = df.tiletype.attrs[dfhack.maps.getTileType(ctx.pos)]
-    if designate_switch[code](ctx) then
+    if db_entry.action(ctx) then
+        -- set the block's designated flag to the game does a check to see what
+        -- jobs need to be created
         dfhack.maps.getTileBlock(ctx.pos).flags.designated = true
         if not has_designation(ctx.flags, ctx.occupancy) then
+            -- reset marker mode and priority to defaults
             ctx.occupancy.dig_marked = false
-        elseif code == "dM" then
-            -- the semantics are a little unclear if the code is M (toggle
-            -- marker mode) but m or force_marker_mode is also specified.
-            -- for now, let either turn marker mode on
-            ctx.occupancy.dig_marked = ctx.occupancy.dig_marked or marker_mode
+            set_priority(ctx, 4)
         else
-            ctx.occupancy.dig_marked = marker_mode
+            if not db_entry.skip_marker_mode then
+                local marker_mode = db_entry.marker_mode or
+                        quickfort_common.settings['force_marker_mode'].value
+                ctx.occupancy.dig_marked = marker_mode
+            end
+            if db_entry.use_priority then
+                set_priority(ctx, db_entry.priority)
+            end
         end
         return true
     end
@@ -516,15 +583,12 @@ local function do_run_impl(zlevel, grid, stats)
             local pos = xyz2pos(x, y, zlevel)
             log('applying spreadsheet cell %s with text "%s" to map' ..
                 ' coordinates (%d, %d, %d)', cell, text, pos.x, pos.y, pos.z)
+            local db_entry = nil
             local keys, extent = quickfort_common.parse_cell(text)
-            local marker_mode =
-                    quickfort_common.settings['force_marker_mode'].value
-            if keys:startswith('m') then
-                keys = string.sub(keys, 2)
-                marker_mode = true
-            end
-            if not designate_switch[keys] then
-                print(string.format('invalid key sequence: "%s"', text))
+            if keys then db_entry = dig_db[keys] end
+            if not db_entry then
+                print(string.format('invalid key sequence: "%s" in cell %s',
+                                    text, cell))
                 stats.invalid_keys.value = stats.invalid_keys.value + 1
                 goto continue
             end
@@ -551,7 +615,7 @@ local function do_run_impl(zlevel, grid, stats)
                         stats.out_of_bounds.value =
                                 stats.out_of_bounds.value + 1
                     else
-                        if dig_tile(ctx, keys, marker_mode) then
+                        if dig_tile(ctx, db_entry) then
                             stats.dig_designated.value =
                                     stats.dig_designated.value + 1
                         end

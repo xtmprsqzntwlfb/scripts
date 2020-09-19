@@ -64,8 +64,14 @@ local function flood_fill(grid, x, y, seen_grid, data, db, aliases)
     if not grid[y] or not grid[y][x] then return 0 end
     local cell, text = grid[y][x].cell, grid[y][x].text
     local keys, extent = quickfort_common.parse_cell(text)
-    if aliases[string.lower(keys)] then keys = aliases[string.lower(keys)] end
-    if not db[keys] then
+    local db_entry = nil
+    if keys then
+        if aliases[string.lower(keys)] then
+            keys = aliases[string.lower(keys)]
+        end
+        db_entry = db[keys]
+    end
+    if not db_entry then
         if not seen_grid[x] then seen_grid[x] = {} end
         seen_grid[x][y] = true -- seen, but not part of any building
         print(string.format('invalid key sequence in cell %s: "%s"',
