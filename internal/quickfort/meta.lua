@@ -33,43 +33,30 @@ local function get_section_name(cell, text, cur_sheet_name)
     return string.format('%s/%s', sheet_name, label)
 end
 
-local function sort_cells(cell_a, cell_b)
-    return cell_a.y < cell_b.y or
-            (cell_a.y == cell_b.y and cell_a.x < cell_b.x)
-end
-
 local function do_meta(zlevel, grid, ctx)
     local stats = ctx.stats
     stats.meta_blueprints = stats.meta_blueprints or
             {label='Blueprints applied', value=0, always=true}
 
-    local cells = {}
     -- ensure we process blueprints in the declared order
-    for y, row in pairs(grid) do
-        for x, cell_and_text in pairs(row) do
-            local cell, text = cell_and_text.cell, cell_and_text.text
-            local section_name = get_section_name(cell, text, ctx.sheet_name)
-            table.insert(cells, {y=y, x=x, section_name=section_name})
-        end
-    end
-    table.sort(cells, sort_cells)
+    local cells = quickfort_common.get_ordered_grid_cells(grid)
     local saved_zlevel = ctx.cursor.z
     for _, cell in ipairs(cells) do
-        quickfort_command.do_command_internal(ctx, cell.section_name)
+        quickfort_command.do_command_internal(
+            ctx, get_section_name(cell.cell, cell.text, ctx.sheet_name))
         ctx.cursor.z = saved_zlevel
         stats.meta_blueprints.value = stats.meta_blueprints.value + 1
     end
-    return stats
 end
 
 function do_run(zlevel, grid, ctx)
-    return do_meta(zlevel, grid, ctx)
+    do_meta(zlevel, grid, ctx)
 end
 
 function do_orders(zlevel, grid, ctx)
-    return do_meta(zlevel, grid, ctx)
+    do_meta(zlevel, grid, ctx)
 end
 
 function do_undo(zlevel, grid, ctx)
-    return do_meta(zlevel, grid, ctx)
+    do_meta(zlevel, grid, ctx)
 end

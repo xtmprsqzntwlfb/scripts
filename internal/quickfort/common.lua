@@ -15,6 +15,7 @@ valid_modes = utils.invert({
     'zone',
     'query',
     'meta',
+    'notes',
 })
 
 -- keep deprecated settings in the table so we don't break existing configs
@@ -100,4 +101,21 @@ end
 function move_cursor(pos)
     guidm.setCursorPos(pos)
     dfhack.gui.refreshSidebar()
+end
+
+local function coord2d_lt(cell_a, cell_b)
+    return cell_a.y < cell_b.y or
+            (cell_a.y == cell_b.y and cell_a.x < cell_b.x)
+end
+
+function get_ordered_grid_cells(grid)
+    local cells = {}
+    for y, row in pairs(grid) do
+        for x, cell_and_text in pairs(row) do
+            local cell, text = cell_and_text.cell, cell_and_text.text
+            table.insert(cells, {y=y, x=x, cell=cell, text=text})
+        end
+    end
+    table.sort(cells, coord2d_lt)
+    return cells
 end
