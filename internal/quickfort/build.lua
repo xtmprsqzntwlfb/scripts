@@ -763,7 +763,8 @@ local function create_building(b)
         quickfort_building.assign_extents(
             bld, quickfort_building.make_extents(b, building_db))
     end
-    if buildingplan.isPlannableBuilding(db_entry.type) then
+    if buildingplan.isPlannableBuilding(
+            db_entry.type, db_entry.subtype or -1, db_entry.custom or -1) then
         log('registering with buildingplan')
         buildingplan.addPlannedBuilding(bld)
     end
