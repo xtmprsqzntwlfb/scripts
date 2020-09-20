@@ -149,8 +149,6 @@ local function parse_markers(modeline, start_pos, filename)
         end
         if not matched then break end
     end
-    marker_values.startx = marker_values.startx or 1
-    marker_values.starty = marker_values.starty or 1
     return marker_values, start_pos
 end
 
@@ -176,7 +174,7 @@ local function parse_modeline(modeline, filename, modeline_id)
     local _, _, comment = string.find(modeline, '^%s*(.*)', comment_start)
     modeline_data.mode = mode
     modeline_data.comment = #comment > 0 and comment or nil
-    modeline_data.label = modeline_data.label or modeline_id
+    modeline_data.label = modeline_data.label or tostring(modeline_id)
     return modeline_data
 end
 
@@ -204,6 +202,11 @@ local function cleanup_csv_ctx(ctx)
     ctx.csv_file:close()
 end
 
+local function reset_csv_ctx(ctx)
+    ctx.csv_file:close()
+    ctx.csv_file = io.open(ctx.filepath)
+end
+
 local function read_xlsx_line(ctx)
     return xlsxreader.get_row(ctx.xlsx_sheet)
 end
@@ -211,6 +214,12 @@ end
 local function cleanup_xslx_ctx(ctx)
     xlsxreader.close_sheet(ctx.xlsx_sheet)
     xlsxreader.close_xlsx_file(ctx.xlsx_file)
+end
+
+-- only resets the sheet, not the entire file
+local function reset_xlsx_ctx(ctx)
+    xlsxreader.close_sheet(ctx.xlsx_sheet)
+    ctx.xlsx_sheet = xlsxreader.open_sheet(ctx.xlsx_file, ctx.sheet_name)
 end
 
 local function init_reader_ctx(filepath, sheet_name)
@@ -224,6 +233,7 @@ local function init_reader_ctx(filepath, sheet_name)
         reader_ctx.csv_file = file
         reader_ctx.get_row_tokens = read_csv_line
         reader_ctx.cleanup = cleanup_csv_ctx
+        reader_ctx.reset = reset_csv_ctx
     else
         local xlsx_file = xlsxreader.open_xlsx_file(filepath)
         if not xlsx_file then
@@ -243,6 +253,7 @@ local function init_reader_ctx(filepath, sheet_name)
                 xlsxreader.open_sheet(reader_ctx.xlsx_file, sheet_name)
         reader_ctx.get_row_tokens = read_xlsx_line
         reader_ctx.cleanup = cleanup_xslx_ctx
+        reader_ctx.reset = reset_xlsx_ctx
     end
     return reader_ctx
 end
@@ -282,6 +293,7 @@ local function process_levels(reader_ctx, label, start_cursor_coord)
     -- scan down to the target label
     local cur_line_num, modeline_id = 1, 1
     local row_tokens, modeline = nil, nil
+    local first_line = true
     while not modeline or (label and modeline.label ~= label) do
         row_tokens = reader_ctx.get_row_tokens(reader_ctx)
         if not row_tokens then
@@ -298,11 +310,18 @@ local function process_levels(reader_ctx, label, start_cursor_coord)
         end
         cur_line_num = cur_line_num + 1
         modeline = parse_modeline(row_tokens[1], reader_ctx.filepath,
-                                  tostring(modeline_id))
+                                  modeline_id)
+        if first_line then
+            if not modeline then
+                modeline = {mode='dig', label="1"}
+                reader_ctx.reset(reader_ctx) -- we need to reread the first line
+            end
+            first_line = false
+        end
         if modeline then modeline_id = modeline_id + 1 end
     end
-    local x = start_cursor_coord.x - modeline.startx + 1
-    local y = start_cursor_coord.y - modeline.starty + 1
+    local x = start_cursor_coord.x - (modeline.startx or 1) + 1
+    local y = start_cursor_coord.y - (modeline.starty or 1) + 1
     local z = start_cursor_coord.z
     while true do
         local grid, num_section_rows, zmod =
@@ -319,12 +338,20 @@ end
 local function get_sheet_modelines(reader_ctx)
     local modelines = {}
     local row_tokens = reader_ctx.get_row_tokens(reader_ctx)
+    local first_line = true
     while row_tokens do
+        local modeline = nil
         if #row_tokens > 0 then
-            local modeline = parse_modeline(row_tokens[1], reader_ctx.filepath,
-                                            tostring(#modelines+1))
-            if modeline then table.insert(modelines, modeline) end
+            modeline = parse_modeline(row_tokens[1], reader_ctx.filepath,
+                                      #modelines+1)
         end
+        if first_line then
+            if not modeline then
+                modeline = {mode='dig', label="1"}
+            end
+            first_line = false
+        end
+        if modeline then table.insert(modelines, modeline) end
         row_tokens = reader_ctx.get_row_tokens(reader_ctx)
     end
     return modelines

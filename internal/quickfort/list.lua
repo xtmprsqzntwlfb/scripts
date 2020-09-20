@@ -20,7 +20,7 @@ local function scan_csv_blueprint(path)
                 {modelines=quickfort_parse.get_modelines(filepath), mtime=mtime}
     end
     if #blueprint_cache[path].modelines == 0 then
-        print(string.format('skipping "%s": no #mode markers detected', path))
+        print(string.format('skipping "%s": empty file', path))
     end
     return blueprint_cache[path].modelines
 end
@@ -53,8 +53,7 @@ local function scan_xlsx_blueprint(path)
     end
     local sheet_infos = get_xlsx_file_sheet_infos(filepath)
     if #sheet_infos == 0 then
-        print(string.format(
-                'skipping "%s": no sheet with #mode markers detected', path))
+        print(string.format('skipping "%s": no sheet with data detected', path))
     end
     blueprint_cache[path] = {sheet_infos=sheet_infos, mtime=mtime}
     return sheet_infos
