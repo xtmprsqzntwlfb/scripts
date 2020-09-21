@@ -24,7 +24,8 @@ end
 
 local function is_queryable_tile(pos)
     local flags, occupancy = dfhack.maps.getTileFlags(pos)
-    return not flags.hidden and occupancy.building ~= 0
+    return (not flags.hidden and occupancy.building ~= 0)
+        or dfhack.buildings.findCivzonesAt(pos)
 end
 
 local function handle_modifiers(token, modifiers)
