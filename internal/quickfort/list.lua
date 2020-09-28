@@ -60,6 +60,7 @@ local function scan_xlsx_blueprint(path)
 end
 
 local blueprints = {}
+local num_library_blueprints = 0
 
 local function scan_blueprints()
     local paths = dfhack.filesystem.listdir_recursive(
@@ -92,7 +93,8 @@ local function scan_blueprints()
         end
     end
     -- tack library files on to the end so user files are contiguous
-    for i=1, #library_blueprints do
+    num_library_blueprints = #library_blueprints
+    for i=1, num_library_blueprints do
         blueprints[#blueprints + 1] = library_blueprints[i]
     end
 end
@@ -196,5 +198,9 @@ function do_list(in_args)
     if num_filtered > 0 then
         print(string.format('  %d blueprints did not match filter',
                             num_filtered))
+    end
+    if num_library_blueprints > 0 and not show_library then
+        print(string.format( '  %d library blueprints not shown (use '..
+            '`quickfort list --library` to see them)', num_library_blueprints))
     end
 end
