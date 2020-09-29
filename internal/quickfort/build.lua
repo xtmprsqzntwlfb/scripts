@@ -107,9 +107,10 @@ end
 
 -- for wells
 local function is_tile_empty_and_floor_adjacent(pos)
+    local shape = df.tiletype.attrs[dfhack.maps.getTileType(pos)].shape
     if not is_valid_tile_base(pos) or
-            df.tiletype.attrs[dfhack.maps.getTileType(pos)].shape ~=
-            df.tiletype_shape.EMPTY then
+            (shape ~= df.tiletype_shape.EMPTY and
+             shape ~= df.tiletype_shape.RAMP_TOP) then
         return false
     end
     return is_valid_tile_generic(xyz2pos(pos.x+1, pos.y, pos.z)) or
