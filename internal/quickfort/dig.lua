@@ -535,14 +535,12 @@ local function get_priority_block_square_event(block_events)
 end
 
 -- modifies any existing priority block_square_event to the specified priority.
--- if the block_square_event doesn't already exist, create it iff we're setting
--- the priority to any number but 4 (the default)
+-- if the block_square_event doesn't already exist, create it.
 local function set_priority(ctx, priority)
     log('setting priority to %d', priority)
     local block_events = dfhack.maps.getTileBlock(ctx.pos).block_events
     local pbse = get_priority_block_square_event(block_events)
     if not pbse then
-        if priority == 4 then return end
         block_events:insert('#',
                             {new=df.block_square_event_designation_priorityst})
         pbse = block_events[#block_events-1]
